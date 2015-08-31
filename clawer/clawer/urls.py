@@ -9,7 +9,7 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     # Examples:
-    # url(r'^$', 'clawer.views.home', name='home'),
+    url(r'^$', 'clawer.views.index'),
     # url(r'^clawer/', include('clawer.foo.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:

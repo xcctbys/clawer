@@ -1,11 +1,11 @@
 #encoding=utf-8
 
-from .settings import *
+from settings import *
 
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
         'NAME': 'clawer',                      # Or path to database file if using sqlite3.
         'USER': 'cacti',                      # Not used with sqlite3.
         'PASSWORD': 'cacti',                  # Not used with sqlite3.

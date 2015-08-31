@@ -1,0 +1,7 @@
+{% load static %}
+
+
+<img src="{% static 'img/secret-mask-icon-32.png'%}" width="{{size}}" alt="{{user.nickname}}" class="img-circle" />	
+{% if user %}
+	<span>{{user.profile.sex_name}}</span>
+{% endif %}

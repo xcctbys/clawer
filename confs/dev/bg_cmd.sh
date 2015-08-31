@@ -1,10 +1,10 @@
 #!/bin/bash
 
-WORKDIR=/d/gitroom/todo/todo
+WORKDIR=/d/gitroom/nice-clawer/clawer
 PY=~/Documents/pyenv/dj14/bin/python
 
 if [ ! -d ${WORKDIR} ]; then
-    WORKDIR=~/Documents/gitroom/todo/todo
+    WORKDIR=~/Documents/gitroom/nice-clawer/clawer
 fi
 
 if [ ! -f ${PY} ]; then
