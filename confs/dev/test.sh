@@ -1,10 +1,10 @@
 #!/bin/bash
 
 PY=~/Documents/pyenv/dj14/bin/python
-WORKDIR=/d/gitroom/todo/todo
+WORKDIR=/d/gitroom/nice-clawer/clawer
 
 if [ ! -d ${WORKDIR} ];then
-    WORKDIR=~/Documents/gitroom/todo/todo
+    WORKDIR=~/Documents/gitroom/nice-clawer/clawer
 fi
 
 if [ ! -f ${PY} ]; then
@@ -12,7 +12,7 @@ if [ ! -f ${PY} ]; then
 fi
 
 
-APPS="simplefan like social comment note help notification sla sitelog account sitehelper psychological todo"
+APPS="clawer"
 
 if [ ! -z $* ]; then
     APPS="$*"

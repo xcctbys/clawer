@@ -7,7 +7,7 @@
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         
-        <title>C+ BOSS</title>
+        <title>Nice Clawer Boss</title>
         <link rel="stylesheet" href="{% static 'clawer/css/common.css' %}" media="screen">
         
         <link rel="stylesheet" type="text/css" href="{% static 'clawer/easyui/themes/default/easyui.css' %}">
@@ -25,11 +25,12 @@
 
 {% block body %}
 <body class="easyui-layout" data-options="fit: true,border : false">
+
     {% block content %}{% endblock %}
     
     <!-- login window -->
     <div id="login_win" class="easyui-window" closed="true" closable="false" collapsible="false" minimizable="false" title="登陆" style="width:300px;height:200px" data-options="iconCls:'icon-save',modal:true">
-        <form id="login_form" method="get" action="{% url boss.api.user.login %}">
+        <form id="login_form" method="get" action="{% url clawer.apis.user.login %}">
             <table style="border: 0px solid #9f9f9f;" cellspacing="10">
                 <tr>
                     <td><label for="username">用户:</label></td>
@@ -48,7 +49,7 @@
     </div>
     <script>
     function logout() {
-        var url = "{% url boss.api.user.logout %}";
+        var url = "{% url clawer.apis.user.logout %}";
         $.getJSON(url, function(resp){
             if(resp.is_ok) {
                 $("#login_info").html("已经退出");
@@ -59,7 +60,7 @@
     $(document).ready(function(){
     	
     	function keepalive() {
-            var keepalive_url = "{% url boss.api.user.keepalive %}";
+            var keepalive_url = "{% url clawer.apis.user.keepalive %}";
             
             $.getJSON(keepalive_url, function(resp){
                 if(resp.is_ok == false) {
@@ -74,8 +75,8 @@
     	
     	function show_user_info(profile) {
     		var content = profile.username + ", ";
-    		content += "ID:" + profile.user_id + ", ";
-    		content += "手机号:" + profile.phone + ", ";
+    		content += "ID:" + profile.id + ", ";
+    		
             content += "<a href='#' onclick='logout();'>退出</a>";
             $("#login_info").html(content);
     	}
@@ -86,7 +87,7 @@
     	}, 30000);
     	
     	$("#login_btn").bind("click", function(){
-    		var url = "{% url boss.api.user.login %}";
+    		var url = "{% url clawer.apis.user.login %}";
     		
     		$.ajax({
     	        type: "GET",

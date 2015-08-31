@@ -1,4 +1,4 @@
-{% extends "boss/base.html"%}
+{% extends "clawer/base.html"%}
 {% load static %}
 
 
@@ -6,7 +6,7 @@
 {% block content %}
 
     <div data-options="region:'north',border:false" style="height:60px;background: #eff5ff;padding:10px">
-         <strong>Boss of C+ </strong>
+         <strong>Boss Of Nice Clawer </strong>
          
          <div style="float: right; margin-left: 10px;"><small id="login_info"></small></div>
          
@@ -46,7 +46,7 @@ function addTab(title, url){
 }
 
 $(document).ready(function(){
-	var menu_url = "{% url boss.api.user.get_my_menus %}";
+	var menu_url = "{% url clawer.apis.user.get_my_menus %}";
 	
 	$("#menuTree").tree({
 		url: menu_url,

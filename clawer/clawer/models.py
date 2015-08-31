@@ -1,15 +1,83 @@
 #encoding=utf-8
+import copy
 
 from django.contrib.auth.models import User as DjangoUser
 from django.db import models
 
 
 class UserProfile(models.Model):
+    (GROUP_MANAGER, GROUP_DEVELOPER) = (u"管理员", u"开发者")
     user = models.OneToOneField(DjangoUser)
     nickname = models.CharField(max_length=64)
     
     class Meta:
         app_label = "clawer"
+        
+    def as_json(self):
+        return {"id": self.user.id,
+            "nickname": self.nickname,
+            "username": self.user.username,
+        }
+
+
+class MenuPermission:
+    GROUP_MANAGER = UserProfile.GROUP_MANAGER
+    GROUP_DEVELOPER = UserProfile.GROUP_DEVELOPER
+    
+    GROUPS = [
+        GROUP_MANAGER,
+        GROUP_DEVELOPER,
+    ]
+    
+    MENUS = [
+        {"id":1, "text": u"爬虫管理", "url":"", "children": [
+            {"id":101, "text":u"查询爬虫", "url":"", "groups":GROUPS},
+        ]},
+    ]
+    
+    @classmethod
+    def has_perm_to_enter(cls, user):
+        ret = False
+        for group in user.groups.all():
+            if group.name in cls.GROUPS:
+                ret = True
+                break
+        
+        return ret
+    
+    @classmethod
+    def user_menus(cls, user):
+        """ Return list of menus, format is:
+        [
+            {}
+        ]
+        """
+        from django.core.urlresolvers import reverse
+        
+        menus = []
+        user_group_names = set([x.name for x in user.groups.all()])
+        
+        def has_group(menu_groups):
+            for name in user_group_names:
+                if name in menu_groups:
+                    return True
+            return False
+        
+        for item in cls.MENUS: 
+            new_item = copy.deepcopy(item)
+            new_item["children"] = []
+            
+            for menu in item["children"]:
+                if has_group(menu["groups"]):
+                    new_menu = copy.deepcopy(menu)
+                    if menu["url"]:
+                        new_menu["url"] = reverse(menu["url"])
+                    del new_menu["groups"]
+                    new_item["children"].append(new_menu)
+            menus.append(new_item)
+        
+        return menus
+
         
 
 class Clawer(models.Model):

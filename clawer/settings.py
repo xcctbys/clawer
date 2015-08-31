@@ -83,7 +83,7 @@ TEMPLATE_LOADERS = (
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    #'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     # Uncomment the next line for simple clickjacking protection:
@@ -110,6 +110,8 @@ EMAIL_SUBJECT_PREFIX = "[NiceClawer]"
 EMAIL_USE_TLS = True
 EMAIL_FROM = "clawer@princetechs.com"
 DEFAULT_FROM_EMAIL = "clawer@princetechs.com"
+
+AUTH_PROFILE_MODULE = 'clawer.UserProfile'
 
 
 INSTALLED_APPS = (
