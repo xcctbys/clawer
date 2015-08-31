@@ -31,7 +31,7 @@ class MenuPermission:
     
     MENUS = [
         {"id":1, "text": u"爬虫管理", "url":"", "children": [
-            {"id":101, "text":u"查询爬虫", "url":"", "groups":GROUPS},
+            {"id":101, "text":u"查询爬虫", "url":"clawer.views.home.clawer_all", "groups":GROUPS},
         ]},
     ]
     
@@ -87,6 +87,14 @@ class Clawer(models.Model):
     
     class Meta:
         app_label = "clawer"
+        
+    def as_json(self):
+        result = {"id": self.id,
+            "name": self.name,
+            "info": self.info,
+            "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S")
+        }
+        return result
         
 
 class ClawerTaskGenerator(models.Model):

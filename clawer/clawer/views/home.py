@@ -10,3 +10,8 @@ def index(request):
 
 def clawer(request):
     return render_template("clawer/index.html", request=request)
+
+
+def clawer_all(request):
+    return render_template("clawer/all.html", request=request)
+

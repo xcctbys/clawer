@@ -1,0 +1,79 @@
+{% extends "clawer/base.html"%}
+{% load static %}
+
+
+{% block body %}
+<body>
+
+<div id="toolbar">
+    <a href="#" class="easyui-linkbutton" onclick="showImageWin();">任务生成器管理</a>
+    <a href="#" class="easyui-linkbutton" onclick="showEditWin();">编辑</a>
+    
+    <label>ID: </label>
+    <input type="number" id="id_input" name="id" />
+    
+    <a href="javascript:void(0)" id="search_btn" class="easyui-linkbutton" data-options="iconCls:'icon-search'">搜索</a>
+</div>
+
+<table id="grid" class="easyui-datagrid" style="width:100%;height:100%"
+        fitColumns="false"  fit="false" url="{% url clawer.apis.home.clawer_all %}" showFooter="true"
+        data-options="singleSelect:true,collapsible:true,method:'get'" rownumbers="true" pagination="true"
+        toolbar="#toolbar" nowrap="true">
+        
+    <thead data-options="frozen:true">
+        <tr>
+            <th data-options="field:'id',width:80" sortable="true">ID</th>
+            <th data-options="field:'name',">名称</th>
+        </tr>
+    </thead>
+    <thead>
+        <tr>
+            <th data-options="field:'info'," width="200px">简介</th>
+            <th data-options="field:'add_datetime'," width="200px">添加时间</th>
+        </tr>
+    </thead>    
+</table>
+
+
+<!-- edit form -->
+<div id="edit_win" class="easyui-window" title="编辑" closed="true" style="width:80%;height:60%;padding:5px;">
+    
+</div>
+<!-- edit form end -->
+
+
+<!-- image win -->
+<div id="image_win" class="easyui-window" title="图片管理" closed="true" style="width:85%;height:80%;padding:5px;">
+    
+</div>
+<!-- end image win -->
+
+
+<script type="text/javascript">
+
+$(document).ready(function(){
+	$("#grid").datagrid({
+		rowStyler: function(row_index, row) {
+			
+			if(row.rentable == false) {
+				return 'color:#999';
+			}
+			
+			return "";
+		}
+	});
+	
+	$("#search_btn").bind("click", function(e){
+        $("#grid").datagrid("load", {
+            obj_id: $("#id_input").val()
+        });
+        
+    });
+});
+
+</script>
+
+
+
+</body>
+{% endblock %}

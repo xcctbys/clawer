@@ -7,6 +7,8 @@ from django.contrib import admin
 
 admin.autodiscover()
 
+
+#apis 
 user_api_urls = patterns("clawer.apis.user", 
     url(r"^login/$", "login"),
     url(r"^logout/$", "logout"),
@@ -17,20 +19,24 @@ user_api_urls = patterns("clawer.apis.user",
 
 )
 
-api_urls = patterns("clawer.apis", 
+home_api_urls = patterns("clawer.apis.home",
+    url(r"^clawer/all/$", "clawer_all"),
+)
+
+apis_urls = patterns("clawer.apis", 
     url(r"^user/", include(user_api_urls)),
+    url(r"^home/", include(home_api_urls)),
 )
 
-clawer_urls = patterns("clawer.views", 
-    url(r"^$", "clawer"),
-    
-    url(r"^api/", include(api_urls)),
-)
-
-urlpatterns = patterns('',
+#views
+urlpatterns = patterns('clawer.views.home',
     # Examples:
-    url(r'^$', 'clawer.views.index'),
-    url(r'^clawer/', include(clawer_urls)),
+    url(r'^$', 'index'),
+    
+    url(r'^clawer/$', "clawer"),
+    url(r'^clawer/all/$', "clawer_all"),
+    
+    url(r'^apis/', include(apis_urls)),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
