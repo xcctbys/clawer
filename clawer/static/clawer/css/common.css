@@ -1,0 +1,46 @@
+*{
+    font-size:12px;
+}
+
+h2 {
+    font-size:18px;
+    font-weight:bold;
+    margin:0;
+    margin-bottom:15px;
+}
+
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    word-break: break-all;
+    word-wrap: break-word;
+    font-family:verdana,helvetica,arial,sans-serif;
+    font-size:12px;
+}
+
+table {
+    margin-bottom: 20px;
+}
+
+.danger {
+    color: red;
+}
+
+.success {
+    color: green;
+}
+
+.textarea {
+	width: 200px;
+	height: 60px;
+}
+
+.box-margin {
+    margin-bottom: 20px;
+}
+
+#toolbar {
+	padding: 5px 0 5px 5px;
+}
