@@ -32,6 +32,10 @@ class MenuPermission:
     MENUS = [
         {"id":1, "text": u"爬虫管理", "url":"", "children": [
             {"id":101, "text":u"查询爬虫", "url":"clawer.views.home.clawer_all", "groups":GROUPS},
+            {"id":101, "text":u"失败任务", "url":"", "groups":GROUPS},
+        ]},
+        {"id":2, "text": u"系统管理", "url":"", "children": [
+            {"id":201, "text":u"参数设置", "url":"", "groups":[GROUP_MANAGER]},
         ]},
     ]
     
