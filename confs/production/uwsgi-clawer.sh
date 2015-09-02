@@ -13,8 +13,6 @@ HOME=/home/webapps/nice-clawer/clawer
 PID=/tmp/uwsgi-clawer.pid
 CMD=/home/virtualenvs/py27/bin/uwsgi
 CONFIG=${HOME}/pro.ini
-#APM_CONFIG="${HOME}/newrelic.ini"
-#APM="/home/virtualenvs/py27/bin/newrelic-admin run-program"
 
 wait_for_pid () {
     try=0

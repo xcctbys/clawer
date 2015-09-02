@@ -1,16 +1,16 @@
 #!/bin/sh -e
 # ============================================
-#  celeryd - Starts the Celery worker daemon.
+#  clawer-celeryd - Starts the Clawer Celery worker daemon.
 # ============================================
 #
-# :Usage: /etc/init.d/celeryd {start|stop|force-reload|restart|try-restart|status}
-# :Configuration file: /etc/default/celeryd
+# :Usage: /etc/init.d/clawer-celeryd {start|stop|force-reload|restart|try-restart|status}
+# :Configuration file: /etc/default/clawer-celeryd
 #
 # See http://docs.celeryproject.org/en/latest/tutorials/daemonizing.html#generic-init-scripts
 
 
 ### BEGIN INIT INFO
-# Provides:          celeryd
+# Provides:          clawer-celeryd
 # Required-Start:    $network $local_fs $remote_fs
 # Required-Stop:     $network $local_fs $remote_fs
 # Default-Start:     2 3 4 5
