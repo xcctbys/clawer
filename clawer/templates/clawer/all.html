@@ -6,13 +6,20 @@
 <body>
 
 <div id="toolbar">
-    <a href="#" class="easyui-linkbutton" onclick="showImageWin();">任务生成器管理</a>
-    <a href="#" class="easyui-linkbutton" onclick="showEditWin();">编辑</a>
+    <a href="#" class="easyui-menubutton" menu="#task_generators">任务生成器</a>
+    <!--  <a href="#" class="easyui-linkbutton" onclick="showEditWin();">编辑</a>  -->
     
     <label>ID: </label>
     <input type="number" id="id_input" name="id" />
     
     <a href="javascript:void(0)" id="search_btn" class="easyui-linkbutton" data-options="iconCls:'icon-search'">搜索</a>
+</div>
+
+<div id="task_generators">
+    <div id="task_generator_update_btn" iconCls="icon-edit">更新</div>
+	<div class="menu-sep"></div>
+	<div id="task_generator_info_btn" iconCls="">运行中</div>
+	<div id="task_generator_history_btn" iconCls="">历史版本</div>
 </div>
 
 <table id="grid" class="easyui-datagrid" style="width:100%;height:100%"
@@ -28,6 +35,7 @@
     </thead>
     <thead>
         <tr>
+            <th data-options="field:'runing_task_generator'" formatter="formatTaskGenerator">运行中的任务生成器</th>
             <th data-options="field:'info'," width="200px">简介</th>
             <th data-options="field:'add_datetime'," width="200px">添加时间</th>
         </tr>
@@ -35,40 +43,158 @@
 </table>
 
 
-<!-- edit form -->
-<div id="edit_win" class="easyui-window" title="编辑" closed="true" style="width:80%;height:60%;padding:5px;">
+<!-- update task generator form -->
+<div id="task_generator_update_win" class="easyui-window" title="更新任务生成器" closed="true" style="width:80%;height:60%;padding:5px;">
+    <form method="post" id="task_generator_update_form" enctype="multipart/form-data" action="{% url clawer.apis.home.clawer_task_generator_update %}">
+        <div class="easyui-panel" style="width:400px;padding:30px 70px 50px 70px">
+			
+			<div style="margin-bottom:20px">
+				<div>Python 文件:</div>
+				<input id="code_file" name="code_file" class="easyui-filebox" style="width: 100%" data-options="prompt:'选择Python文件'">
+				<input id="clawer" name="clawer" type="hidden" />
+			</div>
+			
+			<div>
+				<button class="easyui-linkbutton" style="width:100%" type="submit">保存</button>
+			</div>
+		</div>
+    </form>
     
 </div>
-<!-- edit form end -->
+<!-- update task generator form end -->
 
 
-<!-- image win -->
-<div id="image_win" class="easyui-window" title="图片管理" closed="true" style="width:85%;height:80%;padding:5px;">
+
+<!-- task generator info -->
+<div id="task_generator_info_win" class="easyui-window" title="任务生成器详情" closed="true" style="width:80%;height:60%;padding:5px;">
+    <div id="title"></div>
+    <div id="code" class="highlight"></div>
+</div>
+<!-- task generator info end -->
+
+
+<!-- task generator history window -->
+<div id="task_generator_history_win" class="easyui-window" title="任务生成器历史版本" closed="true" style="width:80%;height:90%;padding:5px;">
     
 </div>
-<!-- end image win -->
+<!-- task generator history window end -->
 
 
 <script type="text/javascript">
 
+function formatTaskGenerator(val) {
+	console.debug("task generator is: ", val);
+	
+	if(!val) {
+		return "-";
+	}
+	
+	return "ID: " + val.id + " ("+val.add_datetime+")";
+}
+
+
 $(document).ready(function(){
-	$("#grid").datagrid({
-		rowStyler: function(row_index, row) {
-			
-			if(row.rentable == false) {
-				return 'color:#999';
-			}
-			
-			return "";
-		}
-	});
 	
 	$("#search_btn").bind("click", function(e){
+		
         $("#grid").datagrid("load", {
             obj_id: $("#id_input").val()
         });
         
     });
+	
+	$("#task_generator_update_btn").bind("click", function(e){
+		var row = $("#grid").datagrid("getSelected");
+		if(!row) {
+			return $.messager.alert('Warning', '请先选择一条数据');
+		}
+		
+		$("#task_generator_update_win").find("#clawer").val(row.id);
+		$("#task_generator_update_win").window("open");
+	});
+	
+	$("#task_generator_update_form").submit(function(){
+    	$(this).ajaxSubmit({
+            dataType: "json",
+            success: function(resp, status, xhr, frm) {
+                if(!resp.is_ok) {
+                    $.messager.alert('warning', resp.reason);
+                    return;
+                }
+                
+                $("#task_generator_update_form").form("reset");
+                $("#task_generator_update_form").form("clear");
+                $("#grid").datagrid("reload");
+                $("#task_generator_update_win").window("close");
+            }
+        });
+    	
+    	return false;
+    });
+	
+	$("#task_generator_info_btn").bind("click", function(e){
+		var row = $("#grid").datagrid("getSelected");
+		if(!row) {
+			return $.messager.alert('Warning', '请先选择一条数据');
+		}
+		
+		var title = ["<h4>",
+		    row.runing_task_generator.add_datetime,
+		    "</h4>",
+		].join("");
+		$("#task_generator_info_win").find("#title").html(title);
+		
+		var code = ["<pre>",
+		    "<code>",
+		    row.runing_task_generator.code,
+		    "</code>",
+		    "</pre>",
+		].join("");
+		$("#task_generator_info_win").find("#code").html(code);
+		
+		$("#task_generator_info_win").window("open");
+		
+	});
+	
+	$("#task_generator_history_btn").bind("click", function(e){
+		var row = $("#grid").datagrid("getSelected");
+		if(!row) {
+			return $.messager.alert('Warning', '请先选择一条数据');
+		}
+		
+		var url = "{% url clawer.apis.home.clawer_task_generator_history %}";
+		
+		$.getJSON(url, {"clawer_id":row.id}, function(resp){
+			if(resp.is_ok == false) {
+				return $.messager.alert("warning", resp.reason);
+			}
+			
+			var content = "";
+			
+			for(var i=0; i<resp.rows.length; i++) {
+				var item = resp.rows[i];
+				var code = ["<div>",
+				    "<h4>",
+				    item.add_datetime,
+				    "</h4>",
+				    "<pre class='highlight'>",
+				    "<code>",
+				    item.code,
+				    "</code>",
+				    "</pre>",
+				    "</div>",
+				].join("");
+				content = content + code;
+			}
+			console.debug("content is ", content);
+			$("#task_generator_history_win").html(content);
+			
+		});
+		
+		$("#task_generator_history_win").window("open");
+		
+	});
+	
 });
 
 </script>

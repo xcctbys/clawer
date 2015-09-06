@@ -1,11 +1,13 @@
 #encoding=utf-8
 import json
+import os
 
 from django.test import TestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User as DjangoUser, Group
-from clawer.models import MenuPermission, Clawer
+from clawer.models import MenuPermission, Clawer, ClawerTask,\
+    ClawerTaskGenerator
 
 
 class TestHomeViews(TestCase):
@@ -28,6 +30,11 @@ class TestHomeViews(TestCase):
         
     def test_clawer_all(self):
         url = reverse("clawer.views.home.clawer_all")
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        
+    def test_clawer_task_failed(self):
+        url = reverse("clawer.views.home.clawer_task_failed")
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         
@@ -106,3 +113,49 @@ class TestHomeApi(TestCase):
         self.assertTrue(result["is_ok"])
         
         clawer.delete()
+        
+    def test_task_failed(self):
+        clawer = Clawer.objects.create(name="hi", info="good")
+        clawer_generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print hello", cron="*", status=ClawerTaskGenerator.STATUS_PRODUCT)
+        clawer_task = ClawerTask.objects.create(clawer=clawer, task_generator=clawer_generator, uri="http://github.com", status=ClawerTask.STATUS_FAIL)
+        url = reverse("clawer.apis.home.clawer_task_failed")
+        
+        resp = self.logined_client.get(url)
+        result = json.loads(resp.content)
+        self.assertTrue(result["is_ok"])
+        
+        clawer.delete()
+        clawer_generator.delete()
+        clawer_task.delete()
+        
+    def test_clawer_task_generator_update(self):
+        clawer = Clawer.objects.create(name="hi", info="good")
+        code_path = "/tmp/test.py"
+        code_file = open(code_path, "arw")
+        code_file.write("print 'http://www.github.com'\n")
+        code_file.close()
+        code_file = open(code_path)
+        url = reverse("clawer.apis.home.clawer_task_generator_update")
+        
+        resp = self.logined_client.post(url, data={"code_file":code_file, "clawer":clawer.id})
+        result = json.loads(resp.content)
+        self.assertTrue(result["is_ok"])
+        
+        task_generator = ClawerTaskGenerator.objects.get(clawer=clawer)
+        self.assertGreater(len(task_generator.code), 0)
+        
+        clawer.delete()
+        task_generator.delete()
+        os.remove(code_path)
+        
+    def test_clawer_task_generator_history(self):
+        clawer = Clawer.objects.create(name="hi", info="good")
+        clawer_generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print hello", cron="*", status=ClawerTaskGenerator.STATUS_PRODUCT)
+        url = reverse("clawer.apis.home.clawer_task_generator_history")
+        
+        resp = self.logined_client.get(url)
+        result = json.loads(resp.content)
+        self.assertTrue(result["is_ok"])
+        
+        clawer.delete()
+        clawer_generator.delete()

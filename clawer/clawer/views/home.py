@@ -15,3 +15,6 @@ def clawer(request):
 def clawer_all(request):
     return render_template("clawer/all.html", request=request)
 
+
+def clawer_task_failed(request):
+    return render_template("clawer/task_failed.html", request=request)

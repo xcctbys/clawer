@@ -21,6 +21,9 @@ user_api_urls = patterns("clawer.apis.user",
 
 home_api_urls = patterns("clawer.apis.home",
     url(r"^clawer/all/$", "clawer_all"),
+    url(r"^clawer/task/failed/$", "clawer_task_failed"),
+    url(r"^clawer/task/generator/update/$", "clawer_task_generator_update"),
+    url(r"^clawer/task/generator/history/$", "clawer_task_generator_history"),
 )
 
 apis_urls = patterns("clawer.apis", 
@@ -35,9 +38,10 @@ urlpatterns = patterns('clawer.views.home',
     
     url(r'^clawer/$', "clawer"),
     url(r'^clawer/all/$', "clawer_all"),
+    url(r"^clawer/task/failed/$", "clawer_task_failed"),
+    
     
     url(r'^apis/', include(apis_urls)),
-
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 

@@ -32,7 +32,7 @@ class MenuPermission:
     MENUS = [
         {"id":1, "text": u"爬虫管理", "url":"", "children": [
             {"id":101, "text":u"查询爬虫", "url":"clawer.views.home.clawer_all", "groups":GROUPS},
-            {"id":101, "text":u"失败任务", "url":"", "groups":GROUPS},
+            {"id":101, "text":u"失败任务", "url":"clawer.views.home.clawer_task_failed", "groups":GROUPS},
         ]},
         {"id":2, "text": u"系统管理", "url":"", "children": [
             {"id":201, "text":u"参数设置", "url":"", "groups":[GROUP_MANAGER]},
@@ -98,7 +98,21 @@ class Clawer(models.Model):
             "info": self.info,
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S")
         }
+        runing =  self.runing_task_generator()
+        if runing:
+            result["runing_task_generator"] = runing.as_json()
+        else:
+            result["runing_task_generator"] = None
         return result
+    
+    def runing_task_generator(self):
+        try:
+            result = ClawerTaskGenerator.objects.filter(clawer=self, status=ClawerTaskGenerator.STATUS_ON)[0]
+        except:
+            result = None
+        
+        return result
+        
         
 
 class ClawerTaskGenerator(models.Model):
@@ -113,11 +127,22 @@ class ClawerTaskGenerator(models.Model):
     clawer = models.ForeignKey(Clawer)
     code = models.TextField()  #python code
     cron = models.CharField(max_length=128)
-    status = models.IntegerField(default=STATUS_ON, choices=STATUS_CHOICES)
+    status = models.IntegerField(default=STATUS_ALPHA, choices=STATUS_CHOICES)
     add_datetime = models.DateTimeField(auto_now_add=True)
     
     class Meta:
         app_label = "clawer"
+        ordering = ["-id"]
+        
+    def as_json(self):
+        result = {"id": self.id,
+            "clawer_id": self.clawer_id,
+            "code": self.code,
+            "cron": self.cron,
+            "status": self.status,
+            "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        return result
         
 
 class ClawerTask(models.Model):
@@ -129,7 +154,7 @@ class ClawerTask(models.Model):
         (STATUS_SUCCESS, u"成功"),
     )
     clawer = models.ForeignKey(Clawer)
-    clawer_generator = models.ForeignKey(ClawerTaskGenerator)
+    task_generator = models.ForeignKey(ClawerTaskGenerator)
     uri = models.CharField(max_length=4096)
     status = models.IntegerField(default=STATUS_LIVE, choices=STATUS_CHOICES)
     add_datetime = models.DateTimeField(auto_now_add=True)
@@ -137,4 +162,15 @@ class ClawerTask(models.Model):
     
     class Meta:
         app_label = "clawer"
+        ordering = ["-id"]
         
+    def as_json(self):
+        result = {"id":self.id,
+            "clawer": self.clawer.as_json(),
+            "task_generator": self.task_generator.as_json(),
+            "uri": self.uri,
+            "status": self.status,
+            "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+            "done_datetime": self.done_datetime.strftime("%Y-%m-%d %H:%M:%S") if self.done_datetime else None,
+        }
+        return result
