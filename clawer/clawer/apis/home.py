@@ -53,7 +53,7 @@ def clawer_task_generator_update(request):
     code = code_file.read()
     
     task_generator = ClawerTaskGenerator.objects.create(clawer=form.cleaned_data["clawer"],
-                                                        cron="",
+                                                        cron=form.cleaned_data["cron"],
                                                         code=code)
     
     return {"is_ok":True, "task_generator":task_generator.as_json()}

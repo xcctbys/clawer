@@ -18,6 +18,15 @@ html, body {
     word-wrap: break-word;
     font-family:verdana,helvetica,arial,sans-serif;
     font-size:12px;
+    color: #333;
+}
+
+small {
+	font-size: 85%;
+}
+
+.text-muted {
+	color: #777;
 }
 
 table {
@@ -51,4 +60,8 @@ table {
     background-color: #f7f7f9;
     border: 1px solid #e1e1e8;
     border-radius: 4px;
+}
+
+.window-default {
+	width:80%;height:90%;padding:5px;
 }

@@ -116,13 +116,14 @@ class Clawer(models.Model):
         
 
 class ClawerTaskGenerator(models.Model):
-    (STATUS_ALPHA, STATUS_BETA, STATUS_PRODUCT, STATUS_ON, STATUS_OFF) = range(1, 6)
+    (STATUS_ALPHA, STATUS_BETA, STATUS_PRODUCT, STATUS_ON, STATUS_OFF, STATUS_TEST_FAIL) = range(1, 7)
     STATUS_CHOICES = (
         (STATUS_ALPHA, u"alpha"),
         (STATUS_BETA, u"beta"),
         (STATUS_PRODUCT, u"production"),
         (STATUS_ON, u"启用"),
         (STATUS_OFF, u"下线"),
+        (STATUS_TEST_FAIL, u"测试失败"),
     )
     clawer = models.ForeignKey(Clawer)
     code = models.TextField()  #python code
@@ -140,9 +141,16 @@ class ClawerTaskGenerator(models.Model):
             "code": self.code,
             "cron": self.cron,
             "status": self.status,
+            "status_name": self.status_name(),
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }
         return result
+    
+    def status_name(self):
+        for item in self.STATUS_CHOICES:
+            if item[0] == self.status:
+                return item[1]
+        return ""
         
 
 class ClawerTask(models.Model):
