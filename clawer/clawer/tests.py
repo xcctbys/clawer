@@ -6,8 +6,10 @@ from django.test import TestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User as DjangoUser, Group
+
 from clawer.models import MenuPermission, Clawer, ClawerTask,\
     ClawerTaskGenerator
+from clawer.management.commands import task_generator_test
 
 
 class TestHomeViews(TestCase):
@@ -137,7 +139,7 @@ class TestHomeApi(TestCase):
         code_file = open(code_path)
         url = reverse("clawer.apis.home.clawer_task_generator_update")
         
-        resp = self.logined_client.post(url, data={"code_file":code_file, "clawer":clawer.id})
+        resp = self.logined_client.post(url, data={"code_file":code_file, "clawer":clawer.id, "cron":"*"})
         result = json.loads(resp.content)
         self.assertTrue(result["is_ok"])
         
@@ -159,3 +161,27 @@ class TestHomeApi(TestCase):
         
         clawer.delete()
         clawer_generator.delete()
+        
+        
+class TestCmd(TestCase):
+    def setUp(self):
+        TestCase.setUp(self)
+        self.user = DjangoUser.objects.create_user(username="xxx", password="xxx")
+        self.group = Group.objects.create(name=MenuPermission.GROUPS[0])
+        self.user.groups.add(self.group)
+
+        
+    def tearDown(self):
+        TestCase.tearDown(self)
+        self.user.delete()
+        self.group.delete()
+        
+    def test_task_generator_test(self):
+        clawer = Clawer.objects.create(name="hi", info="good")
+        generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print 'TASK http://www.baidu.com'\nos.exit(2)\n", cron="*")
+        
+        ret = task_generator_test.test_alpha(generator)
+        self.assertTrue(ret)
+        
+        clawer.delete()
+        generator.delete()

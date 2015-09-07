@@ -1,8 +1,10 @@
 #encoding=utf-8
 import copy
+import os
 
 from django.contrib.auth.models import User as DjangoUser
 from django.db import models
+from django.conf import settings
 
 
 class UserProfile(models.Model):
@@ -129,6 +131,7 @@ class ClawerTaskGenerator(models.Model):
     code = models.TextField()  #python code
     cron = models.CharField(max_length=128)
     status = models.IntegerField(default=STATUS_ALPHA, choices=STATUS_CHOICES)
+    failed_reason = models.CharField(max_length=4096, blank=True, null=True)
     add_datetime = models.DateTimeField(auto_now_add=True)
     
     class Meta:
@@ -151,6 +154,29 @@ class ClawerTaskGenerator(models.Model):
             if item[0] == self.status:
                 return item[1]
         return ""
+    
+    def code_dir(self):
+        path = os.path.join(settings.MEDIA_ROOT, "codes")
+        if os.path.exists(path) is False:
+            os.makedirs(path, 0775)
+        return path
+    
+    def alpha_path(self):
+        return os.path.join(self.code_dir(), "%d_alpha.py" % self.clawer_id)
+    
+    @classmethod
+    def parse_line(cls, line):
+        """ line format is: TASK[\t]uri
+        Returns:
+            uri
+        """
+        line = line.strip()
+        if not line:
+            return None
+        if line.find("TASK\t") < 0:
+            return None
+        [_, uri] = line.split("\t")
+        return uri
         
 
 class ClawerTask(models.Model):

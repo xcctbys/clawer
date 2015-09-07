@@ -24,3 +24,5 @@ CACHES = {
         ],
     }
 }
+
+PYTHON = "/Users/pengxt/Documents/pyenv/dj14/bin/python"
