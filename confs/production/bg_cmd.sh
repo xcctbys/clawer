@@ -1,7 +1,7 @@
 #!/bin/bash
 
-WORKDIR=/home/webapps/nice-clawer/clawer
-PY=/home/virtualenvs/py27/bin/python
+WORKDIR="/home/webapps/nice-clawer/clawer"
+PYTHON="/home/virtualenvs/py27/bin/python"
 
 
 function safe_run()
@@ -12,9 +12,7 @@ function safe_run()
         flock -xn -w 10 200 || exit 1
         cd ${WORKDIR};${PYTHON} manage_pro.py $*
     ) 200>${file}
-
 }
 
 time safe_run $*
-
 
