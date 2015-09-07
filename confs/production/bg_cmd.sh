@@ -4,4 +4,17 @@ WORKDIR=/home/webapps/nice-clawer/clawer
 PY=/home/virtualenvs/py27/bin/python
 
 
-cd ${WORKDIR};${PY} manage_pro.py $*
+function safe_run()
+{
+    file="/tmp/$1.lock"
+
+    (
+        flock -xn -w 10 200 || exit 1
+        cd ${WORKDIR};${PYTHON} manage_pro.py $*
+    ) 200>${file}
+
+}
+
+time safe_run $*
+
+
