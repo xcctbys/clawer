@@ -19,7 +19,7 @@ function app()
 
 function celery()
 {
-    cd ${WORKDIR};${PY} manage.py celery worker --broker="redis://localhost:6379//" -l info
+    cd ${WORKDIR};${PY} manage.py celery worker --broker="redis://localhost:6379/0" -l info
 }
 
 case $1 in

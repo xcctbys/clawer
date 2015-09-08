@@ -58,11 +58,11 @@ function formatBytes(val) {
 	var K = 1024;
 	
 	if(val > G) {
-		return val/G;
+		return val/G + "G";
 	} else if(val > M) {
-		return val/M;
+		return val/M + "M";
 	} else if(val > K) {
-		return val/K;
+		return val/K + "K";
 	}
 	
 	return val;

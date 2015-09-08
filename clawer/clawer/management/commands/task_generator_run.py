@@ -9,6 +9,7 @@ from django.conf import settings
 
 from html5helper.utils import wrapper_raven
 from clawer.models import ClawerTaskGenerator, Clawer, ClawerTask
+from clawer import tasks as celeryTasks
 
 
 def run(task_generator_id):
@@ -28,7 +29,8 @@ def run(task_generator_id):
             logging.warning("unknown line: %s" % line)
             continue
         #insert to db
-        ClawerTask.objects.create(clawer=task_generator.clawer, task_generator=task_generator, uri=uri)
+        task = ClawerTask.objects.create(clawer=task_generator.clawer, task_generator=task_generator, uri=uri)
+        celeryTasks.run_clawer_task.delay(task)
         
     err = p.stderr.read()
     

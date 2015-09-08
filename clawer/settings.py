@@ -131,6 +131,9 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
     'raven.contrib.django.raven_compat',
     "south",
+    "djcelery",
     "html5helper",
     "clawer",
 )
+
+CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
