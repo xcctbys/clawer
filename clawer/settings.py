@@ -11,6 +11,10 @@ ADMINS = (
 )
 
 
+CELERY_IMPORTS = (
+    "clawer.tasks",
+)
+
 MANAGERS = ADMINS
 
 
