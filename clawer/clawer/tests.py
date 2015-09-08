@@ -181,7 +181,10 @@ class TestCmd(TestCase):
         generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print 'TASK http://www.baidu.com'\nos.exit(2)\n", cron="*")
         
         ret = task_generator_test.test_alpha(generator)
-        self.assertTrue(ret)
+        self.assertFalse(ret)
+        
+        new_generator = ClawerTaskGenerator.objects.get(id=generator.id)
+        self.assertGreater(len(new_generator.failed_reason), 0)
         
         clawer.delete()
         generator.delete()

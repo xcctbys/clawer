@@ -1,7 +1,9 @@
 # coding=utf-8
 
-import datetime
 import os
+import subprocess
+import sys
+from crontab import CronTab
 
 from django.core.management.base import BaseCommand
 from django.conf import settings
@@ -34,20 +36,18 @@ def test():
 def test_alpha(task_generator):
     path = task_generator.alpha_path()
     write_code(task_generator, path)
-    pipe = os.popen("%s %s" % (settings.PYTHON, path), "r")
-    failed_lines = []
-    
-    for line in pipe:
+    p = subprocess.Popen([settings.PYTHON, path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  #("%s %s" % (settings.PYTHON, path), "r")
+    for line in p.stdout:
         uri = ClawerTaskGenerator.parse_line(line)
         if not uri:
-            failed_lines.append(line)
             continue
-        print "pipe line: %s " % line
-    
-    status = pipe.close()    
-    if status != None:
+        print "stdout: %s " % line
+        
+    err = p.stderr.read()
+    status = p.wait()
+    if status != 0:
         print "abnormal exit, status %s" % (status)
-        task_generator.failed_reason = "\n".join(failed_lines)
+        task_generator.failed_reason = err
         task_generator.status = ClawerTaskGenerator.STATUS_TEST_FAIL
         task_generator.save()
         return False 
@@ -56,10 +56,22 @@ def test_alpha(task_generator):
 
 
 def test_beta(task_generator):
+    user_cron = CronTab(user=settings.CRONTAB_USER)
+    job = user_cron.new(command="/usr/bin/echo")
+    job.setall(task_generator.cron)
+    if job.is_valid() == False:
+        task_generator.failed_reason = u"crontab 格式出错"
+        task_generator.status = ClawerTaskGenerator.STATUS_TEST_FAIL
+        task_generator.save()
+        return
+    task_generator.status = ClawerTaskGenerator.STATUS_BETA
+    task_generator.save()
     return True
 
 
 def test_product(task_generator):
+    task_generator.status = ClawerTaskGenerator.STATUS_ON
+    task_generator.save()
     return True
 
 

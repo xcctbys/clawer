@@ -46,24 +46,27 @@
 <!-- update task generator form -->
 <div id="task_generator_update_win" class="easyui-window" title="更新任务生成器" closed="true" style="width:80%;height:60%;padding:5px;">
     <form method="post" id="task_generator_update_form" enctype="multipart/form-data" action="{% url clawer.apis.home.clawer_task_generator_update %}">
-        <div class="easyui-panel" style="width:100%;padding:30px 70px 50px 70px">
-			
+
 			<div style="margin-bottom:20px">
 				<div>Python 文件:</div>
-				<input id="code_file" name="code_file" class="easyui-filebox" style="width: 100%" data-options="prompt:'选择Python文件'">
+				<input id="code_file" name="code_file" class="easyui-filebox" style="width: 50%;" data-options="prompt:'选择Python文件'">
 				<input id="clawer" name="clawer" type="hidden" />
+				<ol class="text-muted">
+				    <li>支持<code>requests, Beautiful Soup, python标准库</code></li>
+				    <li>执行后输出行格式：TASK[\t]{URI}。 <small>例子：TASK    http://www.github.com/</small></li>
+				</ol>
 			</div>
 			
 			<div style="margin-bottom:20px">
 				<div>Crontab: <small class="text-muted">5     10      *     *       *</small></div>
-				<input id="cron" name="cron" class="easyui-textbox" style="width: 100%" data-options="">
+				<input id="cron" name="cron" class="easyui-textbox" style="width: 50%" data-options="">
 				
 			</div>
 			
 			<div>
-				<button class="easyui-linkbutton" style="width:100%" type="submit">保存</button>
+				<button class="easyui-linkbutton" style="width: 50px" type="submit">保存</button>
 			</div>
-		</div>
+		
     </form>
     
 </div>
@@ -186,6 +189,9 @@ $(document).ready(function(){
 				    item.status_name,
 				    "</small>",
 				    "</h4>",
+				    "<small class='danger'>",
+				    item.failed_reason,
+				    "</small>",
 				    "<pre class='highlight'>",
 				    "<code>",
 				    item.code,

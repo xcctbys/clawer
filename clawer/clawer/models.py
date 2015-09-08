@@ -145,6 +145,7 @@ class ClawerTaskGenerator(models.Model):
             "cron": self.cron,
             "status": self.status,
             "status_name": self.status_name(),
+            "failed_reason": self.failed_reason,
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }
         return result
