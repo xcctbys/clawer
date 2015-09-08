@@ -1,6 +1,7 @@
 #encoding=utf-8
 import copy
 import os
+import logging
 
 from django.contrib.auth.models import User as DjangoUser
 from django.db import models
@@ -33,8 +34,9 @@ class MenuPermission:
     
     MENUS = [
         {"id":1, "text": u"爬虫管理", "url":"", "children": [
-            {"id":101, "text":u"查询爬虫", "url":"clawer.views.home.clawer_all", "groups":GROUPS},
-            {"id":101, "text":u"失败任务", "url":"clawer.views.home.clawer_task_failed", "groups":GROUPS},
+            {"id":101, "text":u"爬虫配置", "url":"clawer.views.home.clawer_all", "groups":GROUPS},
+            {"id":102, "text":u"爬虫失败任务", "url":"clawer.views.home.clawer_task_failed", "groups":GROUPS},
+            {"id":103, "text":u"爬虫任务", "url":"clawer.views.home.clawer_task", "groups":GROUPS},
         ]},
         {"id":2, "text": u"系统管理", "url":"", "children": [
             {"id":201, "text":u"参数设置", "url":"", "groups":[GROUP_MANAGER]},
@@ -165,19 +167,33 @@ class ClawerTaskGenerator(models.Model):
     def alpha_path(self):
         return os.path.join(self.code_dir(), "%d_alpha.py" % self.clawer_id)
     
+    def product_path(self):
+        return os.path.join(self.code_dir(), "%d_product.py" % self.clawer_id)
+    
     @classmethod
     def parse_line(cls, line):
         """ line format is: TASK[\t]uri
         Returns:
             uri
         """
+        logging.info("line is: %s", line)
         line = line.strip()
         if not line:
             return None
-        if line.find("TASK\t") < 0:
+        tmp = line.split(" ")
+        logging.debug("split result is %s", tmp)
+        if len(tmp) < 2:
             return None
-        [_, uri] = line.split("\t")
-        return uri
+        if tmp[0] != "TASK":
+            return None
+        return tmp[1]
+    
+    def write_code(self, path):
+        if os.path.exists(path):
+            return
+        f = open(path, "w")
+        f.write(self.code)
+        f.close()
         
 
 class ClawerTask(models.Model):
@@ -205,7 +221,15 @@ class ClawerTask(models.Model):
             "task_generator": self.task_generator.as_json(),
             "uri": self.uri,
             "status": self.status,
+            "status_name": self.status_name(),
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
             "done_datetime": self.done_datetime.strftime("%Y-%m-%d %H:%M:%S") if self.done_datetime else None,
         }
         return result
+    
+    def status_name(self):
+        for item in self.STATUS_CHOICES:
+            if item[0] == self.status:
+                return item[1]
+        
+        return ""

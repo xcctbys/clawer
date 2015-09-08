@@ -26,4 +26,80 @@ CACHES = {
 }
 
 PYTHON = "/Users/pengxt/Documents/pyenv/dj14/bin/python"
-CRONTAB_USER = "nginx"
+CRONTAB_USER = "pengxt"
+
+RAVEN_CONFIG = {
+    'dsn': 'http://c63b0d71513f4569b661e81bcfe8f903:c16131fe0f8d4195b0ea8be642aaa419@coredump.51zhi.com//4',
+}
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        }
+    },
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(pathname)s:%(lineno)d:: %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'null': {
+            'level':'DEBUG',
+            'class':'django.utils.log.NullHandler',
+        },
+        'console':{
+            'level':'DEBUG',
+            'class':'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler',
+            'include_html': True,
+        },
+        'file': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(os.path.dirname(__file__), "clawer.debug.log"),
+            'backupCount': 1,
+            'formatter': 'verbose',
+            'level': 'DEBUG',
+        },
+        'dbfile': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(os.path.dirname(__file__), "db.debug.log"),
+            'backupCount': 1,
+            'formatter': 'verbose',
+            'level': 'DEBUG',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers':['file'],
+            'propagate': True,
+            'level':'DEBUG',
+        },
+        'django': {
+            'handlers':['null'],
+            'propagate': True,
+            'level':'DEBUG',
+        },
+        'django.request': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django.db.backends': {
+            'handlers': ['dbfile'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    }
+}

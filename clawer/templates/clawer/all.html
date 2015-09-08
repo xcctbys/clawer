@@ -76,8 +76,6 @@
 
 <!-- task generator info -->
 <div id="task_generator_info_win" class="easyui-window" title="任务生成器详情" closed="true" style="width:80%;height:90%;padding:5px;">
-    <div id="title"></div>
-    <div id="code" class="highlight"></div>
 </div>
 <!-- task generator info end -->
 
@@ -147,19 +145,22 @@ $(document).ready(function(){
 			return $.messager.alert('Warning', '请先选择一条数据');
 		}
 		
-		var title = ["<h4>",
-		    row.runing_task_generator.add_datetime,
+		var item = row.runing_task_generator;
+		var html = [
+		    "<h4>",
+		    item.add_datetime,
+		    "<small class='text-muted'>",
+		    "    Crontab: ",
+		    item.cron,
+		    "</small>",
 		    "</h4>",
-		].join("");
-		$("#task_generator_info_win").find("#title").html(title);
-		
-		var code = ["<pre>",
-		    "<code>",
-		    row.runing_task_generator.code,
+		    "<pre>",
+		    "<code class='highlight'>",
+		    item.code,
 		    "</code>",
 		    "</pre>",
 		].join("");
-		$("#task_generator_info_win").find("#code").html(code);
+		$("#task_generator_info_win").html(html);
 		
 		$("#task_generator_info_win").window("open");
 		
@@ -189,9 +190,17 @@ $(document).ready(function(){
 				    item.status_name,
 				    "</small>",
 				    "</h4>",
+				    "<small>",
+				    "Crontab：",
+				    item.cron,
+				    "</small>",
+				    "<pre>",
+				    "<code>",
 				    "<small class='danger'>",
 				    item.failed_reason,
 				    "</small>",
+				    "<code>",
+				    "</pre>",
 				    "<pre class='highlight'>",
 				    "<code>",
 				    item.code,

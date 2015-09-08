@@ -15,27 +15,28 @@ from clawer.models import ClawerTaskGenerator, Clawer
 def test():
     task_generators = ClawerTaskGenerator.objects.filter(status__in=[ClawerTaskGenerator.STATUS_ALPHA, 
                                                                      ClawerTaskGenerator.STATUS_BETA, 
-                                                                     ClawerTaskGenerator.STATUS_PRODUCT])
+                                                                     ClawerTaskGenerator.STATUS_PRODUCT]).order_by("id")
     
     for task_generator in task_generators:
+        print "test %d" % task_generator.id
+        
         if test_alpha(task_generator) is False:
             continue
         if test_beta(task_generator) is False:
             continue
         if test_product(task_generator) is False:
             continue
-        #make old offline
-        runing = task_generator.clawer.runing_task_generator()
-        runing.status = ClawerTaskGenerator.STATUS_OFF
-        runing.save()
         
-        task_generator.status = ClawerTaskGenerator.STATUS_ON
-        task_generator.save()
+        print "success %d" % task_generator.id
+        #make old offline
+        ClawerTaskGenerator.objects.filter(clawer_id=task_generator, \
+            status=ClawerTaskGenerator.STATUS_ON).exclude(id=task_generator.id).update(status=ClawerTaskGenerator.STATUS_OFF)
     
     
 def test_alpha(task_generator):
     path = task_generator.alpha_path()
-    write_code(task_generator, path)
+    task_generator.write_code(path)
+    
     p = subprocess.Popen([settings.PYTHON, path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  #("%s %s" % (settings.PYTHON, path), "r")
     for line in p.stdout:
         uri = ClawerTaskGenerator.parse_line(line)
@@ -51,7 +52,7 @@ def test_alpha(task_generator):
         task_generator.status = ClawerTaskGenerator.STATUS_TEST_FAIL
         task_generator.save()
         return False 
-    
+    print "alpha test success"
     return True
 
 
@@ -63,28 +64,42 @@ def test_beta(task_generator):
         task_generator.failed_reason = u"crontab 格式出错"
         task_generator.status = ClawerTaskGenerator.STATUS_TEST_FAIL
         task_generator.save()
-        return
+        print task_generator.failed_reason
+        return False
+    
     task_generator.status = ClawerTaskGenerator.STATUS_BETA
     task_generator.save()
+    print "beta test success"
     return True
 
 
 def test_product(task_generator):
+    path = task_generator.product_path()
+    task_generator.write_code(path)
+    
+    comment = "clawer %d task generator " % task_generator.clawer_id
+    user_cron = CronTab(user=settings.CRONTAB_USER)
+    user_cron.remove_all(comment=comment)
+    job = user_cron.new(command="cd /home/webapps/nice-clawer/confs/production; ./bg_cmd.sh task_generator_run %d" % (task_generator.id), comment=comment)
+    job.setall(task_generator.cron)
+    if job.is_valid() == False:
+        task_generator.failed_reason = u"crontab 安装出错"
+        task_generator.status = ClawerTaskGenerator.STATUS_TEST_FAIL
+        task_generator.save()
+        print task_generator.failed_reason
+        return False
+    user_cron.write_to_user(user=True)
+    
     task_generator.status = ClawerTaskGenerator.STATUS_ON
     task_generator.save()
     return True
 
-
-def write_code(task_generator, path):
-    f = open(path, "w")
-    f.write(task_generator.code)
-    f.close()
                 
 
 class Command(BaseCommand):
     args = ""
     help = ""
     
-    @wrapper_raven
+    #@wrapper_raven
     def handle(self, *args, **options):
         test()

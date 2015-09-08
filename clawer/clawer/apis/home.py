@@ -41,6 +41,15 @@ def clawer_task_failed(request):
 
 @render_json
 @check_auth_for_api
+def clawer_task(request):
+    queryset = ClawerTask.objects.all()
+        
+    pager = EasyUIPager(queryset, request)
+    return pager.query()
+
+
+@render_json
+@check_auth_for_api
 def clawer_task_generator_update(request):
     form = UpdateClawerTaskGenerator(request.POST, request.FILES)
     if form.is_valid() is False:
