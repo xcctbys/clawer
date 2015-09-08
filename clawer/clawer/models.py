@@ -2,6 +2,7 @@
 import copy
 import os
 import logging
+import datetime
 
 from django.contrib.auth.models import User as DjangoUser
 from django.db import models
@@ -208,6 +209,8 @@ class ClawerTask(models.Model):
     task_generator = models.ForeignKey(ClawerTaskGenerator)
     uri = models.CharField(max_length=4096)
     status = models.IntegerField(default=STATUS_LIVE, choices=STATUS_CHOICES)
+    store = models.CharField(max_length=4096, blank=True, null=True)
+    content_bytes = models.IntegerField(default=0)
     add_datetime = models.DateTimeField(auto_now_add=True)
     done_datetime = models.DateTimeField(null=True, blank=True) #when fail or success
     
@@ -222,6 +225,8 @@ class ClawerTask(models.Model):
             "uri": self.uri,
             "status": self.status,
             "status_name": self.status_name(),
+            "content_bytes": self.content_bytes,
+            "store": self.store,
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
             "done_datetime": self.done_datetime.strftime("%Y-%m-%d %H:%M:%S") if self.done_datetime else None,
         }
@@ -233,3 +238,7 @@ class ClawerTask(models.Model):
                 return item[1]
         
         return ""
+    
+    def store_path(self):
+        now = datetime.datetime.now()
+        return os.path.join(settings.CLAWER_SOURCE, now.strftime("%Y%m%d"), "%d.txt" % self.id)

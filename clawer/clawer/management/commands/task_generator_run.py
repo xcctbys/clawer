@@ -16,7 +16,7 @@ def run(task_generator_id):
     
     task_generator = ClawerTaskGenerator.objects.get(id=task_generator_id)
     if task_generator.status != ClawerTaskGenerator.STATUS_ON:
-        return
+        return False
     
     path = task_generator.product_path()
     task_generator.write_code(path)

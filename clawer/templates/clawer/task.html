@@ -20,8 +20,10 @@
     <thead>
         <tr>
             <th data-options="field:'status_name',">状态</th>
+            <th data-options="field:'content_bytes'," formatter="formatBytes">下载内容大小</th>
             <th data-options="field:'clawer',"  formatter="formatClawer">爬虫</th>
             <th data-options="field:'task_generator'," formatter="formatTaskGenerator">任务生成器</th>
+            <th data-options="field:'store',">存放路径</th>
             <th data-options="field:'add_datetime',">添加时间</th>
             <th data-options="field:'done_datetime',">结束时间</th>
         </tr>
@@ -44,6 +46,26 @@ function formatClawer(val) {
 		return "";
 	}
 	return "ID: "+val.id+"("+val.name+")";
+}
+
+function formatBytes(val) {
+	if(!val) {
+		return 0;
+	}
+	
+	var G = 1024*1024*1024;
+	var M = 1024*1024;
+	var K = 1024;
+	
+	if(val > G) {
+		return val/G;
+	} else if(val > M) {
+		return val/M;
+	} else if(val > K) {
+		return val/K;
+	}
+	
+	return val;
 }
 
 </script>

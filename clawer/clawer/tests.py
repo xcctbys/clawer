@@ -10,6 +10,7 @@ from django.contrib.auth.models import User as DjangoUser, Group
 from clawer.models import MenuPermission, Clawer, ClawerTask,\
     ClawerTaskGenerator
 from clawer.management.commands import task_generator_test, task_generator_run
+from clawer import tasks as celeryTasks
 
 
 class TestHomeViews(TestCase):
@@ -205,10 +206,22 @@ class TestCmd(TestCase):
         
     def test_task_generator_run(self):
         clawer = Clawer.objects.create(name="hi", info="good")
-        generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print 'TASK http://www.baidu.com'\n", cron="*")
+        generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print 'TASK http://www.baidu.com'\n", cron="*", status=ClawerTaskGenerator.STATUS_ON)
         
         ret = task_generator_run.run(generator.id)
         self.assertTrue(ret)
         
         clawer.delete()
         generator.delete()
+        
+    def test_clawer_task_run(self):
+        clawer = Clawer.objects.create(name="hi", info="good")
+        generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print 'TASK http://www.baidu.com'\n", cron="*")
+        task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baidu.com")
+        
+        ret = celeryTasks.run_clawer_task(task)
+        self.assertEqual(ret, task.id)
+        
+        clawer.delete()
+        generator.delete()
+        task.delete()

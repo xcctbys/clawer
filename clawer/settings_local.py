@@ -27,6 +27,7 @@ CACHES = {
 
 PYTHON = "/Users/pengxt/Documents/pyenv/dj14/bin/python"
 CRONTAB_USER = "pengxt"
+CLAWER_SOURCE = "/Users/pengxt/Documents/clawer_source/"
 
 RAVEN_CONFIG = {
     'dsn': 'http://c63b0d71513f4569b661e81bcfe8f903:c16131fe0f8d4195b0ea8be642aaa419@coredump.51zhi.com//4',
