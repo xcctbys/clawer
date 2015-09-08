@@ -74,7 +74,7 @@ case "$1" in
         wait_for_pid removed $PID
         if [ -n "$try" ] ; then
             echo " failed. Use force-exit" 
-            killall -9 uwsgi-todo
+            killall -9 ${NAME}
             exit 1
         else
             echo " done" 
