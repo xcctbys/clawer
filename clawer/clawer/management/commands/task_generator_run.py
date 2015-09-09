@@ -30,7 +30,6 @@ def run(task_generator_id):
             continue
         #insert to db
         task = ClawerTask.objects.create(clawer=task_generator.clawer, task_generator=task_generator, uri=uri)
-        celeryTasks.run_clawer_task.delay(task)
         
     err = p.stderr.read()
     
