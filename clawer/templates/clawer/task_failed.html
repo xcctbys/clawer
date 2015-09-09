@@ -31,8 +31,23 @@
 
 
 <script type="text/javascript">
+function formatTaskGenerator(val) {
+	if(!val) {
+		return "";
+	}
+	return "ID: "+val.id+"("+val.add_datetime+")";
+}
+
+
+function formatClawer(val) {
+	if(!val) {
+		return "";
+	}
+	return "ID: "+val.id+"("+val.name+")";
+}
 
 </script>
+
 
 
 
