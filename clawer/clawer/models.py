@@ -213,6 +213,7 @@ class ClawerTask(models.Model):
     store = models.CharField(max_length=4096, blank=True, null=True)
     content_bytes = models.IntegerField(default=0)
     add_datetime = models.DateTimeField(auto_now_add=True)
+    start_datetime = models.DateTimeField(null=True, blank=True)
     done_datetime = models.DateTimeField(null=True, blank=True) #when fail or success
     
     class Meta:
@@ -229,8 +230,11 @@ class ClawerTask(models.Model):
             "content_bytes": self.content_bytes,
             "store": self.store,
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+            "start_datetime": self.start_datetime.strftime("%Y-%m-%d %H:%M:%S") if self.done_datetime else None,
             "done_datetime": self.done_datetime.strftime("%Y-%m-%d %H:%M:%S") if self.done_datetime else None,
         }
+        if self.start_datetime and self.done_datetime:
+            result["spend_time"] = (self.done_datetime - self.start_datetime).total_seconds()
         return result
     
     def status_name(self):
@@ -242,4 +246,4 @@ class ClawerTask(models.Model):
     
     def store_path(self):
         now = datetime.datetime.now()
-        return os.path.join(settings.CLAWER_SOURCE, now.strftime("%Y%m%d"), "%d.txt" % self.id)
+        return os.path.join(settings.CLAWER_SOURCE, now.strftime("%Y/%m/%d"), "%d.txt" % self.id)

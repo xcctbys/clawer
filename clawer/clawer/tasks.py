@@ -8,6 +8,7 @@ import traceback
 import requests
 import logging
 import os
+import datetime
 
 from clawer.models import ClawerTask
 
@@ -18,7 +19,9 @@ def run_clawer_task(clawer_task):
         return 0
     
     clawer_task.status = ClawerTask.STATUS_PROCESS
+    clawer_task.start_datetime = datetime.datetime.now()
     clawer_task.save()
+    
     failed = False
     
     try:
@@ -33,6 +36,7 @@ def run_clawer_task(clawer_task):
         
     if failed:
         clawer_task.status = ClawerTask.STATUS_FAIL
+        clawer_task.done_datetime = datetime.datetime.now()
         clawer_task.save()
         return
         
@@ -50,6 +54,7 @@ def run_clawer_task(clawer_task):
         
     if failed:
         clawer_task.status = ClawerTask.STATUS_FAIL
+        clawer_task.done_datetime = datetime.datetime.now()
         clawer_task.save()
         return
     
@@ -60,6 +65,7 @@ def run_clawer_task(clawer_task):
     else:
         clawer_task.content_bytes = len(r.content)
     clawer_task.store = path
+    clawer_task.done_datetime = datetime.datetime.now()
     clawer_task.save()
     
     return clawer_task.id
