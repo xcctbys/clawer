@@ -33,6 +33,7 @@ CACHES = {
 MEDIA_ROOT = "/data/media/"
 PYTHON = "/home/virtualenvs/py27/bin/python"
 CRONTAB_USER = "nginx"
+CLAWER_SOURCE = "/data/clawer/"
 
 #for celeryd
 BROKER_URL = 'redis://10.171.34.147:6379/1'
