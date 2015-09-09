@@ -36,7 +36,7 @@ CRONTAB_USER = "nginx"
 CLAWER_SOURCE = "/data/clawer/"
 
 #for celeryd
-BROKER_URL = 'redis://10.171.34.147:6379/1'
+BROKER_URL = 'redis://10.171.34.147:6379/0'
 CELERY_RESULT_BACKEND='djcelery.backends.cache:CacheBackend'
 CELERYD_TIMER_PRECISION = 1
 TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
