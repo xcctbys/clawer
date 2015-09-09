@@ -2,6 +2,9 @@
 
 from settings import *
 
+import djcelery
+djcelery.setup_loader()
+
 
 DATABASES = {
     'default': {
@@ -34,6 +37,7 @@ CELERYD_TIMER_PRECISION = 1
 TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
 CELERY_RESULT_BACKEND='djcelery.backends.cache:CacheBackend'
 CELERYD_MAX_TASKS_PER_CHILD = 1024
+CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
 
 
 RAVEN_CONFIG = {

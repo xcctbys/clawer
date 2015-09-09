@@ -100,6 +100,6 @@ class Command(BaseCommand):
     args = ""
     help = ""
     
-    #@wrapper_raven
+    @wrapper_raven
     def handle(self, *args, **options):
         test()
