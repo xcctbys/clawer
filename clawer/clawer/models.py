@@ -212,6 +212,7 @@ class ClawerTask(models.Model):
     status = models.IntegerField(default=STATUS_LIVE, choices=STATUS_CHOICES)
     store = models.CharField(max_length=4096, blank=True, null=True)
     content_bytes = models.IntegerField(default=0)
+    spend_time = models.IntegerField(default=0) #unit is microsecond
     add_datetime = models.DateTimeField(auto_now_add=True)
     start_datetime = models.DateTimeField(null=True, blank=True)
     done_datetime = models.DateTimeField(null=True, blank=True) #when fail or success
@@ -229,12 +230,11 @@ class ClawerTask(models.Model):
             "status_name": self.status_name(),
             "content_bytes": self.content_bytes,
             "store": self.store,
+            "spend_time": self.spend_time,
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
             "start_datetime": self.start_datetime.strftime("%Y-%m-%d %H:%M:%S") if self.done_datetime else None,
             "done_datetime": self.done_datetime.strftime("%Y-%m-%d %H:%M:%S") if self.done_datetime else None,
         }
-        if self.start_datetime and self.done_datetime:
-            result["spend_time"] = (self.done_datetime - self.start_datetime).total_seconds()
         return result
     
     def status_name(self):
