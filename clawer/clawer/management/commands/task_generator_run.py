@@ -47,7 +47,7 @@ class Command(BaseCommand):
     args = "task_generator_id"
     help = "Run task generator"
     
-    @wrapper_raven
+    #@wrapper_raven
     def handle(self, *args, **options):
         task_generator_id = int(args[0])
         run(task_generator_id)
