@@ -9,12 +9,12 @@
 <table id="grid" class="easyui-datagrid" style="width:100%;height:95%"
         url="{% url clawer.apis.home.clawer_task %}" showFooter="true"
         data-options="singleSelect:true,collapsible:true,method:'get'" rownumbers="true" pagination="true"
-        toolbar="#toolbar">
+        toolbar="#toolbar" fitColumns="true">
         
     <thead data-options="frozen:true">
         <tr>
             <th data-options="field:'id',width:80" sortable="true">ID</th>
-            <th data-options="field:'content_bytes',width:50" formatter="formatBytes">下载内容大小</th>
+            <th data-options="field:'content_bytes'," formatter="formatBytes">下载内容大小</th>
         </tr>
     </thead>
     <thead>
@@ -25,9 +25,9 @@
             <th data-options="field:'clawer',"  formatter="formatClawer">爬虫</th>
             <th data-options="field:'task_generator'," formatter="formatTaskGenerator">任务生成器</th>
             <th data-options="field:'store',">存放路径</th>
-            <th data-options="field:'add_datetime',">添加时间</th>
             <th data-options="field:'start_datetime',">开始时间</th>
             <th data-options="field:'done_datetime',">结束时间</th>
+            <th data-options="field:'add_datetime',">添加时间</th>
         </tr>
     </thead>    
 </table>
