@@ -37,12 +37,21 @@ def run_clawer_task(clawer_task):
         return
         
     #save
-    path = clawer_task.store_path()
-    if os.path.exists(os.path.dirname(path)) is False:
-        os.makedirs(os.path.dirname(path), 0775)
+    try:
+        path = clawer_task.store_path()
+        if os.path.exists(os.path.dirname(path)) is False:
+            os.makedirs(os.path.dirname(path), 0775)
+            
+        with open(path, "w") as f:
+            f.write(r.content)
+    except:
+        logging.warning(traceback.format_exc(10))
+        failed = True
         
-    with open(path, "w") as f:
-        f.write(r.content)
+    if failed:
+        clawer_task.status = ClawerTask.STATUS_FAIL
+        clawer_task.save()
+        return
     
     #update db
     clawer_task.status = ClawerTask.STATUS_SUCCESS
