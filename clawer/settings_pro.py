@@ -44,6 +44,10 @@ CELERYD_MAX_TASKS_PER_CHILD = 1024
 CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
 
 
+RAVEN_CONFIG = {
+    'dsn': 'http://c63b0d71513f4569b661e81bcfe8f903:c16131fe0f8d4195b0ea8be642aaa419@coredump.51zhi.com//4',
+}
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
