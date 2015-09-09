@@ -88,7 +88,7 @@ def test_product(task_generator):
         task_generator.save()
         print task_generator.failed_reason
         return False
-    user_cron.write_to_user(user=True)
+    user_cron.write_to_user(user=settings.CRONTAB_USER)
     
     task_generator.status = ClawerTaskGenerator.STATUS_ON
     task_generator.save()
