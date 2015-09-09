@@ -148,6 +148,9 @@ $(document).ready(function(){
 		var item = row.runing_task_generator;
 		var html = [
 		    "<h4>",
+		    "ID: ",
+		    item.id,
+		    ", "
 		    item.add_datetime,
 		    "<small class='text-muted'>",
 		    "    Crontab: ",
@@ -185,6 +188,9 @@ $(document).ready(function(){
 				var item = resp.rows[i];
 				var code = ["<div>",
 				    "<h4>",
+				    "ID: ",
+				    item.id,
+				    ", "
 				    item.add_datetime,
 				    " <small>",
 				    item.status_name,
