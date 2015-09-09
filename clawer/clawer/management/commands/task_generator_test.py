@@ -9,7 +9,7 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 
 from html5helper.utils import wrapper_raven
-from clawer.models import ClawerTaskGenerator, Clawer
+from clawer.models import ClawerTaskGenerator
 
 
 def test():
@@ -81,7 +81,7 @@ def test_product(task_generator):
     user_cron = CronTab(user=settings.CRONTAB_USER)
     user_cron.remove_all(comment=comment)
     job = user_cron.new(command="cd /home/webapps/nice-clawer/confs/production; ./bg_cmd.sh task_generator_run %d" % (task_generator.id), comment=comment)
-    job.setall(task_generator.cron)
+    job.setall(task_generator.cron.strip())
     if job.is_valid() == False:
         task_generator.failed_reason = u"crontab 安装出错"
         task_generator.status = ClawerTaskGenerator.STATUS_TEST_FAIL
