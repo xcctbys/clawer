@@ -86,6 +86,7 @@ LOGGING = {
             'backupCount': 24,
             'formatter': 'verbose',
             'level': 'ERROR',
+            'args': {"mode":0775},
         },
     },
     'loggers': {
