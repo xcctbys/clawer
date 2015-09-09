@@ -3,4 +3,22 @@
 http://airport.supfree.net/index.asp?page=284
 """
 
+import urllib
 
+
+
+class Generator(object):
+    MAX_PAGE = 284
+    
+    def __init__(self):
+        self.base = "http://airport.supfree.net/index.asp"
+    
+    def page_url(self, page):
+        return self.base + "?" + urllib.urlencode({"page":page})
+
+
+if __name__ == "__main__":
+    generator = Generator()
+    
+    for i in range(1, Generator.MAX_PAGE+1):
+        print "TASK %s" % generator.page_url(i)
