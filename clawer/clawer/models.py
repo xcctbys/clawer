@@ -3,10 +3,12 @@ import copy
 import os
 import logging
 import datetime
+import codecs
 
 from django.contrib.auth.models import User as DjangoUser
 from django.db import models
 from django.conf import settings
+from django.utils.encoding import smart_str
 
 
 class UserProfile(models.Model):
@@ -192,9 +194,8 @@ class ClawerTaskGenerator(models.Model):
     def write_code(self, path):
         if os.path.exists(path):
             return
-        f = open(path, "w")
-        f.write(self.code)
-        f.close()
+        with codecs.open(path, "w", "utf-8") as f:
+            f.write(self.code)
         
 
 class ClawerTask(models.Model):
