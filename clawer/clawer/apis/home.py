@@ -10,7 +10,7 @@ import logging
 from html5helper.decorator import render_json
 from clawer.models import Clawer, ClawerTask, ClawerTaskGenerator
 from clawer.utils import check_auth_for_api, EasyUIPager
-from clawer.forms import UpdateClawerTaskGenerator
+from clawer.forms import UpdateClawerTaskGenerator, UpdateClawerAnalysis
 
 
 
@@ -80,3 +80,22 @@ def clawer_task_generator_history(request):
     qs = ClawerTaskGenerator.objects.filter(clawer_id=clawer_id)
     pager = EasyUIPager(qs, request)
     return pager.query()
+
+
+@render_json
+@check_auth_for_api
+def clawer_analysis_update(request):
+    form = UpdateClawerAnalysis(request.POST, request.FILES)
+    if form.is_valid() is False:
+        return {"is_ok":False, "reason": u"%s" % form.errors}
+    
+    code_file = request.FILES["code_file"]
+    if code_file.name[-3:] != ".py":
+        return {"is_ok":False, "reason":u"暂时只支持python文件"}
+    
+    code = code_file.read()
+    
+    analysis = ClawerTaskGenerator.objects.create(clawer=form.cleaned_data["clawer"],
+                                                  code=code)
+    
+    return {"is_ok":True, "analysis":analysis.as_json()}

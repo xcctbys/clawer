@@ -26,6 +26,10 @@ home_api_urls = patterns("clawer.apis.home",
     
     url(r"^clawer/task/generator/update/$", "clawer_task_generator_update"),
     url(r"^clawer/task/generator/history/$", "clawer_task_generator_history"),
+    
+    url(r"^clawer/analysis/update/$", "clawer_analysis_update"),
+    #url(r"^clawer/analysis/history/$", "clawer_analysis_history"),
+    
 )
 
 apis_urls = patterns("clawer.apis", 

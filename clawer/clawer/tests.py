@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User as DjangoUser, Group
 
 from clawer.models import MenuPermission, Clawer, ClawerTask,\
-    ClawerTaskGenerator
+    ClawerTaskGenerator, ClawerAnalysis
 from clawer.management.commands import task_generator_test, task_generator_run
 from clawer import tasks as celeryTasks
 
@@ -176,6 +176,26 @@ class TestHomeApi(TestCase):
         
         clawer.delete()
         clawer_generator.delete()
+        
+    def test_clawer_analysis_update(self):
+        clawer = Clawer.objects.create(name="hi", info="good")
+        code_path = "/tmp/test.py"
+        code_file = open(code_path, "arw")
+        code_file.write("print 'http://www.github.com'\n")
+        code_file.close()
+        code_file = open(code_path)
+        url = reverse("clawer.apis.home.clawer_analysis_update")
+        
+        resp = self.logined_client.post(url, data={"code_file":code_file, "clawer":clawer.id})
+        result = json.loads(resp.content)
+        self.assertTrue(result["is_ok"])
+        
+        analysis = ClawerAnalysis.objects.get(clawer=clawer)
+        self.assertGreater(len(analysis.code), 0)
+        
+        clawer.delete()
+        analysis.delete()
+        os.remove(code_path)
         
         
 class TestCmd(TestCase):

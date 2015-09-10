@@ -30,7 +30,8 @@ CACHES = {
 
 PYTHON = "/Users/pengxt/Documents/pyenv/dj14/bin/python"
 CRONTAB_USER = "pengxt"
-CLAWER_SOURCE = "/Users/pengxt/Documents/clawer_source/"
+CLAWER_SOURCE = "/Users/pengxt/Documents/clawer/source/"
+CLAWER_RESULT = "/Users/pengxt/Documents/clawer/result/"
 
 BROKER_URL = 'redis://127.0.0.1:6379/0'
 CELERYD_TIMER_PRECISION = 1
@@ -39,6 +40,8 @@ CELERY_RESULT_BACKEND='djcelery.backends.cache:CacheBackend'
 CELERYD_MAX_TASKS_PER_CHILD = 1024
 CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
 
+
+MEDIA_URL = 'http://localhost:8000/media/'
 
 RAVEN_CONFIG = {
     'dsn': 'http://c63b0d71513f4569b661e81bcfe8f903:c16131fe0f8d4195b0ea8be642aaa419@coredump.51zhi.com//4',

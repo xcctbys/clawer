@@ -9,3 +9,8 @@ class UpdateClawerTaskGenerator(forms.Form):
     clawer = forms.ModelChoiceField(queryset=Clawer.objects)
     code_file = forms.FileField()
     cron = forms.CharField(max_length=64)
+    
+    
+class UpdateClawerAnalysis(forms.Form):
+    clawer = forms.ModelChoiceField(queryset=Clawer.objects)
+    code_file = forms.FileField()

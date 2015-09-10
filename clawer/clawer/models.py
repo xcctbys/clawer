@@ -32,11 +32,12 @@ class Clawer(models.Model):
             "status_name": self.status_name(),
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S")
         }
+        
         runing =  self.runing_task_generator()
-        if runing:
-            result["runing_task_generator"] = runing.as_json()
-        else:
-            result["runing_task_generator"] = None
+        result["runing_task_generator"] = runing.as_json() if runing else None
+            
+        analysis = self.runing_analysis()
+        result["runing_analysis"] = analysis.as_json() if analysis else None
         return result
     
     def runing_task_generator(self):
@@ -47,6 +48,15 @@ class Clawer(models.Model):
         
         return result
     
+    def runing_analysis(self):
+        try:
+            result = ClawerAnalysis.objects.filter(clawer=self, status=ClawerAnalysis.STATUS_ON)[0]
+        except:
+            result = None
+        
+        return result
+        
+    
     def status_name(self):
         for item in self.STATUS_CHOICES:
             if item[0] == self.status:
@@ -55,6 +65,43 @@ class Clawer(models.Model):
         return ""
         
         
+class ClawerAnalysis(models.Model):
+    (STATUS_ON, STATUS_OFF) = range(1, 3)
+    STATUS_CHOICES = (
+        (STATUS_ON, u"启用"),
+        (STATUS_OFF, u"下线"),
+    )
+    clawer = models.ForeignKey(Clawer)
+    code = models.TextField()  #python code
+    status = models.IntegerField(default=STATUS_ON, choices=STATUS_CHOICES)
+    add_datetime = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        app_label = "clawer"
+        
+    def as_json(self):
+        result = {"id": self.id,
+            "code": self.code,
+            "status": self.status,
+            "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        return result
+    
+
+class ClawerAnalysisLog(models.Model):
+    (STATUS_FAIL, STATUS_SUCCESS) = range(1, 3)
+    STATUS_CHOICES = (
+        (STATUS_FAIL, u"失败"),
+        (STATUS_SUCCESS, u"成功"),
+    )
+    clawer = models.ForeignKey(Clawer)
+    analysis = models.ForeignKey(ClawerAnalysis)
+    status = models.IntegerField(default=0, choices=STATUS_CHOICES)
+    add_datetime = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        app_label = "clawer"
+    
 
 class ClawerTaskGenerator(models.Model):
     (STATUS_ALPHA, STATUS_BETA, STATUS_PRODUCT, STATUS_ON, STATUS_OFF, STATUS_TEST_FAIL) = range(1, 7)
@@ -214,6 +261,8 @@ class MenuPermission:
             {"id":101, "text":u"爬虫配置", "url":"clawer.views.home.clawer_all", "groups":GROUPS},
             {"id":102, "text":u"爬虫失败任务", "url":"clawer.views.home.clawer_task_failed", "groups":GROUPS},
             {"id":103, "text":u"爬虫任务", "url":"clawer.views.home.clawer_task", "groups":GROUPS},
+            {"id":103, "text":u"爬虫分析日志", "url":"", "groups":GROUPS},
+            {"id":104, "text":u"爬虫数据查看", "url":settings.MEDIA_URL, "groups":GROUPS},
         ]},
         {"id":2, "text": u"系统管理", "url":"", "children": [
             {"id":201, "text":u"参数设置", "url":"", "groups":[GROUP_MANAGER]},
@@ -255,8 +304,12 @@ class MenuPermission:
             for menu in item["children"]:
                 if has_group(menu["groups"]):
                     new_menu = copy.deepcopy(menu)
-                    if menu["url"]:
-                        new_menu["url"] = reverse(menu["url"])
+                    try:
+                        if menu["url"]:
+                            new_menu["url"] = reverse(menu["url"])
+                    except:
+                        new_menu["url"] = menu["url"]
+                        
                     del new_menu["groups"]
                     new_item["children"].append(new_menu)
             menus.append(new_item)
