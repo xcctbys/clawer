@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User as DjangoUser, Group
 
 from clawer.models import MenuPermission, Clawer, ClawerTask,\
-    ClawerTaskGenerator, ClawerAnalysis
+    ClawerTaskGenerator, ClawerAnalysis, ClawerAnalysisLog
 from clawer.management.commands import task_generator_test, task_generator_run
 from clawer import tasks as celeryTasks
 
@@ -38,6 +38,11 @@ class TestHomeViews(TestCase):
         
     def test_clawer_task_failed(self):
         url = reverse("clawer.views.home.clawer_task_failed")
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        
+    def test_clawer_analysis_log(self):
+        url = reverse("clawer.views.home.clawer_analysis_log")
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         
@@ -196,6 +201,32 @@ class TestHomeApi(TestCase):
         clawer.delete()
         analysis.delete()
         os.remove(code_path)
+    
+    def test_clawer_analysis(self):
+        clawer = Clawer.objects.create(name="hi", info="good")
+        analysis = ClawerAnalysis.objects.create(clawer=clawer, code="print")
+        url = reverse("clawer.apis.home.clawer_analysis")
+        
+        resp = self.logined_client.get(url)
+        result = json.loads(resp.content)
+        self.assertTrue(result["is_ok"])
+        
+        clawer.delete()
+        analysis.delete()
+        
+    def test_clawer_analysis_log(self):
+        clawer = Clawer.objects.create(name="hi", info="good")
+        analysis = ClawerAnalysis.objects.create(clawer=clawer, code="print")
+        analysis_log = ClawerAnalysisLog.objects.create(clawer=clawer, analysis=analysis)
+        url = reverse("clawer.apis.home.clawer_analysis_log")
+        
+        resp = self.logined_client.get(url)
+        result = json.loads(resp.content)
+        self.assertTrue(result["is_ok"])
+        
+        clawer.delete()
+        analysis.delete()
+        analysis_log.delete()
         
         
 class TestCmd(TestCase):

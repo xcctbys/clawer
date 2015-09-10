@@ -22,3 +22,7 @@ def clawer_task(request):
 
 def clawer_task_failed(request):
     return render_template("clawer/task_failed.html", request=request)
+
+
+def clawer_analysis_log(request):
+    return render_template("clawer/analysis_log.html", request=request)

@@ -1,0 +1,56 @@
+{% extends "clawer/base.html"%}
+{% load static %}
+
+
+{% block body %}
+<body>
+
+
+<div id="toolbar">
+    <a href="#" class="easyui-linkbutton" onclick="javascript:reload_datagrid(1)">启用</a>
+    <a href="#" class="easyui-linkbutton" onclick="javascript:reload_datagrid(2)">下线</a>
+</div>
+
+<table id="grid" class="easyui-datagrid" style="width:100%;height:100%"
+        url="{% url clawer.apis.home.clawer_analysis_log %}" showFooter="true"
+        data-options="singleSelect:true,collapsible:true,method:'get'" rownumbers="true" pagination="true"
+        toolbar="#toolbar" fitColumns="true">
+        
+    <thead data-options="frozen:true">
+        <tr>
+            <th data-options="field:'id',width:80" sortable="true">ID</th>
+        </tr>
+    </thead>
+    <thead>
+        <tr>
+            <th data-options="field:'status_name',">状态</th>
+            <th data-options="field:'clawer',"  formatter="formatClawer">爬虫</th>
+            <th data-options="field:'failed_reason',">失败原因</th>
+            <th data-options="field:'add_datetime',">添加时间</th>
+        </tr>
+    </thead>    
+</table>
+
+
+
+<script type="text/javascript">
+
+function formatClawer(val) {
+	if(!val) {
+		return "";
+	}
+	return "ID: "+val.id+"("+val.name+")";
+}
+
+function reload_datagrid(status) {
+	$('#grid').datagrid('load', {
+	    status: status
+	});
+}
+
+</script>
+
+
+
+</body>
+{% endblock %}

@@ -100,7 +100,7 @@
 
 <!-- update analysis form -->
 <div id="analysis_update_win" class="easyui-window" title="更新分析器" closed="true" style="width:80%;height:60%;padding:5px;">
-    <form method="post" id="task_generator_update_form" enctype="multipart/form-data" action="{% url clawer.apis.home.clawer_analysis_update %}">
+    <form method="post" id="analysis_update_form" enctype="multipart/form-data" action="{% url clawer.apis.home.clawer_analysis_update %}">
 
 			<div style="margin-bottom:20px">
 				<div>Python 文件:</div>
@@ -108,7 +108,8 @@
 				<input id="clawer" name="clawer" type="hidden" />
 				<ol class="text-muted">
 				    <li>支持<code>requests, Beautiful Soup, python标准库</code></li>
-				    <li>执行后输出行格式：TASK[\t]{URI}。 <small>例子：TASK    http://www.github.com/</small></li>
+				    <li>从stdin读取文件路径</li>
+				    <li>执行后输出json格式 <small>例子：{"name":"hello"}</small></li>
 				</ol>
 			</div>
 			
@@ -276,9 +277,31 @@ $(document).ready(function(){
 			return $.messager.alert('Warning', '请先选择一条数据');
 		}
 		
-		$("#task_generator_update_win").find("#clawer").val(row.id);
-		$("#task_generator_update_win").window("open");
+		$("#analysis_update_win").find("#clawer").val(row.id);
+		$("#analysis_update_win").window("open");
+		
+		
+		$("#analysis_update_form").submit(function(){
+	    	$(this).ajaxSubmit({
+	            dataType: "json",
+	            success: function(resp, status, xhr, frm) {
+	                if(!resp.is_ok) {
+	                    $.messager.alert('warning', resp.reason);
+	                    return;
+	                }
+	                
+	                $("#analysis_update_form").form("reset");
+	                $("#analysis_update_form").form("clear");
+	                $("#grid").datagrid("reload");
+	                $("#analysis_update_win").window("close");
+	            }
+	        });
+	    	
+	    	return false;
+	    });
+		
 	});
+	
 	
 });
 

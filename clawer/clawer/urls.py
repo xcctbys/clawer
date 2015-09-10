@@ -21,15 +21,15 @@ user_api_urls = patterns("clawer.apis.user",
 
 home_api_urls = patterns("clawer.apis.home",
     url(r"^clawer/all/$", "clawer_all"),
-    url(r"^clawer/task/failed/$", "clawer_task_failed"),
-    url(r"^clawer/task/$", "clawer_task"),
     
+    url(r"^clawer/task/$", "clawer_task"),
+    url(r"^clawer/task/failed/$", "clawer_task_failed"),
     url(r"^clawer/task/generator/update/$", "clawer_task_generator_update"),
     url(r"^clawer/task/generator/history/$", "clawer_task_generator_history"),
     
+    url(r"^clawer/analysis/$", "clawer_analysis"),
+    url(r"^clawer/analysis/log/$", "clawer_analysis_log"),
     url(r"^clawer/analysis/update/$", "clawer_analysis_update"),
-    #url(r"^clawer/analysis/history/$", "clawer_analysis_history"),
-    
 )
 
 apis_urls = patterns("clawer.apis", 
@@ -46,6 +46,7 @@ urlpatterns = patterns('clawer.views.home',
     url(r'^clawer/all/$', "clawer_all"),
     url(r"^clawer/task/failed/$", "clawer_task_failed"),
     url(r"^clawer/task/$", "clawer_task"),
+    url(r"^clawer/analysis/log/$", "clawer_analysis_log"),
     
     
     url(r'^apis/', include(apis_urls)),

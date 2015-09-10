@@ -83,9 +83,17 @@ class ClawerAnalysis(models.Model):
         result = {"id": self.id,
             "code": self.code,
             "status": self.status,
+            "status_name": self.status_name(),
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }
         return result
+    
+    def status_name(self):
+        for item in self.STATUS_CHOICES:
+            if item[0] == self.status:
+                return item[1]
+            
+        return ""
     
 
 class ClawerAnalysisLog(models.Model):
@@ -97,10 +105,29 @@ class ClawerAnalysisLog(models.Model):
     clawer = models.ForeignKey(Clawer)
     analysis = models.ForeignKey(ClawerAnalysis)
     status = models.IntegerField(default=0, choices=STATUS_CHOICES)
+    failed_reason = models.CharField(max_length=1024, null=True, blank=True)
     add_datetime = models.DateTimeField(auto_now_add=True)
     
     class Meta:
         app_label = "clawer"
+        
+    def as_json(self):
+        result = {"id":self.id,
+            "clawer": self.clawer.as_json(),
+            "analysis": self.analysis.as_json(),
+            "status": self.status,
+            "status_name": self.status_name(),
+            "failed_reason": self.failed_reason,
+            "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        return result
+    
+    def status_name(self):
+        for item in self.STATUS_CHOICES:
+            if item[0] == self.status:
+                return item[1]
+            
+        return ""
     
 
 class ClawerTaskGenerator(models.Model):
@@ -261,7 +288,7 @@ class MenuPermission:
             {"id":101, "text":u"爬虫配置", "url":"clawer.views.home.clawer_all", "groups":GROUPS},
             {"id":102, "text":u"爬虫失败任务", "url":"clawer.views.home.clawer_task_failed", "groups":GROUPS},
             {"id":103, "text":u"爬虫任务", "url":"clawer.views.home.clawer_task", "groups":GROUPS},
-            {"id":103, "text":u"爬虫分析日志", "url":"", "groups":GROUPS},
+            {"id":103, "text":u"爬虫分析日志", "url":"clawer.views.home.clawer_analysis_log", "groups":GROUPS},
             {"id":104, "text":u"爬虫数据查看", "url":settings.MEDIA_URL, "groups":GROUPS},
         ]},
         {"id":2, "text": u"系统管理", "url":"", "children": [
