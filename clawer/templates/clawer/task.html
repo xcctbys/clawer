@@ -9,6 +9,7 @@
 <div id="toolbar">
     <a href="#" class="easyui-linkbutton" onclick="javascript:reload_datagrid(1)">新增的</a>
     <a href="#" class="easyui-linkbutton" onclick="javascript:reload_datagrid(2)">进行中</a>
+    <a href="#" class="easyui-linkbutton" onclick="javascript:reload_datagrid(3)">失败</a>
     <a href="#" class="easyui-linkbutton" onclick="javascript:reload_datagrid(4)">成功</a>
 </div>
 
@@ -25,7 +26,7 @@
     </thead>
     <thead>
         <tr>
-            <th data-options="field:'uri',">URI</th>
+            <th data-options="field:'uri'," formatter="formatUri">URI</th>
             <th data-options="field:'status_name',">状态</th>
             <th data-options="field:'spend_time',">耗时(毫秒)</th>
             <th data-options="field:'clawer',"  formatter="formatClawer">爬虫</th>
@@ -54,6 +55,13 @@ function formatClawer(val) {
 		return "";
 	}
 	return "ID: "+val.id+"("+val.name+")";
+}
+
+function formatUri(val) {
+	if(!val) {
+		return "";
+	}
+	return "<a href='"+val+"' target='_blank'>查看</a>";
 }
 
 function formatBytes(val) {

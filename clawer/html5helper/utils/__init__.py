@@ -11,7 +11,7 @@ from raven import Client
 try:
     client = Client(settings.RAVEN_CONFIG["dsn"])
 except:
-    client = Client()
+    client = None
 
 
 def wrapper_raven(fun):
@@ -21,8 +21,11 @@ def wrapper_raven(fun):
     def wrap(cls, *args, **kwargs):
         try:
             return fun(cls, *args, **kwargs)
-        except:
-            client.captureException()
+        except Exception, e:
+            if client:
+                client.captureException()
+            else:
+                raise e
 
     return wrap
 
