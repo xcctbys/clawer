@@ -19,28 +19,28 @@ from clawer.models import ClawerTask
 def run_clawer_task(clawer_task):
     if clawer_task.status != ClawerTask.STATUS_LIVE:
         return 0
+    
     start = time.time()
     clawer_task.status = ClawerTask.STATUS_PROCESS
     clawer_task.start_datetime = datetime.datetime.now()
     clawer_task.save()
     
     failed = False
+    r = None
     
     try:
         r = requests.get(clawer_task.uri)
-        if r.status_code != 200:
-            clawer_task.status = ClawerTask.STATUS_FAIL
-            clawer_task.save()
-            return 0
-        r.encoding = "utf-8"
     except:
         logging.warning(traceback.format_exc(10))
+        failed = True
+    
+    if r.status_code != 200:
         failed = True
         
     if failed:
         clawer_task.status = ClawerTask.STATUS_FAIL
         clawer_task.done_datetime = datetime.datetime.now()
-        clawer_task.spend_time = int(time.time() - start)
+        clawer_task.spend_time = int((time.time() - start)*1000)
         clawer_task.save()
         return
         
@@ -50,8 +50,8 @@ def run_clawer_task(clawer_task):
         if os.path.exists(os.path.dirname(path)) is False:
             os.makedirs(os.path.dirname(path), 0775)
             
-        with codecs.open(path, "w", "utf-8") as f:
-            f.write(r.text)
+        with open(path, "w") as f:
+            f.write(r.content)
     except:
         logging.warning(traceback.format_exc(10))
         failed = True
@@ -59,7 +59,7 @@ def run_clawer_task(clawer_task):
     if failed:
         clawer_task.status = ClawerTask.STATUS_FAIL
         clawer_task.done_datetime = datetime.datetime.now()
-        clawer_task.spend_time = int(time.time() - start)
+        clawer_task.spend_time = int((time.time() - start)*1000)
         clawer_task.save()
         return
     
@@ -69,9 +69,10 @@ def run_clawer_task(clawer_task):
         clawer_task.content_bytes = r.headers["Content-Length"]
     else:
         clawer_task.content_bytes = len(r.content)
+    clawer_task.content_encoding = r.encoding
     clawer_task.store = path
     clawer_task.done_datetime = datetime.datetime.now()
-    clawer_task.spend_time = int(time.time() - start)
+    clawer_task.spend_time = int((time.time() - start)*1000)
     clawer_task.save()
     
     return clawer_task.id

@@ -212,6 +212,7 @@ class ClawerTask(models.Model):
     status = models.IntegerField(default=STATUS_LIVE, choices=STATUS_CHOICES)
     store = models.CharField(max_length=4096, blank=True, null=True)
     content_bytes = models.IntegerField(default=0)
+    content_encoding = models.CharField(null=True, blank=True, max_length=32)
     spend_time = models.IntegerField(default=0) #unit is microsecond
     add_datetime = models.DateTimeField(auto_now_add=True)
     start_datetime = models.DateTimeField(null=True, blank=True)
