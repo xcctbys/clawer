@@ -10,6 +10,7 @@ import logging
 import os
 import datetime
 import time
+import codecs
 
 from clawer.models import ClawerTask
 
@@ -31,6 +32,7 @@ def run_clawer_task(clawer_task):
             clawer_task.status = ClawerTask.STATUS_FAIL
             clawer_task.save()
             return 0
+        r.encoding = "utf-8"
     except:
         logging.warning(traceback.format_exc(10))
         failed = True
@@ -48,8 +50,8 @@ def run_clawer_task(clawer_task):
         if os.path.exists(os.path.dirname(path)) is False:
             os.makedirs(os.path.dirname(path), 0775)
             
-        with open(path, "w") as f:
-            f.write(r.content)
+        with codecs.open(path, "w", "utf-8") as f:
+            f.write(r.text)
     except:
         logging.warning(traceback.format_exc(10))
         failed = True

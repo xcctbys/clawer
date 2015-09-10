@@ -27,6 +27,9 @@ def test():
         if test_product(task_generator) is False:
             continue
         
+        task_generator.status = ClawerTaskGenerator.STATUS_ON
+        task_generator.save()
+        
         print "success %d" % task_generator.id
         #make old offline
         ClawerTaskGenerator.objects.filter(clawer_id=task_generator, \
@@ -59,7 +62,7 @@ def test_alpha(task_generator):
 def test_beta(task_generator):
     user_cron = CronTab(user=settings.CRONTAB_USER)
     job = user_cron.new(command="/usr/bin/echo")
-    job.setall(task_generator.cron)
+    job.setall(task_generator.cron.strip())
     if job.is_valid() == False:
         task_generator.failed_reason = u"crontab 格式出错"
         task_generator.status = ClawerTaskGenerator.STATUS_TEST_FAIL
@@ -90,7 +93,7 @@ def test_product(task_generator):
         return False
     user_cron.write_to_user(user=settings.CRONTAB_USER)
     
-    task_generator.status = ClawerTaskGenerator.STATUS_ON
+    task_generator.status = ClawerTaskGenerator.STATUS_PRODUCT
     task_generator.save()
     return True
 
