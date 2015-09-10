@@ -31,6 +31,8 @@ CACHES = {
 }
 
 MEDIA_ROOT = "/data/media/"
+MEDIA_URL = "http://clawer.princetechs.com/media/"
+
 PYTHON = "/home/virtualenvs/py27/bin/python"
 CRONTAB_USER = "nginx"
 CLAWER_SOURCE = "/data/clawer/"
