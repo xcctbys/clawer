@@ -9,14 +9,13 @@ from django.conf import settings
 
 from html5helper.utils import wrapper_raven
 from clawer.models import ClawerTaskGenerator, Clawer, ClawerTask
-from clawer import tasks as celeryTasks
 
 
 def run(task_generator_id):
     logging.info("run task generator %d" % task_generator_id)
     
     task_generator = ClawerTaskGenerator.objects.get(id=task_generator_id)
-    if task_generator.status != ClawerTaskGenerator.STATUS_ON:
+    if not (task_generator.status==ClawerTaskGenerator.STATUS_ON and task_generator.clawer.status==Clawer.STATUS_ON):
         return False
     
     path = task_generator.product_path()

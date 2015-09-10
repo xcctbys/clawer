@@ -9,7 +9,7 @@ from clawer import tasks as celeryTasks
 
 
 def dispatch():
-    clawer_tasks = ClawerTask.objects.filter(status=ClawerTask.STATUS_LIVE).order_by("id")[:500]
+    clawer_tasks = ClawerTask.objects.filter(status=ClawerTask.STATUS_LIVE, clawer__status=Clawer.STATUS_ON).order_by("id")[:500]
     for item in clawer_tasks:
         celeryTasks.run_clawer_task.delay(item)
         

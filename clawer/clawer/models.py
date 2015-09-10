@@ -8,92 +8,18 @@ import codecs
 from django.contrib.auth.models import User as DjangoUser
 from django.db import models
 from django.conf import settings
-from django.utils.encoding import smart_str
-
-
-class UserProfile(models.Model):
-    (GROUP_MANAGER, GROUP_DEVELOPER) = (u"管理员", u"开发者")
-    user = models.OneToOneField(DjangoUser)
-    nickname = models.CharField(max_length=64)
-    
-    class Meta:
-        app_label = "clawer"
-        
-    def as_json(self):
-        return {"id": self.user.id,
-            "nickname": self.nickname,
-            "username": self.user.username,
-        }
-
-
-class MenuPermission:
-    GROUP_MANAGER = UserProfile.GROUP_MANAGER
-    GROUP_DEVELOPER = UserProfile.GROUP_DEVELOPER
-    
-    GROUPS = [
-        GROUP_MANAGER,
-        GROUP_DEVELOPER,
-    ]
-    
-    MENUS = [
-        {"id":1, "text": u"爬虫管理", "url":"", "children": [
-            {"id":101, "text":u"爬虫配置", "url":"clawer.views.home.clawer_all", "groups":GROUPS},
-            {"id":102, "text":u"爬虫失败任务", "url":"clawer.views.home.clawer_task_failed", "groups":GROUPS},
-            {"id":103, "text":u"爬虫任务", "url":"clawer.views.home.clawer_task", "groups":GROUPS},
-        ]},
-        {"id":2, "text": u"系统管理", "url":"", "children": [
-            {"id":201, "text":u"参数设置", "url":"", "groups":[GROUP_MANAGER]},
-        ]},
-    ]
-    
-    @classmethod
-    def has_perm_to_enter(cls, user):
-        ret = False
-        for group in user.groups.all():
-            if group.name in cls.GROUPS:
-                ret = True
-                break
-        
-        return ret
-    
-    @classmethod
-    def user_menus(cls, user):
-        """ Return list of menus, format is:
-        [
-            {}
-        ]
-        """
-        from django.core.urlresolvers import reverse
-        
-        menus = []
-        user_group_names = set([x.name for x in user.groups.all()])
-        
-        def has_group(menu_groups):
-            for name in user_group_names:
-                if name in menu_groups:
-                    return True
-            return False
-        
-        for item in cls.MENUS: 
-            new_item = copy.deepcopy(item)
-            new_item["children"] = []
-            
-            for menu in item["children"]:
-                if has_group(menu["groups"]):
-                    new_menu = copy.deepcopy(menu)
-                    if menu["url"]:
-                        new_menu["url"] = reverse(menu["url"])
-                    del new_menu["groups"]
-                    new_item["children"].append(new_menu)
-            menus.append(new_item)
-        
-        return menus
 
         
 
 class Clawer(models.Model):
+    (STATUS_ON, STATUS_OFF) = range(1, 3)
+    STATUS_CHOICES = (
+        (STATUS_ON, u"启用"),
+        (STATUS_OFF, u"下线"),
+    )
     name = models.CharField(max_length=128)
     info = models.CharField(max_length=1024)
+    status = models.IntegerField(default=STATUS_ON, choices=STATUS_CHOICES)
     add_datetime = models.DateTimeField(auto_now_add=True)
     
     class Meta:
@@ -103,6 +29,7 @@ class Clawer(models.Model):
         result = {"id": self.id,
             "name": self.name,
             "info": self.info,
+            "status_name": self.status_name(),
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S")
         }
         runing =  self.runing_task_generator()
@@ -119,6 +46,13 @@ class Clawer(models.Model):
             result = None
         
         return result
+    
+    def status_name(self):
+        for item in self.STATUS_CHOICES:
+            if item[0] == self.status:
+                return item[1]
+            
+        return ""
         
         
 
@@ -248,3 +182,83 @@ class ClawerTask(models.Model):
     def store_path(self):
         now = datetime.datetime.now()
         return os.path.join(settings.CLAWER_SOURCE, now.strftime("%Y/%m/%d"), "%d.txt" % self.id)
+
+
+
+class UserProfile(models.Model):
+    (GROUP_MANAGER, GROUP_DEVELOPER) = (u"管理员", u"开发者")
+    user = models.OneToOneField(DjangoUser)
+    nickname = models.CharField(max_length=64)
+    
+    class Meta:
+        app_label = "clawer"
+        
+    def as_json(self):
+        return {"id": self.user.id,
+            "nickname": self.nickname,
+            "username": self.user.username,
+        }
+
+
+class MenuPermission:
+    GROUP_MANAGER = UserProfile.GROUP_MANAGER
+    GROUP_DEVELOPER = UserProfile.GROUP_DEVELOPER
+    
+    GROUPS = [
+        GROUP_MANAGER,
+        GROUP_DEVELOPER,
+    ]
+    
+    MENUS = [
+        {"id":1, "text": u"爬虫管理", "url":"", "children": [
+            {"id":101, "text":u"爬虫配置", "url":"clawer.views.home.clawer_all", "groups":GROUPS},
+            {"id":102, "text":u"爬虫失败任务", "url":"clawer.views.home.clawer_task_failed", "groups":GROUPS},
+            {"id":103, "text":u"爬虫任务", "url":"clawer.views.home.clawer_task", "groups":GROUPS},
+        ]},
+        {"id":2, "text": u"系统管理", "url":"", "children": [
+            {"id":201, "text":u"参数设置", "url":"", "groups":[GROUP_MANAGER]},
+        ]},
+    ]
+    
+    @classmethod
+    def has_perm_to_enter(cls, user):
+        ret = False
+        for group in user.groups.all():
+            if group.name in cls.GROUPS:
+                ret = True
+                break
+        
+        return ret
+    
+    @classmethod
+    def user_menus(cls, user):
+        """ Return list of menus, format is:
+        [
+            {}
+        ]
+        """
+        from django.core.urlresolvers import reverse
+        
+        menus = []
+        user_group_names = set([x.name for x in user.groups.all()])
+        
+        def has_group(menu_groups):
+            for name in user_group_names:
+                if name in menu_groups:
+                    return True
+            return False
+        
+        for item in cls.MENUS: 
+            new_item = copy.deepcopy(item)
+            new_item["children"] = []
+            
+            for menu in item["children"]:
+                if has_group(menu["groups"]):
+                    new_menu = copy.deepcopy(menu)
+                    if menu["url"]:
+                        new_menu["url"] = reverse(menu["url"])
+                    del new_menu["groups"]
+                    new_item["children"].append(new_menu)
+            menus.append(new_item)
+        
+        return menus
