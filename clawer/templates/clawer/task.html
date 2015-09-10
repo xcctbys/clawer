@@ -6,6 +6,12 @@
 <body>
 
 
+<div id="toolbar">
+    <a href="#" class="easyui-linkbutton" onclick="javascript:reload_datagrid(1)">新增的</a>
+    <a href="#" class="easyui-linkbutton" onclick="javascript:reload_datagrid(2)">进行中</a>
+    <a href="#" class="easyui-linkbutton" onclick="javascript:reload_datagrid(4)">成功</a>
+</div>
+
 <table id="grid" class="easyui-datagrid" style="width:100%;height:100%"
         url="{% url clawer.apis.home.clawer_task %}" showFooter="true"
         data-options="singleSelect:true,collapsible:true,method:'get'" rownumbers="true" pagination="true"
@@ -68,6 +74,12 @@ function formatBytes(val) {
 	}
 	
 	return val;
+}
+
+function reload_datagrid(status) {
+	$('#grid').datagrid('load', {
+	    status: status
+	});
 }
 
 </script>
