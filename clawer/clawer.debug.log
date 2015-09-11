@@ -546,3 +546,5 @@ INFO 2015-09-11 17:20:06,786 /Users/pengxt/Documents/gitroom/nice-clawer/clawer/
 
 INFO 2015-09-11 17:20:06,876 /Users/pengxt/Documents/gitroom/nice-clawer/clawer/clawer/models.py:210:: line is: {"uri": "http://www.github.com"}
 
+WARNING 2015-09-11 17:25:17,610 /Users/pengxt/Documents/pyenv/dj14/lib/python2.7/site-packages/django/core/handlers/base.py:140:: Not Found: /media/
+WARNING 2015-09-11 17:25:17,610 /Users/pengxt/Documents/pyenv/dj14/lib/python2.7/site-packages/django/core/handlers/base.py:140:: Not Found: /media/

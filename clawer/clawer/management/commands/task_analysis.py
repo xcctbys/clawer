@@ -36,6 +36,8 @@ def do_run(clawer_task):
     clawer = clawer_task.clawer
     
     analysis = clawer.runing_analysis()
+    if not analysis:
+        return None
     path = analysis.product_path()
     analysis.write_code(path)
     
