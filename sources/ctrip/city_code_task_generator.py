@@ -4,6 +4,7 @@ http://airport.supfree.net/index.asp?page=284
 """
 
 import urllib
+import json
 
 
 
@@ -21,4 +22,5 @@ if __name__ == "__main__":
     generator = Generator()
     
     for i in range(1, Generator.MAX_PAGE+1):
-        print "TASK %s" % generator.page_url(i)
+        data = {"uri": generator.page_url(i)}
+        print json.dumps(data)

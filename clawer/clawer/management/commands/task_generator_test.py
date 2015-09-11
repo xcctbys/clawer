@@ -83,6 +83,8 @@ def test_product(task_generator):
     comment = "clawer %d task generator " % task_generator.clawer_id
     user_cron = CronTab(user=settings.CRONTAB_USER)
     user_cron.remove_all(comment=comment)
+    user_cron.write_to_user(user=settings.CRONTAB_USER)
+    
     job = user_cron.new(command="cd /home/webapps/nice-clawer/confs/production; ./bg_cmd.sh task_generator_run %d" % (task_generator.id), comment=comment)
     job.setall(task_generator.cron.strip())
     if job.is_valid() == False:

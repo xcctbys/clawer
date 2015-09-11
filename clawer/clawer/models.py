@@ -106,8 +106,6 @@ class ClawerAnalysis(models.Model):
         return os.path.join(self.code_dir(), "%d_analysis.py" % self.clawer_id)
     
     def write_code(self, path):
-        if os.path.exists(path):
-            return
         with codecs.open(path, "w", "utf-8") as f:
             f.write(self.code)
     
