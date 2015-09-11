@@ -6,10 +6,11 @@ from django.test import TestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User as DjangoUser, Group
+from django.conf import settings
 
 from clawer.models import MenuPermission, Clawer, ClawerTask,\
     ClawerTaskGenerator, ClawerAnalysis, ClawerAnalysisLog
-from clawer.management.commands import task_generator_test, task_generator_run
+from clawer.management.commands import task_generator_test, task_generator_run, task_analysis
 from clawer import tasks as celeryTasks
 
 
@@ -202,12 +203,12 @@ class TestHomeApi(TestCase):
         analysis.delete()
         os.remove(code_path)
     
-    def test_clawer_analysis(self):
+    def test_clawer_analysis_history(self):
         clawer = Clawer.objects.create(name="hi", info="good")
         analysis = ClawerAnalysis.objects.create(clawer=clawer, code="print")
-        url = reverse("clawer.apis.home.clawer_analysis")
+        url = reverse("clawer.apis.home.clawer_analysis_history")
         
-        resp = self.logined_client.get(url)
+        resp = self.logined_client.get(url, {"clawer_id":clawer.id})
         result = json.loads(resp.content)
         self.assertTrue(result["is_ok"])
         
@@ -217,7 +218,9 @@ class TestHomeApi(TestCase):
     def test_clawer_analysis_log(self):
         clawer = Clawer.objects.create(name="hi", info="good")
         analysis = ClawerAnalysis.objects.create(clawer=clawer, code="print")
-        analysis_log = ClawerAnalysisLog.objects.create(clawer=clawer, analysis=analysis)
+        task_generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="sss", cron="*")
+        task = ClawerTask.objects.create(clawer=clawer, task_generator=task_generator, uri="http://www.csdn.net")
+        analysis_log = ClawerAnalysisLog.objects.create(clawer=clawer, analysis=analysis, task=task)
         url = reverse("clawer.apis.home.clawer_analysis_log")
         
         resp = self.logined_client.get(url)
@@ -235,7 +238,6 @@ class TestCmd(TestCase):
         self.user = DjangoUser.objects.create_user(username="xxx", password="xxx")
         self.group = Group.objects.create(name=MenuPermission.GROUPS[0])
         self.user.groups.add(self.group)
-
         
     def tearDown(self):
         TestCase.tearDown(self)
@@ -244,7 +246,7 @@ class TestCmd(TestCase):
         
     def test_task_generator_test(self):
         clawer = Clawer.objects.create(name="hi", info="good")
-        generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print 'TASK http://www.baidu.com'\nos.exit(2)\n", cron="*")
+        generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print '{\"uri\": \"http://www.github.com\"}'\nos.exit(2)\n", cron="*")
         
         ret = task_generator_test.test_alpha(generator)
         self.assertFalse(ret)
@@ -257,7 +259,10 @@ class TestCmd(TestCase):
         
     def test_task_generator_run(self):
         clawer = Clawer.objects.create(name="hi", info="good")
-        generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print 'TASK http://www.baidu.com'\n", cron="*", status=ClawerTaskGenerator.STATUS_ON)
+        generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print '{\"uri\": \"http://www.github.com\"}'\n", cron="*", status=ClawerTaskGenerator.STATUS_ON)
+        product_path = generator.product_path()
+        if os.path.exists(product_path):
+            os.remove(product_path)
         
         ret = task_generator_run.run(generator.id)
         self.assertTrue(ret)
@@ -267,7 +272,7 @@ class TestCmd(TestCase):
         
     def test_clawer_task_run(self):
         clawer = Clawer.objects.create(name="hi", info="good")
-        generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print 'TASK http://www.baidu.com'\n", cron="*")
+        generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print '{\"uri\": \"http://www.github.com\"}'\n", cron="*")
         task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baidu.com")
         
         ret = celeryTasks.run_clawer_task(task)
@@ -276,3 +281,19 @@ class TestCmd(TestCase):
         clawer.delete()
         generator.delete()
         task.delete()
+        
+    def test_task_analysis(self):
+        clawer = Clawer.objects.create(name="hi", info="good")
+        generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print '{\"uri\": \"http://www.github.com\"}'\n", cron="*")
+        task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baidu.com")
+        analysis = ClawerAnalysis.objects.create(clawer=clawer, code="print \"{'url':'ssskkk'}\"\n")
+        
+        analysis_log = task_analysis.do_run(task)
+        print analysis_log.failed_reason
+        print "result is ", analysis_log.result
+        self.assertEqual(analysis_log.status, ClawerAnalysisLog.STATUS_SUCCESS)
+        
+        clawer.delete()
+        generator.delete()
+        task.delete()
+        analysis.delete()

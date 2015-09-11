@@ -63,7 +63,7 @@
 				<input id="clawer" name="clawer" type="hidden" />
 				<ol class="text-muted">
 				    <li>支持<code>requests, Beautiful Soup, python标准库</code></li>
-				    <li>执行后输出行格式：TASK[\t]{URI}。 <small>例子：TASK    http://www.github.com/</small></li>
+				    <li>执行后输出json数据，每行json格式：{"uri":"uri地址"}。 <small>例子：{"url":"http://www.github.com"}</small></li>
 				</ol>
 			</div>
 			
@@ -84,10 +84,10 @@
 
 
 
-<!-- task generator info -->
+<!-- task generator runing -->
 <div id="task_generator_info_win" class="easyui-window" title="任务生成器详情" closed="true" style="width:80%;height:90%;padding:5px;">
 </div>
-<!-- task generator info end -->
+<!-- task generator runing end -->
 
 
 <!-- task generator history window -->
@@ -108,7 +108,7 @@
 				<input id="clawer" name="clawer" type="hidden" />
 				<ol class="text-muted">
 				    <li>支持<code>requests, Beautiful Soup, python标准库</code></li>
-				    <li>从stdin读取文件路径</li>
+				    <li>从stdin读取json数据，格式： {"path":"文件路径"}</li>
 				    <li>执行后输出json格式 <small>例子：{"name":"hello"}</small></li>
 				</ol>
 			</div>
@@ -122,6 +122,17 @@
 </div>
 <!-- update task generator form end -->
 
+<!-- analysis runing -->
+<div id="analysis_runing_win" class="easyui-window" title="运行中的分析器" closed="true" style="width:80%;height:90%;padding:5px;">
+</div>
+<!-- analysis runing end -->
+
+
+<!-- analysis history window -->
+<div id="analysis_history_win" class="easyui-window" title="分析器历史版本" closed="true" style="width:80%;height:90%;padding:5px;">
+    
+</div>
+<!-- analysis history window end -->
 
 
 <script type="text/javascript">
@@ -299,6 +310,78 @@ $(document).ready(function(){
 	    	
 	    	return false;
 	    });
+		
+	});
+	
+	$("#analysis_runing_btn").bind("click", function(e){
+		var row = $("#grid").datagrid("getSelected");
+		if(!row) {
+			return $.messager.alert('Warning', '请先选择一条数据');
+		}
+		
+		var item = row.runing_analysis;
+		var html = [
+		    "<h4>",
+		    "ID: ",
+		    item.id,
+		    ", ",
+		    item.add_datetime,
+		    "</h4>",
+		    "<pre class='highlight'>",
+		    "<code>",
+		    item.code,
+		    "</code>",
+		    "</pre>",
+		].join("");
+		$("#analysis_runing_win").html(html);
+		
+		$("#analysis_runing_win").window("open");
+		
+	});
+	
+
+	$("#analysis_history_btn").bind("click", function(e){
+		var row = $("#grid").datagrid("getSelected");
+		if(!row) {
+			return $.messager.alert('Warning', '请先选择一条数据');
+		}
+		
+		var url = "{% url clawer.apis.home.clawer_analysis_history %}";
+		
+		$.getJSON(url, {"clawer_id":row.id}, function(resp){
+			if(resp.is_ok == false) {
+				return $.messager.alert("warning", resp.reason);
+			}
+			
+			var content = "";
+			
+			for(var i=0; i<resp.rows.length; i++) {
+				var item = resp.rows[i];
+				var code = ["<div>",
+				    "<h4>",
+				    "ID: ",
+				    item.id,
+				    ", ",
+				    item.add_datetime,
+				    " <small>",
+				    item.status_name,
+				    "</small>",
+				    "</h4>",
+				    "<pre class='highlight'>",
+				    "<code>",
+				    item.code,
+				    "</code>",
+				    "</pre>",
+				    "</div>",
+				].join("");
+				content = content + code;
+			}
+			console.debug("content is ", content);
+			$("#analysis_history_win").html(content);
+			
+		});
+		
+		$("#analysis_history_win").window("open");
 		
 	});
 	

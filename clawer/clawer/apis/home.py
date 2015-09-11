@@ -85,12 +85,10 @@ def clawer_task_generator_history(request):
 
 @render_json
 @check_auth_for_api
-def clawer_analysis(request):
-    status = request.GET.get("status")
+def clawer_analysis_history(request):
+    clawer_id = request.GET.get("clawer_id")
     
-    queryset = ClawerAnalysis.objects
-    if status:
-        queryset = queryset.filter(status=status) 
+    queryset = ClawerAnalysis.objects.filter(clawer_id=clawer_id)
         
     pager = EasyUIPager(queryset, request)
     return pager.query()

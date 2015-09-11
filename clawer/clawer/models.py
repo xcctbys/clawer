@@ -8,6 +8,7 @@ import codecs
 from django.contrib.auth.models import User as DjangoUser
 from django.db import models
 from django.conf import settings
+import json
 
         
 
@@ -95,6 +96,21 @@ class ClawerAnalysis(models.Model):
             
         return ""
     
+    def code_dir(self):
+        path = os.path.join(settings.MEDIA_ROOT, "codes")
+        if os.path.exists(path) is False:
+            os.makedirs(path, 0775)
+        return path
+    
+    def product_path(self):
+        return os.path.join(self.code_dir(), "%d_analysis.py" % self.clawer_id)
+    
+    def write_code(self, path):
+        if os.path.exists(path):
+            return
+        with codecs.open(path, "w", "utf-8") as f:
+            f.write(self.code)
+    
 
 class ClawerAnalysisLog(models.Model):
     (STATUS_FAIL, STATUS_SUCCESS) = range(1, 3)
@@ -104,8 +120,10 @@ class ClawerAnalysisLog(models.Model):
     )
     clawer = models.ForeignKey(Clawer)
     analysis = models.ForeignKey(ClawerAnalysis)
+    task = models.ForeignKey('ClawerTask')
     status = models.IntegerField(default=0, choices=STATUS_CHOICES)
     failed_reason = models.CharField(max_length=1024, null=True, blank=True)
+    result = models.TextField(null=True, blank=True)
     add_datetime = models.DateTimeField(auto_now_add=True)
     
     class Meta:
@@ -115,9 +133,11 @@ class ClawerAnalysisLog(models.Model):
         result = {"id":self.id,
             "clawer": self.clawer.as_json(),
             "analysis": self.analysis.as_json(),
+            "task": self.task.as_json(),
             "status": self.status,
             "status_name": self.status_name(),
             "failed_reason": self.failed_reason,
+            "result": self.result,
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }
         return result
@@ -183,21 +203,13 @@ class ClawerTaskGenerator(models.Model):
     
     @classmethod
     def parse_line(cls, line):
-        """ line format is: TASK[\t]uri
+        """ line format is: {"uri":""}
         Returns:
             uri
         """
         logging.info("line is: %s", line)
-        line = line.strip()
-        if not line:
-            return None
-        tmp = line.split(" ")
-        logging.debug("split result is %s", tmp)
-        if len(tmp) < 2:
-            return None
-        if tmp[0] != "TASK":
-            return None
-        return tmp[1]
+        js = json.loads(line)
+        return js["uri"]
     
     def write_code(self, path):
         if os.path.exists(path):
@@ -207,12 +219,14 @@ class ClawerTaskGenerator(models.Model):
         
 
 class ClawerTask(models.Model):
-    (STATUS_LIVE, STATUS_PROCESS, STATUS_FAIL, STATUS_SUCCESS) = range(1, 5)
+    (STATUS_LIVE, STATUS_PROCESS, STATUS_FAIL, STATUS_SUCCESS, STATUS_ANALYSIS_FAIL, STATUS_ANALYSIS_SUCCESS) = range(1, 7)
     STATUS_CHOICES = (
         (STATUS_LIVE, u"新增"),
         (STATUS_PROCESS, u"进行中"),
         (STATUS_FAIL, u"失败"),
         (STATUS_SUCCESS, u"成功"),
+        (STATUS_ANALYSIS_FAIL, u"分析失败"),
+        (STATUS_ANALYSIS_SUCCESS, u"分析成功"),
     )
     clawer = models.ForeignKey(Clawer)
     task_generator = models.ForeignKey(ClawerTaskGenerator)
@@ -238,6 +252,7 @@ class ClawerTask(models.Model):
             "status": self.status,
             "status_name": self.status_name(),
             "content_bytes": self.content_bytes,
+            "content_encoding": self.content_encoding,
             "store": self.store,
             "spend_time": self.spend_time,
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),

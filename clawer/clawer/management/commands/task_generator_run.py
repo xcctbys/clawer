@@ -28,7 +28,7 @@ def run(task_generator_id):
             logging.warning("unknown line: %s" % line)
             continue
         #insert to db
-        task = ClawerTask.objects.create(clawer=task_generator.clawer, task_generator=task_generator, uri=uri)
+        ClawerTask.objects.create(clawer=task_generator.clawer, task_generator=task_generator, uri=uri)
         
     err = p.stderr.read()
     
