@@ -212,8 +212,6 @@ class ClawerTaskGenerator(models.Model):
         return js["uri"]
     
     def write_code(self, path):
-        if os.path.exists(path):
-            return
         with codecs.open(path, "w", "utf-8") as f:
             f.write(self.code)
         

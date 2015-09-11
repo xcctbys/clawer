@@ -80,7 +80,7 @@ def test_product(task_generator):
     path = task_generator.product_path()
     task_generator.write_code(path)
     
-    comment = "clawer %d task generator " % task_generator.clawer_id
+    comment = "clawer %d task generator" % task_generator.clawer_id
     user_cron = CronTab(user=settings.CRONTAB_USER)
     user_cron.remove_all(comment=comment)
     user_cron.write_to_user(user=settings.CRONTAB_USER)
