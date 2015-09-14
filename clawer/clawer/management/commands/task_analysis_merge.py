@@ -34,6 +34,7 @@ def merge_clawer(clawer, start, end):
     
     with open(save_path(clawer, start), "a") as f:
         for item in analysis_logs:
+            print item.id, item.result
             f.write(item.result)
             f.write("\n")
         
