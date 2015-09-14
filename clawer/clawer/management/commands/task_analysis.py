@@ -16,7 +16,7 @@ from clawer.models import ClawerTaskGenerator, Clawer, ClawerTask,\
 
 
 def run():
-    pool = threadpool.ThreadPool(5)
+    pool = threadpool.ThreadPool(2)
     #scan tasks
     need_analysis_tasks = []
     clawer_tasks = ClawerTask.objects.filter(clawer__status=Clawer.STATUS_ON, status=ClawerTask.STATUS_SUCCESS)[:100]
@@ -27,7 +27,7 @@ def run():
         need_analysis_tasks.append(item)
         
     requests = threadpool.makeRequests(do_run, need_analysis_tasks)
-    [pool.putRequest(x, timeout=300) for x in requests]
+    [pool.putRequest(x, timeout=120) for x in requests]
     pool.wait()
     return True
 
@@ -47,6 +47,7 @@ def do_run(clawer_task):
         p = subprocess.Popen([settings.PYTHON, path], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  #("%s %s" % (settings.PYTHON, path), "r")
         #write path to it
         p.stdin.write(json.dumps({"path": clawer_task.store}))
+        p.stdin.close()
         #read from stdout, stderr
         analysis_log.result = p.stdout.read()
         err = p.stderr.read()

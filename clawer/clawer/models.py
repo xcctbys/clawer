@@ -221,8 +221,8 @@ class ClawerTask(models.Model):
     STATUS_CHOICES = (
         (STATUS_LIVE, u"新增"),
         (STATUS_PROCESS, u"进行中"),
-        (STATUS_FAIL, u"失败"),
-        (STATUS_SUCCESS, u"成功"),
+        (STATUS_FAIL, u"下载失败"),
+        (STATUS_SUCCESS, u"下载成功"),
         (STATUS_ANALYSIS_FAIL, u"分析失败"),
         (STATUS_ANALYSIS_SUCCESS, u"分析成功"),
     )
