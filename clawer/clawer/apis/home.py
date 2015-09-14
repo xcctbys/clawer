@@ -6,6 +6,7 @@
 import json
 import traceback
 import logging
+import datetime
 
 from html5helper.decorator import render_json
 from clawer.models import Clawer, ClawerTask, ClawerTaskGenerator,\
@@ -102,10 +103,15 @@ def clawer_analysis_history(request):
 @check_auth_for_api
 def clawer_analysis_log(request):
     status = request.GET.get("status")
+    date = request.GET.get("date")
     
     queryset = ClawerAnalysisLog.objects
     if status:
         queryset = queryset.filter(status=status) 
+    if date:
+        start = datetime.datetime.strptime(date, "%Y-%m-%d").replace(hour=0, minute=0, second=0)
+        end = start + datetime.timedelta(1)
+        queryset = queryset.filter(add_datetime__range=(start, end))
         
     pager = EasyUIPager(queryset, request)
     return pager.query()

@@ -12,7 +12,7 @@ import unittest
 from bs4 import BeautifulSoup
 
 
-DEBUG = True
+DEBUG = False
 if DEBUG:
     level = logging.DEBUG
 else:
@@ -44,10 +44,10 @@ class Analysis(object):
             logging.debug("tr %s, td count %d", tr, len(tds))
             
             city = tds[0].span.contents[0] if len(tds[0].span.contents) > 0 else "-"
-            three_code = tds[1].contents[0] if len(tds[1].span.contents) > 0 else "-"
-            four_code = tds[2].contents[0] if len(tds[2].span.contents) > 0 else "-"
-            airport = tds[3].contents[0] if len(tds[3].span.contents) > 0 else "-"
-            english_city = tds[4].contents[0] if len(tds[4].span.contents) > 0 else "-"
+            three_code = tds[1].contents[0] if len(tds[1].contents) > 0 else "-"
+            four_code = tds[2].contents[0] if len(tds[2].contents) > 0 else "-"
+            airport = tds[3].contents[0] if len(tds[3].contents) > 0 else "-"
+            english_city = tds[4].contents[0] if len(tds[4].contents) > 0 else "-"
             self.result["city_codes"].append({"city":city, "three_code":three_code, "four_code":four_code, "airport":airport, "english_city":english_city})
         
 
@@ -63,6 +63,10 @@ class TestAnalysis(unittest.TestCase):
         
         self.assertNotEqual(self.analysis.result, {})
         
+        first_item = self.analysis.result["city_codes"][0]
+        self.assertEqual(first_item["city"], u"北京")
+        self.assertEqual(first_item["three_code"], "PEK")
+        self.assertEqual(first_item["airport"], u"北京首都国际机场")
         
     
 

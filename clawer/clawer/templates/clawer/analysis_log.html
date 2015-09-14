@@ -7,9 +7,18 @@
 
 
 <div id="toolbar">
+    <a href="#" class="easyui-menubutton" data-options="menu:'#date_choices',">日期</a>
+    
     <a href="#" class="easyui-linkbutton" onclick="javascript:reload_datagrid(1)">失败的</a>
     <a href="#" class="easyui-linkbutton" onclick="javascript:reload_datagrid(2)">成功的</a>
+    
+    <span id="tips"></span>
 </div>
+
+<div id="date_choices">
+    <div id="select_date_btn">选择</div>
+</div>
+
 
 <table id="grid" class="easyui-datagrid" style="width:100%;height:100%"
         url="{% url clawer.apis.home.clawer_analysis_log %}" showFooter="true"
@@ -44,6 +53,15 @@
 <div id="failed_reason_win" class="easyui-window" title="失败详情" closed="true" style="width:80%;height:90%;padding:5px;">
 </div>
 <!-- failed reason win end -->
+
+
+<!-- calendar win -->
+<div id="calendar_win" class="easyui-window" title="日历" closed="true" style="width:80%;height:90%;padding:5px;">
+    <div id="cc" class="easyui-calendar" style="width:60%;height:80%;"></div>
+</div>
+<!-- calendar win end -->
+
+
 
 
 <script type="text/javascript">
@@ -125,6 +143,45 @@ function showResultWin(row_index) {
 	$("#result_win").html(content);
 	$("#result_win").window("open");
 }
+
+function formatDate(date) {
+	var year = date.getFullYear();
+	var month = date.getMonth() + 1;
+	var day = date.getDate();
+	
+	var result = "";
+	
+	result += year;
+	result += "-";
+	if(month < 10) {
+		result += "0" + month;
+	} else {
+		result += month;
+	}
+	result += "-";
+	if(day < 10) {
+		result += "0" + day;
+	} else {
+		result += day;
+	}
+	
+	return result;
+}
+
+$(document).ready(function(){
+	
+	$("#select_date_btn").bind("click", function(e){
+		$("#calendar_win").window("open");
+		$("#calendar_win").calendar({
+			onSelect: function(date) {
+				$("#grid").datagrid("load", {date: formatDate(date)});
+				$("#calendar_win").window("close");
+				$("#tips").html(formatDate(date));
+			}
+		});
+	});
+	
+});
 </script>
 
 
