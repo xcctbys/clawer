@@ -19,20 +19,31 @@
     <thead data-options="frozen:true">
         <tr>
             <th data-options="field:'id',width:80" sortable="true">ID</th>
+            <th data-options="field:'status_name',">状态</th>
         </tr>
     </thead>
     <thead>
         <tr>
-            <th data-options="field:'status_name',">状态</th>
-            <th data-options="field:'result',">结果</th>
+            <th data-options="field:'result',width:200," formatter="formatResult">结果</th>
             <th data-options="field:'clawer',"  formatter="formatClawer">爬虫</th>
             <th data-options="field:'task',"  formatter="formatTask">任务</th>
-            <th data-options="field:'failed_reason',">失败原因</th>
+            <th data-options="field:'failed_reason',width:200," formatter="formatFailedReason">失败原因</th>
             <th data-options="field:'add_datetime',">添加时间</th>
         </tr>
     </thead>    
 </table>
 
+
+<!-- result win -->
+<div id="result_win" class="easyui-window" title="结果详情" closed="true" style="width:80%;height:90%;padding:5px;">
+</div>
+<!-- result win end -->
+
+
+<!-- failed reason win -->
+<div id="failed_reason_win" class="easyui-window" title="失败详情" closed="true" style="width:80%;height:90%;padding:5px;">
+</div>
+<!-- failed reason win end -->
 
 
 <script type="text/javascript">
@@ -58,6 +69,60 @@ function reload_datagrid(status) {
 	});
 }
 
+function formatFailedReason(val, row) {
+	if(!val) {
+		return "-";
+	}
+	
+	var row_index = $("#grid").datagrid("getRowIndex", row);
+	
+	return "<a href='#' onclick='javascript:showFailedReasonWin("+row_index+")'>"+row.failed_reason.substring(0, 50)+"</a>"
+}
+
+function showFailedReasonWin(row_index) {
+	$("#grid").datagrid("selectRow", row_index);
+	
+	var row = $("#grid").datagrid("getSelected");
+	console.debug("row is ", row);
+	
+	var content = ["<pre class='highlight'>",
+	    "<code>",
+	    row.failed_reason,
+	    "</code>",
+	    "</pre>"
+	].join(" ");
+	
+	$("#failed_reason_win").html(content);
+	$("#failed_reason_win").window("open");
+}
+
+
+function formatResult(val, row) {
+	if(!val) {
+		return "-";
+	}
+	
+	var row_index = $("#grid").datagrid("getRowIndex", row);
+	
+	return "<a href='#' onclick='javascript:showResultWin("+row_index+")'>"+row.result.substring(0, 50)+"</a>"
+}
+
+function showResultWin(row_index) {
+	$("#grid").datagrid("selectRow", row_index);
+	
+	var row = $("#grid").datagrid("getSelected");
+	console.debug("row is ", row);
+	
+	var content = ["<pre class='highlight'>",
+	    "<code>",
+	    row.result,
+	    "</code>",
+	    "</pre>"
+	].join(" ");
+	
+	$("#result_win").html(content);
+	$("#result_win").window("open");
+}
 </script>
 
 
