@@ -19,7 +19,7 @@ def run():
     pool = threadpool.ThreadPool(2)
     #scan tasks
     need_analysis_tasks = []
-    clawer_tasks = ClawerTask.objects.filter(clawer__status=Clawer.STATUS_ON, status=ClawerTask.STATUS_SUCCESS)[:100]
+    clawer_tasks = ClawerTask.objects.filter(clawer__status=Clawer.STATUS_ON, status=ClawerTask.STATUS_SUCCESS).order_by("id")[:100]
     for item in clawer_tasks:
         
         if os.path.exists(item.store) is False:
