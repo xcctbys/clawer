@@ -35,7 +35,7 @@ def merge_clawer(clawer, start, end):
     if len(analysis_logs) <= 0:
         return
     
-    with open(save_path(clawer, start), "a+b") as f:
+    with open(save_path(clawer, start), "w+b") as f:
         print "clawer id %d, count is %d" % (clawer.id, len(analysis_logs))
         for item in analysis_logs:
             f.write(smart_str(item.result))
