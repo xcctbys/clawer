@@ -63,6 +63,13 @@ def do_run(clawer_task):
         analysis_log.status = ClawerAnalysisLog.STATUS_FAIL
         
     analysis_log.save()
+    #update clawer task status
+    if analysis_log.status == ClawerAnalysisLog.STATUS_SUCCESS:
+        clawer_task.status = ClawerTask.STATUS_ANALYSIS_SUCCESS
+    elif analysis_log.status == ClawerAnalysisLog.STATUS_FAIL:
+        clawer_task.status = ClawerTask.STATUS_ANALYSIS_FAIL
+    clawer_task.save()
+    
     return analysis_log    
     
     
