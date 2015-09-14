@@ -100,7 +100,7 @@ ROOT_URLCONF = 'clawer.urls'
 WSGI_APPLICATION = 'clawer.wsgi.application'
 
 TEMPLATE_DIRS = (
-    os.path.join(os.path.dirname(__file__), 'templates').replace('\\','/'),
+    os.path.join(os.path.dirname(__file__), "clawer", 'templates').replace('\\','/'),
 )
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
