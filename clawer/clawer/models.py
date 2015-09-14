@@ -302,7 +302,7 @@ class MenuPermission:
             {"id":102, "text":u"爬虫失败任务", "url":"clawer.views.home.clawer_task_failed", "groups":GROUPS},
             {"id":103, "text":u"爬虫任务", "url":"clawer.views.home.clawer_task", "groups":GROUPS},
             {"id":103, "text":u"爬虫分析日志", "url":"clawer.views.home.clawer_analysis_log", "groups":GROUPS},
-            {"id":104, "text":u"爬虫数据查看", "url":settings.MEDIA_URL, "groups":GROUPS},
+            {"id":104, "text":u"数据下载", "url":settings.MEDIA_URL, "groups":GROUPS},
         ]},
         {"id":2, "text": u"系统管理", "url":"", "children": [
             {"id":201, "text":u"参数设置", "url":"", "groups":[GROUP_MANAGER]},
