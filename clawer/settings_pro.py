@@ -36,6 +36,7 @@ MEDIA_URL = "http://clawer.princetechs.com/media/"
 PYTHON = "/home/virtualenvs/py27/bin/python"
 CRONTAB_USER = "nginx"
 CLAWER_SOURCE = "/data/clawer/"
+CLAWER_RESULT = "/data/clawer_result/"
 
 #for celeryd
 BROKER_URL = 'redis://10.171.34.147:6379/0'

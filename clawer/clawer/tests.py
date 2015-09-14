@@ -1,6 +1,7 @@
 #encoding=utf-8
 import json
 import os
+import datetime
 
 from django.test import TestCase
 from django.test.client import Client
@@ -10,7 +11,7 @@ from django.conf import settings
 
 from clawer.models import MenuPermission, Clawer, ClawerTask,\
     ClawerTaskGenerator, ClawerAnalysis, ClawerAnalysisLog
-from clawer.management.commands import task_generator_test, task_generator_run, task_analysis
+from clawer.management.commands import task_generator_test, task_generator_run, task_analysis, task_analysis_merge
 from clawer import tasks as celeryTasks
 
 
@@ -297,3 +298,20 @@ class TestCmd(TestCase):
         generator.delete()
         task.delete()
         analysis.delete()
+        
+    def test_task_analysis_merge(self):
+        pre_hour = datetime.datetime.now() - datetime.timedelta(minutes=60)
+        clawer = Clawer.objects.create(name="hi", info="good")
+        generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print '{\"uri\": \"http://www.github.com\"}'\n", cron="*")
+        task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baidu.com")
+        analysis = ClawerAnalysis.objects.create(clawer=clawer, code="print \"{'url':'ssskkk'}\"\n")
+        analysis_log = ClawerAnalysisLog.objects.create(clawer=clawer, analysis=analysis, task=task, status=ClawerAnalysisLog.STATUS_SUCCESS, 
+                                                        result=json.dumps({"hi":"ok"}), add_datetime=pre_hour)
+        
+        task_analysis_merge.run()
+        
+        clawer.delete()
+        generator.delete()
+        task.delete()
+        analysis.delete()
+        analysis_log.delete()
