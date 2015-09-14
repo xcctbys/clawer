@@ -32,9 +32,10 @@ def run():
 def merge_clawer(clawer, start, end):
     analysis_logs = ClawerAnalysisLog.objects.filter(clawer=clawer, add_datetime__range=(start, end), status=ClawerAnalysisLog.STATUS_SUCCESS)
     
-    with open(save_path(clawer, start), "w") as f:
+    with open(save_path(clawer, start), "a") as f:
         for item in analysis_logs:
             f.write(item.result)
+            f.write("\n")
         
 
 def save_path(clawer, dt):
