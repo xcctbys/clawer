@@ -113,7 +113,7 @@ function showResultWin(row_index) {
 	var row = $("#grid").datagrid("getSelected");
 	console.debug("row is ", row);
 	
-	var result = JSON.stringify($.parseJSON(row.result));
+	var result = JSON.stringify($.parseJSON(row.result), null, 4);
 	
 	var content = ["<pre class='highlight'>",
 	    "<code>",
