@@ -122,6 +122,8 @@ def clawer_analysis_update(request):
     if code_file.name[-3:] != ".py":
         return {"is_ok":False, "reason":u"暂时只支持python文件"}
     
+    ClawerAnalysis.objects.filter(clawer=form.cleaned_data["clawer"]).update(status=ClawerAnalysis.STATUS_OFF)
+    
     code = code_file.read()
     analysis = ClawerAnalysis.objects.create(clawer=form.cleaned_data["clawer"], code=code)
     return {"is_ok":True, "analysis":analysis.as_json()}
