@@ -7,11 +7,21 @@
 
 
 <div id="toolbar">
+    <input id="id_input" class="easyui-textbox" data-options="iconCls:'icon-search'" style="width:200px" placeholder="根据ID搜索">
+    <a href="#" class="easyui-linkbutton" id="search_btn">Go</a>
+    
+    |
+    
     <a href="#" class="easyui-linkbutton" onclick="javascript:reload_datagrid(1)">新增的</a>
     <a href="#" class="easyui-linkbutton" onclick="javascript:reload_datagrid(2)">进行中</a>
     <a href="#" class="easyui-linkbutton" onclick="javascript:reload_datagrid(3)">失败</a>
     <a href="#" class="easyui-linkbutton" onclick="javascript:reload_datagrid(4)">成功</a>
+    
+    |
+    <a href="#" class="easyui-linkbutton" onclick="javascript:reload_datagrid(5)">分析成功</a>
+    <a href="#" class="easyui-linkbutton" onclick="javascript:reload_datagrid(6)">分析失败</a>
 </div>
+
 
 <table id="grid" class="easyui-datagrid" style="width:100%;height:100%"
         url="{% url clawer.apis.home.clawer_task %}" showFooter="true"
@@ -90,6 +100,15 @@ function reload_datagrid(status) {
 	    status: status
 	});
 }
+
+$(document).ready(function(){
+	$("#search_btn").bind("click", function(e){
+		var id = $("#id_input").val();
+		$("#grid").datagrid("load", {
+			"id": id
+		});
+	});
+});
 
 </script>
 

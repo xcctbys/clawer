@@ -43,12 +43,16 @@ def clawer_task_failed(request):
 @render_json
 @check_auth_for_api
 def clawer_task(request):
+    task_id = request.GET.get("id")
     status = request.GET.get("status")
     
     queryset = ClawerTask.objects
     if status:
         queryset = queryset.filter(status=status) 
-        
+    
+    if task_id:
+        queryset = queryset.filter(id=task_id)    
+    
     pager = EasyUIPager(queryset, request)
     return pager.query()
 
