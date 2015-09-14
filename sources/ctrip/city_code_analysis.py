@@ -12,7 +12,7 @@ import unittest
 from bs4 import BeautifulSoup
 
 
-DEBUG = False
+DEBUG = True
 if DEBUG:
     level = logging.DEBUG
 else:
@@ -43,11 +43,11 @@ class Analysis(object):
             tds = tr.find_all("td")
             logging.debug("tr %s, td count %d", tr, len(tds))
             
-            city = tds[0].span.contents
-            three_code = tds[1].contents
-            four_code = tds[2].contents
-            airport = tds[3].contents
-            english_city = tds[4].contents
+            city = tds[0].span.contents[0] if len(tds[0].span.contents) > 0 else "-"
+            three_code = tds[1].contents[0] if len(tds[1].span.contents) > 0 else "-"
+            four_code = tds[2].contents[0] if len(tds[2].span.contents) > 0 else "-"
+            airport = tds[3].contents[0] if len(tds[3].span.contents) > 0 else "-"
+            english_city = tds[4].contents[0] if len(tds[4].span.contents) > 0 else "-"
             self.result["city_codes"].append({"city":city, "three_code":three_code, "four_code":four_code, "airport":airport, "english_city":english_city})
         
 
