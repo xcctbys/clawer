@@ -19,7 +19,7 @@ from clawer.models import Clawer, ClawerAnalysisLog
 
 def run():
     pre_hour = datetime.datetime.now() - datetime.timedelta(minutes=60)
-    start = pre_hour.replace(minute=0, second=0)
+    start = pre_hour.replace(minute=0, second=1)
     end = pre_hour.replace(minute=59, second=59)
     
     clawers = Clawer.objects.filter(status=Clawer.STATUS_ON)
