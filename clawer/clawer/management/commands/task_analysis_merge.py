@@ -14,6 +14,7 @@ from django.conf import settings
 
 from html5helper.utils import wrapper_raven
 from clawer.models import Clawer, ClawerAnalysisLog
+from django.utils.encoding import smart_str
 
 
 
@@ -34,8 +35,8 @@ def merge_clawer(clawer, start, end):
     
     with open(save_path(clawer, start), "a") as f:
         for item in analysis_logs:
-            print item.id, item.result
-            f.write(item.result)
+            #print item.id, item.result
+            f.write(smart_str(item.result))
             f.write("\n")
         
 
