@@ -9,17 +9,29 @@
 <div id="toolbar">
     <input id="id_input" class="easyui-textbox" data-options="iconCls:'icon-search'" style="width:200px" placeholder="根据ID搜索">
     <a href="#" class="easyui-linkbutton" id="search_btn">Go</a>
-    
     |
+    <a href="javascript:void(0)" class="easyui-menubutton" data-options="menu:'#download_mm',">下载</a>
+    <a href="javascript:void(0)" class="easyui-menubutton" data-options="menu:'#analysis_mm',">分析</a>
+    <a href="javascript:void(0)" class="easyui-menubutton" data-options="menu:'#operate_mm',">操作</a>
     
-    <a href="#" class="easyui-linkbutton" onclick="javascript:reload_datagrid(1)">新增的</a>
-    <a href="#" class="easyui-linkbutton" onclick="javascript:reload_datagrid(2)">进行中</a>
-    <a href="#" class="easyui-linkbutton" onclick="javascript:reload_datagrid(3)">下载失败</a>
-    <a href="#" class="easyui-linkbutton" onclick="javascript:reload_datagrid(4)">下载成功</a>
-    
-    |
-    <a href="#" class="easyui-linkbutton" onclick="javascript:reload_datagrid(5)">分析成功</a>
-    <a href="#" class="easyui-linkbutton" onclick="javascript:reload_datagrid(6)">分析失败</a>
+</div>
+
+<div id="download_mm" style="width:150">
+	<div onclick="javascript:reload_datagrid(1)">新增的</div>
+    <div onclick="javascript:reload_datagrid(2)">进行中</div>
+    <div onclick="javascript:reload_datagrid(3)">下载失败</div>
+    <div onclick="javascript:reload_datagrid(4)">下载成功</div>
+</div>
+
+
+<div id="analysis_mm" style="width: 150">
+    <div onclick="javascript:reload_datagrid(5)">分析成功</div>
+    <div onclick="javascript:reload_datagrid(6)">分析失败</div>
+</div>
+
+
+<div id="operate_mm" style="width: 150">
+    <div id="add_task_btn">手工录入任务</div>
 </div>
 
 
@@ -49,6 +61,30 @@
         </tr>
     </thead>    
 </table>
+
+<!-- manual add task win -->
+<div id="add_task_win" class="easyui-window" title="手工录入任务" style="width:80%;height:60%" data-options="iconCls:'icon-save',modal:true" closed='true'>
+    
+	    <form id="add_task_form" method="post" style= "padding:10px 60px 20px 60px">
+		    <table cellpadding="5">
+		        <tr>
+			        <td><label for="clawer">爬虫</label></td>
+			        <td><select class="easyui-combogrid" type="text" id="id_clawer" name="clawer" data-options="required:true" style="width:250px;" ></select></td>
+			    </tr>
+			    <tr>
+			        <td><label for="uri">URI:</label></td>
+			        <td><input class="easyui-textbox" type="text" name="uri" data-options="required:true,multiline:true" style="width:400px;height:100px;" /></td>
+			    </tr>
+			    <tr>
+			        <td></td>
+			        <td><a href="javascript:void(0)" class="easyui-linkbutton" onclick="submitForm()">提交</a></td>
+			    </tr>
+		    </table>
+		        
+		</form>
+
+</div>
+<!-- end manual add task win -->
 
 
 
@@ -101,6 +137,46 @@ function reload_datagrid(status) {
 	});
 }
 
+function load_clawers() {
+	var url = "{% url clawer.apis.home.clawer_all %}";
+			
+	$("#id_clawer").combogrid({
+		panelWidth:450,
+		mode: 'remote',
+		url: url,
+		idField: 'id',
+	    textField: 'name',
+		columns: [[
+			{field:'id',title:'ID',width:80,sortable:true},
+			{field:'name',title:'名称',width:120,sortable:true},
+			{field:'info',title:'简介',width:250,sortable:true}
+		]],
+	});
+
+}
+
+function submitForm() {
+	var url = "{% url clawer.apis.home.clawer_task_add %}";
+	
+	$.ajax({
+		url: url,
+		data: $("#add_task_form").serialize(),
+		type: "POST",
+		dataType:'json',
+		success: function(resp){
+			if(resp.is_ok == false) {
+	        	return $.messager.alert("warning", resp.reason);
+	        }
+	        
+	        $('#add_task_form').form("clear");
+	        $("#add_task_win").window("close");
+	        
+	        $.messager.alert("success", "任务ID: "+resp.clawer_task_id);
+		}
+	});
+	
+}
+
 $(document).ready(function(){
 	$("#search_btn").bind("click", function(e){
 		var id = $("#id_input").val();
@@ -108,6 +184,12 @@ $(document).ready(function(){
 			"id": id
 		});
 	});
+	
+	$("#add_task_btn").bind("click", function(e){
+		$("#add_task_win").window("open");
+	});
+	
+	load_clawers();
 });
 
 </script>

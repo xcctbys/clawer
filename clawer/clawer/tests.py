@@ -151,6 +151,16 @@ class TestHomeApi(TestCase):
         clawer.delete()
         clawer_generator.delete()
         clawer_task.delete()
+    
+    def test_task_add(self):
+        clawer = Clawer.objects.create(name="hi", info="good")
+        url = reverse("clawer.apis.home.clawer_task_add")
+        
+        resp = self.logined_client.post(url, {"clawer":clawer.id, "uri":"http://www.1.com"})
+        result = json.loads(resp.content)
+        self.assertTrue(result["is_ok"])
+        
+        clawer.delete()
         
     def test_clawer_task_generator_update(self):
         clawer = Clawer.objects.create(name="hi", info="good")

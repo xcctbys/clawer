@@ -14,3 +14,8 @@ class UpdateClawerTaskGenerator(forms.Form):
 class UpdateClawerAnalysis(forms.Form):
     clawer = forms.ModelChoiceField(queryset=Clawer.objects)
     code_file = forms.FileField()
+    
+
+class AddClawerTask(forms.Form):
+    clawer = forms.ModelChoiceField(queryset=Clawer.objects)
+    uri = forms.CharField(max_length=4096)

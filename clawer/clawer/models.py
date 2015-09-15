@@ -227,7 +227,7 @@ class ClawerTask(models.Model):
         (STATUS_ANALYSIS_SUCCESS, u"分析成功"),
     )
     clawer = models.ForeignKey(Clawer)
-    task_generator = models.ForeignKey(ClawerTaskGenerator)
+    task_generator = models.ForeignKey(ClawerTaskGenerator, blank=True, null=True)
     uri = models.CharField(max_length=4096)
     status = models.IntegerField(default=STATUS_LIVE, choices=STATUS_CHOICES)
     store = models.CharField(max_length=4096, blank=True, null=True)
@@ -245,7 +245,7 @@ class ClawerTask(models.Model):
     def as_json(self):
         result = {"id":self.id,
             "clawer": self.clawer.as_json(),
-            "task_generator": self.task_generator.as_json(),
+            "task_generator": self.task_generator.as_json() if self.task_generator else None,
             "uri": self.uri,
             "status": self.status,
             "status_name": self.status_name(),

@@ -24,6 +24,8 @@ home_api_urls = patterns("clawer.apis.home",
     
     url(r"^clawer/task/$", "clawer_task"),
     url(r"^clawer/task/failed/$", "clawer_task_failed"),
+    url(r"^clawer/task/add/$", "clawer_task_add"),
+    
     url(r"^clawer/task/generator/update/$", "clawer_task_generator_update"),
     url(r"^clawer/task/generator/history/$", "clawer_task_generator_history"),
     

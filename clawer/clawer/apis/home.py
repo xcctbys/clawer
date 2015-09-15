@@ -12,7 +12,8 @@ from html5helper.decorator import render_json
 from clawer.models import Clawer, ClawerTask, ClawerTaskGenerator,\
     ClawerAnalysis, ClawerAnalysisLog
 from clawer.utils import check_auth_for_api, EasyUIPager
-from clawer.forms import UpdateClawerTaskGenerator, UpdateClawerAnalysis
+from clawer.forms import UpdateClawerTaskGenerator, UpdateClawerAnalysis,\
+    AddClawerTask
 
 
 
@@ -56,6 +57,18 @@ def clawer_task(request):
     
     pager = EasyUIPager(queryset, request)
     return pager.query()
+
+
+@render_json
+@check_auth_for_api
+def clawer_task_add(request):
+    form = AddClawerTask(request.POST)
+    if form.is_valid() is False:
+        return {"is_ok":True, "reason":u"%s" % form.errors}
+    
+    clawer_task = ClawerTask.objects.create(clawer=form.cleaned_data["clawer"], uri=form.cleaned_data["uri"])
+    
+    return {"is_ok":True, "clawer_task_id":clawer_task.id}
 
 
 @render_json
