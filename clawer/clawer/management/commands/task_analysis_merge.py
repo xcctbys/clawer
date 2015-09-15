@@ -2,12 +2,9 @@
 """ run every hour
 """
 
-import json
-import traceback
-import threadpool
 import os
-import subprocess
 import datetime
+import gzip
 
 from django.core.management.base import BaseCommand
 from django.conf import settings
@@ -35,15 +32,16 @@ def merge_clawer(clawer, start, end):
     if len(analysis_logs) <= 0:
         return
     
-    with open(save_path(clawer, start), "wb") as f:
+    path = save_path(clawer, start)
+    with gzip.open(path, "wb") as f:
         print "clawer id %d, count is %d" % (clawer.id, len(analysis_logs))
         for item in analysis_logs:
-            f.write(smart_str(item.result))
+            f.write(smart_str(item.result.strip()))
             f.write("\n")
         
 
 def save_path(clawer, dt):
-    path = os.path.join(settings.CLAWER_RESULT, "%d/%s/%s.json" % (clawer.id, dt.strftime("%Y/%m/%d"), dt.strftime("%H")))
+    path = os.path.join(settings.CLAWER_RESULT, "%d/%s/%s.json.gz" % (clawer.id, dt.strftime("%Y/%m/%d"), dt.strftime("%H")))
     parent = os.path.dirname(path)
     if os.path.exists(parent) is False:
         os.makedirs(parent, 0775)
