@@ -4,8 +4,6 @@
 
 
 import json
-import traceback
-import logging
 import datetime
 
 from html5helper.decorator import render_json
@@ -95,6 +93,10 @@ def clawer_task_generator_update(request):
                                                         cron=form.cleaned_data["cron"],
                                                         code=code)
     
+    #add log
+    Logger.objects.create(user=request.user, category=LoggerCategory.UPDATE_TASK_GENERATOR, title=form.cleaned_data["clawer"].name, 
+                          content=json.dumps(request.POST), from_ip=get_request_ip(request))
+    
     return {"is_ok":True, "task_generator":task_generator.as_json()}
     
     
@@ -152,4 +154,9 @@ def clawer_analysis_update(request):
     
     code = code_file.read()
     analysis = ClawerAnalysis.objects.create(clawer=form.cleaned_data["clawer"], code=code)
+    
+    #add log
+    Logger.objects.create(user=request.user, category=LoggerCategory.UPDATE_ANALYSIS, title=form.cleaned_data["clawer"].name, 
+                          content=json.dumps(request.POST), from_ip=get_request_ip(request))
+    
     return {"is_ok":True, "analysis":analysis.as_json()}
