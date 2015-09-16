@@ -205,11 +205,11 @@ class ClawerTaskGenerator(models.Model):
     def parse_line(cls, line):
         """ line format is: {"uri":""}
         Returns:
-            uri
+            dict of json
         """
         logging.info("line is: %s", line)
         js = json.loads(line)
-        return js["uri"]
+        return js
     
     def write_code(self, path):
         with codecs.open(path, "w", "utf-8") as f:
@@ -229,6 +229,7 @@ class ClawerTask(models.Model):
     clawer = models.ForeignKey(Clawer)
     task_generator = models.ForeignKey(ClawerTaskGenerator, blank=True, null=True)
     uri = models.CharField(max_length=4096)
+    cookie = models.CharField(max_length=4096, blank=True, null=True)
     status = models.IntegerField(default=STATUS_LIVE, choices=STATUS_CHOICES)
     store = models.CharField(max_length=4096, blank=True, null=True)
     content_bytes = models.IntegerField(default=0)
@@ -247,6 +248,7 @@ class ClawerTask(models.Model):
             "clawer": self.clawer.as_json(),
             "task_generator": self.task_generator.as_json() if self.task_generator else None,
             "uri": self.uri,
+            'cookie': self.cookie,
             "status": self.status,
             "status_name": self.status_name(),
             "content_bytes": self.content_bytes,

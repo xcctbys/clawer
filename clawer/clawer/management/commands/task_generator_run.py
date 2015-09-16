@@ -23,12 +23,13 @@ def run(task_generator_id):
     
     p = subprocess.Popen([settings.PYTHON, path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  #("%s %s" % (settings.PYTHON, path), "r")
     for line in p.stdout:
-        uri = ClawerTaskGenerator.parse_line(line)
-        if not uri:
+        js = ClawerTaskGenerator.parse_line(line)
+        if not js:
             logging.warning("unknown line: %s" % line)
             continue
         #insert to db
-        ClawerTask.objects.create(clawer=task_generator.clawer, task_generator=task_generator, uri=uri)
+        ClawerTask.objects.create(clawer=task_generator.clawer, task_generator=task_generator, uri=js["uri"],
+                                  cookie=js.get("cookie"))
         
     err = p.stderr.read()
     

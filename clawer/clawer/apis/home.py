@@ -66,7 +66,9 @@ def clawer_task_add(request):
     if form.is_valid() is False:
         return {"is_ok":True, "reason":u"%s" % form.errors}
     
-    clawer_task = ClawerTask.objects.create(clawer=form.cleaned_data["clawer"], uri=form.cleaned_data["uri"])
+    clawer_task = ClawerTask.objects.create(clawer=form.cleaned_data["clawer"], 
+                                            uri=form.cleaned_data["uri"],
+                                            cookie=form.cleaned_data["cookie"])
     
     return {"is_ok":True, "clawer_task_id":clawer_task.id}
 
