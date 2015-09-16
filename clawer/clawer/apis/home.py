@@ -10,10 +10,11 @@ import datetime
 
 from html5helper.decorator import render_json
 from clawer.models import Clawer, ClawerTask, ClawerTaskGenerator,\
-    ClawerAnalysis, ClawerAnalysisLog
+    ClawerAnalysis, ClawerAnalysisLog, Logger, LoggerCategory
 from clawer.utils import check_auth_for_api, EasyUIPager
 from clawer.forms import UpdateClawerTaskGenerator, UpdateClawerAnalysis,\
     AddClawerTask
+from html5helper.utils import get_request_ip
 
 
 
@@ -69,6 +70,10 @@ def clawer_task_add(request):
     clawer_task = ClawerTask.objects.create(clawer=form.cleaned_data["clawer"], 
                                             uri=form.cleaned_data["uri"],
                                             cookie=form.cleaned_data["cookie"])
+    
+    #add log
+    Logger.objects.create(user=request.user, category=LoggerCategory.ADD_TASK, title=form.cleaned_data["uri"], 
+                          content=json.dumps(request.POST), from_ip=get_request_ip(request))
     
     return {"is_ok":True, "clawer_task_id":clawer_task.id}
 

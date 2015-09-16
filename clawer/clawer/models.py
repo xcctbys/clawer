@@ -214,6 +214,43 @@ class ClawerTaskGenerator(models.Model):
     def write_code(self, path):
         with codecs.open(path, "w", "utf-8") as f:
             f.write(self.code)
+
+
+
+
+class LoggerCategory(object):
+    ADD_TASK = u"手工增加任务"
+    UPDATE_TASK_GENERATOR  = u"更新任务生成器"
+    UPDATE_ANALYSIS = u"更新分析器"
+    
+    
+    
+
+class Logger(models.Model):
+    """用户操作记录表
+    """
+    user = models.ForeignKey(DjangoUser, blank=True, null=True)
+    category = models.CharField(max_length=64)
+    title = models.CharField(max_length=512)
+    content = models.TextField() # must is json format
+    from_ip = models.IPAddressField()
+    add_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        app_label = "clawer"
+        
+        
+    def as_json(self):
+        result = { "id": self.id,
+            "user_id": self.user_id if self.user else 0,
+            "user_profile": self.user.get_profile().as_json() if self.user else None,
+            "category": self.category,
+            "title": self.title,
+            "content": self.content,
+            "from_ip": self.from_ip,
+            "add_at": self.add_at.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        return result
         
 
 class ClawerTask(models.Model):
@@ -308,6 +345,7 @@ class MenuPermission:
         ]},
         {"id":2, "text": u"系统管理", "url":"", "children": [
             {"id":201, "text":u"参数设置", "url":"", "groups":[GROUP_MANAGER]},
+            {"id":201, "text":u"操作日志", "url":"clawer.views.logger.index", "groups":[GROUP_MANAGER]},
         ]},
     ]
     

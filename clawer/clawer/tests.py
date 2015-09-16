@@ -10,7 +10,7 @@ from django.contrib.auth.models import User as DjangoUser, Group
 from django.conf import settings
 
 from clawer.models import MenuPermission, Clawer, ClawerTask,\
-    ClawerTaskGenerator, ClawerAnalysis, ClawerAnalysisLog
+    ClawerTaskGenerator, ClawerAnalysis, ClawerAnalysisLog, Logger
 from clawer.management.commands import task_generator_test, task_generator_run, task_analysis, task_analysis_merge
 from clawer import tasks as celeryTasks
 
@@ -97,7 +97,23 @@ class TestUserApi(TestCase):
         url = reverse("clawer.apis.user.get_my_menus")
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
+
+
+  
+
+class TestLoggerApi(TestCase):
+    def setUp(self):
+        TestCase.setUp(self)
+        self.client = Client()
         
+    def test_index(self):
+        logger = Logger.objects.create(title="xxx", content="xxx", from_ip="127.0.0.1")
+        url = reverse("clawer.apis.logger.all")
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        
+        logger.delete()
+                
         
 class TestHomeApi(TestCase):
     def setUp(self):
