@@ -28,8 +28,12 @@ def run_clawer_task(clawer_task):
     failed = False
     r = None
     
+    headers = {"user-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:40.0) Gecko/20100101 Firefox/40.0"}
+    if clawer_task.cookie:
+        headers["cookie"] = clawer_task.cookie
+    
     try:
-        r = requests.get(clawer_task.uri)
+        r = requests.get(clawer_task.uri, headers=headers)
     except:
         logging.warning(traceback.format_exc(10))
         failed = True
