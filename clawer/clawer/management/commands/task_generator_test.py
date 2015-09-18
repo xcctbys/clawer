@@ -78,7 +78,7 @@ def test_beta(task_generator):
 
 def test_product(task_generator):
     path = task_generator.product_path()
-    task_generator.write_code(path)
+    #task_generator.write_code(path)
     
     comment = "clawer %d task generator" % task_generator.clawer_id
     user_cron = CronTab(user=settings.CRONTAB_USER)
