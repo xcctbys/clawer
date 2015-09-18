@@ -20,6 +20,7 @@ class Clawer(models.Model):
     )
     name = models.CharField(max_length=128)
     info = models.CharField(max_length=1024)
+    customer = models.CharField(max_length=128, blank=True, null=True)
     status = models.IntegerField(default=STATUS_ON, choices=STATUS_CHOICES)
     add_datetime = models.DateTimeField(auto_now_add=True)
     
@@ -30,6 +31,7 @@ class Clawer(models.Model):
         result = {"id": self.id,
             "name": self.name,
             "info": self.info,
+            "customer": self.customer,
             "status_name": self.status_name(),
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S")
         }
