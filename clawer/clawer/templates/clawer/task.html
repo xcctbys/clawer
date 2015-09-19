@@ -10,7 +10,7 @@
     <input id="id_input" class="easyui-textbox" data-options="iconCls:'icon-search'" style="width:200px" placeholder="根据ID搜索">
     <a href="#" class="easyui-linkbutton" id="search_btn">Go</a>
     |
-    <select class="easyui-combogrid" type="text" id="id_clawer_swift" data-options="required:true" style="width:100px;" ></select>
+    <select class="easyui-combogrid" type="text" id="id_clawer_select" data-options="required:true" style="width:100px;" ></select>
     <select class="easyui-combobox" type="text" id="id_status_select" data-options="required:true" style="width:100px;" ></select>
     
     <a href="javascript:void(0)" class="easyui-menubutton" data-options="menu:'#operate_mm',">操作</a>
@@ -158,9 +158,13 @@ function showFailedReason(row_index) {
 	$("#show_failed_reason_win").window('open');
 }
 
-function reload_datagrid(status) {
+function reload_datagrid() {
+	var status = $("#id_status_select").combobox("getValue");
+	var clawer_id = $("#id_clawer_select").combobox("getValue");
+	
 	$('#grid').datagrid('load', {
-	    status: status
+	    status: status,
+	    clawer: clawer_id
 	});
 }
 
@@ -180,7 +184,7 @@ function load_clawers() {
 		]],
 	});
 	
-	$("#id_clawer_swift").combogrid({
+	$("#id_clawer_select").combogrid({
 		panelWidth:450,
 		mode: 'remote',
 		url: url,
@@ -192,9 +196,7 @@ function load_clawers() {
 			{field:'info',title:'简介',width:250,sortable:true}
 		]],
 		onChange: function(new_value, old_value) {
-			$('#grid').datagrid('load', {
-			    clawer_id: new_value
-			});
+			reload_datagrid();
 		}
 	});
 	
@@ -204,7 +206,7 @@ function load_clawers() {
 		valueField:'id',
 	    textField:'text',
 	    onSelect: function(item) {
-	    	reload_datagrid(item.id);
+	    	reload_datagrid();
 	    },
 	    data: [
 	   	    {id:1, text:"新增的"},
