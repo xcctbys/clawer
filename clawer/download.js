@@ -16,10 +16,10 @@ page.open(url, function(status) {
 	
 	if(status != "success") {
 		console.error("status ", status);
-		phantom.exit(1);
+		phantom.exit();
 		return;
 	}
 	
 	console.log(page.content);
-	phantom.exit(0);
+	phantom.exit();
 });
