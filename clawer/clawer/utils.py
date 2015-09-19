@@ -81,6 +81,8 @@ class Download(object):
             self.download_with_requests()
         elif self.engine == self.ENGINE_PHANTOMJS:
             self.download_with_phantomjs()
+        else:
+            self.download_with_phantomjs()
     
     def download_with_requests(self):
         r = None
@@ -101,10 +103,12 @@ class Download(object):
         self.response_headers = r.headers
         self.content = r.content
         self.content_encoding = r.encoding
+        end = time.time()
+        self.spend_time = end - start
     
     def download_with_phantomjs(self):
         start = time.time()
-        args = [settings.DOWNLOAD_JS, self.url]
+        args = ["/usr/bin/phantomjs", settings.DOWNLOAD_JS, self.url]
         if "Cookie" in self.headers:
             args.append(self.headers["Cookie"])
 
