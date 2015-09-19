@@ -1,7 +1,15 @@
 #coding=utf-8
 import math
+import requests
+import logging
+import traceback
+import subprocess
+import time
+
+from django.conf import settings
 
 from html5helper.utils import do_paginator
+
 
 
 
@@ -47,5 +55,69 @@ class EasyUIPager(object):
         result["total_page"] = math.ceil(float(result["total"])/rows)
         
         return result
+        
+
+class Download(object):
+    ENGINE_REQUESTS = "requests"
+    ENGINE_PHANTOMJS = "phantomjs"
+    
+    def __init__(self, url, engine=ENGINE_REQUESTS):
+        self.engine = engine
+        self.url = url
+        self.spend_time = 0  #unit is million second
+        self.cookie = ""
+        self.content = None
+        self.failed_exception = None
+        self.content_encoding = None
+        self.failed = False
+        self.headers = {}
+        self.response_headers = {}
+        
+    def add_cookie(self, cookie):
+        self.headers["Cookie"] = cookie
+        
+    def download(self):
+        if self.engine == self.ENGINE_REQUESTS:
+            self.download_with_requests()
+        elif self.engine == self.ENGINE_PHANTOMJS:
+            self.download_with_phantomjs()
+    
+    def download_with_requests(self):
+        r = None
+        start = time.time()
+        
+        try:
+            r = requests.get(self.url, headers=self.headers)
+        except:
+            self.failed = True
+            self.failed_exception = traceback.format_exc(10)
+            logging.warning(self.failed_exception)
+        
+        if self.failed:
+            end = time.time()
+            self.spend_time = end - start
+            return
+        
+        self.response_headers = r.headers
+        self.content = r.content
+        self.content_encoding = r.encoding
+    
+    def download_with_phantomjs(self):
+        start = time.time()
+        args = [settings.DOWNLOAD_JS, self.url]
+        if "Cookie" in self.headers:
+            args.append(self.headers["Cookie"])
+
+        p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  #("%s %s" % (settings.PYTHON, path), "r")
+        self.content = p.read()
+        self.failed_exception = p.stderr.read()
+        status = p.wait()
+        
+        end = time.time()
+        self.spend_time = end - start
+        
+        if status != 0:
+            self.failed = True    
+            return
         
         

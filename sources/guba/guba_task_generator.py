@@ -38,7 +38,7 @@ class Generator(object):
         return "http://guba.eastmoney.com/list,szzs,f_%d.html" % page
         
     def obtain_urls(self):
-        for page in range(self.last_page, self.last_page+10):
+        for page in range(self.last_page, self.last_page+20):
             if page > self.MAX_PAGE:
                 break
             self.do_obtain(page)

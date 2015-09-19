@@ -10,9 +10,10 @@ import logging
 import os
 import datetime
 import time
-import codecs
+import shutil
 
 from clawer.models import ClawerTask
+from clawer.utils import Download
 
 
 @shared_task
@@ -20,7 +21,6 @@ def run_clawer_task(clawer_task):
     if clawer_task.status != ClawerTask.STATUS_LIVE:
         return 0
     
-    start = time.time()
     clawer_task.status = ClawerTask.STATUS_PROCESS
     clawer_task.start_datetime = datetime.datetime.now()
     clawer_task.save()
@@ -32,19 +32,13 @@ def run_clawer_task(clawer_task):
     if clawer_task.cookie:
         headers["cookie"] = clawer_task.cookie
     
-    try:
-        r = requests.get(clawer_task.uri, headers=headers)
-    except:
-        logging.warning(traceback.format_exc(10))
-        failed = True
+    downloader = Download(clawer_task.uri, engine=clawer_task.download_engine if clawer_task.download_engine else Download.ENGINE_REQUESTS)
+    downloader.download()
     
-    if r.status_code != 200:
-        failed = True
-        
-    if failed:
+    if downloader.failed:
         clawer_task.status = ClawerTask.STATUS_FAIL
         clawer_task.done_datetime = datetime.datetime.now()
-        clawer_task.spend_time = int((time.time() - start)*1000)
+        clawer_task.spend_time = int(downloader.spend_time*1000)
         clawer_task.save()
         return
         
@@ -55,7 +49,7 @@ def run_clawer_task(clawer_task):
             os.makedirs(os.path.dirname(path), 0775)
             
         with open(path, "w") as f:
-            f.write(r.content)
+            f.write(downloader.content)
     except:
         logging.warning(traceback.format_exc(10))
         failed = True
@@ -63,20 +57,20 @@ def run_clawer_task(clawer_task):
     if failed:
         clawer_task.status = ClawerTask.STATUS_FAIL
         clawer_task.done_datetime = datetime.datetime.now()
-        clawer_task.spend_time = int((time.time() - start)*1000)
+        clawer_task.spend_time = int(downloader.spend_time*1000)
         clawer_task.save()
         return
     
     #update db
     clawer_task.status = ClawerTask.STATUS_SUCCESS
-    if r.headers.get("content-length"):
-        clawer_task.content_bytes = r.headers["Content-Length"]
+    if downloader.response_headers.get("content-length"):
+        clawer_task.content_bytes = downloader.response_headers["Content-Length"]
     else:
-        clawer_task.content_bytes = len(r.content)
-    clawer_task.content_encoding = r.encoding
+        clawer_task.content_bytes = len(downloader.content)
+    clawer_task.content_encoding = downloader.content_encoding
     clawer_task.store = path
     clawer_task.done_datetime = datetime.datetime.now()
-    clawer_task.spend_time = int((time.time() - start)*1000)
+    clawer_task.spend_time = int(downloader.spend_time*1000)
     clawer_task.save()
     
     return clawer_task.id

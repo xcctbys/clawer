@@ -10,6 +10,7 @@ from django.conf import settings
 
 from html5helper.utils import wrapper_raven
 from clawer.models import ClawerTaskGenerator, Clawer, ClawerTask
+from clawer.utils import Download
 
 
 def run(task_generator_id):
@@ -36,7 +37,8 @@ def run(task_generator_id):
             continue
         #insert to db
         ClawerTask.objects.create(clawer=task_generator.clawer, task_generator=task_generator, uri=js["uri"],
-                                  cookie=js.get("cookie"))
+                                  cookie=js.get("cookie"), 
+                                  download_engine=js.get("download_engine") if "download_engine" in js else Download.ENGINE_PHANTOMJS)
         
     err = p.stderr.read()
     

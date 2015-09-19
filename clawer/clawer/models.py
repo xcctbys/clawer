@@ -9,6 +9,7 @@ from django.contrib.auth.models import User as DjangoUser
 from django.db import models
 from django.conf import settings
 import json
+from clawer.utils import Download
 
         
 
@@ -271,6 +272,7 @@ class ClawerTask(models.Model):
     cookie = models.CharField(max_length=4096, blank=True, null=True)
     status = models.IntegerField(default=STATUS_LIVE, choices=STATUS_CHOICES)
     store = models.CharField(max_length=4096, blank=True, null=True)
+    download_engine = models.CharField(max_length=32, default=Download.ENGINE_REQUESTS)
     content_bytes = models.IntegerField(default=0)
     content_encoding = models.CharField(null=True, blank=True, max_length=32)
     spend_time = models.IntegerField(default=0) #unit is microsecond
@@ -293,6 +295,7 @@ class ClawerTask(models.Model):
             "content_bytes": self.content_bytes,
             "content_encoding": self.content_encoding,
             "store": self.store,
+            "download_engine": self.download_engine,
             "spend_time": self.spend_time,
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
             "start_datetime": self.start_datetime.strftime("%Y-%m-%d %H:%M:%S") if self.done_datetime else None,
