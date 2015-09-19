@@ -8,32 +8,40 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
+        # Adding field 'ClawerTask.failed_reason'
+        db.add_column('clawer_clawertask', 'failed_reason',
+                      self.gf('django.db.models.fields.CharField')(max_length=512, null=True, blank=True),
+                      keep_default=False)
 
-        # Changing field 'ClawerTask.failed_reason'
-        db.alter_column('clawer_clawertask', 'failed_reason', self.gf('django.db.models.fields.CharField')(max_length=512, null=True))
-
-        # Changing field 'ClawerTask.store'
-        db.alter_column('clawer_clawertask', 'store', self.gf('django.db.models.fields.CharField')(max_length=512, null=True))
 
         # Changing field 'ClawerTask.uri'
         db.alter_column('clawer_clawertask', 'uri', self.gf('django.db.models.fields.CharField')(max_length=1024))
 
+        # Changing field 'ClawerTask.cookie'
+        db.alter_column('clawer_clawertask', 'cookie', self.gf('django.db.models.fields.CharField')(max_length=1024, null=True))
+
         # Changing field 'ClawerTask.download_engine'
         db.alter_column('clawer_clawertask', 'download_engine', self.gf('django.db.models.fields.CharField')(max_length=16))
 
-    def backwards(self, orm):
-
-        # Changing field 'ClawerTask.failed_reason'
-        db.alter_column('clawer_clawertask', 'failed_reason', self.gf('django.db.models.fields.TextField')(null=True))
-
         # Changing field 'ClawerTask.store'
-        db.alter_column('clawer_clawertask', 'store', self.gf('django.db.models.fields.CharField')(max_length=1024, null=True))
+        db.alter_column('clawer_clawertask', 'store', self.gf('django.db.models.fields.CharField')(max_length=512, null=True))
+
+    def backwards(self, orm):
+        # Deleting field 'ClawerTask.failed_reason'
+        db.delete_column('clawer_clawertask', 'failed_reason')
+
 
         # Changing field 'ClawerTask.uri'
         db.alter_column('clawer_clawertask', 'uri', self.gf('django.db.models.fields.CharField')(max_length=4096))
 
+        # Changing field 'ClawerTask.cookie'
+        db.alter_column('clawer_clawertask', 'cookie', self.gf('django.db.models.fields.CharField')(max_length=4096, null=True))
+
         # Changing field 'ClawerTask.download_engine'
         db.alter_column('clawer_clawertask', 'download_engine', self.gf('django.db.models.fields.CharField')(max_length=32))
+
+        # Changing field 'ClawerTask.store'
+        db.alter_column('clawer_clawertask', 'store', self.gf('django.db.models.fields.CharField')(max_length=4096, null=True))
 
     models = {
         'auth.group': {
