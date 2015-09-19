@@ -12,11 +12,18 @@ if(system.args.length > 1) {
 	cookie = system.args[2];
 }
 
+page.settings.resourceTimeout = 5000; // 5 seconds
+page.onResourceTimeout = function(e) {
+  console.error(e.errorCode);   // it'll probably be 408 
+  console.error(e.errorString); // it'll probably be 'Network timeout on resource'
+  phantom.exit(1);
+};
+
 page.open(url, function(status) {
 	
 	if(status != "success") {
 		console.error("status ", status);
-		phantom.exit();
+		phantom.exit(1);
 		return;
 	}
 	
