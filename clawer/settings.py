@@ -137,3 +137,6 @@ INSTALLED_APPS = (
 )
 
 CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
+
+
+CLAWER_TASK_URL_MULTIPLE_DAY = 7

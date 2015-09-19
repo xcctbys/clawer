@@ -3,6 +3,7 @@
 import logging
 import os
 import subprocess
+import datetime
 
 from django.core.management.base import BaseCommand
 from django.conf import settings
@@ -26,6 +27,12 @@ def run(task_generator_id):
         js = ClawerTaskGenerator.parse_line(line)
         if not js:
             logging.warning("unknown line: %s" % line)
+            continue
+        #check multiple url
+        end = datetime.datetime.now()
+        start = end - datetime.timedelta(settings.CLAWER_TASK_URL_MULTIPLE_DAY)
+        if ClawerTask.objects.filter(uri=js['uri'], clawer=task_generator.clawer, add_datetime__range=(start, end)).count() > 0:
+            logging.info("find multiple url: %s" % line)
             continue
         #insert to db
         ClawerTask.objects.create(clawer=task_generator.clawer, task_generator=task_generator, uri=js["uri"],
