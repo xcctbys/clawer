@@ -19,4 +19,4 @@ class UpdateClawerAnalysis(forms.Form):
 class AddClawerTask(forms.Form):
     clawer = forms.ModelChoiceField(queryset=Clawer.objects)
     uri = forms.CharField(max_length=4096)
-    cookie = forms.CharField(max_length=4096)
+    cookie = forms.CharField(max_length=4096, required=False)
