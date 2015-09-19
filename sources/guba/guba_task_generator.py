@@ -100,4 +100,4 @@ if __name__ == "__main__":
     generator = Generator()
     generator.obtain_urls()
     for uri in generator.uris:
-        print json.dumps({"uri":uri})
+        print json.dumps({"uri":uri, "download_engine":"phantomjs"})
