@@ -268,12 +268,12 @@ class ClawerTask(models.Model):
     )
     clawer = models.ForeignKey(Clawer)
     task_generator = models.ForeignKey(ClawerTaskGenerator, blank=True, null=True)
-    uri = models.CharField(max_length=4096)
+    uri = models.CharField(max_length=1024)
     cookie = models.CharField(max_length=1024, blank=True, null=True)
     status = models.IntegerField(default=STATUS_LIVE, choices=STATUS_CHOICES)
-    failed_reason = models.TextField(blank=True, null=True)
-    store = models.CharField(max_length=1024, blank=True, null=True)
-    download_engine = models.CharField(max_length=32, default=Download.ENGINE_REQUESTS)
+    store = models.CharField(max_length=512, blank=True, null=True)
+    failed_reason = models.CharField(max_length=512, blank=True, null=True)
+    download_engine = models.CharField(max_length=16, default=Download.ENGINE_REQUESTS)
     content_bytes = models.IntegerField(default=0)
     content_encoding = models.CharField(null=True, blank=True, max_length=32)
     spend_time = models.IntegerField(default=0) #unit is microsecond
@@ -316,6 +316,17 @@ class ClawerTask(models.Model):
         now = datetime.datetime.now()
         return os.path.join(settings.CLAWER_SOURCE, now.strftime("%Y/%m/%d"), "%d.txt" % self.id)
 
+"""
+class ClawerTaskFailedLog(models.Model):
+    clawer_task = models.ForeignKey(ClawerTask)
+    failed_reason = models.CharField(max_length=2048)
+    add_datetime = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        app_label = "clawer"
+        ordering = ["-id"]
+        
+"""
 
 
 class UserProfile(models.Model):
