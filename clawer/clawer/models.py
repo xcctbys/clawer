@@ -271,6 +271,7 @@ class ClawerTask(models.Model):
     uri = models.CharField(max_length=4096)
     cookie = models.CharField(max_length=4096, blank=True, null=True)
     status = models.IntegerField(default=STATUS_LIVE, choices=STATUS_CHOICES)
+    failed_reason = models.CharField(max_length=4096, blank=True, null=True)
     store = models.CharField(max_length=4096, blank=True, null=True)
     download_engine = models.CharField(max_length=32, default=Download.ENGINE_REQUESTS)
     content_bytes = models.IntegerField(default=0)
@@ -295,6 +296,7 @@ class ClawerTask(models.Model):
             "content_bytes": self.content_bytes,
             "content_encoding": self.content_encoding,
             "store": self.store,
+            "failed_reason": self.failed_reason,
             "download_engine": self.download_engine,
             "spend_time": self.spend_time,
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),

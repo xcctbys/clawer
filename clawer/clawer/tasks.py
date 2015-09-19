@@ -5,12 +5,9 @@ from __future__ import absolute_import
 from celery import shared_task
 
 import traceback
-import requests
 import logging
 import os
 import datetime
-import time
-import shutil
 
 from clawer.models import ClawerTask
 from clawer.utils import Download
@@ -26,7 +23,6 @@ def run_clawer_task(clawer_task):
     clawer_task.save()
     
     failed = False
-    r = None
     
     headers = {"user-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:40.0) Gecko/20100101 Firefox/40.0"}
     if clawer_task.cookie:
@@ -39,6 +35,7 @@ def run_clawer_task(clawer_task):
         clawer_task.status = ClawerTask.STATUS_FAIL
         clawer_task.done_datetime = datetime.datetime.now()
         clawer_task.spend_time = int(downloader.spend_time*1000)
+        clawer_task.failed_reason = downloader.failed_exception
         clawer_task.save()
         return
         
@@ -53,6 +50,7 @@ def run_clawer_task(clawer_task):
     except:
         logging.warning(traceback.format_exc(10))
         failed = True
+        clawer_task.failed_reason = traceback.format_exc(10)
         
     if failed:
         clawer_task.status = ClawerTask.STATUS_FAIL
