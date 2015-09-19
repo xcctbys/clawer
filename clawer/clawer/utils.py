@@ -113,7 +113,7 @@ class Download(object):
             args.append(self.headers["Cookie"])
 
         p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  #("%s %s" % (settings.PYTHON, path), "r")
-        self.content = p.stdin.read()
+        self.content = p.stdout.read()
         self.failed_exception = p.stderr.read()
         status = p.wait()
         
