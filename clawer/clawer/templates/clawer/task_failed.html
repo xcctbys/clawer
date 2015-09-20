@@ -14,12 +14,13 @@
     <thead data-options="frozen:true">
         <tr>
             <th data-options="field:'id',width:80" sortable="true">ID</th>
-            <th data-options="field:'uri',">URI</th>
+            <th data-options="field:'clawer',"  formatter="formatClawer">爬虫</th>
         </tr>
     </thead>
     <thead>
         <tr>
-            <th data-options="field:'clawer',"  formatter="formatClawer">爬虫</th>
+            
+            <th data-options="field:'uri'," formatter="formatUri">URI</th>
             <th data-options="field:'task_generator'," formatter="formatTaskGenerator">任务生成器</th>
             <th data-options="field:'add_datetime',">添加时间</th>
             <th data-options="field:'start_datetime',">开始时间</th>
@@ -44,6 +45,13 @@ function formatClawer(val) {
 		return "";
 	}
 	return "ID: "+val.id+"("+val.name+")";
+}
+
+function formatUri(val) {
+	if(!val) {
+		return "";
+	}
+	return "<a href='"+val+"' target='_blank'>查看</a>";
 }
 
 </script>
