@@ -50,6 +50,9 @@ class Analysis(object):
     
     def parse_read_number(self):
         div = self.soup.find("div", {"id":"zwmbtilr"})
+        if not div:
+            self.result["read_number"] = None
+            return
         spans = div.find_all("span", {"class":"tc1"})
         
         read_number = int(spans[0].contents[0])
