@@ -322,6 +322,7 @@ class ClawerTask(models.Model):
 class ClawerSetting(models.Model):
     clawer = models.ForeignKey(Clawer)
     dispatch = models.IntegerField(u"每次分发下载任务数", default=100)
+    analysis = models.IntegerField(u"每次分析任务数", default=20)
     last_update_datetime = models.DateTimeField(auto_now_add=True, auto_now=True)
     add_datetime = models.DateTimeField(auto_now_add=True)
     

@@ -5,30 +5,34 @@ import traceback
 import threadpool
 import os
 import subprocess
+import datetime
 
 from django.core.management.base import BaseCommand
 from django.conf import settings
 
 from html5helper.utils import wrapper_raven
-from clawer.models import ClawerTaskGenerator, Clawer, ClawerTask,\
-    ClawerAnalysisLog, ClawerAnalysis
+from clawer.models import Clawer, ClawerTask,\
+    ClawerAnalysisLog
 
 
 
 def run():
     pool = threadpool.ThreadPool(2)
-    #scan tasks
+    
     need_analysis_tasks = []
-    clawer_tasks = ClawerTask.objects.filter(clawer__status=Clawer.STATUS_ON, status=ClawerTask.STATUS_SUCCESS).order_by("id")[:100]
-    for item in clawer_tasks:
-        
-        if os.path.exists(item.store) is False:
-            continue
-        need_analysis_tasks.append(item)
+    clawers = Clawer.objects.filter(status=Clawer.STATUS_ON).all()
+    for clawer in clawers:
+        clawer_tasks = ClawerTask.objects.filter(clawer_id=clawer.id, status=ClawerTask.STATUS_SUCCESS).order_by("id")[:clawer.settings().analysis]
+        for item in clawer_tasks:
+            if os.path.exists(item.store) is False:
+                continue
+            need_analysis_tasks.append(item)
         
     requests = threadpool.makeRequests(do_run, need_analysis_tasks)
     [pool.putRequest(x, timeout=120) for x in requests]
     pool.wait()
+    #reset failed task
+    reset_failed()
     return True
 
 
@@ -78,6 +82,10 @@ def do_run(clawer_task):
     
     return analysis_log    
     
+
+def reset_failed():
+    last_done = datetime.datetime.now() - datetime.timedelta(1)
+    ClawerTask.objects.filter(status=ClawerTask.STATUS_ANALYSIS_FAIL, done_datetime__lt=last_done).update(status=ClawerTask.STATUS_SUCCESS)
     
 
 

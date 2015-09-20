@@ -12,7 +12,7 @@ import requests
 from bs4 import BeautifulSoup
 
 
-DEBUG = True
+DEBUG = False
 if DEBUG:
     level = logging.DEBUG
 else:
