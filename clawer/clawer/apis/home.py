@@ -129,10 +129,13 @@ def clawer_analysis_history(request):
 def clawer_analysis_log(request):
     status = request.GET.get("status")
     date = request.GET.get("date")
+    clawer_id = request.GET.get("clawer")
     
     queryset = ClawerAnalysisLog.objects
     if status:
         queryset = queryset.filter(status=status) 
+    if clawer_id:
+        queryset = queryset.filter(clawer_id=clawer_id)
     if date:
         start = datetime.datetime.strptime(date, "%Y-%m-%d").replace(hour=0, minute=0, second=0)
         end = start + datetime.timedelta(1)

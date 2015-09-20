@@ -18,7 +18,7 @@ if DEBUG:
 else:
     level = logging.ERROR
     
-logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: %(message)s")
+logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: %(message)s", filename="debug.log")
 
 
 class Analysis(object):
@@ -45,6 +45,7 @@ class Analysis(object):
         self.parse_comment()
         
         logging.debug("result is %s", json.dumps(self.result, indent=4))
+        #print json.dumps(self.result, indent=4)
         
     
     def parse_read_number(self):
@@ -69,8 +70,7 @@ class Analysis(object):
         div = self.soup.find("div", {"id":"zwconbody"})
         content_div = div.find("div", {"class":"stockcodec"})
         #logging.debug("content div is %s", content_div)
-        content = u"%s" % content_div.contents
-        content = content.replace("<br>", "\n").replace("</br>", "\n").strip(" u'[]")
+        content = content_div.get_text().strip(" \t\r\n")
         self.result["content"] = content
         
     def parse_nickname(self):
@@ -171,8 +171,7 @@ class Analysis(object):
             #content
             content_div = div.find("div", {"class":"zwlitext stockcodec"})
             if content_div:
-                content = u"%s" % content_div.contents
-                content = content.replace("<br>", "\n").replace("</br>", "\n").strip("[]u'")
+                content = content_div.get_text().strip(" \r\n\t")
                 comment["content"] = content
                 
             

@@ -9,8 +9,8 @@
 <div id="toolbar">
     <a href="#" class="easyui-menubutton" data-options="menu:'#date_choices',">日期</a>
     
-    <a href="#" class="easyui-linkbutton" onclick="javascript:reload_datagrid(1)">失败的</a>
-    <a href="#" class="easyui-linkbutton" onclick="javascript:reload_datagrid(2)">成功的</a>
+    <select class="easyui-combogrid" type="text" id="id_clawer_select" data-options="required:true" style="width:100px;" ></select>
+    <select class="easyui-combobox" type="text" id="id_status_select" data-options="required:true" style="width:100px;" ></select>
     
     <span id="tips"></span>
 </div>
@@ -80,12 +80,6 @@ function formatTask(val) {
 	return "ID: "+val.id+"("+val.store+")";
 }
 
-
-function reload_datagrid(status) {
-	$('#grid').datagrid('load', {
-	    status: status
-	});
-}
 
 function formatFailedReason(val, row) {
 	if(!val) {
@@ -168,6 +162,51 @@ function formatDate(date) {
 	return result;
 }
 
+
+function load_clawers() {
+	var url = "{% url clawer.apis.home.clawer_all %}";
+		
+	$("#id_clawer_select").combogrid({
+		panelWidth:450,
+		mode: 'remote',
+		url: url,
+		idField: 'id',
+	    textField: 'name',
+		columns: [[
+			{field:'id',title:'ID',width:80,sortable:true},
+			{field:'name',title:'名称',width:120,sortable:true},
+			{field:'info',title:'简介',width:250,sortable:true}
+		]],
+		onChange: function(new_value, old_value) {
+			reload_datagrid();
+		}
+	});
+	
+	$("#id_status_select").combobox({
+		valueField:'id',
+	    textField:'text',
+	    onSelect: function(item) {
+	    	reload_datagrid();
+	    },
+	    data: [
+	   	    {id:1, text:"启用"},
+		    {id:2, text:"下线"}
+		]
+	});
+	
+}
+
+function reload_datagrid() {
+	var status = $("#id_status_select").combobox("getValue");
+	var clawer_id = $("#id_clawer_select").combobox("getValue");
+	
+	$('#grid').datagrid('load', {
+	    status: status,
+	    clawer: clawer_id
+	});
+}
+
+
 $(document).ready(function(){
 	
 	$("#select_date_btn").bind("click", function(e){
@@ -180,6 +219,8 @@ $(document).ready(function(){
 			}
 		});
 	});
+	
+	load_clawers();
 	
 });
 </script>
