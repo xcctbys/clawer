@@ -50,7 +50,7 @@ def do_run(clawer_task):
     try:
         p = subprocess.Popen([settings.PYTHON, path], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  #("%s %s" % (settings.PYTHON, path), "r")
         #write path to it
-        p.stdin.write(json.dumps({"path": clawer_task.store}))
+        p.stdin.write(json.dumps({"path":clawer_task.store, "uri":clawer_task.uri}))
         p.stdin.close()
         #read from stdout, stderr
         result = json.loads(p.stdout.read())
