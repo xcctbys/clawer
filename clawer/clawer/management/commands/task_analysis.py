@@ -49,7 +49,12 @@ def do_run(clawer_task):
         p.stdin.write(json.dumps({"path": clawer_task.store}))
         p.stdin.close()
         #read from stdout, stderr
-        analysis_log.result = p.stdout.read()
+        result = json.loads(p.stdout.read())
+        result["_url"] = clawer_task.uri
+        if clawer_task.cookie:
+            result["_cookie"] = clawer_task.cookie
+            
+        analysis_log.result = json.dumps(result)
         err = p.stderr.read()
         
         status = p.wait()
