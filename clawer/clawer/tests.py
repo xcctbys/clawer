@@ -11,7 +11,7 @@ from django.conf import settings
 
 from clawer.models import MenuPermission, Clawer, ClawerTask,\
     ClawerTaskGenerator, ClawerAnalysis, ClawerAnalysisLog, Logger
-from clawer.management.commands import task_generator_test, task_generator_run, task_analysis, task_analysis_merge
+from clawer.management.commands import task_generator_test, task_generator_run, task_analysis, task_analysis_merge,task_dispatch
 from clawer import tasks as celeryTasks
 
 
@@ -304,6 +304,18 @@ class TestCmd(TestCase):
         
         ret = celeryTasks.run_clawer_task(task)
         self.assertEqual(ret, task.id)
+        
+        clawer.delete()
+        generator.delete()
+        task.delete()
+        
+    def test_clawer_task_dispatch(self):
+        clawer = Clawer.objects.create(name="hi", info="good")
+        generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print '{\"uri\": \"http://www.github.com\"}'\n", cron="*")
+        task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baidu.com")
+        
+        ret = task_dispatch.dispatch()
+        self.assertEqual(ret, True)
         
         clawer.delete()
         generator.delete()

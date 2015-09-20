@@ -59,7 +59,6 @@ class Clawer(models.Model):
             result = None
         
         return result
-        
     
     def status_name(self):
         for item in self.STATUS_CHOICES:
@@ -67,6 +66,9 @@ class Clawer(models.Model):
                 return item[1]
             
         return ""
+    
+    def settings(self):
+        return ClawerSetting.objects.get_or_create(clawer=self)[0]
         
         
 class ClawerAnalysis(models.Model):
@@ -316,17 +318,17 @@ class ClawerTask(models.Model):
         now = datetime.datetime.now()
         return os.path.join(settings.CLAWER_SOURCE, now.strftime("%Y/%m/%d"), "%d.txt" % self.id)
 
-"""
-class ClawerTaskFailedLog(models.Model):
-    clawer_task = models.ForeignKey(ClawerTask)
-    failed_reason = models.CharField(max_length=2048)
+
+class ClawerSetting(models.Model):
+    clawer = models.ForeignKey(Clawer)
+    dispatch = models.IntegerField(u"每次分发下载任务数", default=100)
+    last_update_datetime = models.DateTimeField(auto_now_add=True, auto_now=True)
     add_datetime = models.DateTimeField(auto_now_add=True)
     
     class Meta:
         app_label = "clawer"
         ordering = ["-id"]
         
-"""
 
 
 class UserProfile(models.Model):
