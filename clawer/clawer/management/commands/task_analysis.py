@@ -86,7 +86,7 @@ def do_run(clawer_task):
 def reset_failed():
     end = datetime.datetime.now() - datetime.timedelta(1)
     start = end - datetime.timedelta(3)
-    ClawerTask.objects.filter(status=ClawerTask.STATUS_ANALYSIS_FAIL, done_datetime__lt=(start, end)).update(status=ClawerTask.STATUS_SUCCESS)
+    ClawerTask.objects.filter(status=ClawerTask.STATUS_ANALYSIS_FAIL, done_datetime__range=(start, end)).update(status=ClawerTask.STATUS_SUCCESS)
     
 
 
