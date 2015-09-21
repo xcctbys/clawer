@@ -48,6 +48,11 @@ class TestHomeViews(TestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         
+    def test_clawer_setting(self):
+        url = reverse("clawer.views.home.clawer_setting")
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        
 
 class TestUserApi(TestCase):
     def setUp(self):
@@ -258,6 +263,21 @@ class TestHomeApi(TestCase):
         analysis.delete()
         analysis_log.delete()
         
+    def test_clawer_setting_update(self):
+        clawer = Clawer.objects.create(name="hi", info="good")
+        url = reverse("clawer.apis.home.clawer_setting_update")
+        data = {"dispatch":10, "analysis":90, "clawer":clawer.id}
+        
+        resp = self.logined_client.post(url, data)
+        result = json.loads(resp.content)
+        self.assertTrue(result["is_ok"])
+        
+        clawer_setting = clawer.settings()
+        self.assertEqual(clawer_setting.dispatch, data["dispatch"])
+        
+        clawer.delete()
+        
+        
         
 class TestCmd(TestCase):
     def setUp(self):
@@ -325,7 +345,7 @@ class TestCmd(TestCase):
         clawer = Clawer.objects.create(name="hi", info="good")
         generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print '{\"uri\": \"http://www.github.com\"}'\n", cron="*")
         task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baidu.com")
-        analysis = ClawerAnalysis.objects.create(clawer=clawer, code="print \"{'url':'ssskkk'}\"\n")
+        analysis = ClawerAnalysis.objects.create(clawer=clawer, code="print '{\"url\":\"ssskkk\"}'\n")
         
         analysis_log = task_analysis.do_run(task)
         print analysis_log.failed_reason
@@ -342,7 +362,7 @@ class TestCmd(TestCase):
         clawer = Clawer.objects.create(name="hi", info="good")
         generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print '{\"uri\": \"http://www.github.com\"}'\n", cron="*")
         task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baidu.com")
-        analysis = ClawerAnalysis.objects.create(clawer=clawer, code="print \"{'url':'ssskkk'}\"\n")
+        analysis = ClawerAnalysis.objects.create(clawer=clawer, code="print '{\"url\":\"ssskkk\"}'\n")
         analysis_log = ClawerAnalysisLog.objects.create(clawer=clawer, analysis=analysis, task=task, status=ClawerAnalysisLog.STATUS_SUCCESS, 
                                                         result=json.dumps({"hi":"ok"}), add_datetime=pre_hour)
         

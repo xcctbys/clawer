@@ -42,6 +42,9 @@ class Clawer(models.Model):
             
         analysis = self.runing_analysis()
         result["runing_analysis"] = analysis.as_json() if analysis else None
+        
+        result["setting"] = self.settings().as_json()
+        
         return result
     
     def runing_task_generator(self):
@@ -227,7 +230,7 @@ class LoggerCategory(object):
     ADD_TASK = u"手工增加任务"
     UPDATE_TASK_GENERATOR  = u"更新任务生成器"
     UPDATE_ANALYSIS = u"更新分析器"
-    
+    UPDATE_SETTING = u"更新爬虫参数"
     
     
 
@@ -330,6 +333,15 @@ class ClawerSetting(models.Model):
         app_label = "clawer"
         ordering = ["-id"]
         
+    def as_json(self):
+        result = {
+            "dispatch": self.dispatch,
+            "analysis": self.analysis,
+            "last_update_datetime": self.last_update_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+            "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        return result
+    
 
 
 class UserProfile(models.Model):
@@ -365,7 +377,7 @@ class MenuPermission:
             {"id":104, "text":u"数据下载", "url":settings.MEDIA_URL, "groups":GROUPS},
         ]},
         {"id":2, "text": u"系统管理", "url":"", "children": [
-            {"id":201, "text":u"参数设置", "url":"", "groups":[GROUP_MANAGER]},
+            {"id":201, "text":u"参数设置", "url":"clawer.views.home.clawer_setting", "groups":[GROUP_MANAGER]},
             {"id":201, "text":u"操作日志", "url":"clawer.views.logger.index", "groups":[GROUP_MANAGER]},
         ]},
     ]

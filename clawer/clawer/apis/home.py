@@ -11,7 +11,7 @@ from clawer.models import Clawer, ClawerTask, ClawerTaskGenerator,\
     ClawerAnalysis, ClawerAnalysisLog, Logger, LoggerCategory
 from clawer.utils import check_auth_for_api, EasyUIPager, Download
 from clawer.forms import UpdateClawerTaskGenerator, UpdateClawerAnalysis,\
-    AddClawerTask
+    AddClawerTask, UpdateClawerSetting
 from html5helper.utils import get_request_ip
 
 
@@ -166,3 +166,26 @@ def clawer_analysis_update(request):
                           content=json.dumps(request.POST), from_ip=get_request_ip(request))
     
     return {"is_ok":True, "analysis":analysis.as_json()}
+
+
+
+@render_json
+@check_auth_for_api
+def clawer_setting_update(request):
+    form = UpdateClawerSetting(request.POST)
+    if form.is_valid() is False:
+        return {"is_ok":False, "reason": u"%s" % form.errors}
+    
+    clawer_setting = form.cleaned_data["clawer"].settings()
+    clawer_setting.dispatch = form.cleaned_data["dispatch"]
+    clawer_setting.analysis = form.cleaned_data["analysis"]
+    clawer_setting.save()
+    
+    #add log
+    Logger.objects.create(user=request.user, category=LoggerCategory.UPDATE_SETTING, title=form.cleaned_data["clawer"].name, 
+                          content=json.dumps(request.POST), from_ip=get_request_ip(request))
+    
+    return {"is_ok":True}
+
+
+
