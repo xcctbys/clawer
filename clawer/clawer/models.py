@@ -326,6 +326,7 @@ class ClawerSetting(models.Model):
     clawer = models.ForeignKey(Clawer)
     dispatch = models.IntegerField(u"每次分发下载任务数", default=100)
     analysis = models.IntegerField(u"每次分析任务数", default=20)
+    proxy = models.TextField(blank=True, null=True)
     last_update_datetime = models.DateTimeField(auto_now_add=True, auto_now=True)
     add_datetime = models.DateTimeField(auto_now_add=True)
     
@@ -337,6 +338,7 @@ class ClawerSetting(models.Model):
         result = {
             "dispatch": self.dispatch,
             "analysis": self.analysis,
+            "proxy": self.proxy or "",
             "last_update_datetime": self.last_update_datetime.strftime("%Y-%m-%d %H:%M:%S"),
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }

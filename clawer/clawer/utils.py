@@ -9,6 +9,7 @@ import time
 from django.conf import settings
 
 from html5helper.utils import do_paginator
+from random import random
 
 
 
@@ -72,9 +73,13 @@ class Download(object):
         self.failed = False
         self.headers = {}
         self.response_headers = {}
+        self.proxies = []
         
     def add_cookie(self, cookie):
         self.headers["Cookie"] = cookie
+        
+    def add_proxies(self, proxies):
+        self.proxies = proxies
         
     def download(self):
         if self.engine == self.ENGINE_REQUESTS:
@@ -89,7 +94,7 @@ class Download(object):
         start = time.time()
         
         try:
-            r = requests.get(self.url, headers=self.headers)
+            r = requests.get(self.url, headers=self.headers, proxies=self.proxies)
         except:
             self.failed = True
             self.failed_exception = traceback.format_exc(10)
@@ -108,7 +113,11 @@ class Download(object):
     
     def download_with_phantomjs(self):
         start = time.time()
-        args = ["/usr/bin/phantomjs", settings.DOWNLOAD_JS, self.url]
+        args = ["/usr/bin/phantomjs"]
+        if len(self.proxies) > 1:
+            proxy = self.proxies[random.randint(0, len(self.proxies) - 1)]
+            args.append("--proxy=%s" % proxy)
+        args += [settings.DOWNLOAD_JS, self.url]
         if "Cookie" in self.headers:
             args.append(self.headers["Cookie"])
 
