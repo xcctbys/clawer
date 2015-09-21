@@ -113,7 +113,8 @@ class Download(object):
     
     def download_with_phantomjs(self):
         start = time.time()
-        args = ["/usr/bin/phantomjs"]
+        args = ["/usr/bin/phantomjs", '--disk-cache=true', '--local-storage-path=/tmp/phantomjs_cache', '--load-images=false']
+        
         if len(self.proxies) > 1:
             proxy = self.proxies[random.randint(0, len(self.proxies) - 1)]
             args.append("--proxy=%s" % proxy)
