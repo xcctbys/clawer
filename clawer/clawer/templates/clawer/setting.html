@@ -34,6 +34,7 @@
             <th data-options="field:'status_name',">状态</th>
             <th data-options="field:'setting'," formatter="formatSettingDispatch">每次分发任务数</th>
             <th data-options="field:'s1'," formatter="formatSettingAnalysis">每次分析数</th>
+            <th data-options="field:'sproxy'," formatter="formatSettingProxy">Proxy</th>
             <th data-options="field:'s2'," formatter="formatSettingLastUpdateDatetime">最后修改时间</th>
         </tr>
     </thead>    
@@ -45,23 +46,27 @@
 
 
     <form method="post" id="update_form" action="{% url clawer.apis.home.clawer_setting_update %}">
-
-			<div style="margin-bottom:20px">
-				<div>每次分发任务数</div>
-				<input name="dispatch" class="easyui-numberbox" style="width: 50%;">
-				<input id="clawer" name="clawer" type="hidden" />
-			</div>
-			
-			<div style="margin-bottom:20px">
-			    <div>每次分析数</div>
-				<input name="analysis" class="easyui-numberbox" style="width: 50%;">
-				
-			</div>
-			
-			<div>
-				<button class="easyui-linkbutton" style="width: 50px" type="submit">保存</button>
-			</div>
-		
+        <table style="width:100%;">
+            <tr>
+                <td>每次分发任务数</td>
+                <td>
+                    <input name="dispatch" class="easyui-numberbox" style="width: 50%;">
+				    <input id="clawer" name="clawer" type="hidden" />
+				</td>
+            </tr>
+            <tr>
+                <td>每次分析数</td>
+                <td><input name="analysis" class="easyui-numberbox" style="width: 50%;"></td>
+            </tr>
+            <tr>
+                <td>Proxy</td>
+                <td><input name="proxy" class="easyui-textbox" style="width: 80%; height: 100px;" placeholder="多个proxy，请换行" multiline="true" /></td>
+            </tr>
+            <tr>
+                <td><button class="easyui-linkbutton" style="width: 50px" type="submit">保存</button></td>
+                <td></td>
+            </tr>
+        </table>
     </form>
     
 </div>
@@ -95,6 +100,12 @@ function formatSettingLastUpdateDatetime(val, row) {
 	return row.setting.last_update_datetime;
 }
 
+function formatSettingProxy(val, row) {
+	if(!row.setting) {
+		return "";
+	}
+	return row.setting.proxy;
+}
 
 $(document).ready(function(){
 	

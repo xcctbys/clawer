@@ -26,4 +26,5 @@ class UpdateClawerSetting(forms.Form):
     clawer = forms.ModelChoiceField(queryset=Clawer.objects)
     dispatch = forms.IntegerField()
     analysis = forms.IntegerField()
+    proxy = forms.CharField(max_length=4096, required=False)
     

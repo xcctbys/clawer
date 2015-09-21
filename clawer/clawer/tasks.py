@@ -29,6 +29,10 @@ def run_clawer_task(clawer_task):
         headers["cookie"] = clawer_task.cookie
     
     downloader = Download(clawer_task.uri, engine=clawer_task.download_engine if clawer_task.download_engine else Download.ENGINE_REQUESTS)
+    #check proxy
+    setting = clawer_task.clawer.settings()
+    if setting.proxy:
+        downloader.add_proxies(setting.proxy.strip().split("\n"))
     downloader.download()
     
     if downloader.failed:
