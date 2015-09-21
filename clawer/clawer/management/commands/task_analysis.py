@@ -22,6 +22,12 @@ def run():
     need_analysis_tasks = []
     clawers = Clawer.objects.filter(status=Clawer.STATUS_ON).all()
     for clawer in clawers:
+        analysis = clawer.runing_analysis()
+        if not analysis:
+            continue
+        path = analysis.product_path()
+        analysis.write_code(path)
+        
         clawer_tasks = ClawerTask.objects.filter(clawer_id=clawer.id, status=ClawerTask.STATUS_SUCCESS).order_by("id")[:clawer.settings().analysis]
         for item in clawer_tasks:
             if os.path.exists(item.store) is False:
@@ -43,7 +49,6 @@ def do_run(clawer_task):
     if not analysis:
         return None
     path = analysis.product_path()
-    analysis.write_code(path)
     
     analysis_log = ClawerAnalysisLog(clawer=clawer, analysis=analysis, task=clawer_task)
     
