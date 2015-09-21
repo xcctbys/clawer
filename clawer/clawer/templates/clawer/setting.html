@@ -127,7 +127,8 @@ $(document).ready(function(){
 		$("#update_form").form("load", {
 			clawer:row.id, 
 		    dispatch: row.setting.dispatch,
-		    analysis: row.setting.analysis
+		    analysis: row.setting.analysis,
+		    proxy: row.setting.proxy
 		});
 		$("#update_win").window("open");
 	});
