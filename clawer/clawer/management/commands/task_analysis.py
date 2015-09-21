@@ -34,8 +34,10 @@ def run():
                 continue
             need_analysis_tasks.append(item)
         
-    requests = threadpool.makeRequests(do_run, need_analysis_tasks)
-    [pool.putRequest(x, timeout=120) for x in requests]
+        requests = threadpool.makeRequests(do_run, need_analysis_tasks)
+        [pool.putRequest(x, False, 30) for x in requests]
+        print "clawer %d" % clawer.id
+        
     pool.wait()
     #reset failed task
     #reset_failed()
