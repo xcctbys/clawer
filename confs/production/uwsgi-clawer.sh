@@ -46,7 +46,7 @@ case "$1" in
         echo -n "Starting ${NAME} " 
 
         ulimit -n 10240
-        find . -name "*.pyc" -exec rm -rf {} \;
+        cd ${HOME}; find . -name "*.pyc" -exec rm -rf {} \;
         cd ${HOME}; ${CMD} --ini ${CONFIG}
         if [ "$?" != 0 ] ; then
             echo " failed" 
