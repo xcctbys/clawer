@@ -17,7 +17,7 @@ from clawer.models import Clawer, ClawerTask,\
 
 
 def run():
-    pool = threadpool.ThreadPool(2)
+    pool = threadpool.ThreadPool(4)
     
     need_analysis_tasks = []
     clawers = Clawer.objects.filter(status=Clawer.STATUS_ON).all()
@@ -32,7 +32,7 @@ def run():
     [pool.putRequest(x, timeout=120) for x in requests]
     pool.wait()
     #reset failed task
-    reset_failed()
+    #reset_failed()
     return True
 
 
