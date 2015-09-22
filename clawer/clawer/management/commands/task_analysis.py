@@ -62,29 +62,20 @@ def do_run(clawer_task):
     analysis_log = ClawerAnalysisLog(clawer=clawer, analysis=analysis, task=clawer_task)
     
     try:
-        p = subprocess.Popen([settings.PYTHON, path], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        p.stdin.write(json.dumps({"path":clawer_task.store, "url":clawer_task.uri}))
-        p.stdin.close()
-        
-        err = p.stderr.read()
-        out = p.stdout.read()
-        
-        print "out %s, err %s" % (out, err)
-        
-        if err:
-            analysis_log.status = ClawerAnalysisLog.STATUS_FAIL
-            analysis_log.failed_reason = err
-        else:
-            result = json.loads(out)
-            result["_url"] = clawer_task.uri
-            if clawer_task.cookie:
-                result["_cookie"] = clawer_task.cookie
-            analysis_log.result = json.dumps(result)
-            analysis_log.status = ClawerAnalysisLog.STATUS_SUCCESS 
-    except:
-        logging.error(traceback.format_exc(10))
-        analysis_log.failed_reason = traceback.format_exc(10)
+        out = subprocess.check_output(["/bin/echo", json.dumps({"path":clawer_task.store, "url":clawer_task.uri}), "|", settings.PYTHON, path],
+                                      stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        result = json.loads(out)
+        result["_url"] = clawer_task.uri
+        if clawer_task.cookie:
+            result["_cookie"] = clawer_task.cookie
+        analysis_log.result = json.dumps(result)
+        analysis_log.status = ClawerAnalysisLog.STATUS_SUCCESS 
+    except subprocess.CalledProcessError, e:
         analysis_log.status = ClawerAnalysisLog.STATUS_FAIL
+        analysis_log.failed_reason = e.output
+    except:
+        analysis_log.status = ClawerAnalysisLog.STATUS_FAIL
+        analysis_log.failed_reason = traceback.format_exc(10)
         
     analysis_log.save()
     #update clawer task status
