@@ -17,9 +17,10 @@ from django.conf import settings
 from html5helper.utils import wrapper_raven
 from clawer.models import Clawer, ClawerTask,\
     ClawerAnalysisLog
+import tempfile
 
 
-MAX_RUN_TIME = 600
+MAX_RUN_TIME = 300
 
 
 def run(process_number):
@@ -69,27 +70,29 @@ def do_run(clawer_task):
     analysis_log = ClawerAnalysisLog(clawer=clawer, analysis=analysis, task=clawer_task)
     
     try:
-        p = subprocess.Popen([settings.PYTHON, path], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  #("%s %s" % (settings.PYTHON, path), "r")
-        #write path to it
-        p.stdin.write(json.dumps({"path":clawer_task.store, "url":clawer_task.uri}))
-        p.stdin.close()
-        #read from stdout, stderr
-        err = p.stderr.read()
-        if not err:
-            result = json.loads(p.stdout.read())
+        stdin = tempfile.TemporaryFile()
+        stdout = tempfile.TemporaryFile()
+        stderr = tempfile.TemporaryFile()
+        stdin.write(json.dumps({"path":clawer_task.store, "url":clawer_task.uri}))
+        retcode = subprocess.call([settings.PYTHON, path], stdin=stdin, stdout=stdout, stderr=stderr)
+        if retcode != 0:
+            stderr.seek(0)
+            analysis_log.status = ClawerAnalysisLog.STATUS_FAIL
+            analysis_log.failed_reason = stderr.read()
+        else:
+            stdout.seek(0)
+            result = json.loads(stdout.read())
             result["_url"] = clawer_task.uri
             if clawer_task.cookie:
                 result["_cookie"] = clawer_task.cookie
             analysis_log.result = json.dumps(result)
-        
-        status = p.wait()
-        if status != 0:
-            analysis_log.status = ClawerAnalysisLog.STATUS_FAIL
-            analysis_log.failed_reason = err
-        else:
-            analysis_log.status = ClawerAnalysisLog.STATUS_SUCCESS
+            analysis_log.status = ClawerAnalysisLog.STATUS_SUCCESS 
             
+        stdin.close()
+        stdout.close()
+        stderr.close()
     except:
+        print traceback.format_exc(10)
         analysis_log.failed_reason = traceback.format_exc(10)
         analysis_log.status = ClawerAnalysisLog.STATUS_FAIL
         
@@ -102,7 +105,7 @@ def do_run(clawer_task):
     clawer_task.save()
     
     print "clawer task %d done" % clawer_task.id    
-    
+    return analysis_log
 
 def reset_failed():
     end = datetime.datetime.now() - datetime.timedelta(1)
