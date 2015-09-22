@@ -11,10 +11,6 @@ ADMINS = (
 )
 
 
-CELERY_IMPORTS = (
-    "clawer.tasks",
-)
-
 MANAGERS = ADMINS
 
 
@@ -131,7 +127,7 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
     'raven.contrib.django.raven_compat',
     "south",
-    "djcelery",
+    #"djcelery",
     "html5helper",
     "clawer",
 )

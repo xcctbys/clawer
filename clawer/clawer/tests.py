@@ -7,12 +7,11 @@ from django.test import TestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User as DjangoUser, Group
-from django.conf import settings
 
 from clawer.models import MenuPermission, Clawer, ClawerTask,\
-    ClawerTaskGenerator, ClawerAnalysis, ClawerAnalysisLog, Logger
-from clawer.management.commands import task_generator_test, task_generator_run, task_analysis, task_analysis_merge,task_dispatch
-from clawer import tasks as celeryTasks
+    ClawerTaskGenerator, ClawerAnalysis, ClawerAnalysisLog, Logger,\
+    ClawerDownloadLog
+from clawer.management.commands import task_generator_test, task_generator_run, task_analysis, task_analysis_merge, task_download
 
 
 class TestHomeViews(TestCase):
@@ -38,8 +37,8 @@ class TestHomeViews(TestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         
-    def test_clawer_task_failed(self):
-        url = reverse("clawer.views.home.clawer_task_failed")
+    def test_clawer_download_log(self):
+        url = reverse("clawer.views.home.clawer_download_log")
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         
@@ -145,11 +144,12 @@ class TestHomeApi(TestCase):
         
         clawer.delete()
         
-    def test_task_failed(self):
+    def test_download_log(self):
         clawer = Clawer.objects.create(name="hi", info="good")
         clawer_generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print hello", cron="*", status=ClawerTaskGenerator.STATUS_PRODUCT)
         clawer_task = ClawerTask.objects.create(clawer=clawer, task_generator=clawer_generator, uri="http://github.com", status=ClawerTask.STATUS_FAIL)
-        url = reverse("clawer.apis.home.clawer_task_failed")
+        download_log = ClawerDownloadLog.objects.create(clawer=clawer, task=clawer_task)
+        url = reverse("clawer.apis.home.clawer_download_log")
         
         resp = self.logined_client.get(url)
         result = json.loads(resp.content)
@@ -158,6 +158,7 @@ class TestHomeApi(TestCase):
         clawer.delete()
         clawer_generator.delete()
         clawer_task.delete()
+        download_log.delete()
         
     def test_task(self):
         clawer = Clawer.objects.create(name="hi", info="good")
@@ -317,29 +318,19 @@ class TestCmd(TestCase):
         clawer.delete()
         generator.delete()
         
-    def test_clawer_task_run(self):
+    def test_task_download(self):
         clawer = Clawer.objects.create(name="hi", info="good")
         generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print '{\"uri\": \"http://www.github.com\"}'\n", cron="*")
         task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baidu.com")
         
-        ret = celeryTasks.run_clawer_task(task)
-        self.assertEqual(ret, task.id)
+        task_download.run(1, 5)
+        download_log = ClawerDownloadLog.objects.get(clawer=clawer, task=task)
+        self.assertEqual(download_log.status, ClawerDownloadLog.STATUS_SUCCESS)
         
         clawer.delete()
         generator.delete()
         task.delete()
-        
-    def test_clawer_task_dispatch(self):
-        clawer = Clawer.objects.create(name="hi", info="good")
-        generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print '{\"uri\": \"http://www.github.com\"}'\n", cron="*")
-        task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baidu.com")
-        
-        ret = task_dispatch.dispatch()
-        self.assertEqual(ret, True)
-        
-        clawer.delete()
-        generator.delete()
-        task.delete()
+        download_log.delete()
         
     def test_task_analysis(self):
         path = "/tmp/ana.store"

@@ -158,6 +158,46 @@ class ClawerAnalysisLog(models.Model):
         return ""
     
 
+class ClawerDownloadLog(models.Model):
+    (STATUS_FAIL, STATUS_SUCCESS) = range(1, 3)
+    STATUS_CHOICES = (
+        (STATUS_FAIL, u"失败"),
+        (STATUS_SUCCESS, u"成功"),
+    )
+    clawer = models.ForeignKey(Clawer)
+    task = models.ForeignKey('ClawerTask')
+    status = models.IntegerField(default=0, choices=STATUS_CHOICES)
+    failed_reason = models.CharField(max_length=1024, null=True, blank=True)
+    content_bytes = models.IntegerField(default=0)
+    content_encoding = models.CharField(null=True, blank=True, max_length=32)
+    spend_time = models.IntegerField(default=0) #unit is microsecond
+    add_datetime = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        app_label = "clawer"
+        
+    def as_json(self):
+        result = {"id":self.id,
+            "clawer": self.clawer.as_json(),
+            "task": self.task.as_json(),
+            "status": self.status,
+            "status_name": self.status_name(),
+            "failed_reason": self.failed_reason,
+            "content_bytes": self.content_bytes,
+            "content_encoding": self.content_encoding,
+            "spend_time": self.spend_time,
+            "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        return result
+    
+    def status_name(self):
+        for item in self.STATUS_CHOICES:
+            if item[0] == self.status:
+                return item[1]
+            
+        return ""
+    
+
 class ClawerTaskGenerator(models.Model):
     (STATUS_ALPHA, STATUS_BETA, STATUS_PRODUCT, STATUS_ON, STATUS_OFF, STATUS_TEST_FAIL) = range(1, 7)
     STATUS_CHOICES = (
@@ -277,14 +317,8 @@ class ClawerTask(models.Model):
     cookie = models.CharField(max_length=1024, blank=True, null=True)
     status = models.IntegerField(default=STATUS_LIVE, choices=STATUS_CHOICES)
     store = models.CharField(max_length=512, blank=True, null=True)
-    failed_reason = models.CharField(max_length=512, blank=True, null=True)
     download_engine = models.CharField(max_length=16, default=Download.ENGINE_REQUESTS)
-    content_bytes = models.IntegerField(default=0)
-    content_encoding = models.CharField(null=True, blank=True, max_length=32)
-    spend_time = models.IntegerField(default=0) #unit is microsecond
     add_datetime = models.DateTimeField(auto_now_add=True)
-    start_datetime = models.DateTimeField(null=True, blank=True)
-    done_datetime = models.DateTimeField(null=True, blank=True) #when fail or success
     
     class Meta:
         app_label = "clawer"
@@ -298,15 +332,9 @@ class ClawerTask(models.Model):
             'cookie': self.cookie,
             "status": self.status,
             "status_name": self.status_name(),
-            "content_bytes": self.content_bytes,
-            "content_encoding": self.content_encoding,
             "store": self.store,
-            "failed_reason": self.failed_reason,
             "download_engine": self.download_engine,
-            "spend_time": self.spend_time,
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
-            "start_datetime": self.start_datetime.strftime("%Y-%m-%d %H:%M:%S") if self.done_datetime else None,
-            "done_datetime": self.done_datetime.strftime("%Y-%m-%d %H:%M:%S") if self.done_datetime else None,
         }
         return result
     
@@ -373,10 +401,10 @@ class MenuPermission:
     MENUS = [
         {"id":1, "text": u"爬虫管理", "url":"", "children": [
             {"id":101, "text":u"爬虫配置", "url":"clawer.views.home.clawer_all", "groups":GROUPS},
-            {"id":102, "text":u"爬虫失败任务", "url":"clawer.views.home.clawer_task_failed", "groups":GROUPS},
             {"id":103, "text":u"爬虫任务", "url":"clawer.views.home.clawer_task", "groups":GROUPS},
-            {"id":103, "text":u"爬虫分析日志", "url":"clawer.views.home.clawer_analysis_log", "groups":GROUPS},
-            {"id":104, "text":u"数据下载", "url":settings.MEDIA_URL, "groups":GROUPS},
+            {"id":102, "text":u"爬虫下载日志", "url":"clawer.views.home.clawer_download_log", "groups":GROUPS},
+            {"id":104, "text":u"爬虫分析日志", "url":"clawer.views.home.clawer_analysis_log", "groups":GROUPS},
+            {"id":105, "text":u"数据下载", "url":settings.MEDIA_URL, "groups":GROUPS},
         ]},
         {"id":2, "text": u"系统管理", "url":"", "children": [
             {"id":201, "text":u"参数设置", "url":"clawer.views.home.clawer_setting", "groups":[GROUP_MANAGER]},

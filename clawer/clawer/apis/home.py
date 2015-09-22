@@ -8,7 +8,7 @@ import datetime
 
 from html5helper.decorator import render_json
 from clawer.models import Clawer, ClawerTask, ClawerTaskGenerator,\
-    ClawerAnalysis, ClawerAnalysisLog, Logger, LoggerCategory
+    ClawerAnalysis, ClawerAnalysisLog, Logger, LoggerCategory, ClawerDownloadLog
 from clawer.utils import check_auth_for_api, EasyUIPager, Download
 from clawer.forms import UpdateClawerTaskGenerator, UpdateClawerAnalysis,\
     AddClawerTask, UpdateClawerSetting
@@ -34,8 +34,15 @@ def clawer_all(request):
 
 @render_json
 @check_auth_for_api
-def clawer_task_failed(request):
-    queryset = ClawerTask.objects.filter(status=ClawerTask.STATUS_FAIL)
+def clawer_download_log(request):
+    status = request.GET.get("status")
+    clawer_id = request.GET.get("clawer")
+    
+    queryset = ClawerDownloadLog.objects.filter()
+    if status:
+        queryset = queryset.filter(status=status) 
+    if clawer_id:
+        queryset = queryset.filter(clawer_id=clawer_id)
         
     pager = EasyUIPager(queryset, request)
     return pager.query()
