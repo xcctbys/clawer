@@ -30,7 +30,7 @@
         <tr>
             <th data-options="field:'content_bytes'," formatter="formatBytes">下载内容大小</th>
             <th data-options="field:'uri'," formatter="formatUri">URI</th>
-            <th data-options="field:'download_engine',">下载引擎</th>
+            <th data-options="field:'download_engine'," formatter="formatDownloadEngine">下载引擎</th>
             <th data-options="field:'content_encoding',">文件编码</th>
             <th data-options="field:'store'," formatter="formatStore">文件</th>
             <th data-options="field:'spend_time'," sortable="true">耗时(毫秒)</th>
@@ -71,6 +71,13 @@ function formatStore(val, row) {
 	}
 	
 	return row.task.store;
+}
+
+function formatDownloadEngine(val, row) {
+	if(!row.task) {
+		return "";
+	}
+	return row.task.download_engine;
 }
 
 function formatBytes(val) {
