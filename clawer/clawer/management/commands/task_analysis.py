@@ -47,7 +47,7 @@ def run(process_number):
             
     total_process = len(need_run_tasks)
     for item in need_run_tasks:
-        pool.apply_async(do_run, (item, done_tasks))
+        pool.apply_async(do_run, (item, ))
         
     reset_failed()
     
