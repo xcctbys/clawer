@@ -18,10 +18,8 @@ from clawer.models import Clawer, ClawerTask,\
     ClawerAnalysisLog
 
 
-MAX_RUN_TIME = 260
 
-
-def run(process_number):
+def run(process_number, run_time):
     pool = multiprocessing.Pool(process_number)
     manager = multiprocessing.Manager()
     done_tasks = manager.list()
@@ -29,7 +27,7 @@ def run(process_number):
     clawers = Clawer.objects.filter(status=Clawer.STATUS_ON).all()
     
     #add watcher
-    watcher = threading.Timer(MAX_RUN_TIME, force_exit, [pool])
+    watcher = threading.Timer(run_time, force_exit, [pool])
     watcher.start()
     
     for clawer in clawers:
@@ -60,7 +58,7 @@ def run(process_number):
 
 
 def force_exit(pool):
-    print "force exit after run %d seconds" % MAX_RUN_TIME
+    print "force exit after run"
     pool.terminate()
     sys.exit(0)
     
@@ -124,9 +122,15 @@ class Command(BaseCommand):
             default=4,
             help='Pool process number.'
         ),
+        make_option('--run',
+            dest='run',
+            default=300,
+            help='Run seconds'
+        ),
     )
     
     @wrapper_raven
     def handle(self, *args, **options):
         process_number = int(options["process"])
-        run(process_number)
+        run_time = int(options["run"])
+        run(process_number, run_time)

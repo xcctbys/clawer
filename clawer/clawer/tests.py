@@ -351,7 +351,7 @@ class TestCmd(TestCase):
         task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baidu.com", store=path, status=ClawerTask.STATUS_SUCCESS)
         analysis = ClawerAnalysis.objects.create(clawer=clawer, code="print '{\"url\":\"ssskkk\"}'\n")
         
-        task_analysis.run(1)
+        task_analysis.run(1, 5)
         
         clawer.delete()
         generator.delete()
