@@ -71,8 +71,7 @@ def do_run(clawer_task):
         
         print "out %s, err %s" % (out, err)
         
-        retcode = p.wait()
-        if retcode != 0:
+        if not err:
             analysis_log.status = ClawerAnalysisLog.STATUS_FAIL
             analysis_log.failed_reason = err
         else:
