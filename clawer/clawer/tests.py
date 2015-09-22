@@ -352,11 +352,14 @@ class TestCmd(TestCase):
         analysis = ClawerAnalysis.objects.create(clawer=clawer, code="print '{\"url\":\"ssskkk\"}'\n")
         
         task_analysis.run(1, 5)
+        analysis_log = ClawerAnalysisLog.objects.filter(clawer=clawer, analysis=analysis, task=task)[0]
+        self.assertEqual(analysis_log.status, ClawerAnalysisLog.STATUS_SUCCESS)
         
         clawer.delete()
         generator.delete()
         task.delete()
         analysis.delete()
+        analysis_log.delete()
         os.remove(path)
         
     def test_task_analysis_merge(self):

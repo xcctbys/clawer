@@ -9,6 +9,7 @@ import multiprocessing
 from optparse import make_option
 import sys
 import threading
+import logging
 
 from django.core.management.base import BaseCommand
 from django.conf import settings
@@ -38,12 +39,13 @@ def run(process_number, run_time):
         for item in clawer_tasks:
             if os.path.exists(item.store) is False:
                 continue
-            pool.apply_async(do_run, (item, ))
+            pool.apply_async(do_run, [item])
         print "clawer is %d" % clawer.id
             
     reset_failed()
     
     pool.close()
+    pool.join()
     return True
 
 
@@ -56,22 +58,25 @@ def force_exit(pool):
 def do_run(clawer_task):
     clawer = clawer_task.clawer
     
-    analysis = clawer.runing_analysis().product_path()
+    analysis = clawer.runing_analysis()
     path = analysis.product_path()
     
     analysis_log = ClawerAnalysisLog(clawer=clawer, analysis=analysis, task=clawer_task)
     
     try:
-        p = subprocess.Popen([settings.PYTHON, path], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
+        p = subprocess.Popen([settings.PYTHON, path], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p.stdin.write(json.dumps({"path":clawer_task.store, "url":clawer_task.uri}))
         p.stdin.close()
-        #err = p.stderr.read()
+        
+        err = p.stderr.read()
         out = p.stdout.read()
+        
+        print "out %s, err %s" % (out, err)
         
         retcode = p.wait()
         if retcode != 0:
             analysis_log.status = ClawerAnalysisLog.STATUS_FAIL
-            analysis_log.failed_reason = out
+            analysis_log.failed_reason = err
         else:
             result = json.loads(out)
             result["_url"] = clawer_task.uri
@@ -80,7 +85,7 @@ def do_run(clawer_task):
             analysis_log.result = json.dumps(result)
             analysis_log.status = ClawerAnalysisLog.STATUS_SUCCESS 
     except:
-        #print traceback.format_exc(10)
+        logging.error(traceback.format_exc(10))
         analysis_log.failed_reason = traceback.format_exc(10)
         analysis_log.status = ClawerAnalysisLog.STATUS_FAIL
         
