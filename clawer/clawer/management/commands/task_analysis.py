@@ -41,8 +41,7 @@ def run(process_number):
             if os.path.exists(item.store) is False:
                 continue
             need_run_tasks.append(item)
-            print "clawer %d" % clawer.id
-    
+            
     total_process = len(need_run_tasks)
     for item in need_run_tasks:
         pool.apply_async(do_run, (item, done_tasks))
@@ -60,7 +59,7 @@ def run(process_number):
 
 
 def force_exit(pool, done_tasks, total_process):
-    logging.warning("done tasks %d", len(done_tasks))
+    print "done tasks %d", len(done_tasks)
     
     if len(done_tasks) >= total_process:
         pool.terminate()
