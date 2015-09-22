@@ -31,6 +31,7 @@
             <th data-options="field:'uri'," formatter="formatUri">URI</th>
             <th data-options="field:'download_engine',">下载引擎</th>
             <th data-options="field:'content_encoding',">文件编码</th>
+            <th data-options="field:'store'," formatter="formatStore">文件</th>
             <th data-options="field:'spend_time'," sortable="true">耗时(毫秒)</th>
             <th data-options="field:'clawer',"  formatter="formatClawer">爬虫</th>
             <th data-options="field:'failed_reason',"  formatter="formatFailedReason">失败原因</th>
@@ -63,6 +64,14 @@ function formatUri(val, row) {
 	return "<a href='"+row.task.uri+"' target='_blank'>查看</a>";
 }
 
+function formatStore(val, row) {
+	if(!row.task) {
+		return "";
+	}
+	
+	return row.task.store;
+}
+
 function formatBytes(val) {
 	if(!val) {
 		return 0;
@@ -88,7 +97,7 @@ function formatTask(val, row) {
 		return "";
 	}
 	
-	return row.id;
+	return val.id;
 }
 
 function formatFailedReason(val, row) {

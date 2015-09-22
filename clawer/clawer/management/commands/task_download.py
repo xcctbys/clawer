@@ -80,6 +80,8 @@ def do_run(clawer_task):
             
         with open(path, "w") as f:
             f.write(downloader.content)
+        
+        clawer_task.store = path
     except:
         failed = True
         download_log.failed_reason = traceback.format_exc(10)
@@ -102,7 +104,6 @@ def do_run(clawer_task):
         download_log.content_bytes = len(downloader.content)
     download_log.status = ClawerDownloadLog.STATUS_SUCCESS
     download_log.content_encoding = downloader.content_encoding
-    download_log.store = path
     download_log.spend_time = int(downloader.spend_time*1000)
     download_log.save()
     
