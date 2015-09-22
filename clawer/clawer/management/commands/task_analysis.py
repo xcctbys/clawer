@@ -41,8 +41,6 @@ def run(process_number, run_time):
                 continue
             pool.apply_async(do_run, [item])
         print "clawer is %d" % clawer.id
-            
-    reset_failed()
     
     pool.close()
     pool.join()
@@ -100,12 +98,6 @@ def do_run(clawer_task):
     print "clawer task %d done" % clawer_task.id
     return analysis_log
 
-
-def reset_failed():
-    end = datetime.datetime.now() - datetime.timedelta(30)
-    start = end - datetime.timedelta(1)
-    ClawerTask.objects.filter(status=ClawerTask.STATUS_ANALYSIS_FAIL, add_datetime__range=(start, end)).update(status=ClawerTask.STATUS_SUCCESS)
-    
 
 
 class Command(BaseCommand):
