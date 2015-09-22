@@ -2,10 +2,14 @@
 
 import json
 import traceback
-import threadpool
 import os
 import subprocess
 import datetime
+import multiprocessing
+from optparse import make_option
+import sys
+import threading
+import logging
 
 from django.core.management.base import BaseCommand
 from django.conf import settings
@@ -15,12 +19,18 @@ from clawer.models import Clawer, ClawerTask,\
     ClawerAnalysisLog
 
 
+MAX_RUN_TIME = 60*60
 
-def run():
-    pool = threadpool.ThreadPool(4)
-    
-    need_analysis_tasks = []
+
+
+def run(process_number):
+    pool = multiprocessing.Pool(process_number)
     clawers = Clawer.objects.filter(status=Clawer.STATUS_ON).all()
+    
+    #add watcher
+    watcher = threading.Timer(MAX_RUN_TIME, force_exit)
+    watcher.start()
+    #work
     for clawer in clawers:
         analysis = clawer.runing_analysis()
         if not analysis:
@@ -32,16 +42,18 @@ def run():
         for item in clawer_tasks:
             if os.path.exists(item.store) is False:
                 continue
-            need_analysis_tasks.append(item)
-        
-        requests = threadpool.makeRequests(do_run, need_analysis_tasks)
-        [pool.putRequest(x, False, 30) for x in requests]
+            
+            pool.apply_async(do_run, [clawer])
         print "clawer %d" % clawer.id
-        
-    pool.wait()
-    #reset failed task
-    #reset_failed()
+    
+    #add watcher 
+    pool.join()
     return True
+
+
+def force_exit():
+    logging.warning("force exit after %d seconds", MAX_RUN_TIME)
+    sys.exit(1)
 
 
 def do_run(clawer_task):
@@ -100,7 +112,15 @@ def reset_failed():
 class Command(BaseCommand):
     args = ""
     help = "Analysis clawer download page"
+    option_list = BaseCommand.option_list + (
+        make_option('--process',
+            dest='process',
+            default=4,
+            help='Pool process number.'
+        ),
+    )
     
     @wrapper_raven
     def handle(self, *args, **options):
-        run()
+        process_number = options["process"]
+        run(process_number)
