@@ -342,20 +342,22 @@ class TestCmd(TestCase):
         task.delete()
         
     def test_task_analysis(self):
+        path = "/tmp/ana.store"
+        tmp_file = open(path, "w")
+        tmp_file.write("hi")
+        tmp_file.close()
         clawer = Clawer.objects.create(name="hi", info="good")
         generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print '{\"uri\": \"http://www.github.com\"}'\n", cron="*")
-        task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baidu.com")
+        task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baidu.com", store=path, status=ClawerTask.STATUS_SUCCESS)
         analysis = ClawerAnalysis.objects.create(clawer=clawer, code="print '{\"url\":\"ssskkk\"}'\n")
         
-        analysis_log = task_analysis.do_run(task)
-        print analysis_log.failed_reason
-        print "result is ", analysis_log.result
-        self.assertEqual(analysis_log.status, ClawerAnalysisLog.STATUS_SUCCESS)
+        task_analysis.run(1)
         
         clawer.delete()
         generator.delete()
         task.delete()
         analysis.delete()
+        os.remove(path)
         
     def test_task_analysis_merge(self):
         pre_hour = datetime.datetime.now() - datetime.timedelta(minutes=60)

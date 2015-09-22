@@ -17,19 +17,19 @@ from django.conf import settings
 from html5helper.utils import wrapper_raven
 from clawer.models import Clawer, ClawerTask,\
     ClawerAnalysisLog
-import tempfile
 
 
-MAX_RUN_TIME = 300
+MAX_RUN_TIME = 5
 
 
 def run(process_number):
     pool = multiprocessing.Pool(process_number)
+    manager = multiprocessing.Manager()
+    done_tasks = manager.list()
+    need_run_tasks = []
+    
     clawers = Clawer.objects.filter(status=Clawer.STATUS_ON).all()
     
-    #add watcher
-    watcher = threading.Timer(MAX_RUN_TIME, force_exit, [pool])
-    watcher.start()
     #work
     for clawer in clawers:
         analysis = clawer.runing_analysis()
@@ -42,29 +42,42 @@ def run(process_number):
         for item in clawer_tasks:
             if os.path.exists(item.store) is False:
                 continue
-            
-            pool.apply_async(do_run, (item, ))
-        print "clawer %d" % clawer.id
+            need_run_tasks.append(item)
+            print "clawer %d" % clawer.id
     
-    #add watcher 
+    total_process = len(need_run_tasks)
+    for item in need_run_tasks:
+        pool.apply_async(do_run, (item, done_tasks))
+        
+    #add watcher
+    watcher = threading.Timer(MAX_RUN_TIME, force_exit, [pool, done_tasks])
+    watcher.start()
+    
+    print "total task need to run %d" % total_process
+    
     pool.close()
-    #pool.join()
-    #pool.terminate()
+    pool.join()
+    pool.terminate()
     return True
 
 
-def force_exit(pool):
-    logging.warning("force exit after %d seconds", MAX_RUN_TIME)
-    pool.terminate()
-    sys.exit(1)
+def force_exit(pool, done_tasks, total_process):
+    logging.warning("done tasks %d", len(done_tasks))
+    
+    if len(done_tasks) >= total_process:
+        pool.terminate()
+        sys.exit(0)
+        return
+    
+    #add watcher
+    watcher = threading.Timer(MAX_RUN_TIME, force_exit, [pool, done_tasks, total_process])
+    watcher.start()
 
 
-def do_run(clawer_task):
+def do_run(clawer_task, done_tasks):
     clawer = clawer_task.clawer
     
-    analysis = clawer.runing_analysis()
-    if not analysis:
-        return None
+    analysis = clawer.runing_analysis().product_path()
     path = analysis.product_path()
     
     analysis_log = ClawerAnalysisLog(clawer=clawer, analysis=analysis, task=clawer_task)
@@ -100,8 +113,12 @@ def do_run(clawer_task):
         clawer_task.status = ClawerTask.STATUS_ANALYSIS_FAIL
     clawer_task.save()
     
-    print "clawer task %d done" % clawer_task.id    
+    print "clawer task %d done" % clawer_task.id
+    
+    done_tasks.append(clawer_task.id)
+    
     return analysis_log
+
 
 def reset_failed():
     end = datetime.datetime.now() - datetime.timedelta(1)
