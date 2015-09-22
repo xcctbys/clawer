@@ -157,6 +157,12 @@ class ClawerAnalysisLog(models.Model):
             
         return ""
     
+    def result_path(self):
+        parent = os.path.join("/tmp", "clawer_analysis")
+        if os.path.exists(parent) is False:
+            os.mkdir(parent)
+        return os.path.join(parent, "%d.analysis" % self.task.id)
+    
 
 class ClawerDownloadLog(models.Model):
     (STATUS_FAIL, STATUS_SUCCESS) = range(1, 3)

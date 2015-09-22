@@ -343,7 +343,53 @@ class TestCmd(TestCase):
         analysis = ClawerAnalysis.objects.create(clawer=clawer, code="print '{\"url\":\"ssskkk\"}'\n")
         
         task_analysis.run(1, 5)
-        analysis_log = ClawerAnalysisLog.objects.filter(clawer=clawer, analysis=analysis, task=task)[0]
+        analysis_log = ClawerAnalysisLog.objects.filter(clawer=clawer, analysis=analysis, task=task).order_by("-id")[0]
+        print "analysis log failed reason: %s" % analysis_log.failed_reason
+        self.assertEqual(analysis_log.status, ClawerAnalysisLog.STATUS_SUCCESS)
+        
+        clawer.delete()
+        generator.delete()
+        task.delete()
+        analysis.delete()
+        analysis_log.delete()
+        os.remove(path)
+        
+    def test_task_analysis_with_exception(self):
+        path = "/tmp/ana.store"
+        tmp_file = open(path, "w")
+        tmp_file.write("hi")
+        tmp_file.close()
+        clawer = Clawer.objects.create(name="hi", info="good")
+        generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print a", cron="*")
+        task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baidu.com", store=path, status=ClawerTask.STATUS_SUCCESS)
+        analysis = ClawerAnalysis.objects.create(clawer=clawer, code="print a\n")
+        
+        task_analysis.run(1, 5)
+        analysis_log = ClawerAnalysisLog.objects.filter(clawer=clawer, analysis=analysis, task=task).order_by("-id")[0]
+        print "analysis log failed reason: %s" % analysis_log.failed_reason
+        self.assertEqual(analysis_log.status, ClawerAnalysisLog.STATUS_FAIL)
+        
+        clawer.delete()
+        generator.delete()
+        task.delete()
+        analysis.delete()
+        analysis_log.delete()
+        os.remove(path)
+        
+    def test_task_analysis_with_large(self):
+        path = "/tmp/ana.store"
+        tmp_file = open(path, "w")
+        tmp_file.write("hi")
+        tmp_file.close()
+        code = "import json\nresult={}\nfor i in range(100000):\n    result[i] = 'test'\nprint json.dumps(result)"
+        clawer = Clawer.objects.create(name="hi", info="good")
+        generator = ClawerTaskGenerator.objects.create(clawer=clawer, code=code, cron="*")
+        task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baidu.com", store=path, status=ClawerTask.STATUS_SUCCESS)
+        analysis = ClawerAnalysis.objects.create(clawer=clawer, code=code)
+        
+        task_analysis.run(1, 5)
+        analysis_log = ClawerAnalysisLog.objects.filter(clawer=clawer, analysis=analysis, task=task).order_by("-id")[0]
+        print "analysis log failed reason: %s" % analysis_log.failed_reason
         self.assertEqual(analysis_log.status, ClawerAnalysisLog.STATUS_SUCCESS)
         
         clawer.delete()
