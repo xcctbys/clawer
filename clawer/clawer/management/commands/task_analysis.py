@@ -21,9 +21,6 @@ from clawer.models import Clawer, ClawerTask,\
 
 def run(process_number, run_time):
     pool = multiprocessing.Pool(process_number)
-    manager = multiprocessing.Manager()
-    done_tasks = manager.list()
-    need_run_tasks = []
     clawers = Clawer.objects.filter(status=Clawer.STATUS_ON).all()
     
     #add watcher
@@ -41,19 +38,12 @@ def run(process_number, run_time):
         for item in clawer_tasks:
             if os.path.exists(item.store) is False:
                 continue
-            need_run_tasks.append(item)
+            pool.apply_async(do_run, (item, ))
+        print "clawer is %d" % clawer.id
             
-    total_process = len(need_run_tasks)
-    for item in need_run_tasks:
-        pool.apply_async(do_run, (item, ))
-        
     reset_failed()
     
-    print "total task need to run %d" % total_process
-    
     pool.close()
-    pool.join()
-    pool.terminate()
     return True
 
 
@@ -90,7 +80,7 @@ def do_run(clawer_task):
             analysis_log.result = json.dumps(result)
             analysis_log.status = ClawerAnalysisLog.STATUS_SUCCESS 
     except:
-        print traceback.format_exc(10)
+        #print traceback.format_exc(10)
         analysis_log.failed_reason = traceback.format_exc(10)
         analysis_log.status = ClawerAnalysisLog.STATUS_FAIL
         
