@@ -19,8 +19,7 @@ from clawer.models import Clawer, ClawerTask,\
     ClawerAnalysisLog
 
 
-MAX_RUN_TIME = 60*60
-
+MAX_RUN_TIME = 600
 
 
 def run(process_number):
@@ -43,7 +42,7 @@ def run(process_number):
             if os.path.exists(item.store) is False:
                 continue
             
-            pool.apply_async(do_run, [clawer])
+            pool.apply_async(do_run, (item, ))
         print "clawer %d" % clawer.id
     
     #add watcher 
@@ -101,9 +100,7 @@ def do_run(clawer_task):
         clawer_task.status = ClawerTask.STATUS_ANALYSIS_FAIL
     clawer_task.save()
     
-    print "clawer task %d done" % clawer_task.id
-    
-    return analysis_log    
+    print "clawer task %d done" % clawer_task.id    
     
 
 def reset_failed():
