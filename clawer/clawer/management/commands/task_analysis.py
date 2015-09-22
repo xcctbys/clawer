@@ -101,6 +101,8 @@ def do_run(clawer_task):
         clawer_task.status = ClawerTask.STATUS_ANALYSIS_FAIL
     clawer_task.save()
     
+    print "clawer task %d done" % clawer_task.id
+    
     return analysis_log    
     
 
