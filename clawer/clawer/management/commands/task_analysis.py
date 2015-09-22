@@ -71,7 +71,7 @@ def do_run(clawer_task):
         
         print "out %s, err %s" % (out, err)
         
-        if not err:
+        if err:
             analysis_log.status = ClawerAnalysisLog.STATUS_FAIL
             analysis_log.failed_reason = err
         else:
