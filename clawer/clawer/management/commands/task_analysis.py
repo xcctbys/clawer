@@ -28,7 +28,7 @@ def run(process_number):
     clawers = Clawer.objects.filter(status=Clawer.STATUS_ON).all()
     
     #add watcher
-    watcher = threading.Timer(MAX_RUN_TIME, force_exit)
+    watcher = threading.Timer(MAX_RUN_TIME, force_exit, [pool])
     watcher.start()
     #work
     for clawer in clawers:
@@ -47,12 +47,14 @@ def run(process_number):
         print "clawer %d" % clawer.id
     
     #add watcher 
+    pool.close()
     pool.join()
     return True
 
 
-def force_exit():
+def force_exit(pool):
     logging.warning("force exit after %d seconds", MAX_RUN_TIME)
+    pool.terminate()
     sys.exit(1)
 
 
