@@ -63,7 +63,7 @@ def do_run(clawer_task):
     
     try:
         out = subprocess.check_output(["/bin/echo", json.dumps({"path":clawer_task.store, "url":clawer_task.uri}), "|", settings.PYTHON, path],
-                                      stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                                      stderr=subprocess.STDOUT)
         result = json.loads(out)
         result["_url"] = clawer_task.uri
         if clawer_task.cookie:
