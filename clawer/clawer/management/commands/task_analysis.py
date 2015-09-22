@@ -18,7 +18,7 @@ from clawer.models import Clawer, ClawerTask,\
     ClawerAnalysisLog
 
 
-MAX_RUN_TIME = 5
+MAX_RUN_TIME = 300
 
 
 def run(process_number):
@@ -26,8 +26,12 @@ def run(process_number):
     manager = multiprocessing.Manager()
     done_tasks = manager.list()
     need_run_tasks = []
-    
     clawers = Clawer.objects.filter(status=Clawer.STATUS_ON).all()
+    
+    #add watcher
+    watcher = threading.Timer(MAX_RUN_TIME, force_exit, [pool])
+    watcher.start()
+    
     for clawer in clawers:
         analysis = clawer.runing_analysis()
         if not analysis:
@@ -47,10 +51,6 @@ def run(process_number):
         
     reset_failed()
     
-    #add watcher
-    watcher = threading.Timer(MAX_RUN_TIME, force_exit, [pool, done_tasks, total_process])
-    watcher.start()
-    
     print "total task need to run %d" % total_process
     
     pool.close()
@@ -59,19 +59,13 @@ def run(process_number):
     return True
 
 
-def force_exit(pool, done_tasks, total_process):
-    print "done tasks %d" % len(done_tasks)
+def force_exit(pool):
+    print "force exit after run %d seconds" % MAX_RUN_TIME
+    pool.terminate()
+    sys.exit(0)
     
-    if len(done_tasks) >= total_process:
-        pool.terminate()
-        sys.exit(0)
-        return
-    
-    watcher = threading.Timer(MAX_RUN_TIME, force_exit, [pool, done_tasks, total_process])
-    watcher.start()
 
-
-def do_run(clawer_task, done_tasks):
+def do_run(clawer_task):
     clawer = clawer_task.clawer
     
     analysis = clawer.runing_analysis().product_path()
@@ -111,9 +105,6 @@ def do_run(clawer_task, done_tasks):
     clawer_task.save()
     
     print "clawer task %d done" % clawer_task.id
-    
-    done_tasks.append(clawer_task.id)
-    
     return analysis_log
 
 
