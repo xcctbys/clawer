@@ -29,8 +29,6 @@ def run(process_number):
     need_run_tasks = []
     
     clawers = Clawer.objects.filter(status=Clawer.STATUS_ON).all()
-    
-    #work
     for clawer in clawers:
         analysis = clawer.runing_analysis()
         if not analysis:
@@ -50,7 +48,7 @@ def run(process_number):
         pool.apply_async(do_run, (item, done_tasks))
         
     #add watcher
-    watcher = threading.Timer(MAX_RUN_TIME, force_exit, [pool, done_tasks])
+    watcher = threading.Timer(MAX_RUN_TIME, force_exit, [pool, done_tasks, total_process])
     watcher.start()
     
     print "total task need to run %d" % total_process
