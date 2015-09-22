@@ -123,5 +123,5 @@ class Command(BaseCommand):
     
     @wrapper_raven
     def handle(self, *args, **options):
-        process_number = options["process"]
+        process_number = int(options["process"])
         run(process_number)
