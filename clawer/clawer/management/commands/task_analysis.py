@@ -59,7 +59,7 @@ def run(process_number):
 
 
 def force_exit(pool, done_tasks, total_process):
-    print "done tasks %d", len(done_tasks)
+    print "done tasks %d" % len(done_tasks)
     
     if len(done_tasks) >= total_process:
         pool.terminate()
