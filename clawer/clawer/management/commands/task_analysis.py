@@ -47,8 +47,8 @@ def run(process_number):
     
     #add watcher 
     pool.close()
-    pool.join()
-    pool.terminate()
+    #pool.join()
+    #pool.terminate()
     return True
 
 
