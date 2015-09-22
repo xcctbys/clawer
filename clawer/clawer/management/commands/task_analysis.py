@@ -70,27 +70,23 @@ def do_run(clawer_task):
     analysis_log = ClawerAnalysisLog(clawer=clawer, analysis=analysis, task=clawer_task)
     
     try:
-        stdin = tempfile.TemporaryFile()
-        stdout = tempfile.TemporaryFile()
-        stderr = tempfile.TemporaryFile()
-        stdin.write(json.dumps({"path":clawer_task.store, "url":clawer_task.uri}))
-        retcode = subprocess.call([settings.PYTHON, path], stdin=stdin, stdout=stdout, stderr=stderr)
+        p = subprocess.Popen([settings.PYTHON, path], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
+        p.stdin.write(json.dumps({"path":clawer_task.store, "url":clawer_task.uri}))
+        p.stdin.close()
+        #err = p.stderr.read()
+        out = p.stdout.read()
+        
+        retcode = p.wait()
         if retcode != 0:
-            stderr.seek(0)
             analysis_log.status = ClawerAnalysisLog.STATUS_FAIL
-            analysis_log.failed_reason = stderr.read()
+            analysis_log.failed_reason = out
         else:
-            stdout.seek(0)
-            result = json.loads(stdout.read())
+            result = json.loads(out)
             result["_url"] = clawer_task.uri
             if clawer_task.cookie:
                 result["_cookie"] = clawer_task.cookie
             analysis_log.result = json.dumps(result)
             analysis_log.status = ClawerAnalysisLog.STATUS_SUCCESS 
-            
-        stdin.close()
-        stdout.close()
-        stderr.close()
     except:
         print traceback.format_exc(10)
         analysis_log.failed_reason = traceback.format_exc(10)
