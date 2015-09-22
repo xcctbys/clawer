@@ -9,7 +9,6 @@ import multiprocessing
 from optparse import make_option
 import sys
 import threading
-import logging
 
 from django.core.management.base import BaseCommand
 from django.conf import settings
@@ -46,6 +45,8 @@ def run(process_number):
     for item in need_run_tasks:
         pool.apply_async(do_run, (item, done_tasks))
         
+    reset_failed()
+    
     #add watcher
     watcher = threading.Timer(MAX_RUN_TIME, force_exit, [pool, done_tasks, total_process])
     watcher.start()
@@ -66,7 +67,6 @@ def force_exit(pool, done_tasks, total_process):
         sys.exit(0)
         return
     
-    #add watcher
     watcher = threading.Timer(MAX_RUN_TIME, force_exit, [pool, done_tasks, total_process])
     watcher.start()
 
