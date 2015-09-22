@@ -30,9 +30,6 @@ def run(process_number, run_time):
         for item in clawer_tasks:
             pool.apply_async(do_run, [item])
         
-        reset_failed(clawer)
-        reset_process(clawer)
-        
         print "clawer is %d" % clawer.id
             
     pool.close()
@@ -108,20 +105,6 @@ def do_run(clawer_task):
     download_log.save()
     
     return clawer_task.id
-
-
-
-def reset_failed(clawer):
-    end = datetime.datetime.now() - datetime.timedelta(1)
-    start = end - datetime.timedelta(30)
-    ClawerTask.objects.filter(status=ClawerTask.STATUS_FAIL, add_datetime__range=(start, end), clawer=clawer).update(status=ClawerTask.STATUS_LIVE)
-
-
-def reset_process(clawer):
-    end = datetime.datetime.now() - datetime.timedelta(1)
-    start = end - datetime.timedelta(30)
-    ClawerTask.objects.filter(status=ClawerTask.STATUS_PROCESS, add_datetime__range=(start, end), clawer=clawer).update(status=ClawerTask.STATUS_LIVE)
-
 
 
 class Command(BaseCommand):
