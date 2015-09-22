@@ -18,7 +18,7 @@ from clawer.models import Clawer, ClawerTask,\
     ClawerAnalysisLog
 
 
-MAX_RUN_TIME = 300
+MAX_RUN_TIME = 260
 
 
 def run(process_number):
