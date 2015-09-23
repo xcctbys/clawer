@@ -37,8 +37,22 @@
       
       #slave
       */5    *    *    *    * cd /home/webapps/nice-clawer/confs/production;./bg_cmd.sh task_analysis
-      #*/5    *    *    *    * cd /home/webapps/nice-clawer/confs/production;./bg_cmd.sh task_download
       
       ## start download worker
-      DJANGO_SETTINGS_MODULE=settings_pro nohup /home/virtualenvs/py27/bin/rqworker --url redis://10.171.34.147/0  -v --pid /tmp/rq_worker.pid -P /home/webapps/nice-clawer/clawer/ task_downloader &
+      # mkdir /home/web_log/nice-clawer
+      # chown -R nginx:nginx /home/web_log/nice-clawer
+      # mkdir /data/clawer
+      # chown -R nginx:nginx /data/clawer
       
+      */5 * * * * DJANGO_SETTINGS_MODULE=settings_pro /home/virtualenvs/py27/bin/rqworker --url redis://10.171.34.147/0  -v --pid /tmp/rq_worker1.pid --burst -P /home/webapps/nice-clawer/clawer/ task_downloader 
+      
+     
+# Supervisor for Clawer worker
+
+      ## start download worker
+      # mkdir /home/web_log/nice-clawer
+      # chown -R nginx:nginx /home/web_log/nice-clawer
+      # mkdir /data/clawer
+      # chown -R nginx:nginx /data/clawer
+      
+      /home/virtualenvs/py27/bin/supervisord -c /home/webapps/nice-clawer/confs/production/supervisor.ini
