@@ -54,5 +54,7 @@
       # chown -R nginx:nginx /home/web_log/nice-clawer
       # mkdir /data/clawer
       # chown -R nginx:nginx /data/clawer
+      # mkdir /data/media
+      # chown -R nginx:nginx /data/media
       
       /home/virtualenvs/py27/bin/supervisord -c /home/webapps/nice-clawer/confs/production/supervisor.ini

@@ -5,7 +5,6 @@ import traceback
 import os
 import sys
 import subprocess
-import threading
 import datetime
 import time
 from optparse import make_option
@@ -27,9 +26,10 @@ def run(runtime):
             sys.exit(1)
             break
         
-        do_run()
-            
-        time.sleep(1)
+        if do_run() > 0:
+            time.sleep(1)
+        else:
+            time.sleep(5)
         
     return True
 
@@ -54,6 +54,8 @@ def do_run():
             except: 
                 print traceback.format_exc(10)   
         print "clawer is %d, job count is %d" % (clawer.id, job_count)
+        
+    return job_count
  
 
 def do_analysis(clawer_task):
