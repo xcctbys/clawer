@@ -17,7 +17,7 @@ from clawer.models import Clawer, ClawerTask,\
     ClawerAnalysisLog
 
 
-def run(runtime):
+def run(runtime, thread_count):
     end = datetime.datetime.now() + datetime.timedelta(seconds=runtime)
     
     while True:
@@ -26,7 +26,7 @@ def run(runtime):
             sys.exit(1)
             break
         
-        if do_run() > 0:
+        if do_run(thread_count) > 0:
             time.sleep(1)
         else:
             time.sleep(5)
@@ -36,6 +36,7 @@ def run(runtime):
 
 def do_run():
     clawers = Clawer.objects.filter(status=Clawer.STATUS_ON).all()
+    
     for clawer in clawers:
         analysis = clawer.runing_analysis()
         if not analysis:
@@ -49,17 +50,17 @@ def do_run():
             try:
                 if os.path.exists(item.store) is False:
                     continue
-                do_analysis(item)
+                do_analysis(item, clawer)
                 job_count += 1
             except: 
                 print traceback.format_exc(10)   
+                
         print "clawer is %d, job count is %d" % (clawer.id, job_count)
-        
+    
     return job_count
  
 
-def do_analysis(clawer_task):
-    clawer = clawer_task.clawer
+def do_analysis(clawer_task, clawer):
     
     analysis = clawer.runing_analysis()
     path = analysis.product_path()
@@ -105,6 +106,7 @@ def do_analysis(clawer_task):
     print "clawer task %d done" % clawer_task.id
     return analysis_log
 
+        
 
 
 class Command(BaseCommand):
@@ -116,8 +118,13 @@ class Command(BaseCommand):
             default=300,
             help='Run seconds'
         ),
+        make_option('--thread',
+            dest='thread',
+            default=2,
+            help='Run seconds'
+        ),
     )
     
     @wrapper_raven
     def handle(self, *args, **options):
-        run(int(options["run"]))
+        run(int(options["run"]), int(options["thread"]))
