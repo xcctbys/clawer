@@ -3,13 +3,12 @@
 import json
 import traceback
 import os
-import subprocess
-import datetime
-import multiprocessing
-from optparse import make_option
 import sys
+import subprocess
 import threading
-import logging
+import datetime
+import time
+from optparse import make_option
 
 from django.core.management.base import BaseCommand
 from django.conf import settings
@@ -19,15 +18,24 @@ from clawer.models import Clawer, ClawerTask,\
     ClawerAnalysisLog
 
 
+def run(runtime):
+    end = datetime.datetime.now() + datetime.timedelta(seconds=runtime)
+    
+    while True:
+        current = datetime.datetime.now()
+        if current >= end:
+            sys.exit(1)
+            break
+        
+        do_run()
+            
+        time.sleep(1)
+        
+    return True
 
-def run(process_number, run_time):
-    pool = multiprocessing.Pool(process_number)
+
+def do_run():
     clawers = Clawer.objects.filter(status=Clawer.STATUS_ON).all()
-    
-    #add watcher
-    watcher = threading.Timer(run_time, force_exit, [pool])
-    watcher.start()
-    
     for clawer in clawers:
         analysis = clawer.runing_analysis()
         if not analysis:
@@ -40,22 +48,12 @@ def run(process_number, run_time):
         for item in clawer_tasks:
             if os.path.exists(item.store) is False:
                 continue
-            pool.apply_async(do_run, [item])
+            do_analysis(item)
             job_count += 1
         print "clawer is %d, job count is %d" % (clawer.id, job_count)
-    
-    pool.close()
-    pool.join()
-    return True
+ 
 
-
-def force_exit(pool):
-    print "force exit after run"
-    pool.terminate()
-    sys.exit(0)
-    
-
-def do_run(clawer_task):
+def do_analysis(clawer_task):
     clawer = clawer_task.clawer
     
     analysis = clawer.runing_analysis()
@@ -108,11 +106,6 @@ class Command(BaseCommand):
     args = ""
     help = "Analysis clawer download page"
     option_list = BaseCommand.option_list + (
-        make_option('--process',
-            dest='process',
-            default=4,
-            help='Pool process number.'
-        ),
         make_option('--run',
             dest='run',
             default=300,
@@ -122,6 +115,4 @@ class Command(BaseCommand):
     
     @wrapper_raven
     def handle(self, *args, **options):
-        process_number = int(options["process"])
-        run_time = int(options["run"])
-        run(process_number, run_time)
+        run(int(options["run"]))

@@ -11,7 +11,7 @@ from django.contrib.auth.models import User as DjangoUser, Group
 from clawer.models import MenuPermission, Clawer, ClawerTask,\
     ClawerTaskGenerator, ClawerAnalysis, ClawerAnalysisLog, Logger,\
     ClawerDownloadLog
-from clawer.management.commands import task_generator_test, task_generator_run, task_analysis, task_analysis_merge, task_download, task_dispatch
+from clawer.management.commands import task_generator_test, task_generator_run, task_analysis, task_analysis_merge, task_dispatch
 
 
 class TestHomeViews(TestCase):
@@ -323,19 +323,8 @@ class TestCmd(TestCase):
         generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print '{\"uri\": \"http://www.github.com\"}'\n", cron="*")
         task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baidu.com")
         
-        q = task_dispatch.run(5)
+        q = task_dispatch.run()
         self.assertEqual(len(q.jobs), 1)
-        
-        clawer.delete()
-        generator.delete()
-        task.delete()
-        
-    def test_task_download(self):
-        clawer = Clawer.objects.create(name="hi", info="good")
-        generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print '{\"uri\": \"http://www.github.com\"}'\n", cron="*")
-        task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baidu.com")
-        
-        task_download.run(1, 5)
         
         clawer.delete()
         generator.delete()
@@ -351,7 +340,7 @@ class TestCmd(TestCase):
         task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baidu.com", store=path, status=ClawerTask.STATUS_SUCCESS)
         analysis = ClawerAnalysis.objects.create(clawer=clawer, code="print '{\"url\":\"ssskkk\"}'\n")
         
-        task_analysis.run(1, 5)
+        task_analysis.do_run()
         analysis_log = ClawerAnalysisLog.objects.filter(clawer=clawer, analysis=analysis, task=task).order_by("-id")[0]
         print "analysis log failed reason: %s" % analysis_log.failed_reason
         self.assertEqual(analysis_log.status, ClawerAnalysisLog.STATUS_SUCCESS)
@@ -373,7 +362,7 @@ class TestCmd(TestCase):
         task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baidu.com", store=path, status=ClawerTask.STATUS_SUCCESS)
         analysis = ClawerAnalysis.objects.create(clawer=clawer, code="print a\n")
         
-        task_analysis.run(1, 5)
+        task_analysis.do_run()
         analysis_log = ClawerAnalysisLog.objects.filter(clawer=clawer, analysis=analysis, task=task).order_by("-id")[0]
         print "analysis log failed reason: %s" % analysis_log.failed_reason
         self.assertEqual(analysis_log.status, ClawerAnalysisLog.STATUS_FAIL)
@@ -396,7 +385,7 @@ class TestCmd(TestCase):
         task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baidu.com", store=path, status=ClawerTask.STATUS_SUCCESS)
         analysis = ClawerAnalysis.objects.create(clawer=clawer, code=code)
         
-        task_analysis.run(1, 5)
+        task_analysis.do_run()
         analysis_log = ClawerAnalysisLog.objects.filter(clawer=clawer, analysis=analysis, task=task).order_by("-id")[0]
         print "analysis log failed reason: %s" % analysis_log.failed_reason
         self.assertEqual(analysis_log.status, ClawerAnalysisLog.STATUS_SUCCESS)
