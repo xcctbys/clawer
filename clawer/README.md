@@ -33,7 +33,12 @@
       */5    *    *    *    * cd /home/webapps/nice-clawer/confs/production;./bg_cmd.sh task_generator_test
       */5    *    *    *    * cd /home/webapps/nice-clawer/confs/production;./bg_cmd.sh task_dispatch
       30     *    *    *    * cd /home/webapps/nice-clawer/confs/production;./bg_cmd.sh task_analysis_merge
+      
+      
       #slave
       */5    *    *    *    * cd /home/webapps/nice-clawer/confs/production;./bg_cmd.sh task_analysis
-      */5    *    *    *    * cd /home/webapps/nice-clawer/confs/production;./bg_cmd.sh task_download
+      #*/5    *    *    *    * cd /home/webapps/nice-clawer/confs/production;./bg_cmd.sh task_download
+      
+      ## start download worker
+      DJANGO_SETTINGS_MODULE=settings_pro nohup /home/virtualenvs/py27/bin/rqworker --url redis://10.171.34.147/0  -v --pid /tmp/rq_worker.pid -P /home/webapps/nice-clawer/clawer/ task_downloader &
       
