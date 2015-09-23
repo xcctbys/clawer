@@ -11,7 +11,7 @@ from clawer.utils import DownloadQueue, download_clawer_task
 
 
 
-def run(run_time):
+def run():
     download_queue = DownloadQueue()
     clawers = Clawer.objects.filter(status=Clawer.STATUS_ON).all()
     
