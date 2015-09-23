@@ -11,7 +11,7 @@ from django.contrib.auth.models import User as DjangoUser, Group
 from clawer.models import MenuPermission, Clawer, ClawerTask,\
     ClawerTaskGenerator, ClawerAnalysis, ClawerAnalysisLog, Logger,\
     ClawerDownloadLog
-from clawer.management.commands import task_generator_test, task_generator_run, task_analysis, task_analysis_merge, task_download
+from clawer.management.commands import task_generator_test, task_generator_run, task_analysis, task_analysis_merge, task_download, task_dispatch
 
 
 class TestHomeViews(TestCase):
@@ -318,19 +318,28 @@ class TestCmd(TestCase):
         clawer.delete()
         generator.delete()
         
+    def test_task_dispatch(self):
+        clawer = Clawer.objects.create(name="hi", info="good")
+        generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print '{\"uri\": \"http://www.github.com\"}'\n", cron="*")
+        task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baidu.com")
+        
+        q = task_dispatch.run(5)
+        self.assertEqual(len(q.jobs), 1)
+        
+        clawer.delete()
+        generator.delete()
+        task.delete()
+        
     def test_task_download(self):
         clawer = Clawer.objects.create(name="hi", info="good")
         generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print '{\"uri\": \"http://www.github.com\"}'\n", cron="*")
         task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baidu.com")
         
         task_download.run(1, 5)
-        download_log = ClawerDownloadLog.objects.get(clawer=clawer, task=task)
-        self.assertEqual(download_log.status, ClawerDownloadLog.STATUS_SUCCESS)
         
         clawer.delete()
         generator.delete()
         task.delete()
-        download_log.delete()
         
     def test_task_analysis(self):
         path = "/tmp/ana.store"
