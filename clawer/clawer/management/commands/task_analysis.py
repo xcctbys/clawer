@@ -46,10 +46,13 @@ def do_run():
         job_count = 0
         clawer_tasks = ClawerTask.objects.filter(clawer_id=clawer.id, status=ClawerTask.STATUS_SUCCESS).order_by("id")[:clawer.settings().analysis]
         for item in clawer_tasks:
-            if os.path.exists(item.store) is False:
-                continue
-            do_analysis(item)
-            job_count += 1
+            try:
+                if os.path.exists(item.store) is False:
+                    continue
+                do_analysis(item)
+                job_count += 1
+            except: 
+                print traceback.format_exc(10)   
         print "clawer is %d, job count is %d" % (clawer.id, job_count)
  
 
