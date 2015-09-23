@@ -35,12 +35,14 @@ def run(process_number, run_time):
         path = analysis.product_path()
         analysis.write_code(path)
         
+        job_count = 0
         clawer_tasks = ClawerTask.objects.filter(clawer_id=clawer.id, status=ClawerTask.STATUS_SUCCESS).order_by("id")[:clawer.settings().analysis]
         for item in clawer_tasks:
             if os.path.exists(item.store) is False:
                 continue
             pool.apply_async(do_run, [item])
-        print "clawer is %d" % clawer.id
+            job_count += 1
+        print "clawer is %d, job count is %d" % (clawer.id, job_count)
     
     pool.close()
     pool.join()

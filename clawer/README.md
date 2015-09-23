@@ -36,7 +36,7 @@
       
       
       #slave
-      */5    *    *    *    * cd /home/webapps/nice-clawer/confs/production;./bg_cmd.sh task_analysis
+      */5    *    *    *    * cd /home/webapps/nice-clawer/confs/production;./bg_cmd.sh task_analysis --process=2 --run=290
       
       ## start download worker
       # mkdir /home/web_log/nice-clawer
