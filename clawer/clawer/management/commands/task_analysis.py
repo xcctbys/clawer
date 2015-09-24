@@ -26,7 +26,7 @@ def run(runtime, thread_count):
             sys.exit(1)
             break
         
-        if do_run(thread_count) > 0:
+        if do_run() > 0:
             time.sleep(1)
         else:
             time.sleep(5)
