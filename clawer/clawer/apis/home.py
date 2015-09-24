@@ -53,7 +53,7 @@ def clawer_download_log(request):
 def clawer_task(request):
     task_id = request.GET.get("id")
     status = request.GET.get("status")
-    clawer_id = request.GET.get("clawer_id")
+    clawer_id = request.GET.get("clawer")
     
     queryset = ClawerTask.objects
     if status:
