@@ -358,14 +358,6 @@ class ClawerTask(models.Model):
         now = datetime.datetime.now()
         return os.path.join(settings.CLAWER_SOURCE, now.strftime("%Y/%m/%d"), "%d.txt" % self.id)
 
-
-@receiver(pre_save, sender=ClawerTask)
-def clawer_task_pre_save(sender, instance, *args, **kwargs):
-    url_cache = UrlCache(instance.uri)
-    if url_cache.has_url():
-        raise Exception("%s has exists", instance.uri)
-    
-    url_cache.add_it()
     
 
 class ClawerSetting(models.Model):
