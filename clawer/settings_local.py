@@ -44,6 +44,8 @@ CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
 MEDIA_URL = 'http://localhost:8000/media/'
 
 REDIS = "redis://localhost:6379//0"
+URL_REDIS = "redis://localhost:6379//1"
+
 
 RAVEN_CONFIG = {
     'dsn': 'http://c63b0d71513f4569b661e81bcfe8f903:c16131fe0f8d4195b0ea8be642aaa419@coredump.51zhi.com//4',

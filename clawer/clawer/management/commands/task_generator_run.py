@@ -11,6 +11,7 @@ from django.conf import settings
 from html5helper.utils import wrapper_raven
 from clawer.models import ClawerTaskGenerator, Clawer, ClawerTask
 from clawer.utils import Download
+import traceback
 
 
 def run(task_generator_id):
@@ -29,16 +30,13 @@ def run(task_generator_id):
         if not js:
             logging.warning("unknown line: %s" % line)
             continue
-        #check multiple url
-        end = datetime.datetime.now()
-        start = end - datetime.timedelta(settings.CLAWER_TASK_URL_MULTIPLE_DAY)
-        if ClawerTask.objects.filter(uri=js['uri'], clawer=task_generator.clawer, add_datetime__range=(start, end)).count() > 0:
-            logging.info("find multiple url: %s" % line)
-            continue
-        #insert to db
-        ClawerTask.objects.create(clawer=task_generator.clawer, task_generator=task_generator, uri=js["uri"],
+        
+        try:
+            ClawerTask.objects.create(clawer=task_generator.clawer, task_generator=task_generator, uri=js["uri"],
                                   cookie=js.get("cookie"), 
                                   download_engine=js.get("download_engine") if "download_engine" in js else Download.ENGINE_PHANTOMJS)
+        except:
+            logging.error("add %s failed: %s", js['uri'], traceback.format_exc(10))
         
     err = p.stderr.read()
     

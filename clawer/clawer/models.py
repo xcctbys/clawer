@@ -4,12 +4,15 @@ import os
 import logging
 import datetime
 import codecs
+import redis
 
 from django.contrib.auth.models import User as DjangoUser
 from django.db import models
 from django.conf import settings
 import json
-from clawer.utils import Download
+from clawer.utils import Download, UrlCache
+from django.db.models.signals import post_save, pre_save
+from django.dispatch.dispatcher import receiver
 
         
 
@@ -355,6 +358,15 @@ class ClawerTask(models.Model):
         now = datetime.datetime.now()
         return os.path.join(settings.CLAWER_SOURCE, now.strftime("%Y/%m/%d"), "%d.txt" % self.id)
 
+
+@receiver(pre_save, sender=ClawerTask)
+def clawer_task_pre_save(sender, instance, *args, **kwargs):
+    url_cache = UrlCache(instance.uri)
+    if url_cache.has_url():
+        raise Exception("%s has exists", instance.uri)
+    
+    url_cache.add_it()
+    
 
 class ClawerSetting(models.Model):
     clawer = models.ForeignKey(Clawer)

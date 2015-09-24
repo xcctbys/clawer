@@ -12,6 +12,7 @@ from clawer.models import MenuPermission, Clawer, ClawerTask,\
     ClawerTaskGenerator, ClawerAnalysis, ClawerAnalysisLog, Logger,\
     ClawerDownloadLog
 from clawer.management.commands import task_generator_test, task_generator_run, task_analysis, task_analysis_merge, task_dispatch
+from clawer.utils import UrlCache
 
 
 class TestHomeViews(TestCase):
@@ -161,6 +162,7 @@ class TestHomeApi(TestCase):
         download_log.delete()
         
     def test_task(self):
+        UrlCache(None).flush()
         clawer = Clawer.objects.create(name="hi", info="good")
         clawer_generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print hello", cron="*", status=ClawerTaskGenerator.STATUS_PRODUCT)
         clawer_task = ClawerTask.objects.create(clawer=clawer, task_generator=clawer_generator, uri="http://github.com", status=ClawerTask.STATUS_FAIL)
@@ -320,8 +322,8 @@ class TestCmd(TestCase):
         
     def test_task_dispatch(self):
         clawer = Clawer.objects.create(name="hi", info="good")
-        generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print '{\"uri\": \"http://www.github.com\"}'\n", cron="*")
-        task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baidu.com")
+        generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print '{\"uri\": \"http://www.gitsdhub.com\"}'\n", cron="*")
+        task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.ba90idu.com")
         
         q = task_dispatch.run()
         self.assertEqual(len(q.jobs), 1)
@@ -331,13 +333,14 @@ class TestCmd(TestCase):
         task.delete()
         
     def test_task_analysis(self):
+        UrlCache(None).flush()
         path = "/tmp/ana.store"
         tmp_file = open(path, "w")
         tmp_file.write("hi")
         tmp_file.close()
         clawer = Clawer.objects.create(name="hi", info="good")
-        generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print '{\"uri\": \"http://www.github.com\"}'\n", cron="*")
-        task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baidu.com", store=path, status=ClawerTask.STATUS_SUCCESS)
+        generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print '{\"uri\": \"http://www.gith23ub.com\"}'\n", cron="*")
+        task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.ba56idu.com", store=path, status=ClawerTask.STATUS_SUCCESS)
         analysis = ClawerAnalysis.objects.create(clawer=clawer, code="print '{\"url\":\"ssskkk\"}'\n")
         
         task_analysis.do_run()
@@ -353,13 +356,14 @@ class TestCmd(TestCase):
         os.remove(path)
         
     def test_task_analysis_with_exception(self):
+        UrlCache(None).flush()
         path = "/tmp/ana.store"
         tmp_file = open(path, "w")
         tmp_file.write("hi")
         tmp_file.close()
         clawer = Clawer.objects.create(name="hi", info="good")
         generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print a", cron="*")
-        task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baidu.com", store=path, status=ClawerTask.STATUS_SUCCESS)
+        task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baweidu.com", store=path, status=ClawerTask.STATUS_SUCCESS)
         analysis = ClawerAnalysis.objects.create(clawer=clawer, code="print a\n")
         
         task_analysis.do_run()
@@ -400,8 +404,8 @@ class TestCmd(TestCase):
     def test_task_analysis_merge(self):
         pre_hour = datetime.datetime.now() - datetime.timedelta(minutes=60)
         clawer = Clawer.objects.create(name="hi", info="good")
-        generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print '{\"uri\": \"http://www.github.com\"}'\n", cron="*")
-        task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baidu.com")
+        generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print '{\"uri\": \"http://www.github111.com\"}'\n", cron="*")
+        task = ClawerTask.objects.create(clawer=clawer, task_generator=generator, uri="https://www.baid11u.com")
         analysis = ClawerAnalysis.objects.create(clawer=clawer, code="print '{\"url\":\"ssskkk\"}'\n")
         analysis_log = ClawerAnalysisLog.objects.create(clawer=clawer, analysis=analysis, task=task, status=ClawerAnalysisLog.STATUS_SUCCESS, 
                                                         result=json.dumps({"hi":"ok"}), add_datetime=pre_hour)

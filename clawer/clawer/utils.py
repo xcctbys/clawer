@@ -137,7 +137,27 @@ class Download(object):
         if status != 0:
             self.failed = True    
             return
+    
+
+class UrlCache(object):
+    
+    def __init__(self, url, redis_url=settings.URL_REDIS):
+        self.connection = redis.Redis.from_url(redis_url)
+        self.url = "urlcache_%s" %  url or ""
+        self.cache_time = 3600*24
         
+    def has_url(self):
+        if self.connection.get(self.url) > 0:
+            return True
+        return False
+    
+    def add_it(self):
+        self.connection.set(self.url, 1, self.cache_time)
+        
+    def flush(self):
+        self.connection.flushall()
+        
+    
 
 class DownloadQueue(object):
     QUEUE_NAME = "task_downloader"
