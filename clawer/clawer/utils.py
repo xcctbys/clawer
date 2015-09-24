@@ -152,7 +152,7 @@ class UrlCache(object):
         return False
     
     def add_it(self):
-        self.connection.set(self.url, 1, self.cache_time)
+        self.connection.set(self.url, 1)
         
     def flush(self):
         self.connection.flushall()
