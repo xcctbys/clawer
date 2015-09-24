@@ -7,6 +7,7 @@ import subprocess
 import time
 import rq
 import redis
+import selenium
 from random import random
 import os
 
@@ -65,6 +66,7 @@ class EasyUIPager(object):
 class Download(object):
     ENGINE_REQUESTS = "requests"
     ENGINE_PHANTOMJS = "phantomjs"
+    ENGINE_SELENIUM = "selenium"
     
     def __init__(self, url, engine=ENGINE_REQUESTS):
         self.engine = engine
@@ -90,6 +92,8 @@ class Download(object):
             self.download_with_requests()
         elif self.engine == self.ENGINE_PHANTOMJS:
             self.download_with_phantomjs()
+        elif self.engine == self.ENGINE_SELENIUM:
+            self.download_with_selenium()
         else:
             self.download_with_phantomjs()
     
@@ -137,6 +141,24 @@ class Download(object):
         if status != 0:
             self.failed = True    
             return
+        
+    def download_with_selenium(self):
+        from selenium import webdriver
+        
+        start = time.time()
+        
+        driver = webdriver.Firefox()
+        driver.implicitly_wait(10) # seconds
+        driver.get(self.url)
+        self.content = driver.execute_script("return document.documentElement.innerHTML;")
+        driver.close()
+        
+        end = time.time()
+        self.spend_time = end - start
+        
+        
+        
+        
     
 
 class UrlCache(object):

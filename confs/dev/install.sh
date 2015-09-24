@@ -8,7 +8,7 @@ fi
 
 echo "Python ${PIP}"
 
-LIBS="django==1.4.15 pillow Pygments Markdown MySQL-python django-celery south raven python-memcached django-debug-toolbar six redis requests threadpool python-crontab beautifulsoup4 rq"
+LIBS="django==1.4.15 pillow Pygments Markdown MySQL-python django-celery south raven python-memcached django-debug-toolbar six redis requests threadpool python-crontab beautifulsoup4 rq selenium selenium-requests"
 
 for lib in ${LIBS}
 do

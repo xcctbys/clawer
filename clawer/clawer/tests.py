@@ -2,6 +2,7 @@
 import json
 import os
 import datetime
+import logging
 
 from django.test import TestCase
 from django.test.client import Client
@@ -12,7 +13,7 @@ from clawer.models import MenuPermission, Clawer, ClawerTask,\
     ClawerTaskGenerator, ClawerAnalysis, ClawerAnalysisLog, Logger,\
     ClawerDownloadLog
 from clawer.management.commands import task_generator_test, task_generator_run, task_analysis, task_analysis_merge, task_dispatch
-from clawer.utils import UrlCache
+from clawer.utils import UrlCache, Download
 
 
 class TestHomeViews(TestCase):
@@ -417,3 +418,17 @@ class TestCmd(TestCase):
         task.delete()
         analysis.delete()
         analysis_log.delete()
+        
+
+class TestDownload(TestCase):
+    
+    def setUp(self):
+        TestCase.setUp(self)
+        
+    def test_selenium(self):
+        url = "http://blog.sina.com.cn/s/blog_6175bf700102w08a.html?tj=1"
+        downloader = Download(url, engine=Download.ENGINE_SELENIUM)
+        downloader.download()
+        logging.debug(u"%s", downloader.content)
+        print downloader.spend_time
+        self.assertIsNotNone(downloader.content)

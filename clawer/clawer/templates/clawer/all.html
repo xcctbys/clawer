@@ -64,9 +64,15 @@
 				<input id="clawer" name="clawer" type="hidden" />
 				<ol class="text-muted">
 				    <li>支持<code>requests, Beautiful Soup, python标准库</code></li>
-				    <li>执行后输出json数据，每行json格式：{"uri":"uri地址", "download_engine":"requests|phantomjs"}。 <small>例子：{"url":"http://www.github.com"}</small></li>
-				    <li>requests: 支持使用requests库下载，不渲染页面js。</li>
-				    <li>phantomjs: 支持使用phantomjs库下载，渲染页面js。</li>
+				    <li>执行后输出json数据，每行json格式：{"uri":"uri地址", "download_engine":"requests|phantomjs|selenium"}。 <small>例子：{"url":"http://www.github.com"}</small></li>
+				    <li>
+				        <ul>
+				            <li>requests: 支持使用requests库下载，不渲染页面js。</li>
+				            <li>phantomjs: 支持使用phantomjs库下载，渲染页面js。</li>
+				            <li>selenium: use firefox.</li>
+				        </ul>
+				    </li>
+				    
 				</ol>
 			</div>
 			
