@@ -17,7 +17,7 @@ import os
 from bs4 import BeautifulSoup
 
 
-DEBUG = True
+DEBUG = False
 if DEBUG:
     level = logging.DEBUG
 else:
@@ -87,25 +87,28 @@ class Analysis(object):
     
     def parse_read_number(self):
         div = self.soup.find("div", {"class":"IL"})
-        hashid = self.url.split("_")[1].split(".")[0]
-        span = div.find("span", {"id":"r_%s" % hashid})
-        logging.debug("hashid %s, span %s", hashid, span)
-        self.result["read_number"] = span.get_text().strip("()")
+        spans = div.find_all("span")
+        for span in spans:
+            if span["id"].find("r_") == 0:
+                logging.debug("span %s", span)
+                self.result["read_number"] = int(span.get_text().strip("()"))
     
     def parse_favorite_number(self):
         div = self.soup.find("div", {"class":"IL"})
-        hashid = self.url.split("_")[1].split(".")[0]
-        span = div.find("span", {"id":"f_%s" % hashid})
-        logging.debug("hashid %s, span %s", hashid, span)
-        self.result["favorite_number"] = span.get_text().strip("()")
+        spans = div.find_all("span")
+        for span in spans:
+            if span["id"].find("f_") == 0:
+                logging.debug("span %s", span)
+                self.result["favorite_number"] = int(span.get_text().strip("()"))
     
     def parse_forward_number(self):
         div = self.soup.find("div", {"class":"IL"})
-        hashid = self.url.split("_")[1].split(".")[0]
-        a = div.find("a", {"id":"z_%s" % hashid})
-        logging.debug("hashid %s, a %s", hashid, a)
-        self.result["forward_number"] = a.get_text().strip("()")
-    
+        spans = div.find_all("span")
+        for span in spans:
+            if span["id"].find("z_") == 0:
+                logging.debug("span %s", span)
+                self.result["forward_number"] = int(span.get_text().strip("()"))
+                
 
 class TestAnalysis(unittest.TestCase):
     
