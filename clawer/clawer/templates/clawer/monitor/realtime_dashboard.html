@@ -50,7 +50,7 @@ require(
            			        trigger: 'axis'
            			    },
 	           			legend: {
-	           		        data: [resp.status[1], resp.status[3], resp.status[4]]
+	           		        data: [resp.status[1], resp.status[3], resp.status[5]]
 	           		    },
                         xAxis : [
                             {
@@ -88,7 +88,7 @@ require(
                			        trigger: 'axis'
                			    },
     	           			legend: {
-    	           		        data: [resp.status[2], resp.status[5]]
+    	           		        data: [resp.status[2], resp.status[4]]
     	           		    },
                             xAxis : [
                                 {
@@ -129,7 +129,7 @@ require(
             				smooth:true,
             				data:source
             			};
-            			if(i==2 || i == 5) {
+            			if(i==2 || i == 4) {
             				fail_option.series.push(serie);
             			} else {
             				option.series.push(serie);
