@@ -48,6 +48,7 @@ CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
 
 REDIS = "redis://10.171.34.147/0"
 URL_REDIS = "redis://10.172.241.155/0"
+MONITOR_REDIS = "redis://10.170.237.205//0"
 
 
 RAVEN_CONFIG = {
