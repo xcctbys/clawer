@@ -12,8 +12,12 @@ if(system.args.length > 1) {
 	cookie = system.args[2];
 }
 
-page.settings.resourceTimeout = 300*1000; // 5 seconds
+page.settings.resourceTimeout = 30*1000; 
 page.settings.userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:40.0) Gecko/20100101 Firefox/40.0';
+page.settings.localToRemoteUrlAccessEnabled = true;
+page.settings.loadImages = false;
+page.settings.javascriptEnabled = true;
+
 
 page.onResourceTimeout = function(e) {
   console.error(e.errorCode);   // it'll probably be 408 
@@ -22,7 +26,8 @@ page.onResourceTimeout = function(e) {
 };
 
 
-  // jQuery is loaded, now manipulate the DOM
+
+// jQuery is loaded, now manipulate the DOM
 page.open(url, function(status) {
 
 	if(status != "success") {
@@ -31,8 +36,16 @@ page.open(url, function(status) {
 		return;
 	}
 	
-	console.log(page.content);
-	phantom.exit();
+	var sc = page.evaluate(function(){
+		return document.body.innerHTML;
+	});
+	
+	window.setTimeout(function(){
+		page.render('download.png');
+		console.log(sc);
+		phantom.exit();	
+	});
+	
 	
 });
 	
