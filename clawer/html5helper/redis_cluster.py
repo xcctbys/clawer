@@ -246,7 +246,7 @@ class RedisCluster(object):
         if self.master:
             self.master.delete(key)
 
-default_redis_cluster = RedisCluster("default")
+#default_redis_cluster = RedisCluster("default")
 
 
 class RedisLock(object):

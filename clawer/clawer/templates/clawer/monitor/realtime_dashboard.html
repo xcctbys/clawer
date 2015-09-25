@@ -1,0 +1,108 @@
+{% extends "clawer/base.html"%}
+{% load static %}
+
+
+{% block body %}
+<body>
+
+<div id="task_stat" style="height:400px;width:80%;"></div>
+
+<script src="{% static 'echarts/build/dist/echarts.js' %}"></script>
+
+<script>
+
+require.config({
+    paths: {
+        echarts: "{% static 'echarts/build/dist' %}"
+    }
+});
+
+require(
+        [
+            'echarts',
+            'echarts/chart/bar',
+            'echarts/chart/line'
+        ],
+        function (ec) {
+            // 基于准备好的dom，初始化echarts图表
+            var myChart = ec.init(document.getElementById('task_stat')); 
+            
+            myChart.showLoading({
+                text: '正在努力的读取数据中...',    //loading话术
+            });
+            
+            
+            function load_data() {
+            	var url = "{% url clawer.apis.monitor.task_stat %}";
+            	
+            	$.getJSON(url, function(resp){
+            		
+            		var option = {
+           				tooltip : {
+           			        trigger: 'axis'
+           			    },
+	           			legend: {
+	           		        data: resp.status
+	           		    },
+                        xAxis : [
+                            {
+                                type : 'category',
+                                boundaryGap : false,
+                                data : resp.xAxis
+                            }
+                        ],
+                        yAxis : [
+                            {
+                                type : 'value'
+                            }
+                        ],
+                        toolbox: {
+                            show : true,
+                            feature : {
+                                mark : {show: true},
+                                dataView : {show: true, readOnly: false},
+                                magicType : {show: true, type: ['line', 'bar', 'stack', 'tiled']},
+                                restore : {show: true},
+                                saveAsImage : {show: true}
+                            }
+                        },
+                        dataZoom : {
+                            show : true,
+                            realtime : true,
+                            start : 0,
+                            end : 100
+                        },
+                        series: []
+                    };
+            		
+            		for(var i=0; i<resp.status.length; i++) {
+            			var source = resp.series[i];
+            			
+            			var serie = {name:resp.status[i], 
+            				type:'line',
+            				smooth:true,
+            				data:source
+            			};
+            			option.series.push(serie);
+            		}
+            		
+            		console.debug(option);
+            		myChart.hideLoading();
+            		myChart.setOption(option); 
+            		
+            	});
+            }
+            
+            load_data();
+            
+            window.setInterval(function(){
+            	myChart.clear();
+            	load_data();
+            }, 60*1000);
+        }
+    );
+
+</script>
+
+</body>
+{% endblock %}

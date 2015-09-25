@@ -46,6 +46,7 @@ MEDIA_ROOT = os.path.join(os.path.dirname(__file__), "../../../media/")
 
 REDIS = "redis://localhost:6379//0"
 URL_REDIS = "redis://localhost:6379//1"
+MONITOR_REDIS = "redis://localhost:6379//1"
 
 
 RAVEN_CONFIG = {

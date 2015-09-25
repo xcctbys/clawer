@@ -7,7 +7,6 @@ import subprocess
 import time
 import rq
 import redis
-import selenium
 from random import random
 import os
 
@@ -216,7 +215,7 @@ class DownloadWorker(object):
 
 
 def download_clawer_task(clawer_task):
-    from clawer.models import ClawerTask, ClawerDownloadLog
+    from clawer.models import ClawerTask, ClawerDownloadLog, RealTimeMonitor
     
     if clawer_task.status != ClawerTask.STATUS_LIVE:
         return 0
@@ -235,6 +234,9 @@ def download_clawer_task(clawer_task):
         downloader.add_proxies(setting.proxy.strip().split("\n"))
     downloader.download()
     
+    #trace it
+    monitor = RealTimeMonitor()
+    
     if downloader.failed:
         download_log.status = ClawerDownloadLog.STATUS_FAIL
         download_log.failed_reason = downloader.failed_exception
@@ -242,6 +244,7 @@ def download_clawer_task(clawer_task):
         download_log.save()
         clawer_task.status = ClawerTask.STATUS_FAIL
         clawer_task.save()
+        monitor.trace_task_status(clawer_task)
         return
         
     #save
@@ -267,6 +270,7 @@ def download_clawer_task(clawer_task):
         download_log.status = ClawerDownloadLog.STATUS_FAIL
         download_log.spend_time = int(downloader.spend_time*1000)
         download_log.save()
+        monitor.trace_task_status(clawer_task)
         return
     
     #update db
@@ -281,5 +285,7 @@ def download_clawer_task(clawer_task):
     download_log.content_encoding = downloader.content_encoding
     download_log.spend_time = int(downloader.spend_time*1000)
     download_log.save()
+    
+    monitor.trace_task_status(clawer_task)
     
     return clawer_task.id

@@ -11,7 +11,7 @@ from django.contrib.auth.models import User as DjangoUser, Group
 
 from clawer.models import MenuPermission, Clawer, ClawerTask,\
     ClawerTaskGenerator, ClawerAnalysis, ClawerAnalysisLog, Logger,\
-    ClawerDownloadLog
+    ClawerDownloadLog, RealTimeMonitor
 from clawer.management.commands import task_generator_test, task_generator_run, task_analysis, task_analysis_merge, task_dispatch
 from clawer.utils import UrlCache, Download
 
@@ -53,6 +53,47 @@ class TestHomeViews(TestCase):
         url = reverse("clawer.views.home.clawer_setting")
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
+        
+
+class TestMonitorViews(TestCase):
+    def setUp(self):
+        TestCase.setUp(self)
+        self.client = Client()
+        
+    def tearDown(self):
+        TestCase.tearDown(self)
+        
+    def test_realtime_monitor(self):
+        url = reverse("clawer.views.monitor.realtime_dashboard")
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        
+
+class TestRealTimeMonitor(TestCase):
+    def setUp(self):
+        TestCase.setUp(self)
+        self.client = Client()
+        
+    def tearDown(self):
+        TestCase.tearDown(self)
+        
+    def test_trace(self):
+        clawer = Clawer.objects.create(name="hi", info="good")
+        clawer_generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print hello", cron="*", status=ClawerTaskGenerator.STATUS_PRODUCT)
+        clawer_task = ClawerTask.objects.create(clawer=clawer, task_generator=clawer_generator, uri="http://github.com", status=ClawerTask.STATUS_FAIL)
+        monitor = RealTimeMonitor()
+        monitor.trace_task_status(clawer_task)
+        monitor.trace_task_status(clawer_task)
+        result = monitor.trace_task_status(clawer_task)
+        #print result
+        self.assertEqual(len(result["data"]), monitor.POINT_COUNT)
+        
+        clawer.delete()
+        clawer_generator.delete()
+        clawer_task.delete()
+        
+
+
         
 
 class TestUserApi(TestCase):
@@ -119,6 +160,40 @@ class TestLoggerApi(TestCase):
         self.assertEqual(resp.status_code, 200)
         
         logger.delete()
+        
+
+class TestMonitorApi(TestCase):
+    def setUp(self):
+        TestCase.setUp(self)
+        self.user = DjangoUser.objects.create_user(username="xxx", password="xxx")
+        self.group = Group.objects.create(name=MenuPermission.GROUPS[0])
+        self.user.groups.add(self.group)
+        self.client = Client()
+        self.logined_client = Client()
+        self.logined_client.login(username=self.user.username, password=self.user.username)
+        
+    def tearDown(self):
+        TestCase.tearDown(self)
+        self.user.delete()
+        self.group.delete()
+        
+    def test_task_stat(self):
+        clawer = Clawer.objects.create(name="hi", info="good")
+        clawer_generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print hello", cron="*", status=ClawerTaskGenerator.STATUS_PRODUCT)
+        clawer_task = ClawerTask.objects.create(clawer=clawer, task_generator=clawer_generator, uri="http://github.com", status=ClawerTask.STATUS_FAIL)
+        monitor = RealTimeMonitor()
+        monitor.trace_task_status(clawer_task)
+        monitor.trace_task_status(clawer_task)
+        monitor.trace_task_status(clawer_task)
+        url = reverse("clawer.apis.monitor.task_stat")
+        
+        resp = self.logined_client.get(url)
+        result = json.loads(resp.content)
+        self.assertTrue(result["is_ok"])
+        
+        clawer.delete()
+        clawer_generator.delete()
+        clawer_task.delete()
                 
         
 class TestHomeApi(TestCase):

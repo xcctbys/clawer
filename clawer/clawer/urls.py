@@ -23,6 +23,10 @@ logger_api_urls = patterns("clawer.apis.logger",
     url(r"^all/$", "all"),
 )
 
+monitor_api_urls = patterns("clawer.apis.monitor",
+    url(r"^task/stat/$", "task_stat"),
+)
+
 home_api_urls = patterns("clawer.apis.home",
     url(r"^clawer/all/$", "clawer_all"),
     
@@ -45,13 +49,20 @@ apis_urls = patterns("clawer.apis",
     url(r"^user/", include(user_api_urls)),
     url(r"^home/", include(home_api_urls)),
     url(r"^logger/", include(logger_api_urls)),
+    url(r"^monitor/", include(monitor_api_urls)),
 )
 
-#views
 
+
+#views
 logger_urls = patterns("clawer.views.logger",
     url(r"^$", "index"),
 )
+
+monitor_urls = patterns("clawer.views.monitor",
+    url(r"^realtime/dashboard/$", "realtime_dashboard"),
+)
+
 
 urlpatterns = patterns('clawer.views.home',
     # Examples:
@@ -65,7 +76,8 @@ urlpatterns = patterns('clawer.views.home',
     url(r"^clawer/setting/$", "clawer_setting"),
     
     
-    url(r"^logger/$", include(logger_urls)),
+    url(r"^logger/", include(logger_urls)),
+    url(r"^monitor/", include(monitor_urls)),
     
     url(r'^apis/', include(apis_urls)),
     # Uncomment the admin/doc line below to enable admin documentation:

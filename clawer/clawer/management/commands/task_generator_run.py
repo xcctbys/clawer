@@ -9,8 +9,9 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 
 from html5helper.utils import wrapper_raven
-from clawer.models import ClawerTaskGenerator, Clawer, ClawerTask
-from clawer.utils import Download, UrlCache
+from clawer.models import ClawerTaskGenerator, Clawer, ClawerTask,\
+    RealTimeMonitor
+from clawer.utils import UrlCache
 import traceback
 
 
@@ -37,8 +38,11 @@ def run(task_generator_id):
                 raise Exception("%s has exists", js['uri'])
             url_cache.add_it()
             
-            ClawerTask.objects.create(clawer=task_generator.clawer, task_generator=task_generator, uri=js["uri"],
+            clawer_task = ClawerTask.objects.create(clawer=task_generator.clawer, task_generator=task_generator, uri=js["uri"],
                                   cookie=js.get("cookie"))
+            #trace it
+            monitor = RealTimeMonitor()
+            monitor.trace_task_status(clawer_task)
         except:
             logging.error("add %s failed: %s", js['uri'], traceback.format_exc(10))
         

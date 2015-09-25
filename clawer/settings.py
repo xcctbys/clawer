@@ -137,3 +137,4 @@ CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
 
 CLAWER_TASK_URL_MULTIPLE_DAY = 7
 DOWNLOAD_JS = os.path.join(os.path.dirname(__file__), "download.js")
+REDIS_DATA_COMPRESSED = True

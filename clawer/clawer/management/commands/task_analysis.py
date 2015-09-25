@@ -14,7 +14,7 @@ from django.conf import settings
 
 from html5helper.utils import wrapper_raven
 from clawer.models import Clawer, ClawerTask,\
-    ClawerAnalysisLog
+    ClawerAnalysisLog, RealTimeMonitor
 
 
 def run(runtime, thread_count):
@@ -104,6 +104,11 @@ def do_analysis(clawer_task, clawer):
     clawer_task.save()
     
     print "clawer task %d done" % clawer_task.id
+    
+    #trace it
+    monitor = RealTimeMonitor()
+    monitor.trace_task_status(clawer_task)
+    
     return analysis_log
 
         

@@ -13,6 +13,7 @@ import json
 from clawer.utils import Download, UrlCache
 from django.db.models.signals import post_save, pre_save
 from django.dispatch.dispatcher import receiver
+from html5helper import redis_cluster
 
         
 
@@ -385,6 +386,72 @@ class ClawerSetting(models.Model):
         return result
     
 
+class RealTimeMonitor(object):
+    POINT_COUNT = 24*60
+    
+    def __init__(self, redis_url=settings.MONITOR_REDIS):
+        self.redis = redis_cluster.PickledRedis.from_url(redis_url)
+        
+    def load_task_stat(self, status):
+        result = {}
+        now = datetime.datetime.now().replace(second=0, microsecond=0)
+        in_data = self.redis.get(self.task_key(status))
+        if in_data:
+            result = in_data
+        else:
+            result = {"end_datetime": now, 
+                "data":{}
+            }
+            for i in range(self.POINT_COUNT):
+                t = result["end_datetime"] - datetime.timedelta(minutes=i)
+                result["data"][t] = {"count": 0}
+        
+        if result["end_datetime"] != now:
+            old_end = result["end_datetime"]
+            dts = sorted(result["data"].keys())
+            offset = int((now - old_end).total_seconds()/60)
+            for i in range(offset):
+                dt = old_end + datetime.timedelta(minutes=i+1)
+                result["data"][dt] = {"count":0}
+                #remove too old
+                del result["data"][dts[i]]
+            
+        
+        logging.debug("result is: %s", result)
+        return result
+    
+    def task_key(self, status):
+        return "realtime_monitor_task_%d" % status
+    
+    def task_incr_key(self, status):
+        return "realtime_monitor_task_incr_%d" % status
+    
+    def trace_task_status(self, clawer_task):
+        result = self.load_task_stat(clawer_task.status)
+        now = datetime.datetime.now().replace(second=0, microsecond=0)
+        result["end_datetime"] = now
+        old = result["data"].get(now)
+        if old:
+            old["count"] += 1
+        else:
+            result["data"][now] = {"count":1}
+        
+        #remove first if time go
+        dts = result["data"].keys()
+        if len(dts) > self.POINT_COUNT:
+            last = sorted(dts)[0]
+            assert last != now
+            del result["data"][last]
+            
+        self.redis.set(self.task_key(clawer_task.status), result)
+        self.redis.incr(self.task_incr_key(clawer_task.status))
+        
+        logging.debug("trace task %d, status %s, count is %d", clawer_task.id, clawer_task.status_name(), result["data"][now]["count"])
+        return result
+    
+    
+
+
 
 class UserProfile(models.Model):
     (GROUP_MANAGER, GROUP_DEVELOPER) = (u"管理员", u"开发者")
@@ -418,6 +485,10 @@ class MenuPermission:
             {"id":104, "text":u"爬虫分析日志", "url":"clawer.views.home.clawer_analysis_log", "groups":GROUPS},
             {"id":105, "text":u"数据下载", "url":settings.MEDIA_URL, "groups":GROUPS},
         ]},
+        {"id":3, "text": u"实时监控", "url":"", "children": [
+            {"id":101, "text":u"实时Dashboard", "url":"clawer.views.monitor.realtime_dashboard", "groups":GROUPS},
+        ]},
+        
         {"id":2, "text": u"系统管理", "url":"", "children": [
             {"id":201, "text":u"参数设置", "url":"clawer.views.home.clawer_setting", "groups":[GROUP_MANAGER]},
             {"id":201, "text":u"操作日志", "url":"clawer.views.logger.index", "groups":[GROUP_MANAGER]},
