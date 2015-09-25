@@ -186,6 +186,7 @@ def clawer_setting_update(request):
     clawer_setting.dispatch = form.cleaned_data["dispatch"]
     clawer_setting.analysis = form.cleaned_data["analysis"]
     clawer_setting.proxy = form.cleaned_data["proxy"]
+    clawer_setting.download_engine = form.cleaned_data["download_engine"]
     clawer_setting.save()
     
     #add log

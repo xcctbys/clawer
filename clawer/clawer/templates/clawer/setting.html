@@ -66,10 +66,10 @@
             <tr>
                 <td>下载引擎</td>
                 <td>
-                    <select  class="easyui-combobox" name="download_engine" style="width:200px;">
-					    <option>requests</option>
-					    <option>selenium</option>
-					    <option>phantomjs</option>
+                    <select id="id_download_engine" class="easyui-combobox" name="download_engine" style="width:200px;">
+					    <option value="requests">requests</option>
+					    <option value="selenium">selenium</option>
+					    <option value="phantomjs">phantomjs</option>
 					</select>
                 </td>
             </tr>
@@ -149,6 +149,7 @@ $(document).ready(function(){
 		    proxy: row.setting.proxy,
 		    download_engine: row.setting.download_engine
 		});
+		$("#id_download_engine").combobox("setValue", row.setting.download_engine);
 		$("#update_win").window("open");
 	});
 	
