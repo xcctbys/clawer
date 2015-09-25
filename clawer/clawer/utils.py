@@ -165,8 +165,6 @@ class Download(object):
         self.spend_time = end - start
         
         
-        
-        
     
 
 class UrlCache(object):

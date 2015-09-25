@@ -15,6 +15,7 @@ from django.conf import settings
 from html5helper.utils import wrapper_raven
 from clawer.models import Clawer, ClawerTask,\
     ClawerAnalysisLog, RealTimeMonitor
+import socket
 
 
 def run(runtime, thread_count):
@@ -65,7 +66,7 @@ def do_analysis(clawer_task, clawer):
     analysis = clawer.runing_analysis()
     path = analysis.product_path()
     
-    analysis_log = ClawerAnalysisLog(clawer=clawer, analysis=analysis, task=clawer_task)
+    analysis_log = ClawerAnalysisLog(clawer=clawer, analysis=analysis, task=clawer_task, hostname=socket.gethostname())
     
     try:
         out_f = open(analysis_log.result_path(), "w+b")

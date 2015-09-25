@@ -135,6 +135,7 @@ class ClawerAnalysisLog(models.Model):
     task = models.ForeignKey('ClawerTask')
     status = models.IntegerField(default=0, choices=STATUS_CHOICES)
     failed_reason = models.CharField(max_length=1024, null=True, blank=True)
+    hostname = models.CharField(null=True, blank=True, max_length=16)
     result = models.TextField(null=True, blank=True)
     add_datetime = models.DateTimeField(auto_now_add=True)
     
@@ -150,6 +151,7 @@ class ClawerAnalysisLog(models.Model):
             "status_name": self.status_name(),
             "failed_reason": self.failed_reason,
             "result": self.result,
+            "hostname": self.hostname,
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }
         return result
