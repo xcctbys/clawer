@@ -159,6 +159,7 @@ class Download(object):
         driver.get(self.url)
         self.content = driver.execute_script("return document.documentElement.outerHTML;")
         driver.close()
+        driver.quit()
         
         end = time.time()
         self.spend_time = end - start
