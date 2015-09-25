@@ -15,6 +15,8 @@ import os
 from django.conf import settings
 
 from html5helper.utils import do_paginator
+import types
+import socket
 
 
 
@@ -219,7 +221,7 @@ def download_clawer_task(clawer_task):
     if clawer_task.status != ClawerTask.STATUS_LIVE:
         return 0
     
-    download_log = ClawerDownloadLog(clawer=clawer_task.clawer, task=clawer_task)
+    download_log = ClawerDownloadLog(clawer=clawer_task.clawer, task=clawer_task, hostname=socket.gethostname())
     failed = False
     #do download now
     headers = {"user-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:40.0) Gecko/20100101 Firefox/40.0"}
@@ -249,7 +251,10 @@ def download_clawer_task(clawer_task):
             os.makedirs(os.path.dirname(path), 0775)
             
         with open(path, "w") as f:
-            f.write(downloader.content)
+            content = downloader.content
+            if isinstance(content, types.UnicodeType):
+                content = content.encode("utf-8")
+            f.write(content)
         
         clawer_task.store = path
     except:

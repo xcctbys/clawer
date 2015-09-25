@@ -179,6 +179,7 @@ class ClawerDownloadLog(models.Model):
     failed_reason = models.CharField(max_length=1024, null=True, blank=True)
     content_bytes = models.IntegerField(default=0)
     content_encoding = models.CharField(null=True, blank=True, max_length=32)
+    hostname = models.CharField(null=True, blank=True, max_length=16)
     spend_time = models.IntegerField(default=0) #unit is microsecond
     add_datetime = models.DateTimeField(auto_now=True)
     
@@ -191,6 +192,7 @@ class ClawerDownloadLog(models.Model):
             "task": self.task.as_json(),
             "status": self.status,
             "status_name": self.status_name(),
+            "hostname": self.hostname,
             "failed_reason": self.failed_reason,
             "content_bytes": self.content_bytes,
             "content_encoding": self.content_encoding,
