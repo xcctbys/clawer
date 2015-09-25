@@ -326,7 +326,6 @@ class ClawerTask(models.Model):
     cookie = models.CharField(max_length=1024, blank=True, null=True)
     status = models.IntegerField(default=STATUS_LIVE, choices=STATUS_CHOICES)
     store = models.CharField(max_length=512, blank=True, null=True)
-    download_engine = models.CharField(max_length=16, default=Download.ENGINE_REQUESTS)
     add_datetime = models.DateTimeField(auto_now_add=True)
     
     class Meta:
@@ -342,7 +341,6 @@ class ClawerTask(models.Model):
             "status": self.status,
             "status_name": self.status_name(),
             "store": self.store,
-            "download_engine": self.download_engine,
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }
         return result
@@ -365,6 +363,7 @@ class ClawerSetting(models.Model):
     dispatch = models.IntegerField(u"每次分发下载任务数", default=100)
     analysis = models.IntegerField(u"每次分析任务数", default=20)
     proxy = models.TextField(blank=True, null=True)
+    download_engine = models.CharField(max_length=16, default=Download.ENGINE_REQUESTS, choices=Download.ENGINE_CHOICES)
     last_update_datetime = models.DateTimeField(auto_now_add=True, auto_now=True)
     add_datetime = models.DateTimeField(auto_now_add=True)
     
@@ -377,6 +376,7 @@ class ClawerSetting(models.Model):
             "dispatch": self.dispatch,
             "analysis": self.analysis,
             "proxy": self.proxy or "",
+            "download_engine": self.download_engine,
             "last_update_datetime": self.last_update_datetime.strftime("%Y-%m-%d %H:%M:%S"),
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }

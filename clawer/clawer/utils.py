@@ -68,6 +68,12 @@ class Download(object):
     ENGINE_PHANTOMJS = "phantomjs"
     ENGINE_SELENIUM = "selenium"
     
+    ENGINE_CHOICES = (
+        (ENGINE_REQUESTS, "REQUESTS"),
+        (ENGINE_PHANTOMJS, "PHANTOMJS"),
+        (ENGINE_SELENIUM, "SELENIUM"),
+    )
+    
     def __init__(self, url, engine=ENGINE_REQUESTS):
         self.engine = engine
         self.url = url
@@ -220,9 +226,9 @@ def download_clawer_task(clawer_task):
     if clawer_task.cookie:
         headers["cookie"] = clawer_task.cookie
     
-    downloader = Download(clawer_task.uri, engine=clawer_task.download_engine if clawer_task.download_engine else Download.ENGINE_REQUESTS)
-    #check proxy
     setting = clawer_task.clawer.settings()
+    downloader = Download(clawer_task.uri, engine=setting.download_engine)
+    #check proxy
     if setting.proxy:
         downloader.add_proxies(setting.proxy.strip().split("\n"))
     downloader.download()

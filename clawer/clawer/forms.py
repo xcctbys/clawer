@@ -3,6 +3,7 @@
 from django import forms
 
 from clawer.models import Clawer
+from clawer.utils import Download
 
 
 class UpdateClawerTaskGenerator(forms.Form):
@@ -27,4 +28,5 @@ class UpdateClawerSetting(forms.Form):
     dispatch = forms.IntegerField()
     analysis = forms.IntegerField()
     proxy = forms.CharField(max_length=4096, required=False)
+    download_engine = forms.ChoiceField(choices=Download.ENGINE_CHOICES)
     

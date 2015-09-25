@@ -38,8 +38,7 @@ def run(task_generator_id):
             url_cache.add_it()
             
             ClawerTask.objects.create(clawer=task_generator.clawer, task_generator=task_generator, uri=js["uri"],
-                                  cookie=js.get("cookie"), 
-                                  download_engine=js.get("download_engine") if "download_engine" in js else Download.ENGINE_PHANTOMJS)
+                                  cookie=js.get("cookie"))
         except:
             logging.error("add %s failed: %s", js['uri'], traceback.format_exc(10))
         

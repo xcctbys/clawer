@@ -270,7 +270,7 @@ class TestHomeApi(TestCase):
     def test_clawer_setting_update(self):
         clawer = Clawer.objects.create(name="hi", info="good")
         url = reverse("clawer.apis.home.clawer_setting_update")
-        data = {"dispatch":10, "analysis":90, "clawer":clawer.id}
+        data = {"dispatch":10, "analysis":90, "clawer":clawer.id, "download_engine":Download.ENGINE_REQUESTS}
         
         resp = self.logined_client.post(url, data)
         result = json.loads(resp.content)

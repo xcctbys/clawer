@@ -42,6 +42,7 @@ CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
 
 
 MEDIA_URL = 'http://localhost:8000/media/'
+MEDIA_ROOT = os.path.join(os.path.dirname(__file__), "../../../media/")
 
 REDIS = "redis://localhost:6379//0"
 URL_REDIS = "redis://localhost:6379//1"

@@ -76,8 +76,7 @@ def clawer_task_add(request):
     
     clawer_task = ClawerTask.objects.create(clawer=form.cleaned_data["clawer"], 
                                             uri=form.cleaned_data["uri"],
-                                            cookie=form.cleaned_data["cookie"] or None,
-                                            download_engine=Download.ENGINE_PHANTOMJS)
+                                            cookie=form.cleaned_data["cookie"] or None)
     
     #add log
     Logger.objects.create(user=request.user, category=LoggerCategory.ADD_TASK, title=form.cleaned_data["uri"], 
