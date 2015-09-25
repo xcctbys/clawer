@@ -158,7 +158,7 @@ class Download(object):
         driver = webdriver.Firefox()
         driver.implicitly_wait(10) # seconds
         driver.get(self.url)
-        self.content = driver.execute_script("return document.documentElement.innerHTML;")
+        self.content = driver.execute_script("return document.documentElement.outerHTML;")
         driver.close()
         
         end = time.time()

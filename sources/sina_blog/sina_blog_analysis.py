@@ -81,9 +81,6 @@ class Analysis(object):
     def parse_add_datetime(self):
         span = self.soup.find("span", {"class":"time SG_txtc"})
         self.result["add_datetime"] = span.get_text().strip("()") 
-        
-    def parse_pv_and_av(self):
-        pass   
     
     def parse_comment_number(self):
         pass
@@ -114,8 +111,7 @@ class TestAnalysis(unittest.TestCase):
     
     def setUp(self):
         unittest.TestCase.setUp(self)
-        self.path = "sss"
-        self.more_path = "full.txt"
+        self.path = "595050.txt"
         
     def test_parse(self):
         """http://blog.sina.com.cn/s/blog_4d89b8340102w2ej.html
