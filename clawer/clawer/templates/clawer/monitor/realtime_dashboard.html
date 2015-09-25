@@ -64,6 +64,7 @@ require(
                                 type : 'value'
                             }
                         ],
+                        calculable : true,
                         toolbox: {
                             show : true,
                             feature : {
@@ -84,42 +85,43 @@ require(
                     };
             		
             		var fail_option = {
-               				tooltip : {
-               			        trigger: 'axis'
-               			    },
-    	           			legend: {
-    	           		        data: [resp.status[2], resp.status[4]]
-    	           		    },
-                            xAxis : [
-                                {
-                                    type : 'category',
-                                    boundaryGap : false,
-                                    data : resp.xAxis
-                                }
-                            ],
-                            yAxis : [
-                                {
-                                    type : 'value'
-                                }
-                            ],
-                            toolbox: {
-                                show : true,
-                                feature : {
-                                    mark : {show: true},
-                                    dataView : {show: true, readOnly: false},
-                                    magicType : {show: true, type: ['line', 'bar', 'stack', 'tiled']},
-                                    restore : {show: true},
-                                    saveAsImage : {show: true}
-                                }
-                            },
-                            dataZoom : {
-                                show : true,
-                                realtime : true,
-                                start : 0,
-                                end : 100
-                            },
-                            series: []
-                        };
+           				tooltip : {
+           			        trigger: 'axis'
+           			    },
+	           			legend: {
+	           		        data: [resp.status[2], resp.status[4]]
+	           		    },
+	           		    calculable : true,
+                        xAxis : [
+                            {
+                                type : 'category',
+                                boundaryGap : false,
+                                data : resp.xAxis
+                            }
+                        ],
+                        yAxis : [
+                            {
+                                type : 'value'
+                            }
+                        ],
+                        toolbox: {
+                            show : true,
+                            feature : {
+                                mark : {show: true},
+                                dataView : {show: true, readOnly: false},
+                                magicType : {show: true, type: ['line', 'bar', 'stack', 'tiled']},
+                                restore : {show: true},
+                                saveAsImage : {show: true}
+                            }
+                        },
+                        dataZoom : {
+                            show : true,
+                            realtime : true,
+                            start : 0,
+                            end : 100
+                        },
+                        series: []
+                    };
             		
             		for(var i=0; i<resp.status.length; i++) {
             			var source = resp.series[i];
@@ -127,6 +129,7 @@ require(
             			var serie = {name:resp.status[i], 
             				type:'line',
             				smooth:true,
+            				itemStyle: {normal: {areaStyle: {type: 'default'}}},
             				data:source
             			};
             			if(i==2 || i == 4) {
