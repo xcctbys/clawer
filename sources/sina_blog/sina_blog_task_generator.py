@@ -18,7 +18,7 @@ import pwd
 import traceback
 
 
-DEBUG = True
+DEBUG = False
 if DEBUG:
     level = logging.DEBUG
 else:
