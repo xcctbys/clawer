@@ -18,7 +18,7 @@ import pwd
 import traceback
 
 
-DEBUG = False
+DEBUG = True
 if DEBUG:
     level = logging.DEBUG
 else:
@@ -144,7 +144,7 @@ class History(object):
 
 class Generator(object):
     HOST = "http://blog.sina.com.cn/"
-    STEP = 1000
+    STEP = 100
     
     def __init__(self):
         self.uris = set()
@@ -154,9 +154,9 @@ class Generator(object):
             pwname = pwd.getpwnam("nginx")
             self.uid = pwname.pw_uid
             self.gid = pwname.pw_gid
-            self.load_history()
         except:
             logging.error(traceback.format_exc(10))
+        self.load_history()
         
     def load_history(self):
         if os.path.exists(self.history_path) is False:
@@ -164,7 +164,7 @@ class Generator(object):
             return
         
         with open(self.history_path, "r") as f:
-            self.history = pickle.load()
+            self.history = pickle.load(f)
             
     def save_history(self):
         with open(self.history_path, "w") as f:
@@ -186,9 +186,9 @@ class Generator(object):
                 self.history.total_page = 0
                 break
                 
-            if self.do_obtain(self.history.uid, page):
-                self.history.current_page = page
+            self.do_obtain(self.history.uid, page)
         
+        self.history.current_page = page
         self.save_history()
         
     def do_obtain(self, uid, page):
@@ -203,6 +203,8 @@ class Generator(object):
         spans = div.find_all("span", {"class":"atc_title"})
         for span in spans:
             self.uris.add(span.a["href"])
+        
+        return True
         
     
     def parse_total_page(self, soup):
@@ -228,6 +230,7 @@ class GeneratorTest(unittest.TestCase):
         logging.debug("urls count is %d", len(self.generator.uris))
         
         self.assertGreater(len(self.generator.uris), 0)
+        self.assertGreater(self.generator.history.position, 0)
         
         
 
