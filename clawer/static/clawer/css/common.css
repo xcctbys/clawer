@@ -29,15 +29,11 @@ small {
 	color: #777;
 }
 
-table {
-    margin-bottom: 20px;
-}
-
-.danger {
+.text-danger {
     color: red;
 }
 
-.success {
+.text-success {
     color: green;
 }
 
@@ -64,4 +60,12 @@ table {
 
 .window-default {
 	width:80%;height:90%;padding:5px;
+}
+
+table {
+    margin-bottom: 20px;
+}
+
+table .danger {
+	background-color: #f2dede;
 }

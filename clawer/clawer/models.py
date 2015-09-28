@@ -37,6 +37,7 @@ class Clawer(models.Model):
             "name": self.name,
             "info": self.info,
             "customer": self.customer,
+            "status": self.status,
             "status_name": self.status_name(),
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S")
         }
@@ -481,7 +482,7 @@ class MenuPermission:
     
     MENUS = [
         {"id":1, "text": u"爬虫管理", "url":"", "children": [
-            {"id":101, "text":u"爬虫配置", "url":"clawer.views.home.clawer_all", "groups":GROUPS},
+            {"id":101, "text":u"爬虫代码配置", "url":"clawer.views.home.clawer_all", "groups":GROUPS},
             {"id":103, "text":u"爬虫任务", "url":"clawer.views.home.clawer_task", "groups":GROUPS},
             {"id":102, "text":u"爬虫下载日志", "url":"clawer.views.home.clawer_download_log", "groups":GROUPS},
             {"id":104, "text":u"爬虫分析日志", "url":"clawer.views.home.clawer_analysis_log", "groups":GROUPS},
@@ -492,7 +493,7 @@ class MenuPermission:
         ]},
         
         {"id":2, "text": u"系统管理", "url":"", "children": [
-            {"id":201, "text":u"参数设置", "url":"clawer.views.home.clawer_setting", "groups":[GROUP_MANAGER]},
+            {"id":201, "text":u"爬虫参数", "url":"clawer.views.home.clawer_setting", "groups":[GROUP_MANAGER]},
             {"id":201, "text":u"操作日志", "url":"clawer.views.logger.index", "groups":[GROUP_MANAGER]},
         ]},
     ]

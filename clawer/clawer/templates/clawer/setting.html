@@ -21,7 +21,7 @@
 <table id="grid" class="easyui-datagrid" style="width:100%;height:100%"
         fitColumns="true" url="{% url clawer.apis.home.clawer_all %}" showFooter="true"
         data-options="singleSelect:true,collapsible:true,method:'get'" rownumbers="true" pagination="true"
-        toolbar="#toolbar">
+        toolbar="#toolbar" rowStyler="rowStyle">
         
     <thead data-options="frozen:true">
         <tr>
@@ -36,6 +36,7 @@
             <th data-options="field:'s1'," formatter="formatSettingAnalysis">每次分析数</th>
             <th data-options="field:'sproxy'," formatter="formatSettingProxy">Proxy</th>
             <th data-options="field:'engine'," formatter="formatSettingDownloadEngine">下载引擎</th>
+            <th data-options="field:'crontab'," formatter="formatCrontab">任务生成器Cron</th>
             <th data-options="field:'s2'," formatter="formatSettingLastUpdateDatetime">最后修改时间</th>
         </tr>
     </thead>    
@@ -123,6 +124,21 @@ function formatSettingDownloadEngine(val, row) {
 		return "";
 	}
 	return row.setting.download_engine;
+}
+
+function formatCrontab(val, row) {
+	if(!row.runing_task_generator) {
+		return "";
+	}
+	return row.runing_task_generator.cron;
+}
+
+
+function rowStyle(index, row) {
+	console.debug("index ", index, ", row status ", row.status, ", row ", row);
+	if(row.status == 2) {
+		return {"class":"danger"};
+	}
 }
 
 $(document).ready(function(){

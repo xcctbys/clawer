@@ -33,7 +33,7 @@
 <table id="grid" class="easyui-datagrid" style="width:100%;height:100%"
         fitColumns="true" url="{% url clawer.apis.home.clawer_all %}" showFooter="true"
         data-options="singleSelect:true,collapsible:true,method:'get'" rownumbers="true" pagination="true"
-        toolbar="#toolbar">
+        toolbar="#toolbar" rowStyler="rowStyle">
         
     <thead data-options="frozen:true">
         <tr>
@@ -163,6 +163,13 @@ function formatAnalysis(val) {
 	}
 	
 	return "ID: " + val.id + "(" + val.add_datetime + ")";
+}
+
+function rowStyle(index, row) {
+	console.debug("index ", index, ", row status ", row.status, ", row ", row);
+	if(row.status == 2) {
+		return {"class":"danger"};
+	}
 }
 
 
