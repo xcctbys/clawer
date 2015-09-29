@@ -399,7 +399,7 @@ class RealTimeMonitor(object):
         result = {}
         now = datetime.datetime.now().replace(second=0, microsecond=0)
         in_data = self.redis.get(self.task_key(status))
-        if in_data:
+        if in_data and len(in_data["data"].keys()) >= self.POINT_COUNT:
             result = in_data
         else:
             result = {"end_datetime": now, 
