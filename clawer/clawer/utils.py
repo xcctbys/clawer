@@ -16,6 +16,7 @@ from django.conf import settings
 from html5helper.utils import do_paginator
 import types
 import socket
+import urlparse
 
 
 
@@ -153,8 +154,19 @@ class Download(object):
         from selenium import webdriver
         
         start = time.time()
+        fp = None
         
-        driver = webdriver.Firefox()
+        if len(self.proxies) > 1:
+            proxy = self.proxies[random.randint(0, len(self.proxies) - 1)]
+            net_loc = urlparse.urlparse(proxy).net_loc
+            tmp = net_loc.split(":")
+            fp = webdriver.FirefoxProfile()
+            fp.set_preference("network.proxy.type", 1)
+            fp.set_preference("network.proxy.http", tmp[0])
+            fp.set_preference("network.proxy.http_port", int(tmp[1]))
+            fp.update_preferences()
+        
+        driver = webdriver.Firefox(firefox_profile=fp)
         driver.implicitly_wait(10) # seconds
         driver.get(self.url)
         self.content = driver.execute_script("return document.documentElement.outerHTML;")
