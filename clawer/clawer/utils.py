@@ -154,22 +154,7 @@ class Download(object):
         from selenium import webdriver
         
         start = time.time()
-        profile_dir = "/tmp/clawer_firefox_profile"
-        if os.path.exists(profile_dir) is False:
-            os.makedirs(profile_dir, 0775)
-        fp = webdriver.FirefoxProfile(profile_dir)
-        
-        if len(self.proxies) > 1:
-            proxy = self.proxies[random.randint(0, len(self.proxies) - 1)]
-            net_loc = urlparse.urlparse(proxy).net_loc
-            tmp = net_loc.split(":")
-            
-            fp.set_preference("network.proxy.type", 1)
-            fp.set_preference("network.proxy.http", tmp[0])
-            fp.set_preference("network.proxy.http_port", int(tmp[1]))
-            fp.update_preferences()
-        
-        driver = webdriver.Firefox(firefox_profile=fp)
+        driver = webdriver.Firefox()
         driver.get(self.url)
         self.content = driver.execute_script("return document.documentElement.outerHTML;")
         driver.close()
