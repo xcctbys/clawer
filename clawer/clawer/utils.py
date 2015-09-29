@@ -167,7 +167,6 @@ class Download(object):
             fp.update_preferences()
         
         driver = webdriver.Firefox(firefox_profile=fp)
-        driver.implicitly_wait(10) # seconds
         driver.get(self.url)
         self.content = driver.execute_script("return document.documentElement.outerHTML;")
         driver.close()
