@@ -3,7 +3,7 @@
 - Django 1.4.x
 - Redis
 - Memcached
-- Celery
+- RQ
 
 
 # Create Database on MySQL
@@ -37,14 +37,7 @@
       
       #slave
       */5    *    *    *    * cd /home/webapps/nice-clawer/confs/production;./bg_cmd.sh task_analysis --process=2 --run=290
-      
-      ## start download worker
-      # mkdir /home/web_log/nice-clawer
-      # chown -R nginx:nginx /home/web_log/nice-clawer
-      # mkdir /data/clawer
-      # chown -R nginx:nginx /data/clawer
-      
-      */5 * * * * DJANGO_SETTINGS_MODULE=settings_pro /home/virtualenvs/py27/bin/rqworker --url redis://10.171.34.147/0  -v --pid /tmp/rq_worker1.pid --burst -P /home/webapps/nice-clawer/clawer/ task_downloader 
+      30     *    *    *    * cd /home/webapps/nice-clawer/confs/production;./shrink_tmp.sh
       
      
 # Supervisor for Clawer worker
@@ -58,3 +51,5 @@
       # chown -R nginx:nginx /data/media
       
       /home/virtualenvs/py27/bin/supervisord -c /home/webapps/nice-clawer/confs/production/supervisor.ini
+      
+      
