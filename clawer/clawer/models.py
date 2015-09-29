@@ -417,7 +417,7 @@ class RealTimeMonitor(object):
                 dt = old_end + datetime.timedelta(minutes=i+1)
                 result["data"][dt] = {"count":0}
                 #remove too old
-                if dts[i] in result["data"]:
+                if i < len(dts):
                     del result["data"][dts[i]]
             
         
