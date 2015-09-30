@@ -161,7 +161,8 @@ class Download(object):
             os.makedirs(profile_path, 0777)
             
         profile = webdriver.FirefoxProfile(profile_directory=profile_path)
-        firefox_binary = FirefoxBinary("/usr/bin/firefox", "/tmp/firefox.log")
+        firefox_log_file = open("/tmp/firefox.log", "w")
+        firefox_binary = FirefoxBinary("/usr/bin/firefox", firefox_log_file)
         driver = webdriver.Firefox(firefox_binary=firefox_binary, firefox_profile=profile)
         driver.set_page_load_timeout(30)
         
