@@ -17,6 +17,7 @@ from html5helper.utils import do_paginator
 import types
 import socket
 import urlparse
+import shutil
 
 
 
@@ -166,7 +167,15 @@ class Download(object):
         finally:
             driver.close()
             driver.quit()
-            
+        #remove files
+        try:
+            if os.path.exists(driver.profile.path):
+                shutil.rmtree(driver.profile.path)
+            if driver.profile.tempfolder is not None:
+                shutil.rmtree(driver.profile.tempfolder)
+        except:
+            logging.error(traceback.format_exc(10))
+        
         end = time.time()
         self.spend_time = end - start
         
