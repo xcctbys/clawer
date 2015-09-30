@@ -18,6 +18,7 @@ import types
 import socket
 import urlparse
 import shutil
+from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 
 
 
@@ -160,7 +161,7 @@ class Download(object):
             os.makedirs(profile_path, 0777)
             
         profile = webdriver.FirefoxProfile(profile_directory=profile_path)
-        firefox_binary = webdriver.FirefoxBinary("/usr/bin/firefox", "/tmp/firefox.log")
+        firefox_binary = FirefoxBinary("/usr/bin/firefox", "/tmp/firefox.log")
         driver = webdriver.Firefox(firefox_binary=firefox_binary, firefox_profile=profile)
         driver.set_page_load_timeout(30)
         
