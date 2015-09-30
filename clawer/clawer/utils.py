@@ -155,7 +155,12 @@ class Download(object):
         from selenium import webdriver
         
         start = time.time()
-        driver = webdriver.Firefox()
+        profile_path = "/tmp/clawer_firefox_profile"
+        if not os.path.exists(profile_path):
+            os.makedirs(profile_path, 0777)
+            
+        profile = webdriver.FirefoxProfile(profile_directory=profile_path)
+        driver = webdriver.Firefox(firefox_profile=profile)
         driver.set_page_load_timeout(30)
         
         try:
