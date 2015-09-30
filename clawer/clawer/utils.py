@@ -156,14 +156,10 @@ class Download(object):
         from selenium import webdriver
         
         start = time.time()
-        profile_path = "/tmp/clawer_firefox_profile"
-        if not os.path.exists(profile_path):
-            os.makedirs(profile_path, 0777)
-            
-        profile = webdriver.FirefoxProfile(profile_directory=profile_path)
+        
         firefox_log_file = open("/tmp/firefox.log", "a+")
         firefox_binary = FirefoxBinary("/usr/bin/firefox", firefox_log_file)
-        driver = webdriver.Firefox(firefox_binary=firefox_binary, firefox_profile=profile)
+        driver = webdriver.Firefox(firefox_binary=firefox_binary)
         driver.set_page_load_timeout(30)
         
         try:
@@ -176,7 +172,6 @@ class Download(object):
             driver.close()
             driver.quit()
         #remove files
-        """
         try:
             if os.path.exists(driver.profile.path):
                 shutil.rmtree(driver.profile.path)
@@ -184,7 +179,7 @@ class Download(object):
                 shutil.rmtree(driver.profile.tempfolder)
         except:
             logging.error(traceback.format_exc(10))
-        """
+    
         end = time.time()
         self.spend_time = end - start
         
