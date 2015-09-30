@@ -160,7 +160,8 @@ class Download(object):
             os.makedirs(profile_path, 0777)
             
         profile = webdriver.FirefoxProfile(profile_directory=profile_path)
-        driver = webdriver.Firefox(firefox_profile=profile)
+        firefox_binary = webdriver.FirefoxBinary("/usr/bin/firefox", "/tmp/firefox.log")
+        driver = webdriver.Firefox(firefox_binary=firefox_binary, firefox_profile=profile)
         driver.set_page_load_timeout(30)
         
         try:
@@ -173,6 +174,7 @@ class Download(object):
             driver.close()
             driver.quit()
         #remove files
+        """
         try:
             if os.path.exists(driver.profile.path):
                 shutil.rmtree(driver.profile.path)
@@ -180,7 +182,7 @@ class Download(object):
                 shutil.rmtree(driver.profile.tempfolder)
         except:
             logging.error(traceback.format_exc(10))
-        
+        """
         end = time.time()
         self.spend_time = end - start
         
