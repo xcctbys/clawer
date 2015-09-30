@@ -14,6 +14,7 @@ from clawer.utils import Download, UrlCache
 from django.db.models.signals import post_save, pre_save
 from django.dispatch.dispatcher import receiver
 from html5helper import redis_cluster
+import urlparse
 
         
 
@@ -39,6 +40,7 @@ class Clawer(models.Model):
             "customer": self.customer,
             "status": self.status,
             "status_name": self.status_name(),
+            "result_url": self.result_url(),
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S")
         }
         
@@ -77,6 +79,9 @@ class Clawer(models.Model):
     
     def settings(self):
         return ClawerSetting.objects.get_or_create(clawer=self)[0]
+    
+    def result_url(self):
+        return urlparse.urljoin(settings.CLAWER_RESULT_URL, "%d" % self.id)
         
         
 class ClawerAnalysis(models.Model):

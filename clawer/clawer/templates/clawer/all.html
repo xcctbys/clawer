@@ -48,6 +48,7 @@
             <th data-options="field:'info',">简介</th>
             <th data-options="field:'runing_task_generator'" formatter="formatTaskGenerator">运行中的任务生成器</th>
             <th data-options="field:'runing_analysis'" formatter="formatAnalysis">运行中的分析器</th>
+            <th data-options="field:'result_url'" formatter="formatResultUrl">下载数据</th>
             <th data-options="field:'add_datetime'," width="200px">添加时间</th>
         </tr>
     </thead>    
@@ -146,6 +147,13 @@
 
 
 <script type="text/javascript">
+
+function formatResultUrl(val) {
+	if(!val) {
+		return "";
+	}
+	return "<a href='"+val+"' target='_blank'>下载</a>";
+}
 
 function formatTaskGenerator(val) {
 	console.debug("task generator is: ", val);
