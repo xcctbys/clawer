@@ -155,11 +155,18 @@ class Download(object):
         
         start = time.time()
         driver = webdriver.Firefox()
-        driver.get(self.url)
-        self.content = driver.execute_script("return document.documentElement.outerHTML;")
-        driver.close()
-        driver.quit()
+        driver.set_page_load_timeout(30)
         
+        try:
+            driver.get(self.url)
+            self.content = driver.execute_script("return document.documentElement.outerHTML;")
+        except:
+            self.failed_exception = traceback.format_exc(10)
+            self.failed = True
+        finally:
+            driver.close()
+            driver.quit()
+            
         end = time.time()
         self.spend_time = end - start
         
