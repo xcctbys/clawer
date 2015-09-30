@@ -102,7 +102,10 @@ class Analysis(object):
         for span in spans:
             if span["id"].find("f_") == 0:
                 logging.debug("span %s", span)
+                if not span.get_text().strip("()"):
+                    break
                 self.result["favorite_number"] = int(span.get_text().strip("()"))
+                break
     
     def parse_forward_number(self):
         div = self.soup.find("div", {"class":"IL"})
@@ -110,8 +113,10 @@ class Analysis(object):
         for span in spans:
             if span["id"].find("z_") == 0:
                 logging.debug("span %s", span)
+                if not span.get_text().strip("()"):
+                    break
                 self.result["forward_number"] = int(span.get_text().strip("()"))
-                
+                break
 
 class TestAnalysis(unittest.TestCase):
     
