@@ -6,7 +6,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand
 
 from html5helper.utils import wrapper_raven
-from clawer.models import Clawer, ClawerTask
+from clawer.models import Clawer, ClawerTask, RealTimeMonitor
 from clawer.utils import DownloadQueue, download_clawer_task
 
 
@@ -22,6 +22,9 @@ def run():
                 break
             item.status = ClawerTask.STATUS_PROCESS
             item.save()
+            #trace it
+            monitor = RealTimeMonitor()
+            monitor.trace_task_status(item)
         
         print "clawer is %d, job count %d" % (clawer.id, len(download_queue.jobs))
         
