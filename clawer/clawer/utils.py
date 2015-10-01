@@ -216,7 +216,7 @@ class DownloadQueue(object):
         self.jobs = []
         
     def enqueue(self, func, *args, **kwargs):
-        if self.queue.count() > self.MAX_COUNT:
+        if self.queue.count > self.MAX_COUNT:
             return None
         job = self.queue.enqueue_call(func, *args, **kwargs)
         self.jobs.append(job)
