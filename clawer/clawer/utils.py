@@ -208,6 +208,7 @@ class UrlCache(object):
 
 class DownloadQueue(object):
     QUEUE_NAME = "task_downloader"
+    MAX_COUNT = 10000
     
     def __init__(self, redis_url=settings.REDIS):
         self.connection = redis.Redis.from_url(redis_url)
@@ -215,8 +216,11 @@ class DownloadQueue(object):
         self.jobs = []
         
     def enqueue(self, func, *args, **kwargs):
+        if self.queue.count() > self.MAX_COUNT:
+            return None
         job = self.queue.enqueue_call(func, *args, **kwargs)
         self.jobs.append(job)
+        return job.id
     
 
 class DownloadWorker(object):
