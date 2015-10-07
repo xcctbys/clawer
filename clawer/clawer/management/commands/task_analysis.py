@@ -37,6 +37,7 @@ def run(runtime, thread_count):
 
 def do_run():
     clawers = Clawer.objects.filter(status=Clawer.STATUS_ON).all()
+    total_job_count = 0
     
     for clawer in clawers:
         analysis = clawer.runing_analysis()
@@ -57,8 +58,9 @@ def do_run():
                 print traceback.format_exc(10)   
                 
         print "clawer is %d, job count is %d" % (clawer.id, job_count)
+        total_job_count += job_count
     
-    return job_count
+    return total_job_count
  
 
 def do_analysis(clawer_task, clawer):
