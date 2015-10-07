@@ -1,6 +1,6 @@
 #!/bin/bash
 
 
-cd /tmp;rm -rfv tmp*; rm -rfv xvfb-run*
-
+cd /tmp && /bin/rm -rfv tmp* & 
+cd /tmp && /bin/rm -rfv xvfb-run* & 
 echo>/tmp/firefox.log
