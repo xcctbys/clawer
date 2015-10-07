@@ -89,7 +89,7 @@ class Analysis(object):
         div = self.soup.find("div", {"class":"IL"})
         spans = div.find_all("span")
         for span in spans:
-            if span["id"].find("r_") == 0:
+            if "id" in span.attrs and span["id"].find("r_") == 0:
                 logging.debug("span %s", span)
                 if not span.get_text().strip("()"):
                     break
@@ -100,7 +100,7 @@ class Analysis(object):
         div = self.soup.find("div", {"class":"IL"})
         spans = div.find_all("span")
         for span in spans:
-            if span["id"].find("f_") == 0:
+            if "id" in span.attrs and span["id"].find("f_") == 0:
                 logging.debug("span %s", span)
                 if not span.get_text().strip("()"):
                     break
@@ -111,7 +111,7 @@ class Analysis(object):
         div = self.soup.find("div", {"class":"IL"})
         spans = div.find_all("span")
         for span in spans:
-            if span["id"].find("z_") == 0:
+            if "id" in span.attrs and span["id"].find("z_") == 0:
                 logging.debug("span %s", span)
                 if not span.get_text().strip("()"):
                     break
