@@ -30,7 +30,7 @@ def run(runtime, thread_count):
         if do_run() > 0:
             time.sleep(1)
         else:
-            time.sleep(5)
+            time.sleep(15)
         
     return True
 
