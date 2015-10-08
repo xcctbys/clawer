@@ -14,7 +14,7 @@ from django.conf import settings
 
 from html5helper.utils import wrapper_raven
 from clawer.models import Clawer, ClawerTask,\
-    ClawerAnalysisLog, RealTimeMonitor
+    ClawerAnalysisLog, RealTimeMonitor, ClawerDownloadLog
 import socket
 
 
@@ -54,10 +54,7 @@ def do_run():
             try:
                 if os.path.exists(item.store) is False:
                     file_not_found += 1
-                    download_log = 
-                    if item.hostname == hostname:
-                        item.status = ClawerTask.STATUS_LIVE
-                        item.save()
+                    handle_not_found(item)
                     continue
                 do_analysis(item, clawer)
                 job_count += 1
@@ -73,8 +70,14 @@ def do_run():
 
 def handle_not_found(clawer_task):
     try:
-        download_log = ClawerDownloadLog.objects.filter(clawer_task=clawer_task, status=Clawer)
- 
+        download_log = ClawerDownloadLog.objects.filter(clawer_task=clawer_task, status=ClawerDownloadLog.STATUS_SUCCESS).order_by("-id")[0]
+    except:
+        return
+    
+    if download_log.hostname == socket.gethostname():
+        clawer_task.status = ClawerTask.STATUS_LIVE
+        clawer_task.save()
+    
 
 def do_analysis(clawer_task, clawer):
     
