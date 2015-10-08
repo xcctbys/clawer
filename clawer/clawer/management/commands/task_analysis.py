@@ -70,7 +70,7 @@ def do_run():
 
 def handle_not_found(clawer_task):
     try:
-        download_log = ClawerDownloadLog.objects.filter(clawer_task=clawer_task, status=ClawerDownloadLog.STATUS_SUCCESS).order_by("-id")[0]
+        download_log = ClawerDownloadLog.objects.filter(task=clawer_task, status=ClawerDownloadLog.STATUS_SUCCESS).order_by("-id")[0]
     except:
         download_log = None
         print traceback.format_exc(10)
