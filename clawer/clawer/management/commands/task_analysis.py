@@ -38,6 +38,8 @@ def run(runtime, thread_count):
 def do_run():
     clawers = Clawer.objects.filter(status=Clawer.STATUS_ON).all()
     total_job_count = 0
+    file_not_found = 0
+    hostname = socket.gethostname()
     
     for clawer in clawers:
         analysis = clawer.runing_analysis()
@@ -51,6 +53,11 @@ def do_run():
         for item in clawer_tasks:
             try:
                 if os.path.exists(item.store) is False:
+                    file_not_found += 1
+                    download_log = 
+                    if item.hostname == hostname:
+                        item.status = ClawerTask.STATUS_LIVE
+                        item.save()
                     continue
                 do_analysis(item, clawer)
                 job_count += 1
@@ -60,7 +67,13 @@ def do_run():
         print "clawer is %d, job count is %d" % (clawer.id, job_count)
         total_job_count += job_count
     
+    print "total job count is %d, file not found %d" % (total_job_count, file_not_found)
     return total_job_count
+
+
+def handle_not_found(clawer_task):
+    try:
+        download_log = ClawerDownloadLog.objects.filter(clawer_task=clawer_task, status=Clawer)
  
 
 def do_analysis(clawer_task, clawer):
