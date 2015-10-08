@@ -1,4 +1,4 @@
-#encoding=utf-8
+#coding=utf-8
 """sina search analysis
 
 """
@@ -9,13 +9,14 @@ import sys
 import logging
 import unittest
 import requests
+import time
 import os
 reload(sys)
 sys.setdefaultencoding('utf-8')
 from bs4 import BeautifulSoup
 
 def url_read():
-    textpath=r"1_1url.txt"
+    textpath=r"url.txt"
     text=open(textpath)
     arr=[]
     for lines in text.readlines():
@@ -23,17 +24,22 @@ def url_read():
         arr.append(lines)
     text.close()
     i = 1
-    sName = '1_1content.json'
+    sName = 'content.json'
     f = open(sName,'w+')
+    
     for url in arr:
         urltime = re.search(r'\d{8}',url).group(0)
         r = requests.get(url)
+        
         if int(urltime) > 20121031:
-            soup = BeautifulSoup(r.content,"html5lib")
+            soup = BeautifulSoup(r.content.decode('gbk'),"html5lib")
         else:
             soup = BeautifulSoup(r.content.decode('gbk'), "html.parser")
         
         print u'正在抽取第' + str(i) + u'新闻内容......'
+        
+        data = {}
+        data["comment_contents"] = {}
         
         news_title = soup.find('h1',{'id':'artibodyTitle'})     #提取文章标题
         if (news_title) == None:
@@ -52,7 +58,6 @@ def url_read():
             else:
                 media_name = media_name.a.string
             
-
         keywords = soup.find('p',{'class':'art_keywords'})        #提取关键字
         keyword =''
         if keywords != None:
@@ -71,22 +76,74 @@ def url_read():
                         p_content = p_content + str(span.string)
                 else:
                     p_content = p_content + p.string
-        data = {}
+                    
+        
+        urltime = re.search(r'\d{8}',url).group(0)
+
+        if int(urltime) < 20050630:
+            i += 1
+            comment_show = 0
+            comment_total = 0
+            comment_content = None
+            continue
+            
+        try:    
+            newsId = re.search(r'\d{12}',url).group(0)[4:12]
+        except:
+            newsId = re.search(r'\d{11}',url).group(0)[4:11]
+            
+        print u'正在抽取第' + str(i) + u'评论内容......'
+        jscontent = requests.get('http://comment5.news.sina.com.cn/page/info?format=js&channel=cj&newsid=31-1-' + str(newsId) + '&group=&compress=1&ie=gbk&oe=gbk&page=1&page_size=20&jsvar=requestId').content
+        jscontent = jscontent.replace('var requestId=','')
+        js_dict = json.loads(jscontent)
+        js_data = js_dict.get('result')
+        js_count = js_data.get('count')
+        
+        try:
+            comment_show = js_count.get('show')
+            comment_total = js_count.get('total')
+        except:
+            comment_show = 0
+            comment_total = 0
+#        print comment_show
+#        print comment_total
+        k = 1
+        for j in range(1,((comment_show-1)/20)+2):
+            jscontent = requests.get('http://comment5.news.sina.com.cn/page/info?format=js&channel=cj&newsid=31-1-' + str(newsId) + '&group=&compress=1&ie=gbk&oe=gbk&page=' + str(j) + '&page_size=20&jsvar=requestId').content
+            jscontent = jscontent.replace('var requestId=','')
+            js_dict = json.loads(jscontent)
+            js_data = js_dict.get('result')
+            cmntlist = js_data.get('cmntlist')
+            try:
+                for each in cmntlist:
+                    comment_content = each.get('content')
+#                    print comment_content
+                    data["comment_contents"]["content_" + str(k)] = comment_content
+                    k += 1
+            except:
+                time.sleep(0.01)
+        
+        
         data["title"] = news_title
         data["time"] = news_time
         data["media"] = media_name
         data["keyword"] = keyword
         data["arti_content"] = re.sub('<!--[^>]*-->','',p_content).strip()
-        
+        data["comment_show"] = comment_show
+        data["comment_total"] = comment_total
         
         jsonStr = json.dumps(data)
         try:
+#            print jsonStr
             f.write(jsonStr)
             f.write('\n')
         except:
             continue
         i+=1
     f.close
+
+
+    
 
     
 #调用
