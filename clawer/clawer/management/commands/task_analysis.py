@@ -72,6 +72,7 @@ def handle_not_found(clawer_task):
     try:
         download_log = ClawerDownloadLog.objects.filter(clawer_task=clawer_task, status=ClawerDownloadLog.STATUS_SUCCESS).order_by("-id")[0]
     except:
+        print "not found clawer task %d 's download log" % clawer_task.id
         return
     
     if download_log.hostname == socket.gethostname():
