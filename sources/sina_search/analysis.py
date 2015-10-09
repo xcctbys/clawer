@@ -28,7 +28,11 @@ def url_read():
     f = open(sName,'w+')
 
     for url in arr:
-        urltime = re.search(r'\d{8}',url).group(0)
+        try:
+            urltime = re.search(r'\d{8}',url).group(0)
+        except:
+            i += 1
+            continue
         r = requests.get(url)
 
         if int(urltime) > 20121031:
@@ -37,7 +41,10 @@ def url_read():
             except:
                 soup = BeautifulSoup(r.content,"html5lib")
         else:
-            soup = BeautifulSoup(r.content.decode('gbk'), "html.parser")
+            try:
+                soup = BeautifulSoup(r.content.decode('gbk'),"html.parser")
+            except:
+                soup = BeautifulSoup(r.content,"html.parser")
 
         print u'正在抽取第' + str(i) + u'新闻内容......'
 
@@ -80,23 +87,20 @@ def url_read():
                 else:
                     p_content = p_content + p.string
 
-
-        urltime = re.search(r'\d{8}',url).group(0)
-
         if int(urltime) < 20050630:
             i += 1
-            comment_show = 0
-            comment_total = 0
-            comment_content = None
             continue
             
         try:    
             newsId = re.search(r'\d{12}',url).group(0)[4:12]
         except:
+            newsId = re.search(r'\d{11}',url)
+            if newsId == None:
+                continue
             newsId = re.search(r'\d{11}',url).group(0)[4:11]
             
         print u'正在抽取第' + str(i) + u'评论内容......'
-        jscontent = requests.get('http://comment5.news.sina.com.cn/page/info?format=js&channel=cj&newsid=31-1-' + str(newsId) + '&group=&compress=1&ie=gbk&oe=gbk&page=1&page_size=20&jsvar=requestId').content
+        jscontent = requests.get('http://comment5.news.sina.com.cn/page/info?format=js&channel=cj&newsid=31-1-' + str(newsId) + '&group=&compress=1&ie=gbk&oe=gbk&page=1&page_size=100&jsvar=requestId').content
         jscontent = jscontent.replace('var requestId=','')
         js_dict = json.loads(jscontent)
         js_data = js_dict.get('result')
@@ -111,8 +115,8 @@ def url_read():
         print comment_show
         print comment_total
         k = 1
-        for j in range(1,((comment_show-1)/20)+2):
-            jscontent = requests.get('http://comment5.news.sina.com.cn/page/info?format=js&channel=cj&newsid=31-1-' + str(newsId) + '&group=&compress=1&ie=gbk&oe=gbk&page=' + str(j) + '&page_size=20&jsvar=requestId').content
+        for j in range(1,((comment_show-1)/100)+2):
+            jscontent = requests.get('http://comment5.news.sina.com.cn/page/info?format=js&channel=cj&newsid=31-1-' + str(newsId) + '&group=&compress=1&ie=gbk&oe=gbk&page=' + str(j) + '&page_size=100&jsvar=requestId').content
             jscontent = jscontent.replace('var requestId=','')
             js_dict = json.loads(jscontent)
             js_data = js_dict.get('result')
@@ -146,9 +150,9 @@ def url_read():
     f.close
 
 
-    
 
-    
+
+
 #调用
 #sina_search_analysis()
 url_read()
