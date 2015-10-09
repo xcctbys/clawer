@@ -16,7 +16,7 @@ sys.setdefaultencoding('utf-8')
 from bs4 import BeautifulSoup
 
 def url_read():
-    textpath=r"url.txt"
+    textpath=r"1_1url.txt"
     text=open(textpath)
     arr=[]
     for lines in text.readlines():
@@ -24,23 +24,26 @@ def url_read():
         arr.append(lines)
     text.close()
     i = 1
-    sName = 'content.json'
+    sName = '1_1content.json'
     f = open(sName,'w+')
-    
+
     for url in arr:
         urltime = re.search(r'\d{8}',url).group(0)
         r = requests.get(url)
-        
+
         if int(urltime) > 20121031:
-            soup = BeautifulSoup(r.content.decode('gbk'),"html5lib")
+            try:
+                soup = BeautifulSoup(r.content.decode('gbk'),"html5lib")
+            except:
+                soup = BeautifulSoup(r.content,"html5lib")
         else:
             soup = BeautifulSoup(r.content.decode('gbk'), "html.parser")
-        
+
         print u'正在抽取第' + str(i) + u'新闻内容......'
-        
+
         data = {}
         data["comment_contents"] = {}
-        
+
         news_title = soup.find('h1',{'id':'artibodyTitle'})     #提取文章标题
         if (news_title) == None:
             print u'该网页信息爬取失败！'
@@ -76,8 +79,8 @@ def url_read():
                         p_content = p_content + str(span.string)
                 else:
                     p_content = p_content + p.string
-                    
-        
+
+
         urltime = re.search(r'\d{8}',url).group(0)
 
         if int(urltime) < 20050630:
@@ -105,8 +108,8 @@ def url_read():
         except:
             comment_show = 0
             comment_total = 0
-#        print comment_show
-#        print comment_total
+        print comment_show
+        print comment_total
         k = 1
         for j in range(1,((comment_show-1)/20)+2):
             jscontent = requests.get('http://comment5.news.sina.com.cn/page/info?format=js&channel=cj&newsid=31-1-' + str(newsId) + '&group=&compress=1&ie=gbk&oe=gbk&page=' + str(j) + '&page_size=20&jsvar=requestId').content
