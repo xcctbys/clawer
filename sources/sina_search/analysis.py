@@ -16,66 +16,70 @@ sys.setdefaultencoding('utf-8')
 from bs4 import BeautifulSoup
 
 def url_read():
-    textpath=r"1_1url.txt"
-    text=open(textpath)
-    arr=[]
+    textpath = r"7_1url.txt"
+    text = open(textpath)
+    arr = []
     for lines in text.readlines():
-        lines=lines.replace("\n","")
+        lines = lines.replace("\n", "")
         arr.append(lines)
     text.close()
     i = 1
-    sName = '1_1content.json'
-    f = open(sName,'w+')
+    sName = '7_1content.json'
+    f = open(sName, 'w+')
 
     for url in arr:
         try:
-            urltime = re.search(r'\d{8}',url).group(0)
+            urltime = re.search(r'\d{8}', url).group(0)
         except:
             i += 1
             continue
-        r = requests.get(url)
+
+        try:
+            r = requests.get(url)
+        except:
+            time.sleep(0.01)
 
         if int(urltime) > 20121031:
             try:
-                soup = BeautifulSoup(r.content.decode('gbk'),"html5lib")
+                soup = BeautifulSoup(r.content.decode('gbk'), "html5lib")
             except:
-                soup = BeautifulSoup(r.content,"html5lib")
+                soup = BeautifulSoup(r.content, "html5lib")
         else:
             try:
-                soup = BeautifulSoup(r.content.decode('gbk'),"html.parser")
+                soup = BeautifulSoup(r.content.decode('gbk'), "html.parser")
             except:
-                soup = BeautifulSoup(r.content,"html.parser")
+                soup = BeautifulSoup(r.content, "html.parser")
 
         print u'正在抽取第' + str(i) + u'新闻内容......'
 
         data = {}
         data["comment_contents"] = {}
 
-        news_title = soup.find('h1',{'id':'artibodyTitle'})     #提取文章标题
+        news_title = soup.find('h1', {'id': 'artibodyTitle'})     # 提取文章标题
         if (news_title) == None:
             print u'该网页信息爬取失败！'
         if news_title != None:
             news_title = news_title.string
 
-        news_time = soup.find('span',{'id':'pub_date'})     #提取文章时间
+        news_time = soup.find('span', {'id': 'pub_date'})     # 提取文章时间
         if news_time != None:
             news_time = news_time.string   
 
-        media_name = soup.find('span',{'id':'media_name'})        #提取媒体源
+        media_name = soup.find('span', {'id': 'media_name'})        # 提取媒体源
         if media_name != None:
             if media_name.a == None:
-                media_name = soup.find('span',{'id':'media_name'}).string
+                media_name = soup.find('span', {'id': 'media_name'}).string
             else:
                 media_name = media_name.a.string
             
-        keywords = soup.find('p',{'class':'art_keywords'})        #提取关键字
+        keywords = soup.find('p', {'class': 'art_keywords'})        # 提取关键字
         keyword =''
         if keywords != None:
             keywords = keywords.find_all('a')
             for a in keywords:
                 keyword = keyword + a.string + ' '
 
-        news_articles = soup.find('div',{'id':'artibody'})      #提取正文内容
+        news_articles = soup.find('div', {'id': 'artibody'})      # 提取正文内容
         p_content = ''
         if news_articles != None:
             news_articles = news_articles.find_all('p')
@@ -92,16 +96,20 @@ def url_read():
             continue
             
         try:    
-            newsId = re.search(r'\d{12}',url).group(0)[4:12]
+            newsId = re.search(r'\d{12}', url).group(0)[4:12]
         except:
-            newsId = re.search(r'\d{11}',url)
+            newsId = re.search(r'\d{11}', url)
             if newsId == None:
                 continue
-            newsId = re.search(r'\d{11}',url).group(0)[4:11]
+            newsId = re.search(r'\d{11}', url).group(0)[4:11]
             
         print u'正在抽取第' + str(i) + u'评论内容......'
-        jscontent = requests.get('http://comment5.news.sina.com.cn/page/info?format=js&channel=cj&newsid=31-1-' + str(newsId) + '&group=&compress=1&ie=gbk&oe=gbk&page=1&page_size=100&jsvar=requestId').content
-        jscontent = jscontent.replace('var requestId=','')
+        try:
+            jscontent = requests.get('http://comment5.news.sina.com.cn/page/info?format=js&channel=cj&newsid=31-1-' + str(newsId) + '&group=&compress=1&ie=gbk&oe=gbk&page=1&page_size=100&jsvar=requestId').content
+        except:
+            time.sleep(0.01)
+
+        jscontent = jscontent.replace('var requestId=', '')
         js_dict = json.loads(jscontent)
         js_data = js_dict.get('result')
         js_count = js_data.get('count')
@@ -115,9 +123,13 @@ def url_read():
         print comment_show
         print comment_total
         k = 1
-        for j in range(1,((comment_show-1)/100)+2):
-            jscontent = requests.get('http://comment5.news.sina.com.cn/page/info?format=js&channel=cj&newsid=31-1-' + str(newsId) + '&group=&compress=1&ie=gbk&oe=gbk&page=' + str(j) + '&page_size=100&jsvar=requestId').content
-            jscontent = jscontent.replace('var requestId=','')
+        for j in range(1, ((comment_show-1)/100)+2):
+            try:
+                jscontent = requests.get('http://comment5.news.sina.com.cn/page/info?format=js&channel=cj&newsid=31-1-' + str(newsId) + '&group=&compress=1&ie=gbk&oe=gbk&page=' + str(j) + '&page_size=100&jsvar=requestId').content
+            except:
+                time.sleep(0.01)
+
+            jscontent = jscontent.replace('var requestId=', '')
             js_dict = json.loads(jscontent)
             js_data = js_dict.get('result')
             cmntlist = js_data.get('cmntlist')
@@ -135,7 +147,7 @@ def url_read():
         data["time"] = news_time
         data["media"] = media_name
         data["keyword"] = keyword
-        data["arti_content"] = re.sub('<!--[^>]*-->','',p_content).strip()
+        data["arti_content"] = re.sub('<![^>]*>', '', p_content).strip()
         data["comment_show"] = comment_show
         data["comment_total"] = comment_total
         
@@ -146,7 +158,7 @@ def url_read():
             f.write('\n')
         except:
             continue
-        i+=1
+        i+= 1
     f.close
 
 
