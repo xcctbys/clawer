@@ -14,7 +14,7 @@ from django.conf import settings
 
 from html5helper.utils import wrapper_raven
 from clawer.models import Clawer, ClawerTask,\
-    ClawerAnalysisLog, RealTimeMonitor
+    ClawerAnalysisLog, RealTimeMonitor, ClawerDownloadLog
 import socket
 
 
@@ -38,6 +38,8 @@ def run(runtime, thread_count):
 def do_run():
     clawers = Clawer.objects.filter(status=Clawer.STATUS_ON).all()
     total_job_count = 0
+    file_not_found = 0
+    hostname = socket.gethostname()
     
     for clawer in clawers:
         analysis = clawer.runing_analysis()
@@ -51,6 +53,8 @@ def do_run():
         for item in clawer_tasks:
             try:
                 if os.path.exists(item.store) is False:
+                    file_not_found += 1
+                    handle_not_found(item)
                     continue
                 do_analysis(item, clawer)
                 job_count += 1
@@ -60,8 +64,27 @@ def do_run():
         print "clawer is %d, job count is %d" % (clawer.id, job_count)
         total_job_count += job_count
     
+    print "total job count is %d, file not found %d" % (total_job_count, file_not_found)
     return total_job_count
- 
+
+
+def handle_not_found(clawer_task):
+    try:
+        download_log = ClawerDownloadLog.objects.filter(task=clawer_task, status=ClawerDownloadLog.STATUS_SUCCESS).order_by("-id")[0]
+    except:
+        download_log = None
+        print traceback.format_exc(10)
+        print "not found clawer task %d 's download log" % clawer_task.id
+        
+    if not download_log:
+        clawer_task.status = ClawerTask.STATUS_LIVE
+        clawer_task.save()
+        return
+    
+    if download_log.hostname == socket.gethostname():
+        clawer_task.status = ClawerTask.STATUS_LIVE
+        clawer_task.save()
+    
 
 def do_analysis(clawer_task, clawer):
     
