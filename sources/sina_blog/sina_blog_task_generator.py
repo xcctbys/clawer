@@ -144,7 +144,7 @@ class History(object):
 
 class Generator(object):
     HOST = "http://blog.sina.com.cn/"
-    STEP = 100
+    STEP = 1000
     
     def __init__(self):
         self.uris = set()
