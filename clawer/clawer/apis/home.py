@@ -37,12 +37,15 @@ def clawer_all(request):
 def clawer_download_log(request):
     status = request.GET.get("status")
     clawer_id = request.GET.get("clawer")
+    task_id = request.GET.get("task_id")
     
     queryset = ClawerDownloadLog.objects.filter()
     if status:
         queryset = queryset.filter(status=status) 
     if clawer_id:
         queryset = queryset.filter(clawer_id=clawer_id)
+    if task_id:
+        queryset = queryset.filter(task_id=task_id)
         
     pager = EasyUIPager(queryset, request)
     return pager.query()
@@ -136,6 +139,7 @@ def clawer_analysis_log(request):
     status = request.GET.get("status")
     date = request.GET.get("date")
     clawer_id = request.GET.get("clawer")
+    task_id = request.GET.get("task_id")
     
     queryset = ClawerAnalysisLog.objects
     if status:
@@ -146,6 +150,8 @@ def clawer_analysis_log(request):
         start = datetime.datetime.strptime(date, "%Y-%m-%d").replace(hour=0, minute=0, second=0)
         end = start + datetime.timedelta(1)
         queryset = queryset.filter(add_datetime__range=(start, end))
+    if task_id:
+        queryset = queryset.filter(task_id=task_id)
         
     pager = EasyUIPager(queryset, request)
     return pager.query()
