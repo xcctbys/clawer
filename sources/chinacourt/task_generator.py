@@ -19,7 +19,7 @@ import traceback
 import datetime
 
 
-DEBUG = True
+DEBUG = False
 if DEBUG:
     level = logging.DEBUG
 else:
