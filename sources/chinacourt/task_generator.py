@@ -19,7 +19,7 @@ import traceback
 import datetime
 
 
-DEBUG = False
+DEBUG = True
 if DEBUG:
     level = logging.DEBUG
 else:
@@ -32,6 +32,7 @@ logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: 
 
 class History(object):
     START_DATE = datetime.datetime(2010, 1, 1)
+    END_DATE = datetime.datetime.now() - datetime.timedelta(2)
     
     def __init__(self):
         self.current_date = self.START_DATE
@@ -84,6 +85,9 @@ class Generator(object):
     def obtain_urls(self):
         end = self.history.current_date + datetime.timedelta(self.STEP)
         while self.history.current_date < end:
+            if self.history.current_date.date() >= self.history.END_DATE.date():
+                break
+            
             if self.history.total_page <= 0:
                 if not self.obtain_total_page(self.history.current_date):
                     self.history.current_date += datetime.timedelta(1)
