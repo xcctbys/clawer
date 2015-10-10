@@ -187,8 +187,8 @@ class Generator(object):
                 break
                 
             self.do_obtain(self.history.uid, page)
+            self.history.current_page = page
         
-        self.history.current_page = page
         self.save_history()
         
     def do_obtain(self, uid, page):
