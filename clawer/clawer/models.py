@@ -291,6 +291,7 @@ class LoggerCategory(object):
     UPDATE_TASK_GENERATOR  = u"更新任务生成器"
     UPDATE_ANALYSIS = u"更新分析器"
     UPDATE_SETTING = u"更新爬虫参数"
+    TASK_ANALYSIS_FAILED_RESET = u"重设分析失败的任务"
     
     
 

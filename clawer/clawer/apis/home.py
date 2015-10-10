@@ -76,6 +76,9 @@ def clawer_task_analysis_failed_reset(request):
     clawer_id = request.GET.get("clawer")
     
     ret = ClawerTask.objects.filter(clawer_id=clawer_id, status=ClawerTask.STATUS_ANALYSIS_FAIL).update(status=ClawerTask.STATUS_SUCCESS)
+    #add log
+    Logger.objects.create(user=request.user, category=LoggerCategory.TASK_ANALYSIS_FAILED_RESET, title="%d affected" % ret, 
+                          content=json.dumps(request.GET), from_ip=get_request_ip(request))
     return {"is_ok":True, "ret":ret}
 
 
