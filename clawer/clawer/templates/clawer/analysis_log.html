@@ -20,7 +20,6 @@
 
 <div id="date_choices">
     <div id="select_date_btn">选择日期</div>
-	<div id="analysis_failed_reset_btn">重设分析失败的任务</div>
 </div>
 
 
@@ -226,14 +225,6 @@ $(document).ready(function(){
 		});
 	});
 
-	$("#analysis_failed_reset_btn").bind("click", function(){
-	     var url = "{% url clawer.apis.home.clawer_task_analysis_failed_reset %}";
-		 $.getJSON(url, function(resp){
-		     if(resp.is_ok) {
-				 $.messager.alert();
-		     }
-		 });
-	});
 	
 	$("#search_btn").bind("click", function(e){
 		var task_id = $("#id_input").val();
