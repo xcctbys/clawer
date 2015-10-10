@@ -3,7 +3,7 @@
 PIP=~/Documents/pyenv/dj14/bin/pip
 
 if [ ! -f ${PIP} ]; then
-    PIP=/d/virtualenvs/dj14/Scripts/pip
+    PIP=~/Documents/pyenv/dj14/Scripts/pip
 fi
 
 echo "Python ${PIP}"

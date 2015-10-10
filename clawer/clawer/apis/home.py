@@ -69,6 +69,16 @@ def clawer_task(request):
 
 @render_json
 @check_auth_for_api
+def clawer_task_analysis_failed_reset(request):
+    clawer_id = request.GET.get("clawer")
+    
+    ret = ClawerTask.objects.filter(clawer_id=clawer_id, status=ClawerTask.STATUS_ANALYSIS_FAIL).update(status=ClawerTask.STATUS_SUCCESS)
+    return {"is_ok":True, "ret":ret}
+
+
+
+@render_json
+@check_auth_for_api
 def clawer_task_add(request):
     form = AddClawerTask(request.POST)
     if form.is_valid() is False:
