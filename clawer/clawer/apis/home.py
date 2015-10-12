@@ -200,14 +200,16 @@ def clawer_setting_update(request):
     form = UpdateClawerSetting(request.POST)
     if form.is_valid() is False:
         return {"is_ok":False, "reason": u"%s" % form.errors}
-    
-    clawer_setting = form.cleaned_data["clawer"].settings()
+    clawer = form.cleaned_data["clawer"]
+    clawer_setting = clawer.settings()
     clawer_setting.dispatch = form.cleaned_data["dispatch"]
     clawer_setting.analysis = form.cleaned_data["analysis"]
     clawer_setting.proxy = form.cleaned_data["proxy"]
     clawer_setting.download_engine = form.cleaned_data["download_engine"]
     clawer_setting.save()
     
+    clawer.status = form.cleaned_data["status"]
+    clawer.save()
     #add log
     Logger.objects.create(user=request.user, category=LoggerCategory.UPDATE_SETTING, title=form.cleaned_data["clawer"].name, 
                           content=json.dumps(request.POST), from_ip=get_request_ip(request))

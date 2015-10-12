@@ -75,6 +75,15 @@
                 </td>
             </tr>
             <tr>
+                <td>状态</td>
+                <td>
+                    <select id="id_status" class="easyui-combobox" name="status" style="width:200px;">
+					    <option value="1">启用</option>
+					    <option value="2">下线</option>
+					</select>
+                </td>
+            </tr>
+            <tr>
                 <td><button class="easyui-linkbutton" style="width: 50px" type="submit">保存</button></td>
                 <td></td>
             </tr>
@@ -163,9 +172,10 @@ $(document).ready(function(){
 		    dispatch: row.setting.dispatch,
 		    analysis: row.setting.analysis,
 		    proxy: row.setting.proxy,
-		    download_engine: row.setting.download_engine
 		});
 		$("#id_download_engine").combobox("setValue", row.setting.download_engine);
+		$("#id_status").combobox("setValue", row.status);
+		
 		$("#update_win").window("open");
 	});
 	
