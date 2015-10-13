@@ -8,12 +8,15 @@ import logging
 import unittest
 import requests
 import os
+import traceback
+import pwd
+import cPickle
 
 from bs4 import BeautifulSoup
 import urlparse
 
 
-DEBUG = False
+DEBUG = True
 if DEBUG:
     level = logging.DEBUG
 else:
@@ -24,25 +27,57 @@ logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: 
 
 
 
+class History(object):
+    def __init__(self):
+        self.current_page = 1
+        self.total_page = 0
+        self.path = "/tmp/guba"
+        try:
+            pwname = pwd.getpwnam("nginx")
+            self.uid = pwname.pw_uid
+            self.gid = pwname.pw_gid
+        except:
+            logging.error(traceback.format_exc(10))
+    
+    def load(self):
+        if os.path.exists(self.path) is False:
+            return
+        
+        with open(self.path, "r") as f:
+            old = cPickle.load(f)
+            self.current_page = old.current_page
+            self.total_page = old.total_page
+
+    
+    def save(self):
+        with open(self.path, "w") as f:
+            cPickle.dump(self, f)
+            if hasattr(self, "uid"):
+                os.chown(self.path, self.uid, self.gid)
+
+
 class Generator(object):
-    MAX_PAGE = 21705
     HOST = "http://guba.eastmoney.com"
     
     def __init__(self):
         self.uris = set()
-        self.last_page_path = "/tmp/guba_last_page"
-        self.last_page = self.MAX_PAGE
-        self.load_last_page()
+        self.history = History()
+        self.history.load()
+        self.step = 10
         
     def page_url(self, page):
         return "http://guba.eastmoney.com/list,szzs,f_%d.html" % page
         
     def obtain_urls(self):
-        while self.last_page > 0:
-            self.do_obtain(self.last_page)
+        if self.history.total_page <= 0:
+            self.get_total_page()
         
-            self.last_page -= 1
-            self.save_last_page()
+        end = self.history.current_page + self.step
+        while self.history.current_page < end:
+            self.do_obtain(self.history.current_page)
+        
+            self.history.current_page += 1
+            self.history.save()
         
     def do_obtain(self, page):
         r = requests.get(self.page_url(page))
@@ -68,15 +103,19 @@ class Generator(object):
         
         return True
             
-    def save_last_page(self):
-        with open(self.last_page_path, "w") as f:
-            f.write("%d" % self.last_page)
-             
-    def load_last_page(self):
-        if os.path.exists(self.last_page_path) is False:
-            return
-        with open(self.last_page_path, "r") as f:
-            self.last_page = int(f.read())
+    def get_total_page(self):
+        url = "http://guba.eastmoney.com/list,szzs,f_1.html"
+        r = requests.get(url)
+        if r.status_code != 200:
+            return 0
+        
+        soup = BeautifulSoup(r.text, "html.parser")
+        span = soup.body.find("span", {"class":"pagernums"})
+        logging.debug("span is %s", span)
+        tmp = span["data-pager"].split("|")
+        self.history.total_page = int(tmp[1])/int(tmp[2])
+        logging.debug("total page is %d", self.history.total_page)
+        
         
 
 
@@ -86,13 +125,13 @@ class GeneratorTest(unittest.TestCase):
         unittest.TestCase.setUp(self)
         
     def test_obtain_urls(self):
-        self.generator = Generator(20783)
+        self.generator = Generator()
         self.generator.obtain_urls()
         
         logging.debug("urls count is %d", len(self.generator.uris))
         
         self.assertNotEqual(self.generator.uris, [])
-        self.assertEqual(len(self.generator.uris), 80)
+        self.assertGreater(len(self.generator.uris), 80)
         
         
 

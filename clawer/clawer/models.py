@@ -450,27 +450,18 @@ class RealTimeMonitor(object):
     
     
     def shrink(self, result, status):
-        now = datetime.datetime.now().replace(second=0, microsecond=0)
-        
-        if result["end_datetime"] != now:
-            old_end = result["end_datetime"]
-            dts = sorted(result["data"].keys())
-            offset = int((now - old_end).total_seconds()/60)
-            for i in range(offset):
-                dt = old_end + datetime.timedelta(minutes=i+1)
-                result["data"][dt] = {"count":0}
-                #remove too old
-                if i < len(dts):
-                    del result["data"][dts[i]]
-                    
-            self.redis.set(self.task_key(status), result)
-            self.redis.incr(self.task_incr_key(status))
-        
+        dts = sorted(result["data"].keys())
+        excess = len(dts) - self.POINT_COUNT
+        for i in range(excess):
+            dt = dts[i]
+            del result["data"][dt]
+                
+        self.redis.set(self.task_key(status), result)
+        self.redis.incr(self.task_incr_key(status))
+    
         return result
     
-
-
-
+    
 class UserProfile(models.Model):
     (GROUP_MANAGER, GROUP_DEVELOPER) = (u"管理员", u"开发者")
     user = models.OneToOneField(DjangoUser)
