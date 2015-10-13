@@ -16,7 +16,7 @@ from bs4 import BeautifulSoup
 import urlparse
 
 
-DEBUG = True
+DEBUG = False
 if DEBUG:
     level = logging.DEBUG
 else:

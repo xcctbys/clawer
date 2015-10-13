@@ -435,13 +435,6 @@ class RealTimeMonitor(object):
         else:
             result["data"][now] = {"count":1}
         
-        #remove first if time go
-        dts = result["data"].keys()
-        if len(dts) > self.POINT_COUNT:
-            last = sorted(dts)[0]
-            assert last != now
-            del result["data"][last]
-            
         self.redis.set(self.task_key(clawer_task.status), result)
         self.redis.incr(self.task_incr_key(clawer_task.status))
         
