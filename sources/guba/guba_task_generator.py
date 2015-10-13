@@ -25,27 +25,24 @@ logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: 
 
 
 class Generator(object):
-    MAX_PAGE = 21704
+    MAX_PAGE = 21705
     HOST = "http://guba.eastmoney.com"
     
     def __init__(self):
         self.uris = set()
         self.last_page_path = "/tmp/guba_last_page"
-        self.last_page = 1
+        self.last_page = self.MAX_PAGE
         self.load_last_page()
         
     def page_url(self, page):
         return "http://guba.eastmoney.com/list,szzs,f_%d.html" % page
         
     def obtain_urls(self):
-        for page in range(self.last_page, self.last_page+20):
-            if page > self.MAX_PAGE:
-                break
-            
-            self.do_obtain(page)
+        while self.last_page > 0:
+            self.do_obtain(self.last_page)
         
-        self.last_page = page + 1
-        self.save_last_page()
+            self.last_page -= 1
+            self.save_last_page()
         
     def do_obtain(self, page):
         r = requests.get(self.page_url(page))
