@@ -158,7 +158,7 @@ class Download(object):
         start = time.time()
         
         firefox_log_file = open("/tmp/firefox.log", "a+")
-        firefox_binary = FirefoxBinary("/usr/bin/firefox", firefox_log_file)
+        firefox_binary = FirefoxBinary(log_file=firefox_log_file)
         driver = webdriver.Firefox(firefox_binary=firefox_binary)
         driver.set_page_load_timeout(30)
         

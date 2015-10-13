@@ -7,7 +7,10 @@
 
 
 <div id="toolbar">
-    <a href="#" class="easyui-menubutton" data-options="menu:'#date_choices',">日期</a>
+    <input id="id_input" class="easyui-textbox" data-options="iconCls:'icon-search'" style="width:200px" prompt="根据任务ID搜索">
+    <a href="#" class="easyui-linkbutton" id="search_btn">Go</a>
+    |
+    <a href="#" class="easyui-menubutton" data-options="menu:'#date_choices',">操作</a>
     
     <select class="easyui-combogrid" type="text" id="id_clawer_select" data-options="required:true" style="width:100px;" ></select>
     <select class="easyui-combobox" type="text" id="id_status_select" data-options="required:true" style="width:100px;" ></select>
@@ -16,7 +19,7 @@
 </div>
 
 <div id="date_choices">
-    <div id="select_date_btn">选择</div>
+    <div id="select_date_btn">选择日期</div>
 </div>
 
 
@@ -219,6 +222,15 @@ $(document).ready(function(){
 				$("#calendar_win").window("close");
 				$("#tips").html(formatDate(date));
 			}
+		});
+	});
+
+	
+	$("#search_btn").bind("click", function(e){
+		var task_id = $("#id_input").val();
+		
+		$("#grid").datagrid("load", {
+			"task_id": task_id
 		});
 	});
 	

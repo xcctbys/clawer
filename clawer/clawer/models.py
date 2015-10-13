@@ -291,6 +291,7 @@ class LoggerCategory(object):
     UPDATE_TASK_GENERATOR  = u"更新任务生成器"
     UPDATE_ANALYSIS = u"更新分析器"
     UPDATE_SETTING = u"更新爬虫参数"
+    TASK_ANALYSIS_FAILED_RESET = u"重设分析失败的任务"
     
     
 
@@ -414,18 +415,7 @@ class RealTimeMonitor(object):
                 t = result["end_datetime"] - datetime.timedelta(minutes=i)
                 result["data"][t] = {"count": 0}
         
-        if result["end_datetime"] != now:
-            old_end = result["end_datetime"]
-            dts = sorted(result["data"].keys())
-            offset = int((now - old_end).total_seconds()/60)
-            for i in range(offset):
-                dt = old_end + datetime.timedelta(minutes=i+1)
-                result["data"][dt] = {"count":0}
-                #remove too old
-                if i < len(dts):
-                    del result["data"][dts[i]]
-            
-        
+        self.shrink(result, status)
         logging.debug("result is: %s", result)
         return result
     
@@ -445,13 +435,6 @@ class RealTimeMonitor(object):
         else:
             result["data"][now] = {"count":1}
         
-        #remove first if time go
-        dts = result["data"].keys()
-        if len(dts) > self.POINT_COUNT:
-            last = sorted(dts)[0]
-            assert last != now
-            del result["data"][last]
-            
         self.redis.set(self.task_key(clawer_task.status), result)
         self.redis.incr(self.task_incr_key(clawer_task.status))
         
@@ -459,9 +442,30 @@ class RealTimeMonitor(object):
         return result
     
     
-
-
-
+    def shrink(self, result, status):
+        now = datetime.datetime.now().replace(second=0, microsecond=0)
+        if result["end_datetime"] < now:
+            old_end = result["end_datetime"]
+            while old_end < now:
+                dt = old_end
+                if dt not in result["data"]:
+                    result["data"][dt] = {"count": 0}
+                old_end += datetime.timedelta(minutes=1)
+                
+        dts = sorted(result["data"].keys())
+        excess = len(dts) - self.POINT_COUNT
+        if excess <= 0:
+            return
+        for i in range(excess):
+            dt = dts[i]
+            del result["data"][dt]
+                
+        self.redis.set(self.task_key(status), result)
+        self.redis.incr(self.task_incr_key(status))
+    
+        return result
+    
+    
 class UserProfile(models.Model):
     (GROUP_MANAGER, GROUP_DEVELOPER) = (u"管理员", u"开发者")
     user = models.OneToOneField(DjangoUser)

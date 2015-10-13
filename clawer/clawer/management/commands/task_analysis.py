@@ -91,8 +91,7 @@ def do_analysis(clawer_task, clawer):
     analysis = clawer.runing_analysis()
     path = analysis.product_path()
     
-    analysis_log = ClawerAnalysisLog(clawer=clawer, analysis=analysis, task=clawer_task, hostname=socket.gethostname())
-    
+    analysis_log = ClawerAnalysisLog(clawer=clawer, analysis=analysis, task=clawer_task, hostname=socket.gethostname()[:16])
     try:
         out_f = open(analysis_log.result_path(), "w+b")
         p = subprocess.Popen([settings.PYTHON, path], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=out_f)

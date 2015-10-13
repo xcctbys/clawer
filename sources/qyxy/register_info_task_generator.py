@@ -27,124 +27,15 @@ else:
 logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: %(message)s")
 
 
-TOP_100_IDS = [
-    1300871220,
-    1216826604,
-    1245296155,
-    1284139322,
-    1236135807,
-    1285707277,
-    1458594614,
-    1504965870,
-    1298535315,
-    1279884602,
-    1364334665,
-    1278228085,
-    1243037810,
-    1319231304,
-    1282871591,
-    1243881594,
-    1233227211,
-    1279916282,
-    1502087803,
-    1638714710,
-    1319802272,
-    1305431810,
-    1215172700,
-    1249424622,
-    1307309734,
-    1617732512,
-    1434387020,
-    1278127565,
-    1301484230,
-    1649821184,
-    1338707944,
-    1603589321,
-    1253205351,
-    1092672395,
-    1253386310,
-    1258609013,
-    1273642560,
-    1483330984,
-    1661526105,
-    1500243557,
-    1250075844,
-    1290677635,
-    1342877185,
-    1791653972,
-    1239417764,
-    1092849864,
-    1301047350,
-    1319475951,
-    1278226564,
-    1349341797,
-    1503072772,
-    1264802107,
-    1623430883,
-    1220069571,
-    1286519923,
-    1366708375,
-    1665967841,
-    1244748717,
-    1725765581,
-    1349323031,
-    1182389073,
-    1507817532,
-    1361584961,
-    2892774000,
-    1724710054,
-    1418062403,
-    1219262581,
-    1199839991,
-    1502620537,
-    1251977337,
-    1503491352,
-    1272573150,
-    2539920613,
-    2744161330,
-    1372231703,
-    2160168205,
-    1394379401,
-    1217743083,
-    1278084127,
-    1747738261,
-    1290699133,
-    1302452922,
-    1922761130,
-    1408763403,
-    1300112204,
-    1225255825,
-    1291592332,
-    1190841165,
-    1182426800,
-    1274553861,
-    1253039302,
-    1160859960,
-    1307994117,
-    1343920131,
-    1235833274,
-    1252364410,
-    1751100587,
-    1147298365,
-    1446362094,
-    1259215934,
-]
-
-
-
-class History(object):
-    
-    def __init__(self):
-        self.uid = TOP_100_IDS[0]
-        self.current_page = 0
-        self.total_page = 0
-        self.position = 0
+Enterprises = [
+    {"name": u"安信证券股份有限公司北京分公司", "reg_id":"a1a1a1a021ced5020121e19fc345143e", "reg_no":"110102012003809", }
+] 
 
 
 
 class Generator(object):
-    HOST = "http://blog.sina.com.cn/"
-    STEP = 1000
+    HOST = "http://qyxy.baic.gov.cn/"
+    STEP = 100
     
     def __init__(self):
         self.uris = set()
@@ -157,21 +48,7 @@ class Generator(object):
         except:
             logging.error(traceback.format_exc(10))
         self.load_history()
-        
-    def load_history(self):
-        if os.path.exists(self.history_path) is False:
-            self.history = History()
-            return
-        
-        with open(self.history_path, "r") as f:
-            self.history = pickle.load(f)
             
-    def save_history(self):
-        with open(self.history_path, "w") as f:
-            pickle.dump(self.history, f)
-            if hasattr(self, "uid"):
-                os.chown(self.history_path, self.uid, self.gid)
-        
     def page_url(self, uid, page):
         return urlparse.urljoin(self.HOST, "/s/articlelist_%d_0_%d.html" % (uid, page))
         
@@ -187,8 +64,8 @@ class Generator(object):
                 break
                 
             self.do_obtain(self.history.uid, page)
-            self.history.current_page = page
         
+        self.history.current_page = page
         self.save_history()
         
     def do_obtain(self, uid, page):
@@ -241,4 +118,4 @@ if __name__ == "__main__":
     generator = Generator()
     generator.obtain_urls()
     for uri in generator.uris:
-        print json.dumps({"uri":uri, "download_engine":"phantomjs"})
+        print json.dumps({"uri":uri})

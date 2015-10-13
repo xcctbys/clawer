@@ -8,7 +8,7 @@ if [ ! -d ${WORKDIR} ];then
 fi
 
 if [ ! -f ${PY} ]; then
-    PY=/d/virtualenvs/dj14/Scripts/python
+    PY=~/Documents/pyenv/dj14/Scripts/python
 fi
 
 

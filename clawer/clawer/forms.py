@@ -29,4 +29,5 @@ class UpdateClawerSetting(forms.Form):
     analysis = forms.IntegerField()
     proxy = forms.CharField(max_length=4096, required=False)
     download_engine = forms.ChoiceField(choices=Download.ENGINE_CHOICES)
+    status = forms.ChoiceField(choices=Clawer.STATUS_CHOICES)
     
