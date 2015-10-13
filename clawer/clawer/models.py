@@ -450,7 +450,7 @@ class RealTimeMonitor(object):
                 dt = old_end
                 if dt not in result["data"]:
                     result["data"][dt] = {"count": 0}
-                old_end + datetime.timedelta(minutes=1)
+                old_end += datetime.timedelta(minutes=1)
                 
         dts = sorted(result["data"].keys())
         excess = len(dts) - self.POINT_COUNT
