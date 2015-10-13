@@ -25,7 +25,7 @@ logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: 
 
 
 class Generator(object):
-    MAX_PAGE = 20790
+    MAX_PAGE = 21704
     HOST = "http://guba.eastmoney.com"
     
     def __init__(self):
@@ -41,6 +41,7 @@ class Generator(object):
         for page in range(self.last_page, self.last_page+20):
             if page > self.MAX_PAGE:
                 break
+            
             self.do_obtain(page)
         
         self.last_page = page + 1
@@ -48,6 +49,9 @@ class Generator(object):
         
     def do_obtain(self, page):
         r = requests.get(self.page_url(page))
+        if r.status_code != 200:
+            return False
+        
         soup = BeautifulSoup(r.text, "html.parser")
         news_container = soup.find("div", {"id":"articlelistnew"})   
         divs = news_container.find_all("div")
@@ -64,6 +68,8 @@ class Generator(object):
             logging.debug("url span is %s", url_span)
             url = url_span.a["href"]
             self.uris.add(urlparse.urljoin(self.HOST, url))
+        
+        return True
             
     def save_last_page(self):
         with open(self.last_page_path, "w") as f:

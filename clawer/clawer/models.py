@@ -415,18 +415,7 @@ class RealTimeMonitor(object):
                 t = result["end_datetime"] - datetime.timedelta(minutes=i)
                 result["data"][t] = {"count": 0}
         
-        if result["end_datetime"] != now:
-            old_end = result["end_datetime"]
-            dts = sorted(result["data"].keys())
-            offset = int((now - old_end).total_seconds()/60)
-            for i in range(offset):
-                dt = old_end + datetime.timedelta(minutes=i+1)
-                result["data"][dt] = {"count":0}
-                #remove too old
-                if i < len(dts):
-                    del result["data"][dts[i]]
-            
-        
+        self.shrink(result)
         logging.debug("result is: %s", result)
         return result
     
@@ -459,6 +448,22 @@ class RealTimeMonitor(object):
         logging.debug("trace task %d, status %s, count is %d", clawer_task.id, clawer_task.status_name(), result["data"][now]["count"])
         return result
     
+    
+    def shrink(self, result):
+        now = datetime.datetime.now().replace(second=0, microsecond=0)
+        
+        if result["end_datetime"] != now:
+            old_end = result["end_datetime"]
+            dts = sorted(result["data"].keys())
+            offset = int((now - old_end).total_seconds()/60)
+            for i in range(offset):
+                dt = old_end + datetime.timedelta(minutes=i+1)
+                result["data"][dt] = {"count":0}
+                #remove too old
+                if i < len(dts):
+                    del result["data"][dts[i]]
+        
+        return result
     
 
 
