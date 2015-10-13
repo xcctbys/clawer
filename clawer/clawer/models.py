@@ -443,6 +443,14 @@ class RealTimeMonitor(object):
     
     
     def shrink(self, result, status):
+        now = datetime.datetime.now().replace(second=0, microsecond=0)
+        if result["end_datetime"] < now:
+            old_end = result["end_datetime"]
+            while old_end < now:
+                dt = old_end
+                if dt not in result["data"]:
+                    result["data"][dt] = {"count": 0}
+                    
         dts = sorted(result["data"].keys())
         excess = len(dts) - self.POINT_COUNT
         if excess <= 0:
