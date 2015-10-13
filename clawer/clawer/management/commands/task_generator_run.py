@@ -11,7 +11,7 @@ from django.conf import settings
 from html5helper.utils import wrapper_raven
 from clawer.models import ClawerTaskGenerator, Clawer, ClawerTask,\
     RealTimeMonitor
-from clawer.utils import UrlCache
+from clawer.utils import UrlCache, SafeProcess
 import traceback
 
 
@@ -25,7 +25,10 @@ def run(task_generator_id):
     path = task_generator.product_path()
     task_generator.write_code(path)
     
-    p = subprocess.Popen([settings.PYTHON, path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  #("%s %s" % (settings.PYTHON, path), "r")
+    monitor = RealTimeMonitor()
+    safe_process = SafeProcess([settings.PYTHON, path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    
+    p = safe_process.run(3600)
     for line in p.stdout:
         js = ClawerTaskGenerator.parse_line(line)
         if not js:
@@ -41,7 +44,6 @@ def run(task_generator_id):
             clawer_task = ClawerTask.objects.create(clawer=task_generator.clawer, task_generator=task_generator, uri=js["uri"],
                                   cookie=js.get("cookie"))
             #trace it
-            monitor = RealTimeMonitor()
             monitor.trace_task_status(clawer_task)
         except:
             logging.error("add %s failed: %s", js['uri'], traceback.format_exc(10))

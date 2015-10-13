@@ -19,6 +19,9 @@ import socket
 import urlparse
 import shutil
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
+from test.test_support import args_from_interpreter_flags
+import thread
+import threading
 
 
 
@@ -182,10 +185,38 @@ class Download(object):
     
         end = time.time()
         self.spend_time = end - start
-        
-        
-    
 
+
+class SafeProcess(object):
+    
+    def __init__(self, args, stdout=None, stderr=None, stdin=None):
+        self.args = args
+        self.stdout = stdout
+        self.stderr = stderr
+        self.stdin = stdin
+        self.process = None
+        self.timer = None
+        self.process_exit_status = None
+        
+    def run(self, timeout=30):
+        self.timer = threading.Timer(timeout, self.force_exit)
+        self.process = subprocess.Popen(self.args, stdout=self.stdout, stderr=self.stderr, stdin=self.stdin)
+        return self.process
+    
+    def wait(self):
+        self.process_exit_status = self.process.wait()   
+        return self.process_exit_status
+    
+    def force_exit(self):
+        if not self.timer:
+            return
+        
+        if self.timer.is_alive():
+            self.process.terminate()
+            
+        self.process_exit_status = 1
+    
+        
 class UrlCache(object):
     
     def __init__(self, url, redis_url=settings.URL_REDIS):

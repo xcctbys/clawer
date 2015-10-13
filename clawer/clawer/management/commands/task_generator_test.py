@@ -10,6 +10,7 @@ from django.conf import settings
 
 from html5helper.utils import wrapper_raven
 from clawer.models import ClawerTaskGenerator
+from clawer.utils import SafeProcess
 
 
 def test():
@@ -40,7 +41,8 @@ def test_alpha(task_generator):
     path = task_generator.alpha_path()
     task_generator.write_code(path)
     
-    p = subprocess.Popen([settings.PYTHON, path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  #("%s %s" % (settings.PYTHON, path), "r")
+    safe_process = SafeProcess([settings.PYTHON, path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = safe_process.run(30)
     for line in p.stdout:
         uri = ClawerTaskGenerator.parse_line(line)
         if not uri:
