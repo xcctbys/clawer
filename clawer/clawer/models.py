@@ -445,6 +445,8 @@ class RealTimeMonitor(object):
     def shrink(self, result, status):
         dts = sorted(result["data"].keys())
         excess = len(dts) - self.POINT_COUNT
+        if excess <= 0:
+            return
         for i in range(excess):
             dt = dts[i]
             del result["data"][dt]
