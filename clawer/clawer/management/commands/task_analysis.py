@@ -19,14 +19,19 @@ from clawer.models import Clawer, ClawerTask,\
 import socket
 
 
+EXIT_TIMER = None
+
+
 def run(runtime, thread_count):
     timer = threading.Timer(runtime, force_exit)
     timer.start()
+    EXIT_TIMER = timer
     
     end = datetime.datetime.now() + datetime.timedelta(seconds=runtime)
     while True:
         current = datetime.datetime.now()
         if current >= end:
+            EXIT_TIMER.cancel()
             sys.exit(1)
             break
         
