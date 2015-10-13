@@ -203,7 +203,8 @@ class SafeProcess(object):
         return self.process
     
     def wait(self):
-        self.process_exit_status = self.process.wait()   
+        self.process_exit_status = self.process.wait()
+        self.timer.cancel()   
         return self.process_exit_status
     
     def force_exit(self):

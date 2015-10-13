@@ -50,7 +50,7 @@ def test_alpha(task_generator):
         print "stdout: %s " % line
         
     err = p.stderr.read()
-    status = p.wait()
+    status = safe_process.wait()
     if status != 0:
         print "abnormal exit, status %s" % (status)
         task_generator.failed_reason = err

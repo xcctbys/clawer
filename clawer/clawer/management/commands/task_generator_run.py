@@ -50,7 +50,7 @@ def run(task_generator_id):
         
     err = p.stderr.read()
     
-    status = p.wait()
+    status = safe_process.wait()
     if status != 0:
         logging.error("run task generator %d failed: %s" % (task_generator.id, err))
         return False
