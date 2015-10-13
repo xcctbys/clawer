@@ -8,6 +8,7 @@ import subprocess
 import datetime
 import time
 from optparse import make_option
+import threading
 
 from django.core.management.base import BaseCommand
 from django.conf import settings
@@ -19,8 +20,10 @@ import socket
 
 
 def run(runtime, thread_count):
-    end = datetime.datetime.now() + datetime.timedelta(seconds=runtime)
+    timer = threading.Timer(runtime, force_exit)
+    timer.start()
     
+    end = datetime.datetime.now() + datetime.timedelta(seconds=runtime)
     while True:
         current = datetime.datetime.now()
         if current >= end:
@@ -35,11 +38,14 @@ def run(runtime, thread_count):
     return True
 
 
+def force_exit():
+    sys.exit(1)
+
+
 def do_run():
     clawers = Clawer.objects.filter(status=Clawer.STATUS_ON).all()
     total_job_count = 0
     file_not_found = 0
-    hostname = socket.gethostname()
     
     for clawer in clawers:
         analysis = clawer.runing_analysis()

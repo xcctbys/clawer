@@ -8,19 +8,16 @@ import time
 import rq
 import redis
 from random import random
-import os
-
-
-from django.conf import settings
-
-from html5helper.utils import do_paginator
 import types
 import socket
 import urlparse
 import shutil
+import os
+
+from django.conf import settings
+
+from html5helper.utils import do_paginator
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
-from test.test_support import args_from_interpreter_flags
-import thread
 import threading
 
 
@@ -200,6 +197,8 @@ class SafeProcess(object):
         
     def run(self, timeout=30):
         self.timer = threading.Timer(timeout, self.force_exit)
+        self.timer.start()
+        
         self.process = subprocess.Popen(self.args, stdout=self.stdout, stderr=self.stderr, stdin=self.stdin)
         return self.process
     
@@ -211,7 +210,7 @@ class SafeProcess(object):
         if not self.timer:
             return
         
-        if self.timer.is_alive():
+        if self.timer.is_alive() and self.process:
             self.process.terminate()
             
         self.process_exit_status = 1

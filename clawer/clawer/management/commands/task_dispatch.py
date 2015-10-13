@@ -14,6 +14,7 @@ from clawer.utils import DownloadQueue, download_clawer_task
 def run():
     download_queue = DownloadQueue()
     clawers = Clawer.objects.filter(status=Clawer.STATUS_ON).all()
+    monitor = RealTimeMonitor()
     
     for clawer in clawers:
         clawer_tasks = ClawerTask.objects.filter(clawer_id=clawer.id, status=ClawerTask.STATUS_LIVE).order_by("id")[:clawer.settings().dispatch]
@@ -23,7 +24,6 @@ def run():
             item.status = ClawerTask.STATUS_PROCESS
             item.save()
             #trace it
-            monitor = RealTimeMonitor()
             monitor.trace_task_status(item)
         
         print "clawer is %d, job count %d" % (clawer.id, len(download_queue.jobs))
