@@ -28,7 +28,7 @@ function shrink_tmp()
 
 function main()
 {
-    #shrink_tmp
+    shrink_tmp
     shrink_clawer
 }
 
