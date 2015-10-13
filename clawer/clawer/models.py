@@ -415,7 +415,7 @@ class RealTimeMonitor(object):
                 t = result["end_datetime"] - datetime.timedelta(minutes=i)
                 result["data"][t] = {"count": 0}
         
-        self.shrink(result)
+        self.shrink(result, status)
         logging.debug("result is: %s", result)
         return result
     
@@ -449,7 +449,7 @@ class RealTimeMonitor(object):
         return result
     
     
-    def shrink(self, result):
+    def shrink(self, result, status):
         now = datetime.datetime.now().replace(second=0, microsecond=0)
         
         if result["end_datetime"] != now:
@@ -462,6 +462,9 @@ class RealTimeMonitor(object):
                 #remove too old
                 if i < len(dts):
                     del result["data"][dts[i]]
+                    
+            self.redis.set(self.task_key(status), result)
+            self.redis.incr(self.task_incr_key(status))
         
         return result
     
