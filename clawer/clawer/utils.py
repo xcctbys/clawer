@@ -8,17 +8,17 @@ import time
 import rq
 import redis
 from random import random
-import os
-
-
-from django.conf import settings
-
-from html5helper.utils import do_paginator
 import types
 import socket
 import urlparse
 import shutil
+import os
+
+from django.conf import settings
+
+from html5helper.utils import do_paginator
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
+import threading
 
 
 
@@ -182,10 +182,41 @@ class Download(object):
     
         end = time.time()
         self.spend_time = end - start
-        
-        
-    
 
+
+class SafeProcess(object):
+    
+    def __init__(self, args, stdout=None, stderr=None, stdin=None):
+        self.args = args
+        self.stdout = stdout
+        self.stderr = stderr
+        self.stdin = stdin
+        self.process = None
+        self.timer = None
+        self.process_exit_status = None
+        
+    def run(self, timeout=30):
+        self.timer = threading.Timer(timeout, self.force_exit)
+        self.timer.start()
+        
+        self.process = subprocess.Popen(self.args, stdout=self.stdout, stderr=self.stderr, stdin=self.stdin)
+        return self.process
+    
+    def wait(self):
+        self.process_exit_status = self.process.wait()
+        self.timer.cancel()   
+        return self.process_exit_status
+    
+    def force_exit(self):
+        if not self.timer:
+            return
+        
+        if self.timer.is_alive() and self.process:
+            self.process.terminate()
+            
+        self.process_exit_status = 1
+    
+        
 class UrlCache(object):
     
     def __init__(self, url, redis_url=settings.URL_REDIS):
