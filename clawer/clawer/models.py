@@ -277,11 +277,7 @@ class ClawerTaskGenerator(models.Model):
             dict of json
         """
         logging.info("line is: %s", line)
-        try:
-            js = json.loads(line)
-        except:
-            logging.error(traceback.format_exc(10))
-            js = None
+        js = json.loads(line)
         return js
     
     def write_code(self, path):
