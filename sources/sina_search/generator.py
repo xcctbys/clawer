@@ -76,7 +76,6 @@ class History(object):
             logging.error(traceback.format_exc(10))
 
     def load(self):
-        print os.path.exists(self.path)
         if os.path.exists(self.path) is False:
             return
 
@@ -152,6 +151,8 @@ class Generator(object):
                     self.uris.add(news_link)
                 self.history.current_url_num += 1
                 self.history.save()
+            if i > 5:
+                os._exit(0)
         self.history.current_url_num = 1
         self.history.save()
 
