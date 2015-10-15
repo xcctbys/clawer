@@ -1,134 +1,116 @@
-#coding=utf-8
-"""sina search analysis
+# encoding=utf-8
+"""sina_search
 
+hits: http://finance.sina.com.cn/stock/jsy/20141125/043020909481.shtml
 """
 
 import json
-import re
 import sys
 import logging
 import unittest
 import requests
-import time
 import os
-reload(sys)
-sys.setdefaultencoding('utf-8')
+import re
+import time
+
 from bs4 import BeautifulSoup
 
-def url_read():
-    textpath = r"7_1url.txt"
-    text = open(textpath)
-    arr = []
-    for lines in text.readlines():
-        lines = lines.replace("\n", "")
-        arr.append(lines)
-    text.close()
-    i = 1
-    sName = '7_1content.json'
-    f = open(sName, 'w+')
 
-    for url in arr:
-        try:
-            urltime = re.search(r'\d{8}', url).group(0)
-        except:
-            i += 1
-            continue
+DEBUG = False
+if DEBUG:
+    level = logging.DEBUG
+else:
+    level = logging.ERROR
 
-        try:
-            r = requests.get(url)
-        except:
-            time.sleep(0.01)
+logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: %(message)s")
 
-        if int(urltime) > 20121031:
+
+
+class Analysis(object):
+    
+    def __init__(self, path, url=None):
+        self.path = path
+        self.url = url
+        self.comment_id = None
+        self.comment_count = None
+        self.soup = None
+        self.result = {}
+        self.text = None
+        
+    def parse(self):
+        if os.path.exists(self.path) is False:
+            url_time = re.search(r'\d{8}', self.url)
+            if url_time != None:
+                self.parse_url(url_time.group(0))
+                self.parse_comment_url()
+                if self.comment_id != None:
+                    self.parse_show_and_total()
+                    self.parse_comment_contents()
+                else:
+                    self.result["show"] = ''
+                    self.result["total"] = ''
+                    self.result["comment_contents"] = ''
+            else:
+                self.result = {"media_name": "", "title": "", "show": "", "content": "", "time": "", "keywords": "", "total": "", "comment_contents": ""}
+                return self.result
+        else:
+            with open(self.path, "r") as f:
+                self.text = f.read()
+                self.soup = BeautifulSoup(self.text, "html5lib")
+                self.result["show"] = ''
+                self.result["total"] = ''
+                self.result["comment_contents"] = ''
+
+        self.parse_title()
+        self.parse_time()
+        self.parse_media_name()
+        self.parse_keywords()
+        self.parse_content()
+        logging.debug("result is %s", json.dumps(self.result, indent=4))
+
+    def parse_url(self, url_time):
+        r = requests.get(self.url)
+        if int(url_time) > 20121031:
             try:
-                soup = BeautifulSoup(r.content.decode('gbk'), "html5lib")
+                self.soup = BeautifulSoup(r.content.decode('gbk'), "html5lib")
             except:
-                soup = BeautifulSoup(r.content, "html5lib")
+                self.soup = BeautifulSoup(r.content, "html5lib")
         else:
             try:
-                soup = BeautifulSoup(r.content.decode('gbk'), "html.parser")
+                self.soup = BeautifulSoup(r.content.decode('gbk'), "html.parser")
             except:
-                soup = BeautifulSoup(r.content, "html.parser")
+                self.soup = BeautifulSoup(r.content, "html.parser")
 
-        print u'正在抽取第' + str(i) + u'新闻内容......'
-
-        data = {}
-        data["comment_contents"] = {}
-
-        news_title = soup.find('h1', {'id': 'artibodyTitle'})     # 提取文章标题
-        if (news_title) == None:
-            print u'该网页信息爬取失败！'
-        if news_title != None:
-            news_title = news_title.string
-
-        news_time = soup.find('span', {'id': 'pub_date'})     # 提取文章时间
-        if news_time != None:
-            news_time = news_time.string   
-
-        media_name = soup.find('span', {'id': 'media_name'})        # 提取媒体源
-        if media_name != None:
-            if media_name.a == None:
-                media_name = soup.find('span', {'id': 'media_name'}).string
+    def parse_comment_url(self):
+        news_id = re.search(r'\d{12}', self.url)
+        if news_id == None:
+            news_id = re.search(r'\d{11}', self.url)
+            if news_id == None:
+                self.comment_id = None
             else:
-                media_name = media_name.a.string
-            
-        keywords = soup.find('p', {'class': 'art_keywords'})        # 提取关键字
-        keyword =''
-        if keywords != None:
-            keywords = keywords.find_all('a')
-            for a in keywords:
-                keyword = keyword + a.string + ' '
+                self.comment_id = news_id.group(0)[4:11]
+        else:
+            self.comment_id = news_id.group(0)[4:12]
 
-        news_articles = soup.find('div', {'id': 'artibody'})      # 提取正文内容
-        p_content = ''
-        if news_articles != None:
-            news_articles = news_articles.find_all('p')
-            for p in news_articles:
-                if p.string == None:
-                    span = soup.find('p')
-                    for span in p:
-                        p_content = p_content + str(span.string)
-                else:
-                    p_content = p_content + p.string
-
-        if int(urltime) < 20050630:
-            i += 1
-            continue
-            
-        try:    
-            newsId = re.search(r'\d{12}', url).group(0)[4:12]
-        except:
-            newsId = re.search(r'\d{11}', url)
-            if newsId == None:
-                continue
-            newsId = re.search(r'\d{11}', url).group(0)[4:11]
-            
-        print u'正在抽取第' + str(i) + u'评论内容......'
-        try:
-            jscontent = requests.get('http://comment5.news.sina.com.cn/page/info?format=js&channel=cj&newsid=31-1-' + str(newsId) + '&group=&compress=1&ie=gbk&oe=gbk&page=1&page_size=100&jsvar=requestId').content
-        except:
-            time.sleep(0.01)
-
+    def parse_show_and_total(self):
+        jscontent = requests.get("http://comment5.news.sina.com.cn/page/info?format=js&channel=cj&newsid=31-1-" + self.comment_id +"&group=&compress=1&ie=gbk&oe=gbk&page=1&page_size=100&jsvar=requestId").content
         jscontent = jscontent.replace('var requestId=', '')
         js_dict = json.loads(jscontent)
         js_data = js_dict.get('result')
         js_count = js_data.get('count')
-        
         try:
-            comment_show = js_count.get('show')
-            comment_total = js_count.get('total')
+            self.result["show"] = js_count.get('show')
+            self.result["total"] = js_count.get('total')
         except:
-            comment_show = 0
-            comment_total = 0
-        print comment_show
-        print comment_total
-        k = 1
-        for j in range(1, ((comment_show-1)/100)+2):
-            try:
-                jscontent = requests.get('http://comment5.news.sina.com.cn/page/info?format=js&channel=cj&newsid=31-1-' + str(newsId) + '&group=&compress=1&ie=gbk&oe=gbk&page=' + str(j) + '&page_size=100&jsvar=requestId').content
-            except:
-                time.sleep(0.01)
+            self.result["show"] = ''
+            self.result["total"] = ''
+        self.comment_count = self.result["show"]
 
+    def parse_comment_contents(self):
+        count = 1
+        self.result["comment_contents"] = {}
+        for page in range(1, ((self.comment_count-1)/100)+2):
+            jscontent = requests.get("http://comment5.news.sina.com.cn/page/info?format=js&channel=cj&newsid=31-1-" + self.comment_id +"&group=&compress=1&ie=gbk&oe=gbk&page=" + str(page) +"&page_size=100&jsvar=requestId").content
             jscontent = jscontent.replace('var requestId=', '')
             js_dict = json.loads(jscontent)
             js_data = js_dict.get('result')
@@ -136,35 +118,97 @@ def url_read():
             try:
                 for each in cmntlist:
                     comment_content = each.get('content')
-#                    print comment_content
-                    data["comment_contents"]["content_" + str(k)] = comment_content
-                    k += 1
+                    self.result["comment_contents"]["content_" + str(count)] = comment_content
+                    count += 1
             except:
                 time.sleep(0.01)
-        
-        
-        data["title"] = news_title
-        data["time"] = news_time
-        data["media"] = media_name
-        data["keyword"] = keyword
-        data["arti_content"] = re.sub('<![^>]*>', '', p_content).strip()
-        data["comment_show"] = comment_show
-        data["comment_total"] = comment_total
-        
-        jsonStr = json.dumps(data)
-        try:
-#            print jsonStr
-            f.write(jsonStr)
-            f.write('\n')
-        except:
-            continue
-        i+= 1
-    f.close
+
+    def parse_title(self):
+        h1 = self.soup.find("h1", {"id": "artibodyTitle"})
+        if h1 != None:
+            self.result["title"] = h1.get_text().strip()
+        else:
+            self.result["title"] = ''
+
+    def parse_time(self):
+        span = self.soup.find("span", {"id": "pub_date"})
+        if span != None:
+            self.result["time"] = span.get_text().strip()
+        else:
+            self.result["time"] = ''
+    
+    def parse_media_name(self):
+        span = self.soup.find("span", {"id": "media_name"})
+        if span != None:
+            if span.a == None:
+                self.result["media_name"] = span.get_text().strip()
+            else:
+                self.result["media_name"] = span.a.get_text().strip()
+        else:
+            self.result["media_name"] = ''
+
+    def parse_keywords(self):
+        keyword = ''
+        p = self.soup.find("p", {"class": "art_keywords"})
+        if p != None:
+            p = p.find_all('a')
+            for a in p:
+                keyword += a.string
+        self.result["keywords"] = keyword
+
+    def parse_content(self):
+        div = self.soup.find("div", {"id": "artibody"})
+        content = ''
+        if div != None:
+            div = div.find_all('p')
+            for p in div:
+                if p.string == None:
+                    p = self.soup.find('span')
+                    for span in p:
+                        try:
+                            content += span.get_text()
+                        except:
+                            pass
+                else:
+                    content += p.get_text()
+        self.result["content"] = content
+    
+    
+
+class TestAnalysis(unittest.TestCase):
+
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        self.path = "5950.txt"
+
+    def test_parse(self):
+        """http://finance.sina.com.cn/stock/jsy/20141125/043020909481.shtml
+        """
+        self.analysis = Analysis(self.path, "http://finance.sina.com.cn/stock/jsy/20141125/043020909481.shtml")
+        self.analysis.parse()
+
+        self.assertNotEqual(self.analysis.result, {})
+        self.assertIsNotNone(self.analysis.result["title"])
+        self.assertIsNotNone(self.analysis.result["time"])
+        self.assertIsNotNone(self.analysis.result["media_name"])
+        self.assertIsNotNone(self.analysis.result["keywords"])
+        self.assertIsNotNone(self.analysis.result["show"])
+        self.assertIsNotNone(self.analysis.result["total"])
+        self.assertIsNotNone(self.analysis.result["content"])
+        self.assertIsNotNone(self.analysis.result["comment_contents"])
 
 
 
-
-
-#调用
-#sina_search_analysis()
-url_read()
+if __name__ == "__main__":
+    if DEBUG:
+        unittest.main()
+    
+    in_data = sys.stdin.read()
+    logging.debug("in data is: %s", in_data)
+    
+    in_json = json.loads(in_data)
+    url = in_json.get("url")
+    analysis = Analysis(in_json["path"], url)
+    analysis.parse()
+    
+    print json.dumps(analysis.result)
