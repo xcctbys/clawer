@@ -43,6 +43,7 @@ def run(task_generator_id):
         task_generator.last_failed_datetime = datetime.datetime.now()
         task_generator.save()
         return False
+    print "out file size %d" % out_f.tell()
     out_f.close()
     
     out_f = open(out_path, "r")
@@ -65,7 +66,7 @@ def run(task_generator_id):
             task_generator.save()
     
     out_f.close()
-    #os.remove(out_path)
+    os.remove(out_path)
     return True
  
                 
