@@ -36,9 +36,11 @@ def run(task_generator_id):
     status = safe_process.wait()
     if status != 0:
         logging.error("run task generator %d failed: %s" % (task_generator.id, err))
+        out_f.close()
         return False
+    out_f.close()
     
-    out_f.seek(0)
+    out_f = open(out_path, "r")
     for line in out_f:
         js = ClawerTaskGenerator.parse_line(line)
         if not js:
