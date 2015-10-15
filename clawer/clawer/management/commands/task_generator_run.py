@@ -29,7 +29,7 @@ def run(task_generator_id):
     out_f = open(out_path, "w+b")
     
     monitor = RealTimeMonitor()
-    safe_process = SafeProcess([settings.PYTHON, path], stdout=out_f.fileno(), stderr=subprocess.PIPE)
+    safe_process = SafeProcess([settings.PYTHON, path], stdout=out_f, stderr=subprocess.PIPE)
     
     p = safe_process.run(1800)
     err = p.stderr.read()
