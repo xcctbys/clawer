@@ -8,11 +8,19 @@ import json
 import urllib
 import unittest
 import requests
+import traceback
+import os
+import time
+import cPickle as pickle
+try:
+    import pwd
+except:
+    pass
 
 from bs4 import BeautifulSoup
 
 
-DEBUG = True
+DEBUG = False
 if DEBUG:
     level = logging.DEBUG
 else:
@@ -53,18 +61,60 @@ medias = [
 
 
 
+class History(object):
+
+    def __init__(self):
+        self.current_url_num = 0
+        self.current_keyword_num = 0
+        self.current_media_num = 0
+        self.path = "/tmp/sina_search"
+        try:
+            pwname = pwd.getpwnam("nginx")
+            self.uid = pwname.pw_uid
+            self.gid = pwname.pw_gid
+        except:
+            logging.error(traceback.format_exc(10))
+
+    def load(self):
+        print os.path.exists(self.path)
+        if os.path.exists(self.path) is False:
+            return
+
+        with open(self.path, "r") as f:
+            old = pickle.load(f)
+            self.current_url_num = old.current_url_num
+            self.current_keyword_num = old.current_keyword_num
+            self.current_media_num = old.current_media_num
+
+    def save(self):
+        with open(self.path, "w") as f:
+            pickle.dump(self, f)
+            if hasattr(self, "uid"):
+                os.chown(self.path, self.uid, self.gid)
+
+
+
 class Generator(object):
     HOST = "http://search.sina.com.cn/?c=news&"
 
     def __init__(self):
         self.uris = set()
+        self.history = History()
+        self.history.load()
 
-    def search_url(self, keywords, medias):
-        for each in keywords:
+    def search_url(self):
+        for each in keywords[self.history.current_keyword_num:]:
             keyword = each
-            for each in medias:
+            for each in medias[self.history.current_media_num:]:
                 media = each
                 self.page_url(keyword, media)
+                if self.history.current_media_num == 0:
+                    self.history.current_media_num = 1
+                else:
+                    self.history.current_media_num = 0
+                self.history.save()
+            self.history.current_keyword_num += 1
+            self.history.save()
 
     def page_url(self, keyword, media):
         url = self.HOST + urllib.urlencode({"q": keyword.encode("gbk")}) + '+O%3A'\
@@ -72,24 +122,26 @@ class Generator(object):
         self.obtain_urls(url)
 
     def obtain_urls(self, url):
-        r = requests.get(url, headers={"user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5)\
-         AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"})
-        if r.status_code != 200:
-            return
+        try:
+            r = requests.get(url, headers={"user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5)\
+            AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"})
+        except:
+            time.sleep(0.01)
 
         soup = BeautifulSoup(r.text, "html5lib")
         num = str(soup.find('div', {'class', 'l_v2'}).contents).decode("unicode_escape").replace(',', '')
         news_count = int(re.findall(r'\d+', num)[0])
-        self.do_obtain(news_count,url)
+        self.do_obtain(news_count, url)
 
     def do_obtain(self, count, url):
-        for i in range(1, ((count-1)/20)+2):
-            page = url + '&col=&source=&from=&country=&size=&time=&a=&page=' + str(i) + \
+        for i in range(1, ((count-1-self.history.current_url_num)/20)+2):
+            page = url + '&col=&source=&from=&country=&size=&time=&a=&page=' + str((self.history.current_url_num-1)/20+1) + \
                    '&pf=2131425492&ps=2132080888&dpc=1'
-            r = requests.get(page, headers={"user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5)\
+            try:
+                r = requests.get(page, headers={"user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5)\
              AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"})
-            if r.status_code != 200:
-                return
+            except:
+                time.sleep(0.01)
 
             soup = BeautifulSoup(r.text, "html5lib")
             all_h = soup.find_all("h2")
@@ -98,6 +150,10 @@ class Generator(object):
                 news_link = news_a['href']
                 if 'http://finance.sina.com' in news_link:
                     self.uris.add(news_link)
+                self.history.current_url_num += 1
+                self.history.save()
+        self.history.current_url_num = 1
+        self.history.save()
 
 
 
@@ -108,7 +164,7 @@ class GeneratorTest(unittest.TestCase):
 
     def test_obtain_urls(self):
         self.generator = Generator()
-        self.generator.search_url([u'熊市'], [u'人民日报', u'新华社'])
+        self.generator.search_url()
 
         for uri in self.generator.uris:
             logging.debug("urls is %s", uri)
@@ -124,7 +180,7 @@ if __name__ == "__main__":
         unittest.main()
 
     generator = Generator()
-    generator.search_url(keywords, medias)
+    generator.search_url()
 
     for uri in generator.uris:
         print json.dumps({"uri":uri})
