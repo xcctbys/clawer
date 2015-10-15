@@ -270,16 +270,6 @@ class ClawerTaskGenerator(models.Model):
     def product_path(self):
         return os.path.join(self.code_dir(), "%d_product.py" % self.clawer_id)
     
-    @classmethod
-    def parse_line(cls, line):
-        """ line format is: {"uri":""}
-        Returns:
-            dict of json
-        """
-        logging.info("line is: %s", line)
-        js = json.loads(line)
-        return js
-    
     def write_code(self, path):
         with codecs.open(path, "w", "utf-8") as f:
             f.write(self.code)

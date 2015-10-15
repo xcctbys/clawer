@@ -12,6 +12,7 @@ from html5helper.utils import wrapper_raven
 from clawer.models import ClawerTaskGenerator, Clawer, ClawerTask,\
     RealTimeMonitor
 from clawer.utils import UrlCache, SafeProcess
+import json
 
 
 
@@ -42,10 +43,7 @@ def run(task_generator_id):
     
     out_f = open(out_path, "r")
     for line in out_f:
-        js = ClawerTaskGenerator.parse_line(line)
-        if not js:
-            logging.warning("unknown line: %s" % line)
-            continue
+        js = json.loads(line)
         
         try:
             url_cache = UrlCache(js['uri'])
@@ -61,7 +59,7 @@ def run(task_generator_id):
             logging.error("add %s failed: %s", js['uri'], traceback.format_exc(10))
     
     out_f.close()
-    os.remove(out_path)
+    #os.remove(out_path)
     return True
  
                 
