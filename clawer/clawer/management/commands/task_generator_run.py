@@ -26,7 +26,7 @@ def run(task_generator_id):
     task_generator.write_code(path)
     
     out_path = "/tmp/task_generator_%d" % task_generator_id
-    out_f = open(out_path, "rw")
+    out_f = open(out_path, "w+b")
     
     monitor = RealTimeMonitor()
     safe_process = SafeProcess([settings.PYTHON, path], stdout=out_f.fileno(), stderr=subprocess.PIPE)
