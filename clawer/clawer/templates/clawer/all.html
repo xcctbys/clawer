@@ -165,7 +165,14 @@ function formatTaskGenerator(val) {
 		return "-";
 	}
 	
-	return val.id + " (最后失败时间："+val.last_failed_datetime+")";
+	var result = val.id;
+	if(val.last_failed_reason) {
+		result += " (最后失败时间："+val.last_failed_datetime+")";
+	} else {
+		" ("+val.add_datetime+")";
+	}
+	
+	return result;
 }
 
 function formatAnalysis(val) {
