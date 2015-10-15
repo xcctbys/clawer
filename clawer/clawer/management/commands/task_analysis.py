@@ -88,8 +88,6 @@ def handle_not_found(clawer_task):
         print "not found clawer task %d 's download log" % clawer_task.id
         
     if not download_log:
-        clawer_task.status = ClawerTask.STATUS_LIVE
-        clawer_task.save()
         return
     
     if download_log.hostname == socket.gethostname():
