@@ -17,12 +17,14 @@ from html5helper.utils import wrapper_raven
 from clawer.models import Clawer, ClawerTask,\
     ClawerAnalysisLog, RealTimeMonitor, ClawerDownloadLog
 import socket
+import random
 
 
 EXIT_TIMER = None
 
 
 def run(runtime, thread_count):
+    time.sleep(random.randint(1, 30))
     timer = threading.Timer(runtime, force_exit)
     timer.start()
     EXIT_TIMER = timer
