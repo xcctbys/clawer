@@ -31,7 +31,7 @@ def run(task_generator_id):
     monitor = RealTimeMonitor()
     safe_process = SafeProcess([settings.PYTHON, path], stdout=out_f.fileno(), stderr=subprocess.PIPE)
     
-    p = safe_process.run(3600)
+    p = safe_process.run(1800)
     err = p.stderr.read()
     status = safe_process.wait()
     if status != 0:
