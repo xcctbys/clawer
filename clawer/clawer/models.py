@@ -234,6 +234,7 @@ class ClawerTaskGenerator(models.Model):
     cron = models.CharField(max_length=128)
     status = models.IntegerField(default=STATUS_ALPHA, choices=STATUS_CHOICES)
     failed_reason = models.CharField(max_length=4096, blank=True, null=True)
+    last_failed_datetime = models.DateTimeField(null=True, blank=True)
     add_datetime = models.DateTimeField(auto_now_add=True)
     
     class Meta:
@@ -248,6 +249,7 @@ class ClawerTaskGenerator(models.Model):
             "status": self.status,
             "status_name": self.status_name(),
             "failed_reason": self.failed_reason,
+            "last_failed_datetime": self.last_failed_datetime.strftime("%Y-%m-%d %H:%M:%S") if self.last_failed_datetime else None,
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }
         return result

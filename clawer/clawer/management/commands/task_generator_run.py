@@ -4,6 +4,7 @@ import logging
 import subprocess
 import traceback
 import os
+import datetime
 
 from django.core.management.base import BaseCommand
 from django.conf import settings
@@ -38,14 +39,16 @@ def run(task_generator_id):
     if status != 0:
         logging.error("run task generator %d failed: %s" % (task_generator.id, err))
         out_f.close()
+        task_generator.failed_reason = err
+        task_generator.last_failed_datetime = datetime.datetime.now()
+        task_generator.save()
         return False
     out_f.close()
     
     out_f = open(out_path, "r")
     for line in out_f:
-        js = json.loads(line)
-        
         try:
+            js = json.loads(line)
             url_cache = UrlCache(js['uri'])
             if url_cache.has_url():
                 raise Exception("%s has exists", js['uri'])
@@ -57,6 +60,9 @@ def run(task_generator_id):
             monitor.trace_task_status(clawer_task)
         except:
             logging.error("add %s failed: %s", js['uri'], traceback.format_exc(10))
+            task_generator.failed_reason = traceback.format_exc(10)
+            task_generator.last_failed_datetime = datetime.datetime.now()
+            task_generator.save()
     
     out_f.close()
     #os.remove(out_path)

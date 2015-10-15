@@ -165,7 +165,7 @@ function formatTaskGenerator(val) {
 		return "-";
 	}
 	
-	return "ID: " + val.id + " ("+val.add_datetime+")";
+	return val.id + " (最后失败时间："+val.last_failed_datetime+")";
 }
 
 function formatAnalysis(val) {
@@ -236,6 +236,11 @@ $(document).ready(function(){
 		    item.id,
 		    ", ",
 		    item.add_datetime,
+		    ", ",
+		    item.last_failed_reason,
+		    "<pre>",
+		    item.failed_reason,
+		    "</pre>",
 		    "<small class='text-muted'>",
 		    "    Crontab: ",
 		    item.cron,
