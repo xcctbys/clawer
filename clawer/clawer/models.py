@@ -15,6 +15,7 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch.dispatcher import receiver
 from html5helper import redis_cluster
 import urlparse
+import traceback
 
         
 
@@ -276,7 +277,11 @@ class ClawerTaskGenerator(models.Model):
             dict of json
         """
         logging.info("line is: %s", line)
-        js = json.loads(line)
+        try:
+            js = json.loads(line)
+        except:
+            logging.error(traceback.format_exc(10))
+            js = None
         return js
     
     def write_code(self, path):
