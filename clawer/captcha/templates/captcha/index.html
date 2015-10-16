@@ -24,7 +24,7 @@
             <li><a href="" class="btn btn-default">换一个</a></li>
         </ul>
         
-        <form class="form-inline" style="margin-top:30px;" id="form">
+        <form class="form-inline" style="margin-top:30px;" id="form" method="post">
 		  <div class="form-group">
 		      <input type="hidden" class="form-control" name="captcha_id" value="{{captcha.id}}">
 		      <input type="text" class="form-control" id="id_label" name="label" placeholder="请写下图片中的文字">
@@ -42,12 +42,29 @@
 $(document).ready(function(){
 	$("#id_label").focus();
 	
+	$("#id_label").keypress(function(e){   
+		var code = e.keyCode || e.which;
+		if(code == 13) { //Enter keycode
+		   doSubmit();
+	       return false;
+		}
+	
+    });
+
 	$("#submitBtn").bind("click", function(e){
-		
+		doSubmit(); 
+	});
+	
+	function doSubmit() {
 		$("#submitBtn").html("提交中");
 		$("#submitBtn").addClass("disabled");
 		
 		var url = "{% url captcha.views.make_label %}";
+		
+		if(!$("#id_label").val()) {
+			show_tips("danger", "文字是空的");
+			return;
+		}
 
 		$.ajax({  
 			 url: url, 
@@ -70,8 +87,8 @@ $(document).ready(function(){
 			 }, 
 			  
 		 });
-		 
-	});
+	}
+	
 });
 
 function show_tips(tag, message) {
