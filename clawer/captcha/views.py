@@ -4,9 +4,10 @@
 import random
 import traceback
 
-from html5helper.utils import get_request_ip
+from html5helper.utils import get_request_ip, do_paginator
 from html5helper.decorator import render_template, render_json
 from captcha.models import Captcha, LabelLog
+from django.core.urlresolvers import reverse
 
 
 
@@ -27,6 +28,14 @@ def index(request):
     
     return render_template("captcha/index.html", request=request, captcha_count=captcha_count, label_count=label_count, title=title,
                            captcha=captcha)
+    
+    
+def labeled(request, page=1):
+    qs = Captcha.objects.filter(label_count__gt=2)
+    pager = do_paginator(qs, page, 20)
+    prefix = reverse("captcha.views.labeled")
+    
+    return render_template("captcha/labeled.html", request=request, pager=pager, prefix=prefix)
 
 
 @render_json

@@ -19,6 +19,9 @@ class Captcha(models.Model):
     
     def image_url(self):
         return urlparse.urljoin(settings.MEDIA_URL, "captcha/%d/%s" % (self.category, self.image_hash))
+    
+    def label_logs(self):
+        return LabelLog.objects.filter(captcha=self)
         
         
 class LabelLog(models.Model):
