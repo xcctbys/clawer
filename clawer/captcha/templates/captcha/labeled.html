@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static %}
+{% load pagination %}
+
+
+{% block content %}
+
+
+<table class="table table-striped">
+    {% for item in pager %}
+    <tr>
+        <td><img src="{{item.image_url}}" /></td>
+        
+        <td>
+	        <ul class="list-inline">
+	        {% for label_log in item.label_logs %}
+	            <li>{{label_log.label}}</li>
+	        {% endfor %}
+	        </ul>
+        </td>
+        
+    </tr>
+    {% endfor %}
+</table>
+
+
+{% pagination pager prefix request %}
+
+{% endblock %}
