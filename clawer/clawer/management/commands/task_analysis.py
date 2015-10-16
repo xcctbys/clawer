@@ -21,26 +21,19 @@ import random
 
 
 EXIT_TIMER = None
+WORK_THREAD = None
 
 
 def run(runtime, thread_count):
     time.sleep(random.randint(1, 30))
-    timer = threading.Timer(runtime, force_exit)
-    timer.start()
-    EXIT_TIMER = timer
+    EXIT_TIMER = threading.Timer(runtime, force_exit)
+    EXIT_TIMER.start()
     
-    end = datetime.datetime.now() + datetime.timedelta(seconds=runtime)
     while True:
-        current = datetime.datetime.now()
-        if current >= end:
-            EXIT_TIMER.cancel()
-            sys.exit(1)
-            break
-        
-        if do_run() > 0:
-            time.sleep(1)
-        else:
-            time.sleep(15)
+        WORK_THREAD = threading.Thread(target=do_run)
+        WORK_THREAD.start()
+        WORK_THREAD.join(runtime)
+            
         
     return True
 

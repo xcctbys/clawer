@@ -51,6 +51,10 @@ URL_REDIS = "redis://10.172.241.155/0"
 MONITOR_REDIS = "redis://10.171.34.147/0"
 
 
+#captcha
+CAPTCHA_STORE = "/data/media/captcha"
+
+
 RAVEN_CONFIG = {
     'dsn': 'http://c63b0d71513f4569b661e81bcfe8f903:c16131fe0f8d4195b0ea8be642aaa419@coredump.51zhi.com//4',
 }

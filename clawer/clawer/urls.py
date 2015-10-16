@@ -2,6 +2,7 @@ from django.conf.urls import patterns, include, url
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
+from django.conf import settings
 
 
 
@@ -77,7 +78,6 @@ urlpatterns = patterns('clawer.views.home',
     url(r"^clawer/analysis/log/$", "clawer_analysis_log"),
     url(r"^clawer/setting/$", "clawer_setting"),
     
-    
     url(r"^logger/", include(logger_urls)),
     url(r"^monitor/", include(monitor_urls)),
     
@@ -85,6 +85,14 @@ urlpatterns = patterns('clawer.views.home',
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
+    url(r"^captcha/", include("captcha.urls")),
+
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
 )
+
+
+if settings.DEBUG:
+    urlpatterns += patterns("",
+        (r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT, 'show_indexes': True }),
+    )

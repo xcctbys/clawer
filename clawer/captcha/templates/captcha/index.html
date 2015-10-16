@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block content %}
+
+<ul class="list-inline">
+    <li>已标记图片识别码：{{captcha_count}}</li>
+    <li>累积标记数：{{label_count}}</li>
+</ul>
+
+
+{% if captcha %}
+<div class="panel panel-info">
+    <div class="panel-body">
+    
+        <div id="tips"></div>
+        
+        <ul class="list-inline">
+            <li><img src="{{ captcha.image_url }}" /></li>
+            <li>请写下图片中的文字</li>
+            <li><a href="" class="btn btn-default">换一个</a></li>
+        </ul>
+        
+        <form class="form-inline" style="margin-top:30px;" id="form">
+		  <div class="form-group">
+		      <input type="hidden" class="form-control" name="captcha_id" value="{{captcha.id}}">
+		      <input type="text" class="form-control" name="label" placeholder="请写下图片中的文字">
+		  </div>
+		  <a class="btn btn-primary" href="javascript:void(0)" id="submitBtn">提交</a>
+		</form>
+		
+    </div>
+</div>
+{% else %}
+<h1>大功告成</h1>
+{% endif %}
+
+<script>
+$(document).ready(function(){
+	$("#submitBtn").bind("click", function(e){
+		
+		var url = "{% url captcha.views.make_label %}";
+
+		$.ajax({  
+			 url: url, 
+			 data: $("#form").serialize(),
+			 type: "POST", 
+			 dataType:'json', 
+			 success: function(resp) {
+				 if(resp.is_ok == false) {
+					 show_tips("danger", resp.reason);
+					 return
+				 }
+				 
+				 var timeout = 3000;
+				 show_tips("success", "Thanks! 稍等" + (timeout/1000) + "秒后...刷新");
+				 
+				 window.setTimeout(function() {
+					 window.location.href = window.location.href;
+				 }, timeout);
+				 
+			 }, 
+			  
+		 });
+		 
+	});
+});
+
+function show_tips(tag, message) {
+	var content = [];
+	
+	if(tag == "success") {
+		content = [
+		    "<div class='alert alert-success'>",
+		    message,
+		    "</div>"
+		];
+	} else if(tag == "danger") {
+		content = [
+		    "<div class='alert alert-danger'>",
+		    message,
+		    "</div>"
+		];
+	}
+	
+	$("#tips").html(content.join(""));
+	
+	window.setTimeout(function(){
+		close_tips();
+	}, 30000);
+}
+
+function close_tips() {
+	$("#tips").html("");
+}
+
+</script>
+
+
+{% endblock %}
