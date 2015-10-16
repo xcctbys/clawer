@@ -41,6 +41,9 @@
 $(document).ready(function(){
 	$("#submitBtn").bind("click", function(e){
 		
+		$("#submitBtn").html("提交中");
+		$("#submitBtn").addClass("disabled");
+		
 		var url = "{% url captcha.views.make_label %}";
 
 		$.ajax({  
