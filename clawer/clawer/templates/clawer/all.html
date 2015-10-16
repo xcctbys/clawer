@@ -167,7 +167,7 @@ function formatTaskGenerator(val) {
 	}
 	
 	var result = val.id;
-	if(val.last_failed_reason) {
+	if(val.last_failed_datetime) {
 		result += " (最后失败时间："+val.last_failed_datetime+")";
 	} else {
 		result += " ("+val.add_datetime+")";
