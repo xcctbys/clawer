@@ -30,11 +30,9 @@ def run(runtime, thread_count):
     EXIT_TIMER = threading.Timer(runtime, force_exit)
     EXIT_TIMER.start()
     
-    while True:
-        WORK_THREAD = threading.Thread(target=do_run)
-        WORK_THREAD.start()
-        WORK_THREAD.join(runtime)
-            
+    WORK_THREAD = threading.Thread(target=do_run)
+    WORK_THREAD.start()
+    WORK_THREAD.join(runtime)
         
     return True
 
