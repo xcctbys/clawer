@@ -42,3 +42,10 @@ class TestViews(TestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         captcha.delete()
+        
+    def test_all_labeled(self):
+        captcha = Captcha.objects.create(url="http://www.baidu.com", category=2, image_hash="sss", label_count=4)
+        url = reverse("captcha.views.all_labeled")
+        resp = self.client.get(url, {"category":2})
+        self.assertEqual(resp.status_code, 200)
+        captcha.delete()

@@ -56,3 +56,11 @@ def make_label(request):
     
     LabelLog.objects.create(captcha=captcha, label=label, ip=get_request_ip(request))
     return {"is_ok":True}
+
+
+@render_json
+def all_labeled(request):
+    category = int(request.GET.get("category"))
+    qs = Captcha.objects.filter(label_count__gt=2, category=category)
+    
+    return {"is_ok":True, "captchas":[x.as_json() for x in qs]}

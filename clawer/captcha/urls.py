@@ -7,6 +7,7 @@ urlpatterns = patterns('captcha.views',
     url(r'^$', 'index'),
     url(r'^labeled/$', 'labeled'),
     url(r'^labeled/(?P<page>\d+)/$', 'labeled'),
+    url(r'^all/labeled/$', 'all_labeled'),
     
     url(r"^make/label/$", "make_label"),
 )

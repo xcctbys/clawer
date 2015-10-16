@@ -22,6 +22,15 @@ class Captcha(models.Model):
     
     def label_logs(self):
         return LabelLog.objects.filter(captcha=self)
+    
+    def as_json(self):
+        result = {"id": self.id,
+            "category": self.category,
+            "image_hash": self.image_hash,
+            "labels": [x.label for x in self.label_logs()],
+            "image_url": self.image_url(),
+        }
+        return result
         
         
 class LabelLog(models.Model):
