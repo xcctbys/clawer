@@ -285,6 +285,8 @@ class LoggerCategory(object):
     UPDATE_ANALYSIS = u"更新分析器"
     UPDATE_SETTING = u"更新爬虫参数"
     TASK_ANALYSIS_FAILED_RESET = u"重设分析失败的任务"
+    TASK_PROCESS_RESET = u"重设进行中的任务"
+    
     
     
 

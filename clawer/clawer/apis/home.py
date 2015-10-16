@@ -82,6 +82,17 @@ def clawer_task_analysis_failed_reset(request):
     return {"is_ok":True, "ret":ret}
 
 
+@render_json
+@check_auth_for_api
+def clawer_task_process_reset(request):
+    clawer_id = request.GET.get("clawer")
+    
+    ret = ClawerTask.objects.filter(clawer_id=clawer_id, status=ClawerTask.STATUS_PROCESS).update(status=ClawerTask.STATUS_LIVE)
+    #add log
+    Logger.objects.create(user=request.user, category=LoggerCategory.TASK_PROCESS_RESET, title="%d affected" % ret, 
+                          content=json.dumps(request.GET), from_ip=get_request_ip(request))
+    return {"is_ok":True, "ret":ret}
+
 
 @render_json
 @check_auth_for_api
