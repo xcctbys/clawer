@@ -23,7 +23,11 @@
         
 		<link href="{% static 'css/jumbotron-narrow.css' %}" rel="stylesheet" media="screen">
         {% block title %}
-        <title>Nice Clawer Of Princetechs</title>
+        {% if title %}
+        <title>{{title}}</title>
+        {% else %}
+        <title>普林云爬虫 - Nice Clawer Of Princetechs</title>
+        {% endif %}
         {% endblock %}
 </head>
 
