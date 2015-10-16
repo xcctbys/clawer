@@ -27,7 +27,7 @@
         <form class="form-inline" style="margin-top:30px;" id="form">
 		  <div class="form-group">
 		      <input type="hidden" class="form-control" name="captcha_id" value="{{captcha.id}}">
-		      <input type="text" class="form-control" name="label" placeholder="请写下图片中的文字">
+		      <input type="text" class="form-control" id="id_label" name="label" placeholder="请写下图片中的文字">
 		  </div>
 		  <a class="btn btn-primary" href="javascript:void(0)" id="submitBtn">提交</a>
 		</form>
@@ -40,6 +40,8 @@
 
 <script>
 $(document).ready(function(){
+	$("#id_label").focus();
+	
 	$("#submitBtn").bind("click", function(e){
 		
 		$("#submitBtn").html("提交中");
