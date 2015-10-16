@@ -214,7 +214,8 @@ class SafeProcess(object):
             return
         
         if self.timer.is_alive() and self.process:
-            self.process.stdout.write("timeout after %d seconds" % self.timeout)
+            if self.process.stdout:
+                self.process.stdout.write("timeout after %d seconds" % self.timeout)
             self.process.terminate()
             
         self.process_exit_status = 1
