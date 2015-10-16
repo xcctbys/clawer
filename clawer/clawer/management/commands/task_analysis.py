@@ -18,6 +18,7 @@ from clawer.models import Clawer, ClawerTask,\
     ClawerAnalysisLog, RealTimeMonitor, ClawerDownloadLog
 import socket
 import random
+from clawer.utils import SafeProcess
 
 
 EXIT_TIMER = None
@@ -98,13 +99,15 @@ def do_analysis(clawer_task, clawer):
     analysis_log = ClawerAnalysisLog(clawer=clawer, analysis=analysis, task=clawer_task, hostname=socket.gethostname()[:16])
     try:
         out_f = open(analysis_log.result_path(), "w+b")
-        p = subprocess.Popen([settings.PYTHON, path], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=out_f)
+        
+        safe_process = SafeProcess([settings.PYTHON, path], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=out_f)
+        p = safe_process.run(30)
         p.stdin.write(json.dumps({"path":clawer_task.store, "url":clawer_task.uri}))
         p.stdin.close()
         
         err = p.stderr.read()
         print "waiting analysis return, task %d" % clawer_task.id
-        retcode = p.wait()
+        retcode = safe_process.wait()
         if retcode == 0:
             print "out file point %d" % out_f.tell()
             out_f.seek(0)
