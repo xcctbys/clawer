@@ -15,10 +15,13 @@ import pwd
 import traceback
 import hashlib
 import subprocess
+import cv2
+import numpy as np
+from matplotlib import pyplot as plt
 
 
 
-DEBUG = False
+DEBUG = True
 if DEBUG:
     level = logging.DEBUG
 else:
@@ -54,34 +57,59 @@ class Ocr(object):
             
             out_eng = os.path.join(parent, "%s_eng_%d" % (image_id, page))
             subprocess.call([self.tesseract, path, out_eng, "-l", "eng", "-psm", str(page)])
-            
 
-class ImageLib(object):
-    def __init__(self):
-        self.url = "http://qyxy.baic.gov.cn/CheckCodeCaptcha?currentTimeMillis=1444875766745&num=87786"
-        self.count = 10000
-        self.save_dir = "/Users/pengxt/Documents/ocr/train_data"
+
+class TrainCaptcha(object):
+    def __init__(self, d):
+        self.save_dir = "train"
+        self.image_url = d["image_url"]
+        self.image_hash = d["image_hash"]
         if os.path.exists(self.save_dir) is False:
             os.makedirs(self.save_dir, 0775)
+            
+    def raw_path(self):
+        return os.path.join(self.save_dir, self.image_hash)
+    
+    def gray_path(self):
+        return os.path.join(self.save_dir, self.image_hash, "_gray")
         
-    def download(self):
-        for i in range(0, self.count):
-            r = requests.get(self.url)
-            if r.status_code != 200:
-                logging.warn("request %s failed, status code %d", self.url, r.status_code)
-                continue
-            
-            image_id = hashlib.md5(r.content).hexdigest()[-6:]
-            path = os.path.join(self.save_dir, image_id)
-            if os.path.exists(path):
-                logging.warn("%d: %s exists", i, image_id)
-                continue
-            
-            with open(path, "w") as f:
-                f.write(r.content)
-            
-            logging.error("Download %d, image id %s", i, image_id)
+    def filter(self):
+        raw_im = cv2.imread(self.raw_path())
+        print raw_im.size, raw_im.shape
+        plt.subplot(231)
+        plt.imshow(raw_im, "gray")
+        plt.title("size %s, shape %s" % (raw_im.size, raw_im.shape))
         
+        gray_im = cv2.cvtColor(raw_im, cv2.COLOR_BGR2GRAY)
+        plt.subplot(235)
+        plt.imshow(gray_im, "gray")
+        plt.title("size %s, shape %s" % (gray_im.size, gray_im.shape))
+        
+        
+        plt.show()
+                
+
+
+class OpencvTrain(object):
+    def __init__(self):
+        self.api_url = "http://clawer.princetechs.com/captcha/all/labeled/?category=1"
+        self.captchas = []
+    
+    def load_data(self):
+        r = requests.get(self.api_url)
+        if r.status_code != 200:
+            logging.warn("failed to load api url, status code %d", r.status_code)
+            return
+        
+        for item in r.json()["captchas"]:
+            captcha = TrainCaptcha(item)
+            self.captchas.append(captcha)
+            save_path = captcha.raw_path()
+            if os.path.exists(save_path):
+                continue
+            image_r = requests.get(captcha.image_url)
+            with open(save_path, "w") as f:
+                f.write(image_r.content)
                 
     
 
@@ -89,10 +117,23 @@ class OcrTrainTest(unittest.TestCase):
     
     def setUp(self):
         unittest.TestCase.setUp(self)
-        
+    
+    """
     def test_ocr(self):
         ocr = Ocr("http://qyxy.baic.gov.cn/CheckCodeCaptcha?currentTimeMillis=1444875766745&num=87786")
         ocr.to_text()
+    """
+     
+        
+class TestTrainCaptcha(unittest.TestCase):
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        self.opencv_train = OpencvTrain()
+        self.opencv_train.load_data()
+        
+    def test_filter(self):
+        train_captcha = self.opencv_train.captchas[0]
+        train_captcha.filter()
         
     
 
@@ -100,6 +141,6 @@ if __name__ == "__main__":
     if DEBUG:
         unittest.main()
         
-    image_lib = ImageLib()
-    image_lib.download()
+    opencv_train = OpencvTrain()
+    opencv_train.load_data()
         
