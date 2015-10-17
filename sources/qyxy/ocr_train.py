@@ -76,21 +76,25 @@ class TrainCaptcha(object):
     def filter(self):
         raw_im = cv2.imread(self.raw_path())
         gray_im = cv2.cvtColor(raw_im, cv2.COLOR_BGR2GRAY)
-        mean_thresholding_im = cv2.adaptiveThreshold(gray_im, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 5, 2)
-        gauss_thresholding_im = cv2.adaptiveThreshold(gray_im, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 5, 2)
+        mean_thresholding_im = cv2.adaptiveThreshold(gray_im, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 9, 2)
+        blur_im = cv2.medianBlur(mean_thresholding_im, 5)
         
         ims = [
             [raw_im, "raw"],
             [gray_im, "gray"],
             [mean_thresholding_im, "mean thresholding"],
-            [gauss_thresholding_im, "gauss thresholding"],
+            [blur_im, "blur"],
         ]
         
         for i in range(len(ims)):
             [im, title] = ims[i]
-            plt.subplot(230+i)
+            plt.subplot(4, 2, i+1)
             plt.imshow(im, "gray")
+            plt.xticks([])
+            plt.yticks([])
             plt.title("%s" % (title))
+            
+            
         
         plt.show()
         plt.close()        
