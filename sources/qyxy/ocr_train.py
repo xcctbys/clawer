@@ -87,12 +87,6 @@ class TrainCaptcha(object):
         #thresholding_im = cv2.adaptiveThreshold(gray_im, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 15, 5)
         blur_im = cv2.medianBlur(thresholding_im, 5)
         
-        """
-        mean_thresholding_im = cv2.adaptiveThreshold(gray_im, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 15, 2)
-        gauss_blur_im = cv2.GaussianBlur(mean_thresholding_im, (5, 5), 0)
-        blur_im = cv2.medianBlur(gauss_blur_im, 5)
-        """
-        
         cv2.imwrite(self.gray_path(), blur_im)
         
         if DEBUG:
