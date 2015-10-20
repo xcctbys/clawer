@@ -27,6 +27,7 @@ WORK_THREAD = None
 
 def run(runtime, thread_count):
     time.sleep(random.randint(1, 30))
+    
     EXIT_TIMER = threading.Timer(runtime, force_exit)
     EXIT_TIMER.start()
     
