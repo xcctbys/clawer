@@ -2,7 +2,7 @@
 
 from django import forms
 
-from clawer.models import Clawer
+from clawer.models import Clawer, ClawerSetting
 from clawer.utils import Download
 
 
@@ -30,4 +30,5 @@ class UpdateClawerSetting(forms.Form):
     proxy = forms.CharField(max_length=4096, required=False)
     download_engine = forms.ChoiceField(choices=Download.ENGINE_CHOICES)
     status = forms.ChoiceField(choices=Clawer.STATUS_CHOICES)
+    prior = forms.ChoiceField(choices=ClawerSetting.PRIOR_CHOICES)
     

@@ -366,11 +366,18 @@ class ClawerTask(models.Model):
     
 
 class ClawerSetting(models.Model):
+    (PRIOR_NORMAL, PRIOR_URGENCY) = range(0, 2)
+    PRIOR_CHOICES = (
+        (PRIOR_NORMAL, "normal"),
+        (PRIOR_URGENCY, "urgency"),
+    )
+    
     clawer = models.ForeignKey(Clawer)
     dispatch = models.IntegerField(u"每次分发下载任务数", default=100)
     analysis = models.IntegerField(u"每次分析任务数", default=20)
     proxy = models.TextField(blank=True, null=True)
     download_engine = models.CharField(max_length=16, default=Download.ENGINE_REQUESTS, choices=Download.ENGINE_CHOICES)
+    prior = models.IntegerField(default=PRIOR_NORMAL)
     last_update_datetime = models.DateTimeField(auto_now_add=True, auto_now=True)
     add_datetime = models.DateTimeField(auto_now_add=True)
     
@@ -378,12 +385,16 @@ class ClawerSetting(models.Model):
         app_label = "clawer"
         ordering = ["-id"]
         
+    def is_urgency(self):
+        return self.prior == self.PRIOR_URGENCY
+    
     def as_json(self):
         result = {
             "dispatch": self.dispatch,
             "analysis": self.analysis,
             "proxy": self.proxy or "",
             "download_engine": self.download_engine,
+            "prior": self.prior,
             "last_update_datetime": self.last_update_datetime.strftime("%Y-%m-%d %H:%M:%S"),
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }

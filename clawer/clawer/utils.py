@@ -243,33 +243,50 @@ class UrlCache(object):
 
 class DownloadQueue(object):
     QUEUE_NAME = "task_downloader"
+    URGENCY_QUEUE_NAME = "urgency_task_downloader"
     MAX_COUNT = 10000
     
-    def __init__(self, redis_url=settings.REDIS):
+    def __init__(self, is_urgency=False, redis_url=settings.REDIS):
         self.connection = redis.Redis.from_url(redis_url)
         self.queue = rq.Queue(self.QUEUE_NAME, connection=self.connection)
+        self.urgency_queue = rq.Queue(self.URGENCY_QUEUE_NAME, connection=self.connection)
+        self.is_urgency = is_urgency
         self.jobs = []
         
     def enqueue(self, func, *args, **kwargs):
-        if self.queue.count > self.MAX_COUNT:
-            return None
-        job = self.queue.enqueue_call(func, *args, **kwargs)
+        job = None
+        if self.is_urgency:
+            if self.urgency_queue.count > self.MAX_COUNT:
+                return None
+            job = self.urgency_queue.enqueue_call(func, *args, **kwargs)
+        else:
+            if self.queue.count > self.MAX_COUNT:
+                return None
+            job = self.queue.enqueue_call(func, *args, **kwargs)
+        
         self.jobs.append(job)
         return job.id
     
 
 class DownloadWorker(object):
-    QUEUE_NAME = "task_downloader"
+    QUEUE_NAME = DownloadQueue.QUEUE_NAME
+    URGENCY_QUEUE_NAME = DownloadQueue.URGENCY_QUEUE_NAME
     
     def __init__(self, redis_url=settings.REDIS):
         self.connection = redis.Redis.from_url(redis_url)
+        
         self.queue = rq.Queue(self.QUEUE_NAME, connection=self.connection)
         self.worker = rq.Worker(self.queue)
         
+        self.urgency_queue = rq.Queue(self.URGENCY_QUEUE_NAME, connection=self.connection)
+        self.urgency_worker = rq.Worker(self.urgency_queue)
+        
     def run(self):
         self.worker.work()
+        
+    def urgency_run(self):
+        self.urgency_worker.work()
     
-
 
 def download_clawer_task(clawer_task):
     from clawer.models import ClawerTask, ClawerDownloadLog, RealTimeMonitor

@@ -12,12 +12,14 @@ from clawer.utils import DownloadQueue, download_clawer_task
 
 
 def run():
-    download_queue = DownloadQueue()
     clawers = Clawer.objects.filter(status=Clawer.STATUS_ON).all()
     monitor = RealTimeMonitor()
     
     for clawer in clawers:
-        clawer_tasks = ClawerTask.objects.filter(clawer_id=clawer.id, status=ClawerTask.STATUS_LIVE).order_by("id")[:clawer.settings().dispatch]
+        clawer_settting = clawer.settings()
+        download_queue = DownloadQueue(clawer_settting.is_urgency())
+        clawer_tasks = ClawerTask.objects.filter(clawer_id=clawer.id, status=ClawerTask.STATUS_LIVE).order_by("id")[:clawer_settting.dispatch]
+        
         for item in clawer_tasks:
             if not download_queue.enqueue(download_clawer_task, [item]):
                 break
@@ -32,11 +34,15 @@ def run():
 
 
 def empty_all():
-    download_queue = DownloadQueue()
+    download_queue = DownloadQueue(False)
     ret = download_queue.queue.empty()
     print ret
-
-
+    
+    urgency_download_queue = DownloadQueue(True)
+    urgency_ret = urgency_download_queue.queue.empty()
+    print urgency_ret
+    
+    
 class Command(BaseCommand):
     args = ""
     help = "Dispatch clawer task"
