@@ -314,7 +314,7 @@ class DownloadClawerTask(object):
     def download(self):
         from clawer.models import ClawerTask, ClawerDownloadLog
     
-        if self.clawer_task.status != ClawerTask.STATUS_LIVE:
+        if not self.clawer_task.status in [ClawerTask.STATUS_LIVE, ClawerTask.STATUS_PROCESS]:
             return 0
         
         failed = False
