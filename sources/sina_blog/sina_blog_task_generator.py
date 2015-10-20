@@ -179,7 +179,7 @@ class Generator(object):
         for page in range(self.history.current_page+1, self.history.current_page+1+self.STEP):
             if self.history.total_page > 0 and page > self.history.total_page:
                 self.history.position += 1
-                if self.history.position > len(TOP_100_IDS):
+                if self.history.position >= len(TOP_100_IDS):
                     break
                 self.history.uid = TOP_100_IDS[self.history.position]
                 self.history.current_page = 0

@@ -48,7 +48,7 @@ class Ocr(object):
         subprocess.call([self.tesseract, self.image_path, out_chi, "-l", "chi_sim", "-psm", "7"])
         out_chi += ".txt"
         with open(out_chi, "r") as f:
-            self.chinese = f.read().strip()
+            self.chinese = unicode(f.read().strip(), "utf-8")
         os.remove(out_chi)
             
         out_eng = os.path.join(parent, "%s_eng" % (self.image_hash))
@@ -62,7 +62,7 @@ class Ocr(object):
         for c in self.english.strip():
             if c.isdigit() or c.isalpha():
                 new_english += c
-        self.english = new_english
+        self.english = unicode(new_english, "utf-8")
 
 
 class TrainCaptcha(object):
@@ -84,12 +84,16 @@ class TrainCaptcha(object):
         raw_im = cv2.imread(self.raw_path())
         gray_im = cv2.cvtColor(raw_im, cv2.COLOR_BGR2GRAY)
         ret, thresholding_im = cv2.threshold(gray_im, 0, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
-        #thresholding_im = cv2.adaptiveThreshold(gray_im, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 15, 5)
-        blur_im = cv2.medianBlur(thresholding_im, 5)
+        
+        blur_im = cv2.medianBlur(thresholding_im, 1)
+        
+        contours, hierarchy = cv2.findContours(blur_im, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        img = cv2.drawContours(blur_im, contours, -1, (0, 255, 0), 1)
         
         cv2.imwrite(self.gray_path(), blur_im)
         
         if DEBUG:
+            print "contours count is %d " % len(contours), hierarchy
             ims = [
                 [raw_im, "raw"],
                 [gray_im, "gray"],
@@ -109,8 +113,6 @@ class TrainCaptcha(object):
             plt.show()
             plt.close()   
              
-        
-        
     def human_label(self):
         result = None
         for i in range(len(self.labels)):
@@ -163,8 +165,9 @@ class OpencvTrain(object):
             eng, chi = captcha.machine_label()
             if eng == human_label:
                 success += 1
-                
-            print u"[sucess %d]: human %s, machine %s" % (success, human_label, unicode(eng, "utf-8"))
+                print u"[sucess %d %.2f%%]: human %s, machine %s" % (success, float(success*100)/total, human_label, eng)
+            else:
+                print u"failed: human %s, machine %s" % (human_label, eng)
         
         print "total %d, success %d, %.2f%%" % (total, success, float(success*100)/total)
                 
