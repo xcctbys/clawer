@@ -12,7 +12,7 @@ if [ ! -f ${PY} ]; then
 fi
 
 
-APPS="clawer"
+APPS="clawer captcha"
 
 if [ ! -z $* ]; then
     APPS="$*"

@@ -31,6 +31,7 @@
 
 <div id="operate">
 	<div id="analysis_failed_reset_btn">重设分析失败的任务</div>
+	<div id="process_reset_btn">重设进行中的任务</div>
 </div>
 
 <table id="grid" class="easyui-datagrid" style="width:100%;height:100%"
@@ -68,7 +69,7 @@
 				<input id="clawer" name="clawer" type="hidden" />
 				<ol class="text-muted">
 				    <li>支持<code>requests, Beautiful Soup, python标准库</code></li>
-				    <li>执行后输出json数据，每行json格式：{"uri":"uri地址", "download_engine":"requests|phantomjs|selenium"}。 <small>例子：{"url":"http://www.github.com"}</small></li>
+				    <li>执行后输出json数据，每行json格式：{"uri":"", "cookie":""}。 <small>例子：{"url":"http://www.github.com", "cookie":"kkk"}</small></li>
 				    <li>
 				        <ul>
 				            <li>requests: 支持使用requests库下载，不渲染页面js。</li>
@@ -165,7 +166,14 @@ function formatTaskGenerator(val) {
 		return "-";
 	}
 	
-	return "ID: " + val.id + " ("+val.add_datetime+")";
+	var result = val.id;
+	if(val.last_failed_datetime) {
+		result += " (最后失败时间："+val.last_failed_datetime+")";
+	} else {
+		result += " ("+val.add_datetime+")";
+	}
+	
+	return result;
 }
 
 function formatAnalysis(val) {
@@ -236,6 +244,11 @@ $(document).ready(function(){
 		    item.id,
 		    ", ",
 		    item.add_datetime,
+		    ", ",
+		    item.last_failed_reason,
+		    "<pre>",
+		    item.failed_reason,
+		    "</pre>",
 		    "<small class='text-muted'>",
 		    "    Crontab: ",
 		    item.cron,
@@ -420,6 +433,23 @@ $(document).ready(function(){
 		}
 		
 	     var url = "{% url clawer.apis.home.clawer_task_analysis_failed_reset %}";
+		 $.getJSON(url, {"clawer":row.id}, function(resp){
+		     if(resp.is_ok) {
+				 $.messager.alert("success", "影响数据: " + resp.ret);
+		     } else {
+		    	 $.messager.alert("warning", "failed: "+resp.reason);
+		     }
+		     
+		 });
+	});
+	
+	$("#process_reset_btn").bind("click", function(){
+		var row = $("#grid").datagrid("getSelected");
+		if(!row) {
+			return $.messager.alert('Warning', '请先选择一条数据');
+		}
+		
+	     var url = "{% url clawer.apis.home.clawer_task_process_reset %}";
 		 $.getJSON(url, {"clawer":row.id}, function(resp){
 		     if(resp.is_ok) {
 				 $.messager.alert("success", "影响数据: " + resp.ret);

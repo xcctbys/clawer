@@ -15,6 +15,7 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch.dispatcher import receiver
 from html5helper import redis_cluster
 import urlparse
+import traceback
 
         
 
@@ -233,6 +234,7 @@ class ClawerTaskGenerator(models.Model):
     cron = models.CharField(max_length=128)
     status = models.IntegerField(default=STATUS_ALPHA, choices=STATUS_CHOICES)
     failed_reason = models.CharField(max_length=4096, blank=True, null=True)
+    last_failed_datetime = models.DateTimeField(null=True, blank=True)
     add_datetime = models.DateTimeField(auto_now_add=True)
     
     class Meta:
@@ -247,6 +249,7 @@ class ClawerTaskGenerator(models.Model):
             "status": self.status,
             "status_name": self.status_name(),
             "failed_reason": self.failed_reason,
+            "last_failed_datetime": self.last_failed_datetime.strftime("%Y-%m-%d %H:%M:%S") if self.last_failed_datetime else None,
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }
         return result
@@ -269,16 +272,6 @@ class ClawerTaskGenerator(models.Model):
     def product_path(self):
         return os.path.join(self.code_dir(), "%d_product.py" % self.clawer_id)
     
-    @classmethod
-    def parse_line(cls, line):
-        """ line format is: {"uri":""}
-        Returns:
-            dict of json
-        """
-        logging.info("line is: %s", line)
-        js = json.loads(line)
-        return js
-    
     def write_code(self, path):
         with codecs.open(path, "w", "utf-8") as f:
             f.write(self.code)
@@ -292,6 +285,8 @@ class LoggerCategory(object):
     UPDATE_ANALYSIS = u"更新分析器"
     UPDATE_SETTING = u"更新爬虫参数"
     TASK_ANALYSIS_FAILED_RESET = u"重设分析失败的任务"
+    TASK_PROCESS_RESET = u"重设进行中的任务"
+    
     
     
 

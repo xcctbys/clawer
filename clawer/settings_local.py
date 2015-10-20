@@ -48,6 +48,9 @@ REDIS = "redis://localhost:6379//0"
 URL_REDIS = "redis://localhost:6379//1"
 MONITOR_REDIS = "redis://localhost:6379//1"
 
+#captcha
+CAPTCHA_STORE = "/Users/pengxt/Documents/captcha"
+
 
 RAVEN_CONFIG = {
     'dsn': 'http://c63b0d71513f4569b661e81bcfe8f903:c16131fe0f8d4195b0ea8be642aaa419@coredump.51zhi.com//4',

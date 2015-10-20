@@ -17,28 +17,22 @@ from html5helper.utils import wrapper_raven
 from clawer.models import Clawer, ClawerTask,\
     ClawerAnalysisLog, RealTimeMonitor, ClawerDownloadLog
 import socket
+import random
+from clawer.utils import SafeProcess
 
 
 EXIT_TIMER = None
+WORK_THREAD = None
 
 
 def run(runtime, thread_count):
-    timer = threading.Timer(runtime, force_exit)
-    timer.start()
-    EXIT_TIMER = timer
+    time.sleep(random.randint(1, 30))
+    EXIT_TIMER = threading.Timer(runtime, force_exit)
+    EXIT_TIMER.start()
     
-    end = datetime.datetime.now() + datetime.timedelta(seconds=runtime)
-    while True:
-        current = datetime.datetime.now()
-        if current >= end:
-            EXIT_TIMER.cancel()
-            sys.exit(1)
-            break
-        
-        if do_run() > 0:
-            time.sleep(1)
-        else:
-            time.sleep(15)
+    WORK_THREAD = threading.Thread(target=do_run)
+    WORK_THREAD.start()
+    WORK_THREAD.join(runtime)
         
     return True
 
@@ -88,8 +82,6 @@ def handle_not_found(clawer_task):
         print "not found clawer task %d 's download log" % clawer_task.id
         
     if not download_log:
-        clawer_task.status = ClawerTask.STATUS_LIVE
-        clawer_task.save()
         return
     
     if download_log.hostname == socket.gethostname():
@@ -105,13 +97,15 @@ def do_analysis(clawer_task, clawer):
     analysis_log = ClawerAnalysisLog(clawer=clawer, analysis=analysis, task=clawer_task, hostname=socket.gethostname()[:16])
     try:
         out_f = open(analysis_log.result_path(), "w+b")
-        p = subprocess.Popen([settings.PYTHON, path], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=out_f)
+        
+        safe_process = SafeProcess([settings.PYTHON, path], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=out_f)
+        p = safe_process.run(30)
         p.stdin.write(json.dumps({"path":clawer_task.store, "url":clawer_task.uri}))
         p.stdin.close()
         
         err = p.stderr.read()
         print "waiting analysis return, task %d" % clawer_task.id
-        retcode = p.wait()
+        retcode = safe_process.wait()
         if retcode == 0:
             print "out file point %d" % out_f.tell()
             out_f.seek(0)

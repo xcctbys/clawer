@@ -129,6 +129,7 @@ INSTALLED_APPS = (
     "south",
     #"djcelery",
     "html5helper",
+    "captcha",
     "clawer",
 )
 

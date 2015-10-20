@@ -194,8 +194,10 @@ class SafeProcess(object):
         self.process = None
         self.timer = None
         self.process_exit_status = None
+        self.timeout = 0
         
     def run(self, timeout=30):
+        self.timeout = timeout
         self.timer = threading.Timer(timeout, self.force_exit)
         self.timer.start()
         
@@ -212,6 +214,8 @@ class SafeProcess(object):
             return
         
         if self.timer.is_alive() and self.process:
+            if self.process.stdout:
+                self.process.stdout.write("timeout after %d seconds" % self.timeout)
             self.process.terminate()
             
         self.process_exit_status = 1

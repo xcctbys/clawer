@@ -2,6 +2,7 @@ from django.conf.urls import patterns, include, url
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
+from django.conf import settings
 
 
 
@@ -33,6 +34,7 @@ home_api_urls = patterns("clawer.apis.home",
     url(r"^clawer/task/$", "clawer_task"),
     url(r"^clawer/task/add/$", "clawer_task_add"),
     url(r"^clawer/task/analysis/failed/reset/$", "clawer_task_analysis_failed_reset"),
+    url(r"^clawer/task/process/reset/$", "clawer_task_process_reset"),
     
     url(r"^clawer/task/generator/update/$", "clawer_task_generator_update"),
     url(r"^clawer/task/generator/history/$", "clawer_task_generator_history"),
@@ -76,7 +78,6 @@ urlpatterns = patterns('clawer.views.home',
     url(r"^clawer/analysis/log/$", "clawer_analysis_log"),
     url(r"^clawer/setting/$", "clawer_setting"),
     
-    
     url(r"^logger/", include(logger_urls)),
     url(r"^monitor/", include(monitor_urls)),
     
@@ -84,6 +85,14 @@ urlpatterns = patterns('clawer.views.home',
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
+    url(r"^captcha/", include("captcha.urls")),
+
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
 )
+
+
+if settings.DEBUG:
+    urlpatterns += patterns("",
+        (r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT, 'show_indexes': True }),
+    )

@@ -7,6 +7,7 @@ from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from html5helper import autoregister
 
 from clawer import models
+from captcha import models as captcha_models
 
 
 class UserProfileInline(admin.StackedInline):
@@ -38,3 +39,4 @@ admin.site.register(DjangoUser, UserAdmin)
 
 
 autoregister.autoregister_admin(models)
+autoregister.autoregister_admin(captcha_models)

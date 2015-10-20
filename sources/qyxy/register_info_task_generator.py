@@ -16,9 +16,11 @@ from bs4 import BeautifulSoup
 import urlparse
 import pwd
 import traceback
+import hashlib
+import subprocess
 
 
-DEBUG = False
+DEBUG = True
 if DEBUG:
     level = logging.DEBUG
 else:
@@ -27,70 +29,65 @@ else:
 logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: %(message)s")
 
 
+
+SEARCH_ENTRY = [
+    "http://qyxy.baic.gov.cn/beijing"
+]
+
+
 Enterprises = [
-    {"name": u"安信证券股份有限公司北京分公司", "reg_id":"a1a1a1a021ced5020121e19fc345143e", "reg_no":"110102012003809", }
+    {"name": u"安信证券股份有限公司北京分公司"}
 ] 
 
 
-
 class Generator(object):
-    HOST = "http://qyxy.baic.gov.cn/"
     STEP = 100
     
     def __init__(self):
         self.uris = set()
-        self.history = History()
-        self.history_path = "/tmp/sina_blog"
         try:
             pwname = pwd.getpwnam("nginx")
             self.uid = pwname.pw_uid
             self.gid = pwname.pw_gid
         except:
             logging.error(traceback.format_exc(10))
-        self.load_history()
-            
-    def page_url(self, uid, page):
-        return urlparse.urljoin(self.HOST, "/s/articlelist_%d_0_%d.html" % (uid, page))
-        
-    def obtain_urls(self):
-        for page in range(self.history.current_page+1, self.history.current_page+1+self.STEP):
-            if self.history.total_page > 0 and page > self.history.total_page:
-                self.history.position += 1
-                if self.history.position > len(TOP_100_IDS):
-                    break
-                self.history.uid = TOP_100_IDS[self.history.position]
-                self.history.current_page = 0
-                self.history.total_page = 0
-                break
-                
-            self.do_obtain(self.history.uid, page)
-        
-        self.history.current_page = page
-        self.save_history()
-        
-    def do_obtain(self, uid, page):
-        r = requests.get(self.page_url(uid, page), headers={"user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"})
-        #logging.debug(u"uid %s, page %s , text %s", uid, page, r.text)
-        soup = BeautifulSoup(r.text, "html5lib")
-        
-        if self.history.total_page <= 0:
-            self.history.total_page = self.parse_total_page(soup)
-        
-        div = soup.find("div", {"class":"articleList"})
-        spans = div.find_all("span", {"class":"atc_title"})
-        for span in spans:
-            self.uris.add(span.a["href"])
-        
-        return True
-        
+
     
-    def parse_total_page(self, soup):
-        ul = soup.find("ul", {"class":"SG_pages"})
-        logging.debug(u"ul is %s", ul)
-        span = ul.find("span")
-        logging.debug(u"span is %s", span)
-        total = int(filter(str.isdigit, span.get_text().encode("utf-8")))
-        return total
+
+class Ocr(object):
+    def __init__(self, url):
+        self.url = url
+        self.tesseract = "/usr/local/bin/tesseract"
+        
+    def to_text(self):
+        r = requests.get(self.url)
+        if r.status_code != 200:
+            logging.warn("request %s failed, status code %d", self.url, r.status_code)
+            return None
+        image_id = hashlib.md5(self.url).hexdigest()[-6:]
+        parent = "/Users/pengxt/Documents/ocr"
+        if os.path.exists(parent) is False:
+            os.makedirs(parent, 0775)
+        
+        path = os.path.join(parent, image_id)
+        with open(path, "w") as f:
+            f.write(r.content)
+            
+        out_chi = os.path.join(parent, "%s_chi" % image_id)
+        subprocess.call([self.tesseract, path, out_chi, "-l", "chi_sim", "-psm", "7"])
+        
+        out_eng = os.path.join(parent, "%s_eng" % image_id)
+        subprocess.call([self.tesseract, path, out_eng, "-l", "eng", "-psm", "7"])
+        
+        chi = ""
+        with open(out_chi+".txt", "r") as f:
+            chi = f.read()
+            
+        eng = ""
+        with open(out_eng+".txt", "r") as f:
+            eng = f.read()
+        
+        return (chi, eng)
         
          
 
@@ -100,15 +97,11 @@ class GeneratorTest(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
         
-    def test_obtain_urls(self):
-        self.generator = Generator()
-        self.generator.obtain_urls()
-        
-        logging.debug("urls count is %d", len(self.generator.uris))
-        
-        self.assertGreater(len(self.generator.uris), 0)
-        self.assertGreater(self.generator.history.position, 0)
-        
+    def test_ocr(self):
+        ocr = Ocr("http://qyxy.baic.gov.cn/CheckCodeCaptcha?currentTimeMillis=1444875766745&num=87786")
+        (chi, eng) = ocr.to_text()
+        self.assertIsNotNone(chi)
+        self.assertIsNotNone(eng)
         
 
 if __name__ == "__main__":
@@ -116,6 +109,6 @@ if __name__ == "__main__":
         unittest.main()
         
     generator = Generator()
-    generator.obtain_urls()
+    #generator.obtain_urls()
     for uri in generator.uris:
         print json.dumps({"uri":uri})

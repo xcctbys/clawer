@@ -1,8 +1,9 @@
 # coding=utf-8
 
 import logging
-import os
 import subprocess
+import traceback
+import os
 import datetime
 
 from django.core.management.base import BaseCommand
@@ -12,7 +13,8 @@ from html5helper.utils import wrapper_raven
 from clawer.models import ClawerTaskGenerator, Clawer, ClawerTask,\
     RealTimeMonitor
 from clawer.utils import UrlCache, SafeProcess
-import traceback
+import json
+
 
 
 def run(task_generator_id):
@@ -25,17 +27,29 @@ def run(task_generator_id):
     path = task_generator.product_path()
     task_generator.write_code(path)
     
-    monitor = RealTimeMonitor()
-    safe_process = SafeProcess([settings.PYTHON, path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out_path = "/tmp/task_generator_%d" % task_generator_id
+    out_f = open(out_path, "w")
     
-    p = safe_process.run(3600)
-    for line in p.stdout:
-        js = ClawerTaskGenerator.parse_line(line)
-        if not js:
-            logging.warning("unknown line: %s" % line)
-            continue
-        
+    monitor = RealTimeMonitor()
+    safe_process = SafeProcess([settings.PYTHON, path], stdout=out_f, stderr=subprocess.PIPE)
+    
+    p = safe_process.run(1800)
+    err = p.stderr.read()
+    status = safe_process.wait()
+    if status != 0:
+        logging.error("run task generator %d failed: %s" % (task_generator.id, err))
+        out_f.close()
+        task_generator.failed_reason = err
+        task_generator.last_failed_datetime = datetime.datetime.now()
+        task_generator.save()
+        return False
+    print "out file size %d" % out_f.tell()
+    out_f.close()
+    
+    out_f = open(out_path, "r")
+    for line in out_f:
         try:
+            js = json.loads(line)
             url_cache = UrlCache(js['uri'])
             if url_cache.has_url():
                 raise Exception("%s has exists", js['uri'])
@@ -47,14 +61,12 @@ def run(task_generator_id):
             monitor.trace_task_status(clawer_task)
         except:
             logging.error("add %s failed: %s", js['uri'], traceback.format_exc(10))
-        
-    err = p.stderr.read()
+            task_generator.failed_reason = traceback.format_exc(10)
+            task_generator.last_failed_datetime = datetime.datetime.now()
+            task_generator.save()
     
-    status = safe_process.wait()
-    if status != 0:
-        logging.error("run task generator %d failed: %s" % (task_generator.id, err))
-        return False
-    
+    out_f.close()
+    os.remove(out_path)
     return True
  
                 
