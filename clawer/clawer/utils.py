@@ -97,6 +97,9 @@ class Download(object):
     def add_proxies(self, proxies):
         self.proxies = proxies
         
+    def add_headers(self, headers):
+        self.headers.update(headers)
+        
     def download(self):
         if self.engine == self.ENGINE_REQUESTS:
             self.download_with_requests()
@@ -243,106 +246,138 @@ class UrlCache(object):
 
 class DownloadQueue(object):
     QUEUE_NAME = "task_downloader"
+    URGENCY_QUEUE_NAME = "urgency_task_downloader"
     MAX_COUNT = 10000
     
-    def __init__(self, redis_url=settings.REDIS):
+    def __init__(self, is_urgency=False, redis_url=settings.REDIS):
         self.connection = redis.Redis.from_url(redis_url)
         self.queue = rq.Queue(self.QUEUE_NAME, connection=self.connection)
+        self.urgency_queue = rq.Queue(self.URGENCY_QUEUE_NAME, connection=self.connection)
+        self.is_urgency = is_urgency
         self.jobs = []
         
     def enqueue(self, func, *args, **kwargs):
-        if self.queue.count > self.MAX_COUNT:
-            return None
-        job = self.queue.enqueue_call(func, *args, **kwargs)
+        job = None
+        if self.is_urgency:
+            if self.urgency_queue.count > self.MAX_COUNT:
+                return None
+            job = self.urgency_queue.enqueue_call(func, *args, **kwargs)
+        else:
+            if self.queue.count > self.MAX_COUNT:
+                return None
+            job = self.queue.enqueue_call(func, *args, **kwargs)
+        
         self.jobs.append(job)
         return job.id
     
 
 class DownloadWorker(object):
-    QUEUE_NAME = "task_downloader"
+    QUEUE_NAME = DownloadQueue.QUEUE_NAME
+    URGENCY_QUEUE_NAME = DownloadQueue.URGENCY_QUEUE_NAME
     
     def __init__(self, redis_url=settings.REDIS):
         self.connection = redis.Redis.from_url(redis_url)
+        
         self.queue = rq.Queue(self.QUEUE_NAME, connection=self.connection)
         self.worker = rq.Worker(self.queue)
         
+        self.urgency_queue = rq.Queue(self.URGENCY_QUEUE_NAME, connection=self.connection)
+        self.urgency_worker = rq.Worker(self.urgency_queue)
+        
     def run(self):
         self.worker.work()
-    
+        
+    def urgency_run(self):
+        self.urgency_worker.work()
+        
 
+class DownloadClawerTask(object):
+    
+    def __init__(self, clawer_task):
+        from clawer.models import ClawerDownloadLog, RealTimeMonitor
+        
+        self.clawer_task = clawer_task
+        self.download_log = ClawerDownloadLog(clawer=clawer_task.clawer, task=clawer_task, hostname=socket.gethostname())
+        self.monitor = RealTimeMonitor()
+        self.headers = {"user-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:40.0) Gecko/20100101 Firefox/40.0"}
+        
+        self.clawer_setting = self.clawer_task.clawer.cached_setting()
+        
+        self.downloader = Download(self.clawer_task.uri, engine=self.clawer_setting.download_engine)
+        if self.clawer_setting.proxy:
+            self.downloader.add_proxies(self.clawer_setting.proxy.strip().split("\n"))
+        if self.clawer_task.cookie:
+            self.headers["cookie"] = self.clawer_task.cookie
+            self.downloader.add_cookie(self.clawer_task.cookie)
+        self.downloader.add_headers(self.headers)
+        
+    def download(self):
+        from clawer.models import ClawerTask, ClawerDownloadLog
+    
+        if self.clawer_task.status != ClawerTask.STATUS_LIVE:
+            return 0
+        
+        failed = False
+        
+        self.downloader.download()
+        
+        if self.downloader.failed:
+            self.download_failed()
+            return 0
+            
+        #save
+        try:
+            path = self.clawer_task.store_path()
+            if os.path.exists(os.path.dirname(path)) is False:
+                os.makedirs(os.path.dirname(path), 0775)
+                
+            with open(path, "w") as f:
+                content = self.downloader.content
+                if isinstance(content, types.UnicodeType):
+                    content = content.encode("utf-8")
+                f.write(content)
+            
+            self.clawer_task.store = path
+        except:
+            failed = True
+            self.download_log.failed_reason = traceback.format_exc(10)
+            
+        if failed:
+            self.download_failed()
+            return 0
+        
+        #success handle
+        self.clawer_task.status = ClawerTask.STATUS_SUCCESS
+        self.clawer_task.save()
+        
+        if self.downloader.response_headers.get("content-length"):
+            self.download_log.content_bytes = self.downloader.response_headers["Content-Length"]
+        else:
+            self.download_log.content_bytes = len(self.downloader.content)
+        self.download_log.status = ClawerDownloadLog.STATUS_SUCCESS
+        self.download_log.content_encoding = self.downloader.content_encoding
+        self.download_log.spend_time = int(self.downloader.spend_time*1000)
+        self.download_log.save()
+        
+        self.monitor.trace_task_status(self.clawer_task)
+        return self.clawer_task.id
+        
+    def download_failed(self):
+        from clawer.models import ClawerTask, ClawerDownloadLog
+        
+        self.download_log.status = ClawerDownloadLog.STATUS_FAIL
+        if self.downloader.failed_exception:
+            self.download_log.failed_reason = self.downloader.failed_exception
+        self.download_log.spend_time = int(self.downloader.spend_time*1000)
+        self.download_log.save()
+        
+        self.clawer_task.status = ClawerTask.STATUS_FAIL
+        self.clawer_task.save()
+        
+        self.monitor.trace_task_status(self.clawer_task)
+    
 
 def download_clawer_task(clawer_task):
-    from clawer.models import ClawerTask, ClawerDownloadLog, RealTimeMonitor
+    downloader = DownloadClawerTask(clawer_task)
+    return downloader.download()
     
-    if clawer_task.status != ClawerTask.STATUS_LIVE:
-        return 0
-    
-    download_log = ClawerDownloadLog(clawer=clawer_task.clawer, task=clawer_task, hostname=socket.gethostname())
-    failed = False
-    #do download now
-    headers = {"user-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:40.0) Gecko/20100101 Firefox/40.0"}
-    if clawer_task.cookie:
-        headers["cookie"] = clawer_task.cookie
-    
-    setting = clawer_task.clawer.settings()
-    downloader = Download(clawer_task.uri, engine=setting.download_engine)
-    #check proxy
-    if setting.proxy:
-        downloader.add_proxies(setting.proxy.strip().split("\n"))
-    downloader.download()
-    
-    #trace it
-    monitor = RealTimeMonitor()
-    
-    if downloader.failed:
-        download_log.status = ClawerDownloadLog.STATUS_FAIL
-        download_log.failed_reason = downloader.failed_exception
-        download_log.spend_time = int(downloader.spend_time*1000)
-        download_log.save()
-        clawer_task.status = ClawerTask.STATUS_FAIL
-        clawer_task.save()
-        monitor.trace_task_status(clawer_task)
-        return
-        
-    #save
-    try:
-        path = clawer_task.store_path()
-        if os.path.exists(os.path.dirname(path)) is False:
-            os.makedirs(os.path.dirname(path), 0775)
-            
-        with open(path, "w") as f:
-            content = downloader.content
-            if isinstance(content, types.UnicodeType):
-                content = content.encode("utf-8")
-            f.write(content)
-        
-        clawer_task.store = path
-    except:
-        failed = True
-        download_log.failed_reason = traceback.format_exc(10)
-        
-    if failed:
-        clawer_task.status = ClawerTask.STATUS_FAIL
-        clawer_task.save()
-        download_log.status = ClawerDownloadLog.STATUS_FAIL
-        download_log.spend_time = int(downloader.spend_time*1000)
-        download_log.save()
-        monitor.trace_task_status(clawer_task)
-        return
-    
-    #update db
-    clawer_task.status = ClawerTask.STATUS_SUCCESS
-    clawer_task.save()
-    
-    if downloader.response_headers.get("content-length"):
-        download_log.content_bytes = downloader.response_headers["Content-Length"]
-    else:
-        download_log.content_bytes = len(downloader.content)
-    download_log.status = ClawerDownloadLog.STATUS_SUCCESS
-    download_log.content_encoding = downloader.content_encoding
-    download_log.spend_time = int(downloader.spend_time*1000)
-    download_log.save()
-    
-    monitor.trace_task_status(clawer_task)
-    
-    return clawer_task.id

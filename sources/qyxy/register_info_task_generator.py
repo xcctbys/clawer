@@ -29,14 +29,18 @@ else:
 logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: %(message)s")
 
 
+
+SEARCH_ENTRY = [
+    "http://qyxy.baic.gov.cn/beijing"
+]
+
+
 Enterprises = [
     {"name": u"安信证券股份有限公司北京分公司"}
 ] 
 
 
-
 class Generator(object):
-    HOST = "http://qyxy.baic.gov.cn/"
     STEP = 100
     
     def __init__(self):

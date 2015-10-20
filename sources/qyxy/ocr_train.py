@@ -1,4 +1,6 @@
 #encoding=utf-8
+""" required: opencv and tesseract
+"""
 
 import urllib
 import json
@@ -15,6 +17,9 @@ import pwd
 import traceback
 import hashlib
 import subprocess
+import cv2
+import numpy as np
+from matplotlib import pyplot as plt
 
 
 
@@ -30,58 +35,141 @@ logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: 
 
 
 class Ocr(object):
-    def __init__(self, url):
-        self.url = url
+    def __init__(self, image_path, image_hash):
         self.tesseract = "/usr/local/bin/tesseract"
+        self.chinese = None
+        self.english = None
+        self.image_path = image_path
+        self.image_hash = image_hash
         
     def to_text(self):
-        r = requests.get(self.url)
-        if r.status_code != 200:
-            logging.warn("request %s failed, status code %d", self.url, r.status_code)
-            return None
-        image_id = hashlib.md5(self.url).hexdigest()[-6:]
-        parent = "/Users/pengxt/Documents/ocr"
-        if os.path.exists(parent) is False:
-            os.makedirs(parent, 0775)
-        
-        path = os.path.join(parent, image_id)
-        with open(path, "w") as f:
-            f.write(r.content)
-        
-        for page in range(0, 11): 
-            out_chi = os.path.join(parent, "%s_chi_%d" % (image_id, page))
-            subprocess.call([self.tesseract, path, out_chi, "-l", "chi_sim", "-psm", str(page)])
+        parent = os.path.dirname(__file__)
+        out_chi = os.path.join(parent, "%s_chi" % (self.image_hash))
+        subprocess.call([self.tesseract, self.image_path, out_chi, "-l", "chi_sim", "-psm", "7"])
+        out_chi += ".txt"
+        with open(out_chi, "r") as f:
+            self.chinese = unicode(f.read().strip(), "utf-8")
+        os.remove(out_chi)
             
-            out_eng = os.path.join(parent, "%s_eng_%d" % (image_id, page))
-            subprocess.call([self.tesseract, path, out_eng, "-l", "eng", "-psm", str(page)])
-            
+        out_eng = os.path.join(parent, "%s_eng" % (self.image_hash))
+        subprocess.call([self.tesseract, self.image_path, out_eng, "-l", "eng", "-psm", "8"])
+        out_eng += ".txt"
+        with open(out_eng, "r") as f:
+            self.english = f.read()
+        os.remove(out_eng)
+        
+        new_english = ""
+        for c in self.english.strip():
+            if c.isdigit() or c.isalpha():
+                new_english += c
+        self.english = unicode(new_english, "utf-8")
 
-class ImageLib(object):
-    def __init__(self):
-        self.url = "http://qyxy.baic.gov.cn/CheckCodeCaptcha?currentTimeMillis=1444875766745&num=87786"
-        self.count = 10000
-        self.save_dir = "/Users/pengxt/Documents/ocr/train_data"
+
+class TrainCaptcha(object):
+    def __init__(self, d):
+        self.save_dir = "train"
+        self.image_url = d["image_url"]
+        self.image_hash = d["image_hash"]
+        self.labels = d["labels"]
         if os.path.exists(self.save_dir) is False:
             os.makedirs(self.save_dir, 0775)
+            
+    def raw_path(self):
+        return os.path.join(self.save_dir, self.image_hash)
+    
+    def gray_path(self):
+        return os.path.join(self.save_dir, self.image_hash+"_gray.jpeg")
         
-    def download(self):
-        for i in range(0, self.count):
-            r = requests.get(self.url)
-            if r.status_code != 200:
-                logging.warn("request %s failed, status code %d", self.url, r.status_code)
-                continue
-            
-            image_id = hashlib.md5(r.content).hexdigest()[-6:]
-            path = os.path.join(self.save_dir, image_id)
-            if os.path.exists(path):
-                logging.warn("%d: %s exists", i, image_id)
-                continue
-            
-            with open(path, "w") as f:
-                f.write(r.content)
-            
-            logging.error("Download %d, image id %s", i, image_id)
+    def filter(self):
+        raw_im = cv2.imread(self.raw_path())
+        gray_im = cv2.cvtColor(raw_im, cv2.COLOR_BGR2GRAY)
+        ret, thresholding_im = cv2.threshold(gray_im, 0, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
         
+        blur_im = cv2.medianBlur(thresholding_im, 1)
+        
+        contours, hierarchy = cv2.findContours(blur_im, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        img = cv2.drawContours(blur_im, contours, -1, (0, 255, 0), 1)
+        
+        cv2.imwrite(self.gray_path(), blur_im)
+        
+        if DEBUG:
+            print "contours count is %d " % len(contours), hierarchy
+            ims = [
+                [raw_im, "raw"],
+                [gray_im, "gray"],
+                
+                [thresholding_im, "thresholding"],
+                [blur_im, "blur"],
+            ]
+            
+            for i in range(len(ims)):
+                [im, title] = ims[i]
+                plt.subplot(4, 2, i+1)
+                plt.imshow(im, "gray")
+                plt.xticks([])
+                plt.yticks([])
+                plt.title("%s" % (title))
+            
+            plt.show()
+            plt.close()   
+             
+    def human_label(self):
+        result = None
+        for i in range(len(self.labels)):
+            guess = self.labels[i]
+            for j in range(len(self.labels)):
+                if i == j:
+                    continue
+                if self.labels[j] == guess:
+                    result = guess
+                    break
+        
+        if result:
+            result = result.upper()
+        
+        return result
+    
+    def machine_label(self):
+        self.filter()
+        ocr = Ocr(self.gray_path(), self.image_hash)
+        ocr.to_text()
+        return ocr.english.strip().upper(), ocr.chinese.strip().upper()
+                
+
+class OpencvTrain(object):
+    def __init__(self):
+        self.api_url = "http://clawer.princetechs.com/captcha/all/labeled/?category=1"
+        self.captchas = []
+    
+    def load_data(self):
+        r = requests.get(self.api_url)
+        if r.status_code != 200:
+            logging.warn("failed to load api url, status code %d", r.status_code)
+            return
+        
+        for item in r.json()["captchas"]:
+            captcha = TrainCaptcha(item)
+            self.captchas.append(captcha)
+            save_path = captcha.raw_path()
+            if os.path.exists(save_path):
+                continue
+            image_r = requests.get(captcha.image_url)
+            with open(save_path, "w") as f:
+                f.write(image_r.content)
+                
+    def train(self):
+        success = 0
+        total = len(self.captchas)
+        for captcha in self.captchas:
+            human_label = captcha.human_label()
+            eng, chi = captcha.machine_label()
+            if eng == human_label:
+                success += 1
+                print u"[sucess %d %.2f%%]: human %s, machine %s" % (success, float(success*100)/total, human_label, eng)
+            else:
+                print u"failed: human %s, machine %s" % (human_label, eng)
+        
+        print "total %d, success %d, %.2f%%" % (total, success, float(success*100)/total)
                 
     
 
@@ -89,10 +177,23 @@ class OcrTrainTest(unittest.TestCase):
     
     def setUp(self):
         unittest.TestCase.setUp(self)
-        
+    
+    """
     def test_ocr(self):
         ocr = Ocr("http://qyxy.baic.gov.cn/CheckCodeCaptcha?currentTimeMillis=1444875766745&num=87786")
         ocr.to_text()
+    """
+     
+        
+class TestTrainCaptcha(unittest.TestCase):
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        self.opencv_train = OpencvTrain()
+        self.opencv_train.load_data()
+        
+    def test_filter(self):
+        train_captcha = self.opencv_train.captchas[0]
+        train_captcha.filter()
         
     
 
@@ -100,6 +201,7 @@ if __name__ == "__main__":
     if DEBUG:
         unittest.main()
         
-    image_lib = ImageLib()
-    image_lib.download()
+    opencv_train = OpencvTrain()
+    opencv_train.load_data()
+    opencv_train.train()
         
