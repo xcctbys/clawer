@@ -301,7 +301,7 @@ class DownloadClawerTask(object):
         self.monitor = RealTimeMonitor()
         self.headers = {"user-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:40.0) Gecko/20100101 Firefox/40.0"}
         
-        self.clawer_setting = self.clawer_task.clawer.setting()
+        self.clawer_setting = self.clawer_task.clawer.cached_setting()
         
         self.downloader = Download(self.clawer_task.uri, engine=self.clawer_setting.download_engine)
         if self.clawer_setting.proxy:

@@ -5,7 +5,6 @@ import traceback
 import os
 import sys
 import subprocess
-import datetime
 import time
 from optparse import make_option
 import threading
@@ -54,7 +53,8 @@ def do_run():
         analysis.write_code(path)
         
         job_count = 0
-        clawer_tasks = ClawerTask.objects.filter(clawer_id=clawer.id, status=ClawerTask.STATUS_SUCCESS).order_by("id")[:clawer.settings().analysis]
+        clawer_setting = clawer.cached_settings()
+        clawer_tasks = ClawerTask.objects.filter(clawer_id=clawer.id, status=ClawerTask.STATUS_SUCCESS).order_by("id")[:clawer_setting.analysis]
         for item in clawer_tasks:
             try:
                 if os.path.exists(item.store) is False:

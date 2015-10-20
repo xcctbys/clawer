@@ -16,7 +16,7 @@ def run():
     monitor = RealTimeMonitor()
     
     for clawer in clawers:
-        clawer_settting = clawer.settings()
+        clawer_settting = clawer.cached_settings()
         download_queue = DownloadQueue(clawer_settting.is_urgency())
         clawer_tasks = ClawerTask.objects.filter(clawer_id=clawer.id, status=ClawerTask.STATUS_LIVE).order_by("id")[:clawer_settting.dispatch]
         

@@ -5,17 +5,19 @@ import logging
 import datetime
 import codecs
 import redis
+import urlparse
+import traceback
+import json
 
 from django.contrib.auth.models import User as DjangoUser
 from django.db import models
 from django.conf import settings
-import json
-from clawer.utils import Download, UrlCache
 from django.db.models.signals import post_save, pre_save
 from django.dispatch.dispatcher import receiver
+from django.core.cache import cache
+
+from clawer.utils import Download, UrlCache
 from html5helper import redis_cluster
-import urlparse
-import traceback
 
         
 
@@ -80,6 +82,18 @@ class Clawer(models.Model):
     
     def settings(self):
         return ClawerSetting.objects.get_or_create(clawer=self)[0]
+    
+    def cached_settings(self):
+        key = "%d_cached_setting" % self.id
+        cache_time = 3600
+        result = cache.get(key)
+        if result:
+            return result
+        
+        result = self.settings()
+        if result:
+            cache.set(key, result, cache_time)
+        return result
     
     def result_url(self):
         return urlparse.urljoin(settings.CLAWER_RESULT_URL, "%d" % self.id)
@@ -374,7 +388,7 @@ class ClawerSetting(models.Model):
     
     clawer = models.ForeignKey(Clawer)
     dispatch = models.IntegerField(u"每次分发下载任务数", default=100)
-    analysis = models.IntegerField(u"每次分析任务数", default=20)
+    analysis = models.IntegerField(u"每次分析任务数", default=200)
     proxy = models.TextField(blank=True, null=True)
     download_engine = models.CharField(max_length=16, default=Download.ENGINE_REQUESTS, choices=Download.ENGINE_CHOICES)
     prior = models.IntegerField(default=PRIOR_NORMAL)
