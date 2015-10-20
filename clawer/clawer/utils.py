@@ -379,5 +379,6 @@ class DownloadClawerTask(object):
 
 def download_clawer_task(clawer_task):
     downloader = DownloadClawerTask(clawer_task)
-    return downloader.download()
+    ret = downloader.download()
+    return ret
     
