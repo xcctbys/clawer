@@ -90,9 +90,16 @@ class Download(object):
         self.headers = {}
         self.response_headers = {}
         self.proxies = []
+        self.cookies = {}
         
     def add_cookie(self, cookie):
         self.headers["Cookie"] = cookie
+        nvs = cookie.split(";")
+        for nv in nvs:
+            tmp = nv.split("=")
+            if len(tmp) != 2:
+                continue
+            self.cookies[tmp[0]] = tmp[1] 
         
     def add_proxies(self, proxies):
         self.proxies = proxies
@@ -166,6 +173,8 @@ class Download(object):
         driver.set_page_load_timeout(30)
         
         try:
+            if self.cookies:
+                driver.add_cookie(self.cookies)
             driver.get(self.url)
             self.content = driver.execute_script("return document.documentElement.outerHTML;")
         except:

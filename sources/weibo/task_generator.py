@@ -216,7 +216,11 @@ class Generator(object):
             
     def obtain_urls(self):
         now = datetime.datetime.now()
-        while self.history.current_date.date() < now.date():
+        end = self.history.current_date + datetime.timedelta(10)
+        if end > now:
+            end = now
+            
+        while self.history.current_date.date() < end.date():
             for keyword in self.history.KEYWORDS:
                 logging.debug("keyword is %s", keyword)
                 for page in range(1, self.STEP+1):
