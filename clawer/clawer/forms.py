@@ -28,6 +28,7 @@ class UpdateClawerSetting(forms.Form):
     dispatch = forms.IntegerField()
     analysis = forms.IntegerField()
     proxy = forms.CharField(max_length=4096, required=False)
+    cookie = forms.CharField(max_length=4096, required=False)
     download_engine = forms.ChoiceField(choices=Download.ENGINE_CHOICES)
     status = forms.ChoiceField(choices=Clawer.STATUS_CHOICES)
     prior = forms.ChoiceField(choices=ClawerSetting.PRIOR_CHOICES)

@@ -37,6 +37,7 @@
             <th data-options="field:'sproxy'," formatter="formatSettingProxy">Proxy</th>
             <th data-options="field:'sprior'," formatter="formatSettingPrior">优先级</th>
             <th data-options="field:'engine'," formatter="formatSettingDownloadEngine">下载引擎</th>
+            <th data-options="field:'cookie'," formatter="formatSettingCookie">Cookie</th>
             <th data-options="field:'crontab'," formatter="formatCrontab">任务生成器Cron</th>
             <th data-options="field:'s2'," formatter="formatSettingLastUpdateDatetime">最后修改时间</th>
         </tr>
@@ -64,6 +65,10 @@
             <tr>
                 <td>Proxy</td>
                 <td><input name="proxy" class="easyui-textbox" style="width: 80%; height: 100px;" placeholder="多个proxy，请换行" multiline="true" /></td>
+            </tr>
+            <tr>
+                <td>Cookie</td>
+                <td><input name="cookie" class="easyui-textbox" style="width: 80%; height: 100px;" placeholder="Cookie" multiline="true" /></td>
             </tr>
             <tr>
                 <td>下载引擎</td>
@@ -123,6 +128,14 @@ function formatSettingPrior(val, row) {
 	}
 	
 	return row.setting.prior;
+}
+
+function formatSettingCookie(val, row) {
+	if(!row.setting) {
+		return "-";
+	}
+	
+	return row.setting.cookie;
 }
 
 function formatSettingAnalysis(val, row) {
@@ -190,6 +203,7 @@ $(document).ready(function(){
 		    dispatch: row.setting.dispatch,
 		    analysis: row.setting.analysis,
 		    proxy: row.setting.proxy,
+		    cookie: row.setting.cookie
 		});
 		$("#id_download_engine").combobox("setValue", row.setting.download_engine);
 		$("#id_status").combobox("setValue", row.status);

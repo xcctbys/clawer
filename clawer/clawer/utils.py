@@ -304,11 +304,17 @@ class DownloadClawerTask(object):
         self.clawer_setting = self.clawer_task.clawer.cached_settings()
         
         self.downloader = Download(self.clawer_task.uri, engine=self.clawer_setting.download_engine)
+        
         if self.clawer_setting.proxy:
             self.downloader.add_proxies(self.clawer_setting.proxy.strip().split("\n"))
+        
         if self.clawer_task.cookie:
             self.headers["cookie"] = self.clawer_task.cookie
             self.downloader.add_cookie(self.clawer_task.cookie)
+        if self.clawer_setting.cookie:
+            self.headers["cookie"] = self.clawer_task.cookie
+            self.downloader.add_cookie(self.clawer_task.cookie)
+            
         self.downloader.add_headers(self.headers)
         
     def download(self):

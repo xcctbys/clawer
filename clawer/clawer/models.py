@@ -390,6 +390,7 @@ class ClawerSetting(models.Model):
     dispatch = models.IntegerField(u"每次分发下载任务数", default=100)
     analysis = models.IntegerField(u"每次分析任务数", default=200)
     proxy = models.TextField(blank=True, null=True)
+    cookie = models.TextField(blank=True, null=True)
     download_engine = models.CharField(max_length=16, default=Download.ENGINE_REQUESTS, choices=Download.ENGINE_CHOICES)
     prior = models.IntegerField(default=PRIOR_NORMAL)
     last_update_datetime = models.DateTimeField(auto_now_add=True, auto_now=True)
@@ -409,6 +410,7 @@ class ClawerSetting(models.Model):
             "proxy": self.proxy or "",
             "download_engine": self.download_engine,
             "prior": self.prior,
+            "cookie": self.cookie,
             "last_update_datetime": self.last_update_datetime.strftime("%Y-%m-%d %H:%M:%S"),
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }
