@@ -9,7 +9,7 @@ import datetime
 from html5helper.decorator import render_json
 from clawer.models import Clawer, ClawerTask, ClawerTaskGenerator,\
     ClawerAnalysis, ClawerAnalysisLog, Logger, LoggerCategory, ClawerDownloadLog
-from clawer.utils import check_auth_for_api, EasyUIPager, Download
+from clawer.utils import check_auth_for_api, EasyUIPager, BackgroundQueue
 from clawer.forms import UpdateClawerTaskGenerator, UpdateClawerAnalysis,\
     AddClawerTask, UpdateClawerSetting
 from html5helper.utils import get_request_ip
@@ -73,25 +73,32 @@ def clawer_task(request):
 @render_json
 @check_auth_for_api
 def clawer_task_analysis_failed_reset(request):
+    from clawer import utils
+    
     clawer_id = request.GET.get("clawer")
     
-    ret = ClawerTask.objects.filter(clawer_id=clawer_id, status=ClawerTask.STATUS_ANALYSIS_FAIL).update(status=ClawerTask.STATUS_SUCCESS)
+    background_queue = BackgroundQueue()
+    background_queue.enqueue(utils.clawer_task_analysis_failed_reset, clawer_id)
+    
     #add log
-    Logger.objects.create(user=request.user, category=LoggerCategory.TASK_ANALYSIS_FAILED_RESET, title="%d affected" % ret, 
+    Logger.objects.create(user=request.user, category=LoggerCategory.TASK_ANALYSIS_FAILED_RESET, title="%d affected" % -1, 
                           content=json.dumps(request.GET), from_ip=get_request_ip(request))
-    return {"is_ok":True, "ret":ret}
+    return {"is_ok":True, "ret":-1}
 
 
 @render_json
 @check_auth_for_api
 def clawer_task_process_reset(request):
+    from clawer import utils
+    
     clawer_id = request.GET.get("clawer")
     
-    ret = ClawerTask.objects.filter(clawer_id=clawer_id, status=ClawerTask.STATUS_PROCESS).update(status=ClawerTask.STATUS_LIVE)
+    background_queue = BackgroundQueue()
+    background_queue.enqueue(utils.clawer_task_process_reset, clawer_id)
     #add log
-    Logger.objects.create(user=request.user, category=LoggerCategory.TASK_PROCESS_RESET, title="%d affected" % ret, 
+    Logger.objects.create(user=request.user, category=LoggerCategory.TASK_PROCESS_RESET, title="%d affected" % -1, 
                           content=json.dumps(request.GET), from_ip=get_request_ip(request))
-    return {"is_ok":True, "ret":ret}
+    return {"is_ok":True, "ret":-1}
 
 
 @render_json

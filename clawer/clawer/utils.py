@@ -251,6 +251,19 @@ class UrlCache(object):
     def flush(self):
         self.connection.flushall()
         
+        
+class BackgroundQueue(object):
+    QUEUE_NAME = "background"
+    
+    def __init__(self, is_urgency=False, redis_url=settings.REDIS):
+        self.connection = redis.Redis.from_url(redis_url)
+        self.queue = rq.Queue(self.QUEUE_NAME, connection=self.connection)
+        self.jobs = []
+        
+    def enqueue(self, func, *args, **kwargs):
+        job = self.queue.enqueue_call(func, *args, **kwargs)
+        self.jobs.append(job)
+        return job.id
     
 
 class DownloadQueue(object):
@@ -391,9 +404,23 @@ class DownloadClawerTask(object):
         
         self.monitor.trace_task_status(self.clawer_task)
     
+    
 
+#rqworker function
 def download_clawer_task(clawer_task):
     downloader = DownloadClawerTask(clawer_task)
     ret = downloader.download()
     return ret
+
+
+def clawer_task_analysis_failed_reset(clawer_id):
+    from clawer.models import ClawerTask
     
+    ret = ClawerTask.objects.filter(clawer_id=clawer_id, status=ClawerTask.STATUS_ANALYSIS_FAIL).update(status=ClawerTask.STATUS_SUCCESS)
+    return ret
+
+def clawer_task_process_reset(clawer_id):
+    from clawer.models import ClawerTask
+    
+    ret = ClawerTask.objects.filter(clawer_id=clawer_id, status=ClawerTask.STATUS_PROCESS).update(status=ClawerTask.STATUS_LIVE)
+    return ret
