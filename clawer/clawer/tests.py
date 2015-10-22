@@ -262,7 +262,6 @@ class TestHomeApi(TestCase):
         resp = self.logined_client.get(url, {"clawer": clawer.id})
         result = json.loads(resp.content)
         self.assertTrue(result["is_ok"])
-        self.assertGreater(result["ret"], 0)
         
         clawer.delete()
         clawer_generator.delete()
@@ -278,7 +277,6 @@ class TestHomeApi(TestCase):
         resp = self.logined_client.get(url, {"clawer": clawer.id})
         result = json.loads(resp.content)
         self.assertTrue(result["is_ok"])
-        self.assertGreater(result["ret"], 0)
         
         clawer.delete()
         clawer_generator.delete()

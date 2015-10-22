@@ -419,6 +419,7 @@ def clawer_task_analysis_failed_reset(clawer_id):
     ret = ClawerTask.objects.filter(clawer_id=clawer_id, status=ClawerTask.STATUS_ANALYSIS_FAIL).update(status=ClawerTask.STATUS_SUCCESS)
     return ret
 
+
 def clawer_task_process_reset(clawer_id):
     from clawer.models import ClawerTask
     

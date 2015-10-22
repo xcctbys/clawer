@@ -161,6 +161,8 @@ class History(object):
     
     def __init__(self):
         self.current_date = self.START_DATE
+        self.total_page = -1
+        self.position = 0
         self.path = "/tmp/weibo"
         try:
             pwname = pwd.getpwnam("nginx")
@@ -176,6 +178,8 @@ class History(object):
         with open(self.path, "r") as f:
             old = pickle.load(f)
             self.current_date = old.current_date
+            self.total_page = old.total_page
+            self.position = old.position
     
     def save(self):
         with open(self.path, "w") as f:
@@ -187,20 +191,8 @@ class History(object):
 
 
 class Generator(object):
-    HOST = "http://s.weibo.com/"
-    COOKIE = """SUB=_2A257IzEmDeTxGedI71sX9C_OyzuIHXVYWSXurDV8PUNbuNAPLXbQkW8a15WxqSXUU-MajF3cVrtZ0IQZjA..; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9W575wlC1KuW1YMkoNNR1dnY5JpX5K2t
-; UOR=os.51cto.com,widget.weibo.com,www.52ml.net; SINAGLOBAL=3410159700720.107.1445223309661; ULV=1445406910212
-:2:2:2:8597766366396.563.1445406910172:1445223309665; NSC_wjq_txfjcp_mjotij=ffffffff094113d745525d5f4f58455e445a4a423660
-; WBStore=4e40f953589b7b00|undefined; _s_tentry=-; Apache=8597766366396.563.1445406910172; WBtopGlobal_register_version
-=23fff18db09017ad; SUS=SID-1649641207-1445413238-XD-47b6k-6a10ab4cff5097aa597c8895fa7388d4; SUE=es%3Ddbba2759e2fd677b8f0c530fda8d0861
-%26ev%3Dv1%26es2%3D03588079ee33d6821b2bcc631c83ec50%26rs0%3DdlU5t1U57rNc5SmnOjVXC39RxH5CwM1nsnkQXSRFkLLme1
-%252FiXtcx8NLGnVIZ%252F1rQzmslCc0pwNUH%252FcskYEkf0%252BBBLtynI6%252Bkq0R2aSKlxmGySPrS9iNvGMXnJPr%252FsGHBZxnFvC
-%252BQLjGsNS53j7pPDkA5wWL8YAMkP%252FAY2EaSJNU%253D%26rv%3D0; SUP=cv%3D1%26bt%3D1445413238%26et%3D1445499638
-%26d%3Dc909%26i%3D88d4%26us%3D1%26vf%3D2%26vt%3D1%26ac%3D25%26st%3D0%26uid%3D1649641207%26name%3Dyyaadet2002
-%2540gmail.com%26nick%3D%25E6%2599%2593%25E6%25B6%259B%26fmp%3D%26lcp%3D2012-02-03%252014%253A23%253A28
-; SUHB=0D-EYZw22O0SgM; ALF=1446018038; SSOLoginState=1445413238; un=yyaadet2002@gmail.com
-    """
-    STEP = 10
+    HOST = "http://m.weibo.cn/page/pageJson"
+    STEP = 2
     
     def __init__(self):
         self.uris = set()
@@ -215,27 +207,42 @@ class Generator(object):
         self.history.load()
             
     def obtain_urls(self):
-        now = datetime.datetime.now()
-        end = self.history.current_date + datetime.timedelta(10)
-        if end > now:
-            end = now
+        end = self.history.position + self.STEP
+        if end >= len(self.history.KEYWORDS):
+            end = len(self.history.KEYWORDS)
             
-        while self.history.current_date.date() < end.date():
-            for keyword in self.history.KEYWORDS:
-                logging.debug("keyword is %s", keyword)
-                for page in range(1, self.STEP+1):
-                    self.uris.add(self.pack_url(keyword, page, self.history.current_date))
-                    logging.debug(u"date %s, keyword %s", self.history.current_date, keyword)
+        while self.history.position < end:
+            keyword = self.history.KEYWORDS[self.history.position]
+            if self.history.total_page < 0:
+                self.parse_total_page(keyword)
+                continue
             
-            self.history.current_date += datetime.timedelta(1)
+            for i in range(1, self.history.total_page+1):
+                self.uris.add(self.pack_url(keyword, i))
+            
+            self.history.total_page = -1
+            self.history.position += 1
             self.history.save()
-                
-    def pack_url(self, keyword, page, dt):
-        word = urllib.quote(keyword.encode("utf-8"))
-        word = urllib.quote(word)
-        start = dt.strftime("%Y-%m-%d-0")
-        end = (dt + datetime.timedelta(1)).strftime("%Y-%m-%d-0")
-        return urlparse.urljoin(self.HOST, "/weibo/%s&typeall=1&suball=1&timescope=custom:%s:%s&page=%d" % (word, start, end, page))
+            
+    def pack_url(self, keyword, page):
+        qs = {
+            "containerid":"",
+            "containerid": (u"100103type=1&q=%s" % keyword).encode("utf-8"),
+            "ext":"",
+            "fid": (u"100103type=1&q=%s" % keyword).encode("utf-8"),
+            "uicode": "10000011",
+            "v_p":"11",
+            "type":"all",
+            "queryVal": keyword.encode("utf-8"),
+            "page": page
+        }
+        return urlparse.urljoin(self.HOST, "?%s" % urllib.urlencode(qs))
+    
+    def parse_total_page(self, keyword):
+        url = self.pack_url(keyword, 1)
+        r = requests.get(url)
+        self.history.total_page = r.json()["maxPage"]
+        
     
 
 class GeneratorTest(unittest.TestCase):
@@ -260,4 +267,4 @@ if __name__ == "__main__":
     generator = Generator()
     generator.obtain_urls()
     for uri in generator.uris:
-        print json.dumps({"uri":uri, "cookie":generator.COOKIE.strip()})
+        print json.dumps({"uri":uri})

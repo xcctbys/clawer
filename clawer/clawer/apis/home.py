@@ -75,11 +75,10 @@ def clawer_task(request):
 def clawer_task_analysis_failed_reset(request):
     from clawer import utils
     
-    clawer_id = request.GET.get("clawer")
+    clawer_id = int(request.GET.get("clawer"))
     
     background_queue = BackgroundQueue()
-    background_queue.enqueue(utils.clawer_task_analysis_failed_reset, clawer_id)
-    
+    background_queue.enqueue(utils.clawer_task_analysis_failed_reset, [clawer_id])
     #add log
     Logger.objects.create(user=request.user, category=LoggerCategory.TASK_ANALYSIS_FAILED_RESET, title="%d affected" % -1, 
                           content=json.dumps(request.GET), from_ip=get_request_ip(request))
@@ -91,10 +90,10 @@ def clawer_task_analysis_failed_reset(request):
 def clawer_task_process_reset(request):
     from clawer import utils
     
-    clawer_id = request.GET.get("clawer")
+    clawer_id = int(request.GET.get("clawer"))
     
     background_queue = BackgroundQueue()
-    background_queue.enqueue(utils.clawer_task_process_reset, clawer_id)
+    background_queue.enqueue(utils.clawer_task_process_reset, [clawer_id])
     #add log
     Logger.objects.create(user=request.user, category=LoggerCategory.TASK_PROCESS_RESET, title="%d affected" % -1, 
                           content=json.dumps(request.GET), from_ip=get_request_ip(request))
