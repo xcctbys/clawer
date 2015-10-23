@@ -11,7 +11,7 @@ from django.contrib.auth.models import User as DjangoUser, Group
 
 from clawer.models import MenuPermission, Clawer, ClawerTask,\
     ClawerTaskGenerator, ClawerAnalysis, ClawerAnalysisLog, Logger,\
-    ClawerDownloadLog, RealTimeMonitor
+    ClawerDownloadLog, RealTimeMonitor, ClawerSetting
 from clawer.management.commands import task_generator_test, task_generator_run, task_analysis, task_analysis_merge, task_dispatch
 from clawer.utils import UrlCache, Download
 
@@ -262,7 +262,6 @@ class TestHomeApi(TestCase):
         resp = self.logined_client.get(url, {"clawer": clawer.id})
         result = json.loads(resp.content)
         self.assertTrue(result["is_ok"])
-        self.assertGreater(result["ret"], 0)
         
         clawer.delete()
         clawer_generator.delete()
@@ -278,7 +277,6 @@ class TestHomeApi(TestCase):
         resp = self.logined_client.get(url, {"clawer": clawer.id})
         result = json.loads(resp.content)
         self.assertTrue(result["is_ok"])
-        self.assertGreater(result["ret"], 0)
         
         clawer.delete()
         clawer_generator.delete()
@@ -377,7 +375,8 @@ class TestHomeApi(TestCase):
     def test_clawer_setting_update(self):
         clawer = Clawer.objects.create(name="hi", info="good")
         url = reverse("clawer.apis.home.clawer_setting_update")
-        data = {"dispatch":10, "analysis":90, "clawer":clawer.id, "download_engine":Download.ENGINE_REQUESTS, "status":1}
+        data = {"dispatch":10, "analysis":90, "clawer":clawer.id, "download_engine":Download.ENGINE_REQUESTS, "status":1,
+                "prior": ClawerSetting.PRIOR_URGENCY}
         
         resp = self.logined_client.post(url, data)
         result = json.loads(resp.content)

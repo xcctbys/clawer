@@ -35,7 +35,9 @@
             <th data-options="field:'setting'," formatter="formatSettingDispatch">每次分发任务数</th>
             <th data-options="field:'s1'," formatter="formatSettingAnalysis">每次分析数</th>
             <th data-options="field:'sproxy'," formatter="formatSettingProxy">Proxy</th>
+            <th data-options="field:'sprior'," formatter="formatSettingPrior">优先级</th>
             <th data-options="field:'engine'," formatter="formatSettingDownloadEngine">下载引擎</th>
+            <th data-options="field:'cookie'," formatter="formatSettingCookie">Cookie</th>
             <th data-options="field:'crontab'," formatter="formatCrontab">任务生成器Cron</th>
             <th data-options="field:'s2'," formatter="formatSettingLastUpdateDatetime">最后修改时间</th>
         </tr>
@@ -65,6 +67,10 @@
                 <td><input name="proxy" class="easyui-textbox" style="width: 80%; height: 100px;" placeholder="多个proxy，请换行" multiline="true" /></td>
             </tr>
             <tr>
+                <td>Cookie</td>
+                <td><input name="cookie" class="easyui-textbox" style="width: 80%; height: 100px;" placeholder="Cookie" multiline="true" /></td>
+            </tr>
+            <tr>
                 <td>下载引擎</td>
                 <td>
                     <select id="id_download_engine" class="easyui-combobox" name="download_engine" style="width:200px;">
@@ -80,6 +86,15 @@
                     <select id="id_status" class="easyui-combobox" name="status" style="width:200px;">
 					    <option value="1">启用</option>
 					    <option value="2">下线</option>
+					</select>
+                </td>
+            </tr>
+            <tr>
+                <td>优先级</td>
+                <td>
+                    <select id="id_prior" class="easyui-combobox" name="prior" style="width:200px;">
+					    <option value="0">普通</option>
+					    <option value="1">紧急</option>
 					</select>
                 </td>
             </tr>
@@ -100,11 +115,27 @@
 <script type="text/javascript">
 
 function formatSettingDispatch(val, row) {
-	if(!val) {
+	if(!row.setting) {
 		return "-";
 	}
 	
 	return row.setting.dispatch;
+}
+
+function formatSettingPrior(val, row) {
+	if(!row.setting) {
+		return "-";
+	}
+	
+	return row.setting.prior;
+}
+
+function formatSettingCookie(val, row) {
+	if(!row.setting) {
+		return "-";
+	}
+	
+	return row.setting.cookie;
 }
 
 function formatSettingAnalysis(val, row) {
@@ -172,9 +203,11 @@ $(document).ready(function(){
 		    dispatch: row.setting.dispatch,
 		    analysis: row.setting.analysis,
 		    proxy: row.setting.proxy,
+		    cookie: row.setting.cookie
 		});
 		$("#id_download_engine").combobox("setValue", row.setting.download_engine);
 		$("#id_status").combobox("setValue", row.status);
+		$("#id_prior").combobox("setValue", row.setting.prior);
 		
 		$("#update_win").window("open");
 	});
