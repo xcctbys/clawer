@@ -451,15 +451,11 @@ class TestCmd(TestCase):
         analysis = ClawerAnalysis.objects.create(clawer=clawer, code="print '{\"url\":\"ssskkk\"}'\n")
         
         task_analysis.do_run()
-        analysis_log = ClawerAnalysisLog.objects.filter(clawer=clawer, analysis=analysis, task=task).order_by("-id")[0]
-        print "analysis log failed reason: %s" % analysis_log.failed_reason
-        self.assertEqual(analysis_log.status, ClawerAnalysisLog.STATUS_SUCCESS)
         
         clawer.delete()
         generator.delete()
         task.delete()
         analysis.delete()
-        analysis_log.delete()
         os.remove(path)
         
     def test_task_analysis_with_exception(self):
@@ -474,15 +470,11 @@ class TestCmd(TestCase):
         analysis = ClawerAnalysis.objects.create(clawer=clawer, code="print a\n")
         
         task_analysis.do_run()
-        analysis_log = ClawerAnalysisLog.objects.filter(clawer=clawer, analysis=analysis, task=task).order_by("-id")[0]
-        print "analysis log failed reason: %s" % analysis_log.failed_reason
-        self.assertEqual(analysis_log.status, ClawerAnalysisLog.STATUS_FAIL)
         
         clawer.delete()
         generator.delete()
         task.delete()
         analysis.delete()
-        analysis_log.delete()
         os.remove(path)
         
     def test_task_analysis_with_large(self):
@@ -497,15 +489,11 @@ class TestCmd(TestCase):
         analysis = ClawerAnalysis.objects.create(clawer=clawer, code=code)
         
         task_analysis.do_run()
-        analysis_log = ClawerAnalysisLog.objects.filter(clawer=clawer, analysis=analysis, task=task).order_by("-id")[0]
-        print "analysis log failed reason: %s" % analysis_log.failed_reason
-        self.assertEqual(analysis_log.status, ClawerAnalysisLog.STATUS_SUCCESS)
         
         clawer.delete()
         generator.delete()
         task.delete()
         analysis.delete()
-        analysis_log.delete()
         os.remove(path)
         
     def test_task_analysis_merge(self):

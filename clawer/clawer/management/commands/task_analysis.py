@@ -17,7 +17,7 @@ from clawer.models import Clawer, ClawerTask,\
     ClawerAnalysisLog, RealTimeMonitor, ClawerDownloadLog
 import socket
 import random
-from clawer.utils import SafeProcess
+from clawer.utils import SafeProcess, AnalysisClawerTask
 
 
 EXIT_TIMER = None
@@ -61,7 +61,10 @@ def do_run():
                     file_not_found += 1
                     handle_not_found(item)
                     continue
-                do_analysis(item, clawer)
+                
+                analysis_clawer_task = AnalysisClawerTask(clawer, item)
+                analysis_clawer_task.analysis()
+                
                 job_count += 1
             except: 
                 print traceback.format_exc(10)   
@@ -88,59 +91,6 @@ def handle_not_found(clawer_task):
         clawer_task.status = ClawerTask.STATUS_LIVE
         clawer_task.save()
     
-
-def do_analysis(clawer_task, clawer):
-    
-    analysis = clawer.runing_analysis()
-    path = analysis.product_path()
-    
-    analysis_log = ClawerAnalysisLog(clawer=clawer, analysis=analysis, task=clawer_task, hostname=socket.gethostname()[:16])
-    try:
-        out_f = open(analysis_log.result_path(), "w+b")
-        
-        safe_process = SafeProcess([settings.PYTHON, path], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=out_f)
-        p = safe_process.run(30)
-        p.stdin.write(json.dumps({"path":clawer_task.store, "url":clawer_task.uri}))
-        p.stdin.close()
-        
-        err = p.stderr.read()
-        print "waiting analysis return, task %d" % clawer_task.id
-        retcode = safe_process.wait()
-        if retcode == 0:
-            print "out file point %d" % out_f.tell()
-            out_f.seek(0)
-            result = json.loads(out_f.read())
-            result["_url"] = clawer_task.uri
-            if clawer_task.cookie:
-                result["_cookie"] = clawer_task.cookie
-            analysis_log.result = json.dumps(result)
-            analysis_log.status = ClawerAnalysisLog.STATUS_SUCCESS
-        else:
-            analysis_log.status = ClawerAnalysisLog.STATUS_FAIL
-            analysis_log.failed_reason = err
-            
-        out_f.close()
-        os.remove(analysis_log.result_path()) 
-    except:
-        analysis_log.status = ClawerAnalysisLog.STATUS_FAIL
-        analysis_log.failed_reason = traceback.format_exc(10)
-        
-    analysis_log.save()
-    #update clawer task status
-    if analysis_log.status == ClawerAnalysisLog.STATUS_SUCCESS:
-        clawer_task.status = ClawerTask.STATUS_ANALYSIS_SUCCESS
-    elif analysis_log.status == ClawerAnalysisLog.STATUS_FAIL:
-        clawer_task.status = ClawerTask.STATUS_ANALYSIS_FAIL
-    clawer_task.save()
-    
-    print "clawer task %d done" % clawer_task.id
-    
-    #trace it
-    monitor = RealTimeMonitor()
-    monitor.trace_task_status(clawer_task)
-    
-    return analysis_log
-
         
 
 
