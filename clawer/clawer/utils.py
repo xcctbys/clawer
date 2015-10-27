@@ -10,9 +10,9 @@ import redis
 from random import random
 import types
 import socket
-import urlparse
 import shutil
 import os
+import json
 
 from django.conf import settings
 
@@ -169,7 +169,17 @@ class Download(object):
         
         firefox_log_file = open("/tmp/firefox.log", "a+")
         firefox_binary = FirefoxBinary(log_file=firefox_log_file)
-        driver = webdriver.Firefox(firefox_binary=firefox_binary)
+        
+        firefox_profile = webdriver.FirefoxProfile()
+        if len(self.proxies) > 0:
+            proxy = self.proxies[0]
+            [addr, port] = proxy.split(":")
+            firefox_profile.set_preference("network.proxy.type", 1)
+            firefox_profile.set_preference("network.proxy.http", addr)
+            firefox_profile.set_preference("network.proxy.http_port", port)
+            firefox_profile.update_preferences()
+        
+        driver = webdriver.Firefox(firefox_binary=firefox_binary, firefox_profile=firefox_profile)
         driver.set_page_load_timeout(30)
         
         try:
@@ -321,6 +331,7 @@ class DownloadClawerTask(object):
         self.clawer_task = clawer_task
         self.download_log = ClawerDownloadLog(clawer=clawer_task.clawer, task=clawer_task, hostname=socket.gethostname())
         self.monitor = RealTimeMonitor()
+        self.background_queue = BackgroundQueue()
         self.headers = {"user-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:40.0) Gecko/20100101 Firefox/40.0"}
         
         self.clawer_setting = self.clawer_task.clawer.cached_settings()
@@ -397,13 +408,71 @@ class DownloadClawerTask(object):
         if self.downloader.failed_exception:
             self.download_log.failed_reason = self.downloader.failed_exception
         self.download_log.spend_time = int(self.downloader.spend_time*1000)
-        self.download_log.save()
+        self.background_queue.enqueue(clawer_download_log_delay_save, [self.download_log])
         
         self.clawer_task.status = ClawerTask.STATUS_FAIL
-        self.clawer_task.save()
+        self.background_queue.enqueue(clawer_task_delay_save, [self.clawer_task])
         
         self.monitor.trace_task_status(self.clawer_task)
     
+
+class AnalysisClawerTask(object):
+    
+    def __init__(self, clawer, clawer_task):
+        from clawer.models import RealTimeMonitor, ClawerAnalysisLog
+        
+        self.clawer = clawer
+        self.clawer_task = clawer_task
+        self.monitor = RealTimeMonitor()
+        self.background_queue = BackgroundQueue()
+        self.hostname = socket.gethostname()[:16]
+        self.runing_analysis = self.clawer.runing_analysis()
+        self.analysis_log = ClawerAnalysisLog(clawer=self.clawer, task=self.clawer_task, hostname=self.hostname, analysis=self.runing_analysis)
+    
+    def analysis(self):
+        from clawer.models import ClawerAnalysisLog, ClawerTask
+        
+        path = self.runing_analysis.product_path()
+        
+        try:
+            out_f = open(self.analysis_log.result_path(), "w+b")
+            
+            safe_process = SafeProcess([settings.PYTHON, path], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=out_f)
+            p = safe_process.run(30)
+            p.stdin.write(json.dumps({"path":self.clawer_task.store, "url":self.clawer_task.uri}))
+            p.stdin.close()
+            
+            err = p.stderr.read()
+            retcode = safe_process.wait()
+            if retcode == 0:
+                out_f.seek(0)
+                result = json.loads(out_f.read())
+                result["_url"] = self.clawer_task.uri
+                if self.clawer_task.cookie:
+                    result["_cookie"] = self.clawer_task.cookie
+                self.analysis_log.result = json.dumps(result)
+                self.analysis_log.status = ClawerAnalysisLog.STATUS_SUCCESS
+            else:
+                self.analysis_log.status = ClawerAnalysisLog.STATUS_FAIL
+                self.analysis_log.failed_reason = err
+                
+            out_f.close()
+            os.remove(self.analysis_log.result_path()) 
+        except:
+            self.analysis_log.status = ClawerAnalysisLog.STATUS_FAIL
+            self.analysis_log.failed_reason = traceback.format_exc(10)
+        
+        self.background_queue.enqueue(clawer_analysis_log_delay_save, [self.analysis_log])    
+        
+        #update clawer task status
+        if self.analysis_log.status == ClawerAnalysisLog.STATUS_SUCCESS:
+            self.clawer_task.status = ClawerTask.STATUS_ANALYSIS_SUCCESS
+        elif self.analysis_log.status == ClawerAnalysisLog.STATUS_FAIL:
+            self.clawer_task.status = ClawerTask.STATUS_ANALYSIS_FAIL
+        self.background_queue.enqueue(clawer_task_delay_save, [self.clawer_task])
+        #trace it
+        self.monitor.trace_task_status(self.clawer_task)
+        
     
 
 #rqworker function
@@ -425,3 +494,18 @@ def clawer_task_process_reset(clawer_id):
     
     ret = ClawerTask.objects.filter(clawer_id=clawer_id, status=ClawerTask.STATUS_PROCESS).update(status=ClawerTask.STATUS_LIVE)
     return ret
+
+
+def clawer_download_log_delay_save(clawer_download_log):
+    clawer_download_log.save()
+    return clawer_download_log.id
+    
+    
+def clawer_task_delay_save(clawer_task):
+    clawer_task.save()
+    return clawer_task.id
+
+
+def clawer_analysis_log_delay_save(clawer_analysis_log):
+    clawer_analysis_log.save()
+    return clawer_analysis_log.id
