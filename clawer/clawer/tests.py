@@ -523,17 +523,18 @@ class TestDownload(TestCase):
         url = "http://blog.sina.com.cn/s/blog_6175bf700102w08a.html?tj=1"
         downloader = Download(url, engine=Download.ENGINE_SELENIUM)
         downloader.download()
+        
         logging.debug(u"%s", downloader.content)
         print downloader.spend_time
         self.assertIsNotNone(downloader.content)
-    """    
+       
     def test_selenium_with_proxy(self):
-        url = "http://www.bloomberg.com/search?query=chinese+stock"
+        url = "http://www.baidu.com"
         downloader = Download(url, engine=Download.ENGINE_SELENIUM)
         downloader.add_proxies(["http://jp1.dig.name:25"])
         downloader.download()
+        
         logging.debug(u"%s", downloader.content)
         print downloader.spend_time
         self.assertIsNotNone(downloader.content)
-    """
-        
+    

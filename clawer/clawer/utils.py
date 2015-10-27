@@ -169,7 +169,17 @@ class Download(object):
         
         firefox_log_file = open("/tmp/firefox.log", "a+")
         firefox_binary = FirefoxBinary(log_file=firefox_log_file)
-        driver = webdriver.Firefox(firefox_binary=firefox_binary)
+        
+        firefox_profile = webdriver.FirefoxProfile()
+        if len(self.proxies) > 0:
+            proxy = self.proxies[0]
+            [addr, port] = proxy.split(":")
+            firefox_profile.set_preference("network.proxy.type", 1)
+            firefox_profile.set_preference("network.proxy.http", addr)
+            firefox_profile.set_preference("network.proxy.http_port", port)
+            firefox_profile.update_preferences()
+        
+        driver = webdriver.Firefox(firefox_binary=firefox_binary, firefox_profile=firefox_profile)
         driver.set_page_load_timeout(30)
         
         try:
