@@ -2,7 +2,6 @@
 """ example is http://seekingalpha.com/analysis/all/all/1443809545?summaries_state
 """
 
-
 import json
 import logging
 import unittest
@@ -33,8 +32,8 @@ logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: 
 class History(object):
 
     def __init__(self):
-        self.path = "/tmp/seekingalpha"                                  #本地测试请去除tmp前“/”符号
-        self.timestamp_STEP = 0                                         #回溯时间跨度步长数值
+        self.path = "/tmp/seekingalpha"                                  # 本地测试请去除tmp前“/”符号
+        self.timestamp_STEP = 0                                          # 回溯时间跨度步长数值
 
         try:
             pwname = pwd.getpwnam("nginx")
@@ -46,11 +45,9 @@ class History(object):
     def load(self):
         if os.path.exists(self.path) is False:
             return
-
         with open(self.path, "r") as f:
             old = pickle.load(f)
             self.timestamp_STEP = old.timestamp_STEP
-
 
     def save(self):
         with open(self.path, "w") as f:
@@ -64,11 +61,11 @@ class History(object):
 class Generator(object):
     HOST = 'http://seekingalpha.com/analysis/all/all/'
     articleHost = 'http://seekingalpha.com'
-    dateSTEP = 21600                                                            #每步长回溯的时间跨度(s)
-    # timestamp = int(time.time())                                              #使用系统当前时间戳
+    dateSTEP = 21600                                                            # 每步长回溯的时间跨度(s)
+    # timestamp = int(time.time())                                              # 使用系统当前时间戳(便于每天运行抓取数据)
 
-    currentDay = datetime.datetime(2015,10,27,23,59,59)                         #手动输入日期
-    timeStamp=int(time.mktime(currentDay.timetuple()))                          #转换输入日期格式
+    currentDay = datetime.datetime(2015, 10, 27, 23, 59, 59)                         # 手动输入日期
+    timeStamp = int(time.mktime(currentDay.timetuple()))                          # 转换输入日期格式
 
     def __init__(self):
         self.uris = set()
@@ -84,13 +81,12 @@ class Generator(object):
 
     def page_url(self):
         times = self.timeStamp - self.dateSTEP * self.history.timestamp_STEP
-        if times < 1437926400:
+        if times < 1437926400:                                                  # 截至时间戳设置(2015-07-27)
             return
         url = self.HOST + str(times)
         self.obtain_urls(url)
         self.history.timestamp_STEP += 1
         self.history.save()
-        print self.history.timestamp_STEP
 
     def obtain_urls(self, url):
         r = requests.get(url)
@@ -108,7 +104,7 @@ class GeneratorTest(unittest.TestCase):
 
     def test_obtain_urls(self):
         self.generator = Generator()
-        self.generator.obtain_urls()
+        self.generator.page_url()
 
         logging.debug("urls count is %d", len(self.generator.uris))
 
@@ -124,4 +120,4 @@ if __name__ == "__main__":
     generator.page_url()
 
     for uri in generator.uris:
-        print json.dumps({"uri":uri})
+        print json.dumps({"uri": uri})

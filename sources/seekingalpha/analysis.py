@@ -13,7 +13,6 @@ import os
 
 from bs4 import BeautifulSoup
 
-
 DEBUG = False
 if DEBUG:
     level = logging.DEBUG
@@ -65,7 +64,7 @@ class Analysis(object):
         all_p = self.soup.find_all("p")
         content = ''
         for p in all_p:
-            content += p.get_text().replace("\n","")
+            content += p.get_text().replace("\n", "")
         self.result["content"] = content
 
 
@@ -79,9 +78,9 @@ class TestAnalysis(unittest.TestCase):
     def test_parse(self):
         """http://seekingalpha.com/article/3607276-clash-of-the-titans-qualcomm-earnings-and-beyond
         """
-        self.analysis = Analysis(self.path, "http://seekingalpha.com/article/3607276-clash-of-the-titans-qualcomm-earnings-and-beyond")
+        self.analysis = Analysis(self.path, "http://seekingalpha.com/article/3607276-clash-of-the-tit"
+                                            "ans-qualcomm-earnings-and-beyond")
         self.analysis.parse()
-
         self.assertNotEqual(self.analysis.result, {})
         self.assertIsNotNone(self.analysis.result["title"])
         self.assertIsNotNone(self.analysis.result["time"])
