@@ -102,14 +102,15 @@ TEMPLATE_DIRS = (
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 
 
-EMAIL_HOST = "localhost"
-EMAIL_HOST_PASSWORD = "smtp.exmail.qq.com"
-EMAIL_HOST_USER = "xiaotaop@princetechs.com"
+EMAIL_HOST = "smtp.exmail.qq.com"
+EMAIL_HOST_PASSWORD = "robot0022"
+EMAIL_HOST_USER = "robot@princetechs.com"
 EMAIL_PORT = 1025
-EMAIL_SUBJECT_PREFIX = "[NiceClawer]"
+#EMAIL_SUBJECT_PREFIX = ""
 EMAIL_USE_TLS = True
-EMAIL_FROM = "clawer@princetechs.com"
-DEFAULT_FROM_EMAIL = "clawer@princetechs.com"
+EMAIL_FROM = "robot@princetechs.com"
+DEFAULT_FROM_EMAIL = "robot@princetechs.com"
+
 
 AUTH_PROFILE_MODULE = 'clawer.UserProfile'
 

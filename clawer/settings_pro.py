@@ -56,7 +56,7 @@ CAPTCHA_STORE = "/data/media/captcha"
 
 
 RAVEN_CONFIG = {
-    'dsn': 'http://c63b0d71513f4569b661e81bcfe8f903:c16131fe0f8d4195b0ea8be642aaa419@coredump.51zhi.com//4',
+    'dsn': 'http://917b2f66b96f46b785f8a1e635712e45:556a6614fe28410dbf074552bd566750@sentry.princetechs.com//2',
 }
 
 LOGGING = {
