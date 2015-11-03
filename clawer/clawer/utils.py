@@ -19,6 +19,7 @@ from django.conf import settings
 from html5helper.utils import do_paginator
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 import threading
+import hashlib
 
 
 
@@ -245,18 +246,18 @@ class SafeProcess(object):
         
 class UrlCache(object):
     
-    def __init__(self, url, redis_url=settings.URL_REDIS):
+    def __init__(self, redis_url=settings.URL_REDIS):
         self.connection = redis.Redis.from_url(redis_url)
-        self.url = "urlcache_%s" %  url or ""
         self.cache_time = 3600*24
         
-    def has_url(self):
-        if self.connection.get(self.url) > 0:
+    def check_url(self, url):
+        key = "urlcache_%s" % hashlib.md5(url).hexdigest()
+        
+        if self.connection.get(key) > 0:
             return True
+        
+        self.connection.setex(key, 1, self.cache_time)
         return False
-    
-    def add_it(self):
-        self.connection.setex(self.url, self.cache_time, 1)
         
     def flush(self):
         self.connection.flushall()
@@ -472,8 +473,88 @@ class AnalysisClawerTask(object):
         self.background_queue.enqueue(clawer_task_delay_save, [self.clawer_task])
         #trace it
         self.monitor.trace_task_status(self.clawer_task)
-        
     
+
+class GenerateClawerTask(object):
+    
+    def __init__(self, task_generator):
+        from clawer.models import ClawerGenerateLog, RealTimeMonitor
+        
+        self.task_generator = task_generator
+        self.clawer = self.task_generator.clawer
+        self.out_path = "/tmp/task_generator_%d" % self.task_generator.id
+        self.monitor = RealTimeMonitor()
+        self.generate_log = ClawerGenerateLog(clawer=self.clawer, task_generator=self.task_generator)
+        self.start_time = time.time()
+        self.end_time = None
+        self.content_bytes = 0
+        self.url_cache = UrlCache()
+    
+    def run(self):
+        from clawer.models import ClawerTaskGenerator, Clawer, ClawerTask, ClawerGenerateLog
+        
+        logging.info("run task generator %d" % self.task_generator.id)
+        if not (self.task_generator.status==ClawerTaskGenerator.STATUS_ON and self.clawer.status==Clawer.STATUS_ON):
+            return False
+        
+        path = self.task_generator.product_path()
+        self.task_generator.write_code(path)
+        
+        out_f = open(self.out_path, "w")
+        
+        safe_process = SafeProcess([settings.PYTHON, path], stdout=out_f, stderr=subprocess.PIPE)
+        
+        p = safe_process.run(1800)
+        err = p.stderr.read()
+        status = safe_process.wait()
+        if status != 0:
+            logging.error("run task generator %d failed: %s" % (self.task_generator.id, err))
+            out_f.close()
+            self.failed(err)
+            return False
+        out_f.close()
+        
+        out_f = open(self.out_path, "r")
+        for line in out_f:
+            try:
+                self.content_bytes += len(line)
+                js = json.loads(line)
+                if self.url_cache.check_url(js["uri"]):
+                    continue
+                
+                clawer_task = ClawerTask.objects.create(clawer=self.clawer, task_generator=self.task_generator, uri=js["uri"],
+                                      cookie=js.get("cookie"))
+                #trace it
+                self.monitor.trace_task_status(clawer_task)
+            except:
+                logging.error("add %s failed: %s", js['uri'], traceback.format_exc(10))
+                self.failed(traceback.format_exc(10))
+        
+        out_f.close()
+        os.remove(self.out_path)
+        
+        #success
+        if self.end_time is None:
+            self.end_time = time.time()
+        self.generate_log.status = ClawerGenerateLog.STATUS_SUCCESS
+        self.generate_log.content_bytes = self.content_bytes
+        self.generate_log.spend_msecs = int(1000*(self.end_time - self.start_time))
+        self.generate_log.save()
+        
+        return True
+    
+    def failed(self, reason):
+        from clawer.models import ClawerGenerateLog
+        
+        if self.end_time is None:
+            self.end_time = time.time()
+            
+        self.generate_log.status = ClawerGenerateLog.STATUS_FAIL
+        self.generate_log.failed_reason = reason
+        self.generate_log.content_bytes = self.content_bytes
+        self.generate_log.spend_msecs = int(1000*(self.end_time - self.start_time))
+        self.generate_log.save()
+        
 
 #rqworker function
 def download_clawer_task(clawer_task):

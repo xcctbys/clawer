@@ -14,7 +14,7 @@ framework.
 """
 import os
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings_pro")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "clawer.settings_pro")
 
 # This application object is used by any WSGI server configured to use this
 # file. This includes Django's development server, if the WSGI_APPLICATION

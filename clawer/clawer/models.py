@@ -247,8 +247,6 @@ class ClawerTaskGenerator(models.Model):
     code = models.TextField()  #python code
     cron = models.CharField(max_length=128)
     status = models.IntegerField(default=STATUS_ALPHA, choices=STATUS_CHOICES)
-    failed_reason = models.CharField(max_length=4096, blank=True, null=True)
-    last_failed_datetime = models.DateTimeField(null=True, blank=True)
     add_datetime = models.DateTimeField(auto_now_add=True)
     
     class Meta:
@@ -262,8 +260,6 @@ class ClawerTaskGenerator(models.Model):
             "cron": self.cron,
             "status": self.status,
             "status_name": self.status_name(),
-            "failed_reason": self.failed_reason,
-            "last_failed_datetime": self.last_failed_datetime.strftime("%Y-%m-%d %H:%M:%S") if self.last_failed_datetime else None,
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }
         return result
@@ -290,6 +286,44 @@ class ClawerTaskGenerator(models.Model):
         with codecs.open(path, "w", "utf-8") as f:
             f.write(self.code)
 
+
+class ClawerGenerateLog(models.Model):
+    (STATUS_FAIL, STATUS_SUCCESS) = range(1, 3)
+    STATUS_CHOICES = (
+        (STATUS_FAIL, u"失败"),
+        (STATUS_SUCCESS, u"成功"),
+    )
+    clawer = models.ForeignKey(Clawer)
+    task_generator = models.ForeignKey(ClawerTaskGenerator)
+    status = models.IntegerField(default=0, choices=STATUS_CHOICES)
+    failed_reason = models.CharField(max_length=1024, null=True, blank=True)
+    content_bytes = models.IntegerField(default=0)
+    spend_msecs = models.IntegerField(default=0) #unit is microsecond
+    add_datetime = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        app_label = "clawer"
+        
+    def status_name(self):
+        for item in self.STATUS_CHOICES:
+            if item[0] == self.status:
+                return item[1]
+        return ""
+        
+    def as_json(self):
+        result = {
+            "id":self.id,
+            "clawer": self.clawer.as_json(),
+            "task_generator": self.task_generator.as_json(),
+            "status": self.status,
+            "status_name": self.status_name(),
+            "failed_reason": self.failed_reason,
+            "content_bytes": self.content_bytes,
+            "spend_msecs": self.spend_time,
+            "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        
+        return result
 
 
 

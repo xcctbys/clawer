@@ -2,8 +2,7 @@
 
 from settings import *
 
-import djcelery
-djcelery.setup_loader()
+
 
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG

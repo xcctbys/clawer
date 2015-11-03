@@ -76,6 +76,7 @@ urlpatterns = patterns('clawer.views.home',
     url(r"^clawer/download/log/$", "clawer_download_log"),
     url(r"^clawer/task/$", "clawer_task"),
     url(r"^clawer/analysis/log/$", "clawer_analysis_log"),
+    url(r"^clawer/generate/log/$", "clawer_generate_log"),
     url(r"^clawer/setting/$", "clawer_setting"),
     
     url(r"^logger/", include(logger_urls)),

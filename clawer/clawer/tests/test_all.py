@@ -12,7 +12,8 @@ from django.contrib.auth.models import User as DjangoUser, Group
 from clawer.models import MenuPermission, Clawer, ClawerTask,\
     ClawerTaskGenerator, ClawerAnalysis, ClawerAnalysisLog, Logger,\
     ClawerDownloadLog, RealTimeMonitor, ClawerSetting
-from clawer.management.commands import task_generator_test, task_generator_run, task_analysis, task_analysis_merge, task_dispatch
+from clawer.management.commands import task_generator_run, task_analysis, task_analysis_merge, task_dispatch
+from clawer.management.commands import task_generator_install
 from clawer.utils import UrlCache, Download
 
 
@@ -46,6 +47,11 @@ class TestHomeViews(TestCase):
         
     def test_clawer_analysis_log(self):
         url = reverse("clawer.views.home.clawer_analysis_log")
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        
+    def test_clawer_generate_log(self):
+        url = reverse("clawer.views.home.clawer_generate_log")
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         
@@ -205,6 +211,7 @@ class TestHomeApi(TestCase):
         self.client = Client()
         self.logined_client = Client()
         self.logined_client.login(username=self.user.username, password=self.user.username)
+        self.url_cache = UrlCache()
         
     def tearDown(self):
         TestCase.tearDown(self)
@@ -238,7 +245,7 @@ class TestHomeApi(TestCase):
         download_log.delete()
         
     def test_task(self):
-        UrlCache(None).flush()
+        self.url_cache.flush()
         clawer = Clawer.objects.create(name="hi", info="good")
         clawer_generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print hello", cron="*", status=ClawerTaskGenerator.STATUS_PRODUCT)
         clawer_task = ClawerTask.objects.create(clawer=clawer, task_generator=clawer_generator, uri="http://github.com", status=ClawerTask.STATUS_FAIL)
@@ -253,7 +260,7 @@ class TestHomeApi(TestCase):
         clawer_task.delete()
         
     def test_task_analysis_failed_reset(self):
-        UrlCache(None).flush()
+        self.url_cache.flush()
         clawer = Clawer.objects.create(name="hi", info="good")
         clawer_generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print hello", cron="*", status=ClawerTaskGenerator.STATUS_PRODUCT)
         clawer_task = ClawerTask.objects.create(clawer=clawer, task_generator=clawer_generator, uri="http://github.com", status=ClawerTask.STATUS_ANALYSIS_FAIL)
@@ -268,7 +275,7 @@ class TestHomeApi(TestCase):
         clawer_task.delete()
     
     def test_task_process_reset(self):
-        UrlCache(None).flush()
+        self.url_cache.flush()
         clawer = Clawer.objects.create(name="hi", info="good")
         clawer_generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print hello", cron="*", status=ClawerTaskGenerator.STATUS_PRODUCT)
         clawer_task = ClawerTask.objects.create(clawer=clawer, task_generator=clawer_generator, uri="http://github.com", status=ClawerTask.STATUS_PROCESS)
@@ -395,6 +402,7 @@ class TestCmd(TestCase):
         self.user = DjangoUser.objects.create_user(username="xxx", password="xxx")
         self.group = Group.objects.create(name=MenuPermission.GROUPS[0])
         self.user.groups.add(self.group)
+        self.url_cache = UrlCache()
         
     def tearDown(self):
         TestCase.tearDown(self)
@@ -405,8 +413,8 @@ class TestCmd(TestCase):
         clawer = Clawer.objects.create(name="hi", info="good")
         generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print '{\"uri\": \"http://www.github.com\"}'\nos.exit(2)\n", cron="*")
         
-        ret = task_generator_test.test_alpha(generator)
-        self.assertFalse(ret)
+        ret = task_generator_install.test_alpha(generator)
+        self.assertTrue(ret)
         
         new_generator = ClawerTaskGenerator.objects.get(id=generator.id)
         self.assertGreater(len(new_generator.failed_reason), 0)
@@ -440,7 +448,7 @@ class TestCmd(TestCase):
         task.delete()
         
     def test_task_analysis(self):
-        UrlCache(None).flush()
+        self.url_cache.flush()
         path = "/tmp/ana.store"
         tmp_file = open(path, "w")
         tmp_file.write("hi")
@@ -459,7 +467,7 @@ class TestCmd(TestCase):
         os.remove(path)
         
     def test_task_analysis_with_exception(self):
-        UrlCache(None).flush()
+        self.url_cache.flush()
         path = "/tmp/ana.store"
         tmp_file = open(path, "w")
         tmp_file.write("hi")

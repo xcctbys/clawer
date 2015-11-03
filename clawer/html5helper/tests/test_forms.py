@@ -2,11 +2,12 @@
 """ test form
 """
 
-from django.utils import unittest
-from html5helper.forms import *
+from django.test import TestCase
+
+from html5helper.forms import BasisForm
 
 
-class TestBasisForm(unittest.TestCase):
+class TestBasisForm(TestCase):
     def test_init(self):
         form = BasisForm()
         self.assertIsNotNone(form)
