@@ -14,33 +14,32 @@ from clawer.utils import DownloadQueue, download_clawer_task
 def run():
     clawers = Clawer.objects.filter(status=Clawer.STATUS_ON).all()
     monitor = RealTimeMonitor()
+    download_queue = DownloadQueue()
     
     for clawer in clawers:
         clawer_settting = clawer.cached_settings()
-        download_queue = DownloadQueue(clawer_settting.is_urgency())
-        clawer_tasks = ClawerTask.objects.filter(clawer_id=clawer.id, status=ClawerTask.STATUS_LIVE).order_by("id")[:clawer_settting.dispatch]
+        queue_name = clawer_settting.prior_to_queue_name()
         
+        clawer_tasks = ClawerTask.objects.filter(clawer_id=clawer.id, status=ClawerTask.STATUS_LIVE).order_by("id")[:clawer_settting.dispatch]
         for item in clawer_tasks:
-            if not download_queue.enqueue(download_clawer_task, [item]):
+            if not download_queue.enqueue(queue_name, download_clawer_task, args=[item, clawer_settting]):
                 break
             item.status = ClawerTask.STATUS_PROCESS
             item.save()
             #trace it
             monitor.trace_task_status(item)
         
-        print "clawer is %d, job count %d" % (clawer.id, len(download_queue.jobs))
+        print "clawer is %d, job count %d, queue name %s" % (clawer.id, len(download_queue.jobs), queue_name)
         
     return download_queue
 
 
 def empty_all():
-    download_queue = DownloadQueue(False)
-    ret = download_queue.queue.empty()
-    print ret
+    download_queue = DownloadQueue()
     
-    urgency_download_queue = DownloadQueue(True)
-    urgency_ret = urgency_download_queue.queue.empty()
-    print urgency_ret
+    download_queue.queue.empty()
+    download_queue.urgency_queue.empty()
+    download_queue.foreign_queue.empty()
     
     
 class Command(BaseCommand):

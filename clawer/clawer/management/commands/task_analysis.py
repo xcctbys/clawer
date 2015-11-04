@@ -1,23 +1,20 @@
 # coding=utf-8
 
-import json
 import traceback
 import os
 import sys
-import subprocess
 import time
 from optparse import make_option
 import threading
-
-from django.core.management.base import BaseCommand
-from django.conf import settings
-
-from html5helper.utils import wrapper_raven
-from clawer.models import Clawer, ClawerTask,\
-    ClawerAnalysisLog, RealTimeMonitor, ClawerDownloadLog
 import socket
 import random
-from clawer.utils import SafeProcess, AnalysisClawerTask
+
+from django.core.management.base import BaseCommand
+
+from html5helper.utils import wrapper_raven
+from clawer.models import Clawer, ClawerTask, ClawerDownloadLog
+
+from clawer.utils import AnalysisClawerTask
 
 
 EXIT_TIMER = None
@@ -90,8 +87,6 @@ def handle_not_found(clawer_task):
     if download_log.hostname == socket.gethostname():
         clawer_task.status = ClawerTask.STATUS_LIVE
         clawer_task.save()
-    
-        
 
 
 class Command(BaseCommand):

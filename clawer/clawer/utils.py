@@ -287,53 +287,39 @@ class BackgroundQueue(object):
 class DownloadQueue(object):
     QUEUE_NAME = "task_downloader"
     URGENCY_QUEUE_NAME = "urgency_task_downloader"
+    FOREIGN_QUEUE_NAME = "foreign_task_downloader"
     MAX_COUNT = 10000
     
-    def __init__(self, is_urgency=False, redis_url=settings.REDIS):
+    def __init__(self, redis_url=settings.REDIS):
         self.connection = redis.Redis.from_url(redis_url)
         self.queue = rq.Queue(self.QUEUE_NAME, connection=self.connection)
         self.urgency_queue = rq.Queue(self.URGENCY_QUEUE_NAME, connection=self.connection)
-        self.is_urgency = is_urgency
+        self.foreign_queue = rq.Queue(self.FOREIGN_QUEUE_NAME, connection=self.connection)
         self.jobs = []
         
-    def enqueue(self, func, *args, **kwargs):
-        job = None
-        if self.is_urgency:
-            if self.urgency_queue.count > self.MAX_COUNT:
-                return None
-            job = self.urgency_queue.enqueue_call(func, *args, **kwargs)
+    def enqueue(self, queue_name, func, *args, **kwargs):
+        q = None
+        if queue_name == self.QUEUE_NAME:
+            q = self.queue
+        elif queue_name == self.FOREIGN_QUEUE_NAME:
+            q = self.foreign_queue
+        elif queue_name == self.URGENCY_QUEUE_NAME:
+            q = self.urgency_queue
         else:
-            if self.queue.count > self.MAX_COUNT:
-                return None
-            job = self.queue.enqueue_call(func, *args, **kwargs)
+            q = self.queue
         
+        if q.count > self.MAX_COUNT:
+            print "queue count is big than %d" % self.MAX_COUNT
+            return None
+        
+        job = q.enqueue(func, *args, **kwargs)
         self.jobs.append(job)
         return job.id
     
 
-class DownloadWorker(object):
-    QUEUE_NAME = DownloadQueue.QUEUE_NAME
-    URGENCY_QUEUE_NAME = DownloadQueue.URGENCY_QUEUE_NAME
-    
-    def __init__(self, redis_url=settings.REDIS):
-        self.connection = redis.Redis.from_url(redis_url)
-        
-        self.queue = rq.Queue(self.QUEUE_NAME, connection=self.connection)
-        self.worker = rq.Worker(self.queue)
-        
-        self.urgency_queue = rq.Queue(self.URGENCY_QUEUE_NAME, connection=self.connection)
-        self.urgency_worker = rq.Worker(self.urgency_queue)
-        
-    def run(self):
-        self.worker.work()
-        
-    def urgency_run(self):
-        self.urgency_worker.work()
-        
-
 class DownloadClawerTask(object):
     
-    def __init__(self, clawer_task):
+    def __init__(self, clawer_task, clawer_setting):
         from clawer.models import ClawerDownloadLog, RealTimeMonitor
         
         self.clawer_task = clawer_task
@@ -342,7 +328,7 @@ class DownloadClawerTask(object):
         self.background_queue = BackgroundQueue()
         self.headers = {"user-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:40.0) Gecko/20100101 Firefox/40.0"}
         
-        self.clawer_setting = self.clawer_task.clawer.cached_settings()
+        self.clawer_setting = self.clawer_setting
         
         self.downloader = Download(self.clawer_task.uri, engine=self.clawer_setting.download_engine)
         
@@ -564,8 +550,8 @@ class GenerateClawerTask(object):
         
 
 #rqworker function
-def download_clawer_task(clawer_task):
-    downloader = DownloadClawerTask(clawer_task)
+def download_clawer_task(clawer_task, clawer_setting):
+    downloader = DownloadClawerTask(clawer_task, clawer_setting)
     ret = downloader.download()
     return ret
 

@@ -16,7 +16,7 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch.dispatcher import receiver
 from django.core.cache import cache
 
-from clawer.utils import Download, UrlCache
+from clawer.utils import Download, UrlCache, DownloadQueue
 from html5helper import redis_cluster
 
         
@@ -414,10 +414,11 @@ class ClawerTask(models.Model):
     
 
 class ClawerSetting(models.Model):
-    (PRIOR_NORMAL, PRIOR_URGENCY) = range(0, 2)
+    (PRIOR_NORMAL, PRIOR_URGENCY, PRIOR_FOREIGN) = range(0, 3)
     PRIOR_CHOICES = (
         (PRIOR_NORMAL, "normal"),
         (PRIOR_URGENCY, "urgency"),
+        (PRIOR_FOREIGN, "foreign"),
     )
     
     clawer = models.ForeignKey(Clawer)
@@ -434,9 +435,23 @@ class ClawerSetting(models.Model):
         app_label = "clawer"
         ordering = ["-id"]
         
-    def is_urgency(self):
-        return self.prior == self.PRIOR_URGENCY
+    def prior_name(self):
+        for item in self.PRIOR_CHOICES:
+            if item[0] == self.prior:
+                return item[1]
+        
+        return ""
     
+    def prior_to_queue_name(self):
+        if self.prior == self.PRIOR_NORMAL:
+            return DownloadQueue.QUEUE_NAME
+        elif self.prior == self.PRIOR_URGENCY:
+            return DownloadQueue.URGENCY_QUEUE_NAME
+        elif self.prior == self.PRIOR_FOREIGN:
+            return DownloadQueue.FOREIGN_QUEUE_NAME
+        else:
+            return DownloadQueue.QUEUE_NAME
+        
     def as_json(self):
         result = {
             "dispatch": self.dispatch,
@@ -444,6 +459,7 @@ class ClawerSetting(models.Model):
             "proxy": self.proxy or "",
             "download_engine": self.download_engine,
             "prior": self.prior,
+            "prior_name": self.prior_name(),
             "cookie": self.cookie,
             "last_update_datetime": self.last_update_datetime.strftime("%Y-%m-%d %H:%M:%S"),
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
@@ -472,7 +488,7 @@ class RealTimeMonitor(object):
                 result["data"][t] = {"count": 0}
         
         self.shrink(result, status)
-        logging.debug("result is: %s", result)
+        #logging.debug("result is: %s", result)
         return result
     
     def task_key(self, status):
