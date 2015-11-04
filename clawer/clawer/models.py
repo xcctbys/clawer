@@ -319,7 +319,7 @@ class ClawerGenerateLog(models.Model):
             "status_name": self.status_name(),
             "failed_reason": self.failed_reason,
             "content_bytes": self.content_bytes,
-            "spend_msecs": self.spend_time,
+            "spend_msecs": self.spend_msecs,
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }
         
@@ -550,6 +550,7 @@ class MenuPermission:
         {"id":1, "text": u"爬虫管理", "url":"", "children": [
             {"id":101, "text":u"爬虫代码配置", "url":"clawer.views.home.clawer_all", "groups":GROUPS},
             {"id":103, "text":u"爬虫任务", "url":"clawer.views.home.clawer_task", "groups":GROUPS},
+            {"id":102, "text":u"爬虫生成日志", "url":"clawer.views.home.clawer_generate_log", "groups":GROUPS},
             {"id":102, "text":u"爬虫下载日志", "url":"clawer.views.home.clawer_download_log", "groups":GROUPS},
             {"id":104, "text":u"爬虫分析日志", "url":"clawer.views.home.clawer_analysis_log", "groups":GROUPS},
             {"id":105, "text":u"数据下载", "url":settings.MEDIA_URL, "groups":GROUPS},

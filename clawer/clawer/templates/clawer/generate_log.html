@@ -7,24 +7,16 @@
 
 
 <div id="toolbar">
-    <input id="id_input" class="easyui-textbox" data-options="iconCls:'icon-search'" style="width:200px" prompt="根据任务ID搜索">
-    <a href="#" class="easyui-linkbutton" id="search_btn">Go</a>
-    |
-    <a href="#" class="easyui-menubutton" data-options="menu:'#date_choices',">操作</a>
-    
     <select class="easyui-combogrid" type="text" id="id_clawer_select" data-options="required:true" style="width:100px;" ></select>
     <select class="easyui-combobox" type="text" id="id_status_select" data-options="required:true" style="width:100px;" ></select>
     
     <span id="tips"></span>
 </div>
 
-<div id="date_choices">
-    <div id="select_date_btn">选择日期</div>
-</div>
 
 
 <table id="grid" class="easyui-datagrid" style="width:100%;height:100%"
-        url="{% url clawer.apis.home.clawer_analysis_log %}" showFooter="true"
+        url="{% url clawer.apis.home.clawer_generate_log %}" showFooter="true"
         data-options="singleSelect:true,collapsible:true,method:'get'" rownumbers="true" pagination="true"
         toolbar="#toolbar" fitColumns="true">
         
@@ -36,10 +28,10 @@
     </thead>
     <thead>
         <tr>
-            <th data-options="field:'result',width:200," formatter="formatResult">结果</th>
             <th data-options="field:'clawer',"  formatter="formatClawer">爬虫</th>
-            <th data-options="field:'hostname'," >主机名</th>
-            <th data-options="field:'task',"  formatter="formatTask">任务</th>
+            <th data-options="field:'task_generator',"  formatter="formatTaskGenerator">生成器</th>
+            <th data-options="field:'content_bytes',"  formatter="formatBytes">返回字节</th>
+            <th data-options="field:'spend_msecs',">耗时毫秒</th>
             <th data-options="field:'failed_reason',width:200," formatter="formatFailedReason">失败原因</th>
             <th data-options="field:'add_datetime',">添加时间</th>
         </tr>
@@ -47,24 +39,10 @@
 </table>
 
 
-<!-- result win -->
-<div id="result_win" class="easyui-window" title="结果详情" closed="true" style="width:80%;height:90%;padding:5px;">
-</div>
-<!-- result win end -->
-
-
 <!-- failed reason win -->
 <div id="failed_reason_win" class="easyui-window" title="失败详情" closed="true" style="width:80%;height:90%;padding:5px;">
 </div>
 <!-- failed reason win end -->
-
-
-<!-- calendar win -->
-<div id="calendar_win" class="easyui-window" title="日历" closed="true" style="width:80%;height:90%;padding:5px;">
-    <div id="cc" class="easyui-calendar" style="width:60%;height:80%;"></div>
-</div>
-<!-- calendar win end -->
-
 
 
 
@@ -74,16 +52,37 @@ function formatClawer(val) {
 	if(!val) {
 		return "";
 	}
-	return "ID: "+val.id+"("+val.name+")";
+	return val.id+"("+val.name+")";
 }
 
-function formatTask(val) {
+
+function formatTaskGenerator(val) {
 	if(!val) {
 		return "";
 	}
-	return "ID: "+val.id+"("+val.store+")";
+	return val.id+"("+val.add_datetime+")";
 }
 
+
+function formatBytes(val) {
+	if(!val) {
+		return 0;
+	}
+	
+	var G = 1024*1024*1024;
+	var M = 1024*1024;
+	var K = 1024;
+	
+	if(val > G) {
+		return (val/G).toFixed(2) + "G";
+	} else if(val > M) {
+		return (val/M).toFixed(2) + "M";
+	} else if(val > K) {
+		return (val/K).toFixed(2) + "K";
+	}
+	
+	return val;
+}
 
 function formatFailedReason(val, row) {
 	if(!val) {
@@ -104,6 +103,10 @@ function showFailedReasonWin(row_index) {
 	var content = ["<pre class='highlight'>",
 	    "<code>",
 	    row.failed_reason,
+	    "\n--------------------\n\n",
+	    row.task_generator.cron,
+	    "\n--------------------\n\n",
+	    row.task_generator.code,
 	    "</code>",
 	    "</pre>"
 	].join(" ");
@@ -112,59 +115,6 @@ function showFailedReasonWin(row_index) {
 	$("#failed_reason_win").window("open");
 }
 
-
-function formatResult(val, row) {
-	if(!val) {
-		return "-";
-	}
-	
-	var row_index = $("#grid").datagrid("getRowIndex", row);
-	
-	return "<a href='#' onclick='javascript:showResultWin("+row_index+")'>"+row.result.substring(0, 50)+"</a>"
-}
-
-function showResultWin(row_index) {
-	$("#grid").datagrid("selectRow", row_index);
-	
-	var row = $("#grid").datagrid("getSelected");
-	console.debug("row is ", row);
-	
-	var result = JSON.stringify($.parseJSON(row.result), null, 4);
-	
-	var content = ["<pre class='highlight'>",
-	    "<code>",
-	    result,
-	    "</code>",
-	    "</pre>"
-	].join(" ");
-	
-	$("#result_win").html(content);
-	$("#result_win").window("open");
-}
-
-function formatDate(date) {
-	var year = date.getFullYear();
-	var month = date.getMonth() + 1;
-	var day = date.getDate();
-	
-	var result = "";
-	
-	result += year;
-	result += "-";
-	if(month < 10) {
-		result += "0" + month;
-	} else {
-		result += month;
-	}
-	result += "-";
-	if(day < 10) {
-		result += "0" + day;
-	} else {
-		result += day;
-	}
-	
-	return result;
-}
 
 
 function load_clawers() {
@@ -186,19 +136,6 @@ function load_clawers() {
 		}
 	});
 	
-	$("#id_status_select").combobox({
-		valueField:'id',
-	    textField:'text',
-	    onSelect: function(item) {
-	    	reload_datagrid();
-	    },
-	    data: [
-            {id:null, text:"全部"},
-	   	    {id:2, text:"成功"},
-		    {id:1, text:"失败"}
-		]
-	});
-	
 }
 
 function reload_datagrid() {
@@ -213,29 +150,20 @@ function reload_datagrid() {
 
 
 $(document).ready(function(){
-	
-	$("#select_date_btn").bind("click", function(e){
-		$("#calendar_win").window("open");
-		$("#calendar_win").calendar({
-			onSelect: function(date) {
-				$("#grid").datagrid("load", {date: formatDate(date)});
-				$("#calendar_win").window("close");
-				$("#tips").html(formatDate(date));
-			}
-		});
-	});
-
-	
-	$("#search_btn").bind("click", function(e){
-		var task_id = $("#id_input").val();
-		
-		$("#grid").datagrid("load", {
-			"task_id": task_id
-		});
-	});
-	
 	load_clawers();
 	
+	$("#id_status_select").combobox({
+		valueField:'id',
+	    textField:'text',
+	    onSelect: function(item) {
+	    	reload_datagrid();
+	    },
+	    data: [
+            {id:null, text:"全部"},
+	   	    {id:2, text:"成功"},
+		    {id:1, text:"失败"}
+		]
+	});
 });
 </script>
 

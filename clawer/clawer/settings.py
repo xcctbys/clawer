@@ -59,7 +59,7 @@ STATIC_URL = '/static/'
 
 # Additional locations of static files
 STATICFILES_DIRS = (
-    os.path.join(os.path.dirname(__file__), 'static').replace('\\','/'),
+    os.path.join(os.path.dirname(__file__), '../static').replace('\\','/'),
 )
 
 # List of finder classes that know how to find static files in
@@ -138,7 +138,7 @@ CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
 
 
 CLAWER_TASK_URL_MULTIPLE_DAY = 7
-DOWNLOAD_JS = os.path.join(os.path.dirname(__file__), "download.js")
+DOWNLOAD_JS = os.path.join(os.path.dirname(__file__), "../download.js")
 REDIS_DATA_COMPRESSED = True
 
 CLAWER_RESULT_URL = "http://clawer.princetechs.com/media/clawer_result/"

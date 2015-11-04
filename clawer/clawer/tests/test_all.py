@@ -11,7 +11,7 @@ from django.contrib.auth.models import User as DjangoUser, Group
 
 from clawer.models import MenuPermission, Clawer, ClawerTask,\
     ClawerTaskGenerator, ClawerAnalysis, ClawerAnalysisLog, Logger,\
-    ClawerDownloadLog, RealTimeMonitor, ClawerSetting
+    ClawerDownloadLog, RealTimeMonitor, ClawerSetting, ClawerGenerateLog
 from clawer.management.commands import task_generator_run, task_analysis, task_analysis_merge, task_dispatch
 from clawer.management.commands import task_generator_install
 from clawer.utils import UrlCache, Download
@@ -379,6 +379,20 @@ class TestHomeApi(TestCase):
         analysis.delete()
         analysis_log.delete()
         
+    def test_clawer_generate_log(self):
+        clawer = Clawer.objects.create(name="hi", info="good")
+        task_generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="sss", cron="*")
+        generate_log = ClawerGenerateLog.objects.create(clawer=clawer, task_generator=task_generator)
+        url = reverse("clawer.apis.home.clawer_generate_log")
+        
+        resp = self.logined_client.get(url)
+        result = json.loads(resp.content)
+        self.assertTrue(result["is_ok"])
+        
+        clawer.delete()
+        task_generator.delete()
+        generate_log.delete()
+        
     def test_clawer_setting_update(self):
         clawer = Clawer.objects.create(name="hi", info="good")
         url = reverse("clawer.apis.home.clawer_setting_update")
@@ -415,9 +429,6 @@ class TestCmd(TestCase):
         
         ret = task_generator_install.test_alpha(generator)
         self.assertTrue(ret)
-        
-        new_generator = ClawerTaskGenerator.objects.get(id=generator.id)
-        self.assertGreater(len(new_generator.failed_reason), 0)
         
         clawer.delete()
         generator.delete()

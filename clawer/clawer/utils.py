@@ -20,6 +20,7 @@ from html5helper.utils import do_paginator
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 import threading
 import hashlib
+import urlparse
 
 
 
@@ -108,6 +109,12 @@ class Download(object):
     def add_headers(self, headers):
         self.headers.update(headers)
         
+    def split_proxy(self, proxy):
+        tmp = urlparse.urlsplit(proxy)
+        addr = tmp.hostname
+        port = tmp.port or 80
+        return addr, port
+        
     def download(self):
         if self.engine == self.ENGINE_REQUESTS:
             self.download_with_requests()
@@ -174,7 +181,7 @@ class Download(object):
         firefox_profile = webdriver.FirefoxProfile()
         if len(self.proxies) > 0:
             proxy = self.proxies[0]
-            [addr, port] = proxy.split(":")
+            addr, port = self.split_proxy(proxy)
             firefox_profile.set_preference("network.proxy.type", 1)
             firefox_profile.set_preference("network.proxy.http", addr)
             firefox_profile.set_preference("network.proxy.http_port", port)
