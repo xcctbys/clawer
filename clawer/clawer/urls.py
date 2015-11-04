@@ -98,3 +98,7 @@ if settings.DEBUG:
     urlpatterns += patterns("",
         (r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT, 'show_indexes': True }),
     )
+    
+    
+handler404 = 'clawer.views.home.page_404'
+handler500 = 'clawer.views.home.page_500'

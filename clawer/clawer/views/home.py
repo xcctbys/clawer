@@ -34,3 +34,11 @@ def clawer_generate_log(request):
 
 def clawer_setting(request):
     return render_template("clawer/setting.html", request=request)
+
+
+def page_404(request):
+    return render_template("clawer/404.html", request=request)
+
+
+def page_500(request):
+    return render_template("clawer/500.html", request=request)
