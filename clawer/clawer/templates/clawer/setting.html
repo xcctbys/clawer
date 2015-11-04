@@ -95,6 +95,7 @@
                     <select id="id_prior" class="easyui-combobox" name="prior" style="width:200px;">
 					    <option value="0">普通</option>
 					    <option value="1">紧急</option>
+					    <option value="2">海外</option>
 					</select>
                 </td>
             </tr>
@@ -127,7 +128,7 @@ function formatSettingPrior(val, row) {
 		return "-";
 	}
 	
-	return row.setting.prior;
+	return row.setting.prior_name;
 }
 
 function formatSettingCookie(val, row) {
