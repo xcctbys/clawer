@@ -56,11 +56,14 @@ function formatClawer(val) {
 }
 
 
-function formatTaskGenerator(val) {
+function formatTaskGenerator(val, row) {
 	if(!val) {
 		return "";
 	}
-	return val.id+"("+val.add_datetime+")";
+	
+    var row_index = $("#grid").datagrid("getRowIndex", row);
+	
+	return "<a href='#' onclick='javascript:showFailedReasonWin("+row_index+")'>"+val.id+"("+val.add_datetime+")"+"</a>"
 }
 
 
