@@ -427,6 +427,7 @@ class ClawerSetting(models.Model):
     proxy = models.TextField(blank=True, null=True)
     cookie = models.TextField(blank=True, null=True)
     download_engine = models.CharField(max_length=16, default=Download.ENGINE_REQUESTS, choices=Download.ENGINE_CHOICES)
+    download_js = models.TextField(blank=True, null=True)
     prior = models.IntegerField(default=PRIOR_NORMAL)
     last_update_datetime = models.DateTimeField(auto_now_add=True, auto_now=True)
     add_datetime = models.DateTimeField(auto_now_add=True)
@@ -461,6 +462,7 @@ class ClawerSetting(models.Model):
             "prior": self.prior,
             "prior_name": self.prior_name(),
             "cookie": self.cookie,
+            "download_js": self.download_js,
             "last_update_datetime": self.last_update_datetime.strftime("%Y-%m-%d %H:%M:%S"),
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }
