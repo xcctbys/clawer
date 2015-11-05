@@ -42,6 +42,8 @@
      
 # Supervisor for Clawer worker
 
+Run in China
+
       ## start download worker
       # mkdir /home/web_log/nice-clawer
       # chown -R nginx:nginx /home/web_log/nice-clawer
@@ -50,6 +52,20 @@
       # mkdir /data/media
       # chown -R nginx:nginx /data/media
       
-      /home/virtualenvs/py27/bin/supervisord -c /home/webapps/nice-clawer/confs/production/supervisor.ini
+      ln -s /home/webapps/nice-clawer/confs/production/supervisord
+      chkconfig supervisord on
+      service supervisord restart
+      
+
+Run out China
+
+      ln -s /home/webapps/nice-clawer/confs/production/supervisord
+      ln -s /home/webapps/nice-clawer/confs/production/supervisor-foreign.ini supervisor.ini
+      chkconfig supervisord on
+      service supervisord restart
       
       
+      
+      
+
+
