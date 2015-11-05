@@ -37,8 +37,8 @@ def clawer_setting(request):
 
 
 def page_404(request):
-    return render_template("clawer/404.html", request=request)
+    return render_template("404.html", request=request)
 
 
 def page_500(request):
-    return render_template("clawer/500.html", request=request)
+    return render_template("500.html", request=request)
