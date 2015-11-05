@@ -80,7 +80,7 @@ class Download(object):
         (ENGINE_SELENIUM, "SELENIUM"),
     )
     
-    def __init__(self, url, engine=ENGINE_REQUESTS):
+    def __init__(self, url, engine=ENGINE_REQUESTS, js=None):
         self.engine = engine
         self.url = url
         self.spend_time = 0  #unit is million second
@@ -93,6 +93,7 @@ class Download(object):
         self.response_headers = {}
         self.proxies = []
         self.cookies = {}
+        self.js = None
         
     def add_cookie(self, cookie):
         self.headers["Cookie"] = cookie
@@ -194,6 +195,8 @@ class Download(object):
             if self.cookies:
                 driver.add_cookie(self.cookies)
             driver.get(self.url)
+            if self.js:
+                driver.execute_script(self.js)
             self.content = driver.execute_script("return document.documentElement.outerHTML;")
         except:
             self.failed_exception = traceback.format_exc(10)
@@ -330,7 +333,7 @@ class DownloadClawerTask(object):
         
         self.clawer_setting = clawer_setting
         
-        self.downloader = Download(self.clawer_task.uri, engine=self.clawer_setting.download_engine)
+        self.downloader = Download(self.clawer_task.uri, engine=self.clawer_setting.download_engine, js=self.clawer_setting.download_js)
         
         if self.clawer_setting.proxy:
             self.downloader.add_proxies(self.clawer_setting.proxy.strip().split("\n"))
