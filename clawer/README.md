@@ -40,7 +40,7 @@
       30     *    *    *    * cd /home/webapps/nice-clawer/confs/production;./shrink_tmp.sh
       
       #foreign slave
-      */5    *    *    *    * cd /home/webapps/nice-clawer/confs/production;./bg_cmd.sh task_analysis --thread=2 --run=290
+      */5    *    *    *    * cd /home/webapps/nice-clawer/confs/production;./foreign_bg_cmd.sh task_analysis --thread=2 --run=290
       
      
 # Supervisor for Clawer worker

@@ -90,7 +90,7 @@ class Analysis(object):
             answer["vote_count"] = int(vote_div.attrs["data-votecount"])
             #print "vote count %d" % answer["vote_count"]
             #content
-            content_div = div.find("div", {"class":"zm-item-rich-text js-collapse-body"})
+            content_div = div.find("div", {"class":"zm-editable-content clearfix"})
             answer["content"] = content_div.get_text().strip()
             self.result["answers"].append(answer)
     
