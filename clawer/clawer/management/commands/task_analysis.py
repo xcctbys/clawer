@@ -101,7 +101,7 @@ class Command(BaseCommand):
         make_option('--thread',
             dest='thread',
             default=2,
-            help='Run seconds'
+            help='Run threads'
         ),
     )
     
