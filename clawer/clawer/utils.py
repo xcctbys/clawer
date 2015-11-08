@@ -559,17 +559,14 @@ def download_clawer_task(clawer_task, clawer_setting):
     return ret
 
 
-def clawer_task_analysis_failed_reset(clawer_id):
+def clawer_task_reset(clawer_id, status):
     from clawer.models import ClawerTask
     
-    ret = ClawerTask.objects.filter(clawer_id=clawer_id, status=ClawerTask.STATUS_ANALYSIS_FAIL).update(status=ClawerTask.STATUS_SUCCESS)
-    return ret
-
-
-def clawer_task_process_reset(clawer_id):
-    from clawer.models import ClawerTask
-    
-    ret = ClawerTask.objects.filter(clawer_id=clawer_id, status=ClawerTask.STATUS_PROCESS).update(status=ClawerTask.STATUS_LIVE)
+    new_status = ClawerTask.STATUS_LIVE
+    if status in [ClawerTask.STATUS_ANALYSIS_FAIL, ClawerTask.STATUS_ANALYSIS_SUCCESS]:
+        new_status = ClawerTask.STATUS_SUCCESS
+        
+    ret = ClawerTask.objects.filter(clawer_id=clawer_id, status=status).update(status=new_status)
     return ret
 
 

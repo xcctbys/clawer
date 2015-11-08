@@ -31,6 +31,7 @@
 
 <div id="operate">
 	<div id="analysis_failed_reset_btn">重设分析失败的任务</div>
+	<div id="analysis_success_reset_btn">重设分析成功的任务</div>
 	<div id="process_reset_btn">重设进行中的任务</div>
 </div>
 
@@ -420,8 +421,25 @@ $(document).ready(function(){
 			return $.messager.alert('Warning', '请先选择一条数据');
 		}
 		
-	     var url = "{% url clawer.apis.home.clawer_task_analysis_failed_reset %}";
-		 $.getJSON(url, {"clawer":row.id}, function(resp){
+	     var url = "{% url clawer.apis.home.clawer_task_reset %}";
+		 $.getJSON(url, {"clawer":row.id, "status":5}, function(resp){
+		     if(resp.is_ok) {
+				 $.messager.alert("success", "影响数据: " + resp.ret);
+		     } else {
+		    	 $.messager.alert("warning", "failed: "+resp.reason);
+		     }
+		     
+		 });
+	});
+	
+	$("#analysis_success_reset_btn").bind("click", function(){
+		var row = $("#grid").datagrid("getSelected");
+		if(!row) {
+			return $.messager.alert('Warning', '请先选择一条数据');
+		}
+		
+	     var url = "{% url clawer.apis.home.clawer_task_reset %}";
+		 $.getJSON(url, {"clawer":row.id, "status":6}, function(resp){
 		     if(resp.is_ok) {
 				 $.messager.alert("success", "影响数据: " + resp.ret);
 		     } else {
@@ -437,8 +455,8 @@ $(document).ready(function(){
 			return $.messager.alert('Warning', '请先选择一条数据');
 		}
 		
-	     var url = "{% url clawer.apis.home.clawer_task_process_reset %}";
-		 $.getJSON(url, {"clawer":row.id}, function(resp){
+	     var url = "{% url clawer.apis.home.clawer_task_reset %}";
+		 $.getJSON(url, {"clawer":row.id, "status":2}, function(resp){
 		     if(resp.is_ok) {
 				 $.messager.alert("success", "影响数据: " + resp.ret);
 		     } else {

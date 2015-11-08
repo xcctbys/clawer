@@ -264,9 +264,9 @@ class TestHomeApi(TestCase):
         clawer = Clawer.objects.create(name="hi", info="good")
         clawer_generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print hello", cron="*", status=ClawerTaskGenerator.STATUS_PRODUCT)
         clawer_task = ClawerTask.objects.create(clawer=clawer, task_generator=clawer_generator, uri="http://github.com", status=ClawerTask.STATUS_ANALYSIS_FAIL)
-        url = reverse("clawer.apis.home.clawer_task_analysis_failed_reset")
+        url = reverse("clawer.apis.home.clawer_task_reset")
         
-        resp = self.logined_client.get(url, {"clawer": clawer.id})
+        resp = self.logined_client.get(url, {"clawer": clawer.id, "status":ClawerTask.STATUS_ANALYSIS_FAIL})
         result = json.loads(resp.content)
         self.assertTrue(result["is_ok"])
         
@@ -279,9 +279,9 @@ class TestHomeApi(TestCase):
         clawer = Clawer.objects.create(name="hi", info="good")
         clawer_generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print hello", cron="*", status=ClawerTaskGenerator.STATUS_PRODUCT)
         clawer_task = ClawerTask.objects.create(clawer=clawer, task_generator=clawer_generator, uri="http://github.com", status=ClawerTask.STATUS_PROCESS)
-        url = reverse("clawer.apis.home.clawer_task_process_reset")
+        url = reverse("clawer.apis.home.clawer_task_reset")
         
-        resp = self.logined_client.get(url, {"clawer": clawer.id})
+        resp = self.logined_client.get(url, {"clawer": clawer.id, "status":ClawerTask.STATUS_PROCESS})
         result = json.loads(resp.content)
         self.assertTrue(result["is_ok"])
         
