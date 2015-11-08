@@ -14,7 +14,7 @@ import os
 from bs4 import BeautifulSoup
 
 
-DEBUG = False
+DEBUG = True
 if DEBUG:
     level = logging.DEBUG
 else:
@@ -39,8 +39,10 @@ class Analysis(object):
         else:
             with open(self.path, "r") as f:
                 self.text = f.read()
-                
-        self.soup = BeautifulSoup(self.text, "html5lib")
+        try:
+            self.soup = BeautifulSoup(self.text, "html5lib")
+        except:
+            self.soup = BeautifulSoup(self.text, "html.parser")
         self.parse_title()
         self.parse_content()
         self.parse_tags()
@@ -112,6 +114,18 @@ class TestAnalysis(unittest.TestCase):
         self.assertIsNotNone(self.analysis.result["content"])
         self.assertIsNotNone(self.analysis.result["tags"])
         self.assertIsNotNone(self.analysis.result["answer_count"])    
+        
+    def test_parse1(self):
+        url = "http://www.zhihu.com/question/19566962"
+        
+        self.analysis = Analysis(self.path, url)
+        self.analysis.parse()
+        
+        self.assertNotEqual(self.analysis.result, {})
+        self.assertIsNotNone(self.analysis.result["title"])
+        self.assertIsNotNone(self.analysis.result["content"])
+        self.assertIsNotNone(self.analysis.result["tags"])
+        self.assertIsNotNone(self.analysis.result["answer_count"])
 
 
 if __name__ == "__main__":
