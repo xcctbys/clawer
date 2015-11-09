@@ -36,11 +36,16 @@
       
       
       #slave
-      */5    *    *    *    * cd /home/webapps/nice-clawer/confs/production;./bg_cmd.sh task_analysis --process=2 --run=290
+      */5    *    *    *    * cd /home/webapps/nice-clawer/confs/production;./bg_cmd.sh task_analysis --thread=2 --run=290
       30     *    *    *    * cd /home/webapps/nice-clawer/confs/production;./shrink_tmp.sh
+      
+      #foreign slave
+      */5    *    *    *    * cd /home/webapps/nice-clawer/confs/production;./foreign_bg_cmd.sh task_analysis --thread=2 --run=290
       
      
 # Supervisor for Clawer worker
+
+Run in China
 
       ## start download worker
       # mkdir /home/web_log/nice-clawer
@@ -50,6 +55,20 @@
       # mkdir /data/media
       # chown -R nginx:nginx /data/media
       
-      /home/virtualenvs/py27/bin/supervisord -c /home/webapps/nice-clawer/confs/production/supervisor.ini
+      ln -s /home/webapps/nice-clawer/confs/production/supervisord
+      chkconfig supervisord on
+      service supervisord restart
+      
+
+Run out China
+
+      ln -s /home/webapps/nice-clawer/confs/production/supervisord
+      ln -s /home/webapps/nice-clawer/confs/production/supervisor-foreign.ini supervisor.ini
+      chkconfig supervisord on
+      service supervisord restart
       
       
+      
+      
+
+

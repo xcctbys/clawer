@@ -28,5 +28,17 @@ def clawer_analysis_log(request):
     return render_template("clawer/analysis_log.html", request=request)
 
 
+def clawer_generate_log(request):
+    return render_template("clawer/generate_log.html", request=request)
+
+
 def clawer_setting(request):
     return render_template("clawer/setting.html", request=request)
+
+
+def page_404(request):
+    return render_template("404.html", request=request)
+
+
+def page_500(request):
+    return render_template("500.html", request=request)

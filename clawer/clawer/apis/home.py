@@ -8,8 +8,9 @@ import datetime
 
 from html5helper.decorator import render_json
 from clawer.models import Clawer, ClawerTask, ClawerTaskGenerator,\
-    ClawerAnalysis, ClawerAnalysisLog, Logger, LoggerCategory, ClawerDownloadLog
-from clawer.utils import check_auth_for_api, EasyUIPager, Download
+    ClawerAnalysis, ClawerAnalysisLog, Logger, LoggerCategory, ClawerDownloadLog,\
+    ClawerGenerateLog
+from clawer.utils import check_auth_for_api, EasyUIPager, BackgroundQueue
 from clawer.forms import UpdateClawerTaskGenerator, UpdateClawerAnalysis,\
     AddClawerTask, UpdateClawerSetting
 from html5helper.utils import get_request_ip
@@ -72,26 +73,18 @@ def clawer_task(request):
 
 @render_json
 @check_auth_for_api
-def clawer_task_analysis_failed_reset(request):
-    clawer_id = request.GET.get("clawer")
+def clawer_task_reset(request):
+    from clawer import utils
     
-    ret = ClawerTask.objects.filter(clawer_id=clawer_id, status=ClawerTask.STATUS_ANALYSIS_FAIL).update(status=ClawerTask.STATUS_SUCCESS)
-    #add log
-    Logger.objects.create(user=request.user, category=LoggerCategory.TASK_ANALYSIS_FAILED_RESET, title="%d affected" % ret, 
-                          content=json.dumps(request.GET), from_ip=get_request_ip(request))
-    return {"is_ok":True, "ret":ret}
-
-
-@render_json
-@check_auth_for_api
-def clawer_task_process_reset(request):
-    clawer_id = request.GET.get("clawer")
+    clawer_id = int(request.GET.get("clawer"))
+    status = int(request.GET.get("status"))
     
-    ret = ClawerTask.objects.filter(clawer_id=clawer_id, status=ClawerTask.STATUS_PROCESS).update(status=ClawerTask.STATUS_LIVE)
+    background_queue = BackgroundQueue()
+    background_queue.enqueue(utils.clawer_task_reset, [clawer_id, status])
     #add log
-    Logger.objects.create(user=request.user, category=LoggerCategory.TASK_PROCESS_RESET, title="%d affected" % ret, 
+    Logger.objects.create(user=request.user, category=LoggerCategory.TASK_RESET, title="%d affected" % -1, 
                           content=json.dumps(request.GET), from_ip=get_request_ip(request))
-    return {"is_ok":True, "ret":ret}
+    return {"is_ok":True, "ret":-1}
 
 
 @render_json
@@ -183,6 +176,22 @@ def clawer_analysis_log(request):
 
 @render_json
 @check_auth_for_api
+def clawer_generate_log(request):
+    status = request.GET.get("status")
+    clawer_id = request.GET.get("clawer")
+    
+    queryset = ClawerGenerateLog.objects
+    if status:
+        queryset = queryset.filter(status=status) 
+    if clawer_id:
+        queryset = queryset.filter(clawer_id=clawer_id)
+        
+    pager = EasyUIPager(queryset, request)
+    return pager.query()
+
+
+@render_json
+@check_auth_for_api
 def clawer_analysis_update(request):
     form = UpdateClawerAnalysis(request.POST, request.FILES)
     if form.is_valid() is False:
@@ -218,6 +227,8 @@ def clawer_setting_update(request):
     clawer_setting.dispatch = form.cleaned_data["dispatch"]
     clawer_setting.analysis = form.cleaned_data["analysis"]
     clawer_setting.proxy = form.cleaned_data["proxy"]
+    clawer_setting.cookie = form.cleaned_data["cookie"]
+    clawer_setting.download_js = form.cleaned_data["download_js"]
     clawer_setting.download_engine = form.cleaned_data["download_engine"]
     clawer_setting.prior = form.cleaned_data["prior"]
     clawer_setting.save()

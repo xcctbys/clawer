@@ -33,11 +33,11 @@ home_api_urls = patterns("clawer.apis.home",
     
     url(r"^clawer/task/$", "clawer_task"),
     url(r"^clawer/task/add/$", "clawer_task_add"),
-    url(r"^clawer/task/analysis/failed/reset/$", "clawer_task_analysis_failed_reset"),
-    url(r"^clawer/task/process/reset/$", "clawer_task_process_reset"),
+    url(r"^clawer/task/reset/$", "clawer_task_reset"),
     
     url(r"^clawer/task/generator/update/$", "clawer_task_generator_update"),
     url(r"^clawer/task/generator/history/$", "clawer_task_generator_history"),
+    url(r"^clawer/generate/log/$", "clawer_generate_log"),
     
     url(r"^clawer/analysis/history/$", "clawer_analysis_history"),
     url(r"^clawer/analysis/log/$", "clawer_analysis_log"),
@@ -76,6 +76,7 @@ urlpatterns = patterns('clawer.views.home',
     url(r"^clawer/download/log/$", "clawer_download_log"),
     url(r"^clawer/task/$", "clawer_task"),
     url(r"^clawer/analysis/log/$", "clawer_analysis_log"),
+    url(r"^clawer/generate/log/$", "clawer_generate_log"),
     url(r"^clawer/setting/$", "clawer_setting"),
     
     url(r"^logger/", include(logger_urls)),
@@ -96,3 +97,7 @@ if settings.DEBUG:
     urlpatterns += patterns("",
         (r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT, 'show_indexes': True }),
     )
+    
+    
+handler404 = 'clawer.views.home.page_404'
+handler500 = 'clawer.views.home.page_500'

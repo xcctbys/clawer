@@ -16,7 +16,7 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch.dispatcher import receiver
 from django.core.cache import cache
 
-from clawer.utils import Download, UrlCache
+from clawer.utils import Download, UrlCache, DownloadQueue
 from html5helper import redis_cluster
 
         
@@ -247,8 +247,6 @@ class ClawerTaskGenerator(models.Model):
     code = models.TextField()  #python code
     cron = models.CharField(max_length=128)
     status = models.IntegerField(default=STATUS_ALPHA, choices=STATUS_CHOICES)
-    failed_reason = models.CharField(max_length=4096, blank=True, null=True)
-    last_failed_datetime = models.DateTimeField(null=True, blank=True)
     add_datetime = models.DateTimeField(auto_now_add=True)
     
     class Meta:
@@ -262,8 +260,6 @@ class ClawerTaskGenerator(models.Model):
             "cron": self.cron,
             "status": self.status,
             "status_name": self.status_name(),
-            "failed_reason": self.failed_reason,
-            "last_failed_datetime": self.last_failed_datetime.strftime("%Y-%m-%d %H:%M:%S") if self.last_failed_datetime else None,
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }
         return result
@@ -291,6 +287,44 @@ class ClawerTaskGenerator(models.Model):
             f.write(self.code)
 
 
+class ClawerGenerateLog(models.Model):
+    (STATUS_FAIL, STATUS_SUCCESS) = range(1, 3)
+    STATUS_CHOICES = (
+        (STATUS_FAIL, u"失败"),
+        (STATUS_SUCCESS, u"成功"),
+    )
+    clawer = models.ForeignKey(Clawer)
+    task_generator = models.ForeignKey(ClawerTaskGenerator)
+    status = models.IntegerField(default=0, choices=STATUS_CHOICES)
+    failed_reason = models.CharField(max_length=1024, null=True, blank=True)
+    content_bytes = models.IntegerField(default=0)
+    spend_msecs = models.IntegerField(default=0) #unit is microsecond
+    add_datetime = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        app_label = "clawer"
+        
+    def status_name(self):
+        for item in self.STATUS_CHOICES:
+            if item[0] == self.status:
+                return item[1]
+        return ""
+        
+    def as_json(self):
+        result = {
+            "id":self.id,
+            "clawer": self.clawer.as_json(),
+            "task_generator": self.task_generator.as_json(),
+            "status": self.status,
+            "status_name": self.status_name(),
+            "failed_reason": self.failed_reason,
+            "content_bytes": self.content_bytes,
+            "spend_msecs": self.spend_msecs,
+            "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        
+        return result
+
 
 
 class LoggerCategory(object):
@@ -298,10 +332,7 @@ class LoggerCategory(object):
     UPDATE_TASK_GENERATOR  = u"更新任务生成器"
     UPDATE_ANALYSIS = u"更新分析器"
     UPDATE_SETTING = u"更新爬虫参数"
-    TASK_ANALYSIS_FAILED_RESET = u"重设分析失败的任务"
-    TASK_PROCESS_RESET = u"重设进行中的任务"
-    
-    
+    TASK_RESET = u"重设任务"
     
 
 class Logger(models.Model):
@@ -380,17 +411,20 @@ class ClawerTask(models.Model):
     
 
 class ClawerSetting(models.Model):
-    (PRIOR_NORMAL, PRIOR_URGENCY) = range(0, 2)
+    (PRIOR_NORMAL, PRIOR_URGENCY, PRIOR_FOREIGN) = range(0, 3)
     PRIOR_CHOICES = (
         (PRIOR_NORMAL, "normal"),
         (PRIOR_URGENCY, "urgency"),
+        (PRIOR_FOREIGN, "foreign"),
     )
     
     clawer = models.ForeignKey(Clawer)
     dispatch = models.IntegerField(u"每次分发下载任务数", default=100)
     analysis = models.IntegerField(u"每次分析任务数", default=200)
     proxy = models.TextField(blank=True, null=True)
+    cookie = models.TextField(blank=True, null=True)
     download_engine = models.CharField(max_length=16, default=Download.ENGINE_REQUESTS, choices=Download.ENGINE_CHOICES)
+    download_js = models.TextField(blank=True, null=True)
     prior = models.IntegerField(default=PRIOR_NORMAL)
     last_update_datetime = models.DateTimeField(auto_now_add=True, auto_now=True)
     add_datetime = models.DateTimeField(auto_now_add=True)
@@ -399,9 +433,23 @@ class ClawerSetting(models.Model):
         app_label = "clawer"
         ordering = ["-id"]
         
-    def is_urgency(self):
-        return self.prior == self.PRIOR_URGENCY
+    def prior_name(self):
+        for item in self.PRIOR_CHOICES:
+            if item[0] == self.prior:
+                return item[1]
+        
+        return ""
     
+    def prior_to_queue_name(self):
+        if self.prior == self.PRIOR_NORMAL:
+            return DownloadQueue.QUEUE_NAME
+        elif self.prior == self.PRIOR_URGENCY:
+            return DownloadQueue.URGENCY_QUEUE_NAME
+        elif self.prior == self.PRIOR_FOREIGN:
+            return DownloadQueue.FOREIGN_QUEUE_NAME
+        else:
+            return DownloadQueue.QUEUE_NAME
+        
     def as_json(self):
         result = {
             "dispatch": self.dispatch,
@@ -409,6 +457,9 @@ class ClawerSetting(models.Model):
             "proxy": self.proxy or "",
             "download_engine": self.download_engine,
             "prior": self.prior,
+            "prior_name": self.prior_name(),
+            "cookie": self.cookie,
+            "download_js": self.download_js,
             "last_update_datetime": self.last_update_datetime.strftime("%Y-%m-%d %H:%M:%S"),
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }
@@ -436,7 +487,7 @@ class RealTimeMonitor(object):
                 result["data"][t] = {"count": 0}
         
         self.shrink(result, status)
-        logging.debug("result is: %s", result)
+        #logging.debug("result is: %s", result)
         return result
     
     def task_key(self, status):
@@ -514,6 +565,7 @@ class MenuPermission:
         {"id":1, "text": u"爬虫管理", "url":"", "children": [
             {"id":101, "text":u"爬虫代码配置", "url":"clawer.views.home.clawer_all", "groups":GROUPS},
             {"id":103, "text":u"爬虫任务", "url":"clawer.views.home.clawer_task", "groups":GROUPS},
+            {"id":102, "text":u"爬虫生成日志", "url":"clawer.views.home.clawer_generate_log", "groups":GROUPS},
             {"id":102, "text":u"爬虫下载日志", "url":"clawer.views.home.clawer_download_log", "groups":GROUPS},
             {"id":104, "text":u"爬虫分析日志", "url":"clawer.views.home.clawer_analysis_log", "groups":GROUPS},
             {"id":105, "text":u"数据下载", "url":settings.MEDIA_URL, "groups":GROUPS},

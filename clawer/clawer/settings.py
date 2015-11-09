@@ -59,7 +59,7 @@ STATIC_URL = '/static/'
 
 # Additional locations of static files
 STATICFILES_DIRS = (
-    os.path.join(os.path.dirname(__file__), 'static').replace('\\','/'),
+    os.path.join(os.path.dirname(__file__), '../static').replace('\\','/'),
 )
 
 # List of finder classes that know how to find static files in
@@ -102,14 +102,15 @@ TEMPLATE_DIRS = (
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 
 
-EMAIL_HOST = "localhost"
-EMAIL_HOST_PASSWORD = "smtp.exmail.qq.com"
-EMAIL_HOST_USER = "xiaotaop@princetechs.com"
+EMAIL_HOST = "smtp.exmail.qq.com"
+EMAIL_HOST_PASSWORD = "robot0022"
+EMAIL_HOST_USER = "robot@princetechs.com"
 EMAIL_PORT = 1025
-EMAIL_SUBJECT_PREFIX = "[NiceClawer]"
+#EMAIL_SUBJECT_PREFIX = ""
 EMAIL_USE_TLS = True
-EMAIL_FROM = "clawer@princetechs.com"
-DEFAULT_FROM_EMAIL = "clawer@princetechs.com"
+EMAIL_FROM = "robot@princetechs.com"
+DEFAULT_FROM_EMAIL = "robot@princetechs.com"
+
 
 AUTH_PROFILE_MODULE = 'clawer.UserProfile'
 
@@ -137,7 +138,7 @@ CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
 
 
 CLAWER_TASK_URL_MULTIPLE_DAY = 7
-DOWNLOAD_JS = os.path.join(os.path.dirname(__file__), "download.js")
+DOWNLOAD_JS = os.path.join(os.path.dirname(__file__), "../download.js")
 REDIS_DATA_COMPRESSED = True
 
 CLAWER_RESULT_URL = "http://clawer.princetechs.com/media/clawer_result/"
