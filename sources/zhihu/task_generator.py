@@ -39,6 +39,9 @@ class History(object):
         u"高效学习",
         u"注意力",
         u"效率",
+        u"专注",
+        u"自我管理",
+        u"学习",
     ]
     
     def __init__(self):
