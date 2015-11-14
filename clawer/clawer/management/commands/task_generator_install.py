@@ -66,8 +66,11 @@ def test_product(task_generator):
     user_cron = CronTab(user=settings.CRONTAB_USER)
     user_cron.remove_all(comment=comment)
     user_cron.write_to_user(user=settings.CRONTAB_USER)
+    cmd = "./bg_cmd.sh"
+    if task_generator.clawer.settings().prior == ClawerSetting.PRIOR_FOREIGN:
+        cmd = "./foreign_bg_cmd.sh"
     
-    job = user_cron.new(command="cd /home/webapps/nice-clawer/confs/production; ./bg_cmd.sh task_generator_run %d" % (task_generator.id), comment=comment)
+    job = user_cron.new(command="cd /home/webapps/nice-clawer/confs/production; %s task_generator_run %d" % (cmd, task_generator.id), comment=comment)
     job.setall(task_generator.cron.strip())
     
     user_cron.write_to_user(user=settings.CRONTAB_USER)

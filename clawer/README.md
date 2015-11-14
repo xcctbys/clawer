@@ -42,7 +42,7 @@
       #foreign slave
       */5    *    *    *    * cd /home/webapps/nice-clawer/confs/production;./foreign_bg_cmd.sh task_analysis --thread=2 --run=290
       ## must run with root
-      */5    *    *    *    * cd /home/webapps/nice-clawer/confs/production;./bg_cmd.sh task_generator_install --foreign
+      */5    *    *    *    * cd /home/webapps/nice-clawer/confs/production;./foreign_bg_cmd.sh task_generator_install --foreign
       
      
 # Supervisor for Clawer worker
