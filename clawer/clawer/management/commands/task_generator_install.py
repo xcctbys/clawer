@@ -19,6 +19,7 @@ def test(foreign=False):
     
     for task_generator in task_generators:
         clawer_setting = task_generator.clawer.settings()
+        print "foreign %s, prior %d" % (foreign, clawer_setting.prior)
         if foreign and clawer_setting.prior != ClawerSetting.PRIOR_FOREIGN:
             continue
         if foreign is False and clawer_setting.prior == ClawerSetting.PRIOR_FOREIGN:
