@@ -6,18 +6,26 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 
 from html5helper.utils import wrapper_raven
-from clawer.models import ClawerTaskGenerator
+from clawer.models import ClawerTaskGenerator, ClawerSetting
+
 import random
+from optparse import make_option
 
 
-
-def test():
+def test(foreign=False):
     task_generators = ClawerTaskGenerator.objects.filter(status__in=[ClawerTaskGenerator.STATUS_ALPHA, 
                                                                      ClawerTaskGenerator.STATUS_BETA, 
                                                                      ClawerTaskGenerator.STATUS_PRODUCT]).order_by("id")
     
     for task_generator in task_generators:
-        print "test %d" % task_generator.id
+        clawer_setting = task_generator.clawer.settings()
+        print "foreign %s, prior %d" % (foreign, clawer_setting.prior)
+        if foreign and clawer_setting.prior != ClawerSetting.PRIOR_FOREIGN:
+            continue
+        if foreign is False and clawer_setting.prior == ClawerSetting.PRIOR_FOREIGN:
+            continue
+            
+        print "install %d" % task_generator.id
         
         if test_alpha(task_generator) is False:
             continue
@@ -58,8 +66,11 @@ def test_product(task_generator):
     user_cron = CronTab(user=settings.CRONTAB_USER)
     user_cron.remove_all(comment=comment)
     user_cron.write_to_user(user=settings.CRONTAB_USER)
+    cmd = "./bg_cmd.sh"
+    if task_generator.clawer.settings().prior == ClawerSetting.PRIOR_FOREIGN:
+        cmd = "./foreign_bg_cmd.sh"
     
-    job = user_cron.new(command="cd /home/webapps/nice-clawer/confs/production; ./bg_cmd.sh task_generator_run %d" % (task_generator.id), comment=comment)
+    job = user_cron.new(command="cd /home/webapps/nice-clawer/confs/production; %s task_generator_run %d" % (cmd, task_generator.id), comment=comment)
     job.setall(task_generator.cron.strip())
     
     user_cron.write_to_user(user=settings.CRONTAB_USER)
@@ -69,8 +80,16 @@ def test_product(task_generator):
 
 class Command(BaseCommand):
     args = ""
-    help = ""
+    help = "Install generator"
+    option_list = BaseCommand.option_list + (
+        make_option('--foreign',
+            dest='foreign',
+            action="store_true",
+            default=False,
+            help='Run task generators of foreigh'
+        ),
+    )
     
     @wrapper_raven
     def handle(self, *args, **options):
-        test()
+        test(options["foreign"])
