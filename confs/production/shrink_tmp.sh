@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-DAY_AGO=7
+DAY_AGO=3
 DISK_USAGE=80
 
 
