@@ -6,6 +6,19 @@
 {% block content %}
 
 <ul class="list-inline">
+    <li>
+        <!-- Single button -->
+		<div class="btn-group">
+		  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+		    {{category_name|default:"选择分组"}} <span class="caret"></span>
+		  </button>
+		  <ul class="dropdown-menu">
+		    {% for item in Category.choices %}
+		    <li><a href="{% url captcha.views.index %}?category={{item.0}}">{{item.1}}</a></li>
+		    {% endfor %}
+		  </ul>
+		</div>
+    </li>
     <li>已标记图片识别码：{{captcha_count}}</li>
     <li>累积标记数：{{label_count}}</li>
     <li><a href="{% url captcha.views.labeled %}">看看我们的战绩</a></li>
@@ -35,7 +48,11 @@
     </div>
 </div>
 {% else %}
-<h1>大功告成</h1>
+<div class="panel panel-info">
+    <div class="panel-body text-center">
+        <h1>大功告成</h1>
+    </div>
+</div>
 {% endif %}
 
 <script>

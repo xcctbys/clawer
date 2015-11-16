@@ -10,20 +10,17 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 
 from html5helper.utils import wrapper_raven
-from captcha.models import Captcha
-
-
-class Category(object):
-    qyxy = 1
-    
+from captcha.models import Captcha, Category
 
 
 
-class QyxyCaptcha(object):
-    def __init__(self):
-        self.url = "http://qyxy.baic.gov.cn/CheckCodeCaptcha?currentTimeMillis=1444875766745&num=87786"
-        self.count = 10000
-        self.category = Category.qyxy
+
+
+class DownloadCaptcha(object):
+    def __init__(self, url, category):
+        self.url = url
+        self.count = 1000
+        self.category = category
         self.save_dir = os.path.join(settings.CAPTCHA_STORE, "%d" % self.category)
         if os.path.exists(self.save_dir) is False:
             os.makedirs(self.save_dir, 0775)
@@ -60,13 +57,20 @@ class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--category',
             dest='category',
-            default="qyxy",
-            help='Captcha category. Default is qyxy. Values is [qyxy]'
+            default="1",
+            help='Captcha category. Default is 1. Values is 1|2.'
         ),
     )
     
     @wrapper_raven
     def handle(self, *args, **options):
-        if options["category"] == "qyxy":
-            qyxy = QyxyCaptcha()
-            qyxy.download()
+        category = int(options["category"])
+        if category == Category.NORMAL:
+            downloader = DownloadCaptcha('http://qyxy.baic.gov.cn/CheckCodeCaptcha?currentTimeMillis=1444875766745&num=87786', Category.NORMAL)
+        elif category == Category.YUNSUAN:
+            downloader = DownloadCaptcha("http://qyxy.baic.gov.cn/CheckCodeYunSuan?currentTimeMillis=1447655192940&num=48429", Category.YUNSUAN)
+        else:
+            downloader = None
+            
+        if downloader:
+            downloader.download()

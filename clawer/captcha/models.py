@@ -6,10 +6,26 @@ import urlparse
 
 # Create your models here.
 
+class Category(object):
+    (NORMAL, YUNSUAN) = range(1, 3)
+    
+    choices = (
+        (NORMAL, u"普通字母"),
+        (YUNSUAN, u"运算类型"),
+    )
+    
+    @classmethod
+    def name(cls, category):
+        for item in cls.choices:
+            if item[0] == category:
+                return item[1]
+        
+        return ""
+
 
 class Captcha(models.Model):
     url = models.URLField()
-    category = models.IntegerField()
+    category = models.IntegerField(choices=Category.choices)
     image_hash = models.CharField(max_length=32)
     label_count = models.IntegerField(default=0)
     add_datetime = models.DateTimeField(auto_now_add=True)
@@ -42,4 +58,4 @@ class LabelLog(models.Model):
     class Meta:
         app_label = "captcha"
         
-        
+
