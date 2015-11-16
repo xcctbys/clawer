@@ -14,15 +14,17 @@ from django.core.urlresolvers import reverse
 def index(request):
     title = u"图片识别"
     category = request.GET.get("category")
-    captcha_count = Captcha.objects.filter(label_count__gt=2).count()
-    label_count = LabelLog.objects.count()
     
     random_count = 50
     if category:
         category = int(category)
         captchas = Captcha.objects.filter(label_count__lt=3, category=category)[:random_count]
+        captcha_count = Captcha.objects.filter(label_count__gt=2, category=category).count()
+        label_count = LabelLog.objects.filter(captcha__category=category).count()
     else:
         captchas = Captcha.objects.filter(label_count__lt=3)[:random_count]
+        captcha_count = Captcha.objects.filter(label_count__gt=2).count()
+        label_count = LabelLog.objects.count()
         
     if len(captchas) > 1:
         random_index = random.randint(0, len(captchas))
