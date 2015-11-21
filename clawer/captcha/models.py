@@ -7,11 +7,12 @@ import urlparse
 # Create your models here.
 
 class Category(object):
-    (NORMAL, YUNSUAN) = range(1, 3)
+    (NORMAL, YUNSUAN, ZHIHU) = range(1, 4)
     
     choices = (
         (NORMAL, u"普通字母"),
         (YUNSUAN, u"运算类型"),
+        (ZHIHU, u"知乎字母"),
     )
     
     @classmethod
