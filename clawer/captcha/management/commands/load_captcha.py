@@ -58,7 +58,7 @@ class Command(BaseCommand):
         make_option('--category',
             dest='category',
             default="1",
-            help='Captcha category. Default is 1. Values is 1|2.'
+            help='Captcha category. Default is 1. Values is 1|2|3.'
         ),
     )
     
