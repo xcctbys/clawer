@@ -321,6 +321,7 @@ class ClawerGenerateLog(models.Model):
             "failed_reason": self.failed_reason,
             "content_bytes": self.content_bytes,
             "spend_msecs": self.spend_msecs,
+            "hostname": self.hostname,
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }
         
