@@ -12,7 +12,9 @@ import random
 from optparse import make_option
 
 
-def test(foreign=False):
+def install(foreign=False):
+    remove_unused(foreign)
+    
     task_generators = ClawerTaskGenerator.objects.filter(status__in=[ClawerTaskGenerator.STATUS_ALPHA, 
                                                                      ClawerTaskGenerator.STATUS_BETA, 
                                                                      ClawerTaskGenerator.STATUS_PRODUCT]).order_by("id")
@@ -31,7 +33,7 @@ def test(foreign=False):
             continue
         if test_beta(task_generator) is False:
             continue
-        if test_product(task_generator) is False:
+        if test_product(task_generator, foreign) is False:
             continue
         
         task_generator.status = ClawerTaskGenerator.STATUS_ON
@@ -42,6 +44,13 @@ def test(foreign=False):
         ClawerTaskGenerator.objects.filter(clawer_id=task_generator, \
             status=ClawerTaskGenerator.STATUS_ON).exclude(id=task_generator.id).update(status=ClawerTaskGenerator.STATUS_OFF)
     
+    
+def remove_unused(foreign=False):
+    task_generators = ClawerTaskGenerator.objects.filter(status__in=[ClawerTaskGenerator.STATUS_OFF]).order_by("id")
+    
+    for task_generator in task_generators:
+        test_crontab(task_generator, foreign)
+
     
 def test_alpha(task_generator):
     path = task_generator.alpha_path()
@@ -60,22 +69,33 @@ def test_beta(task_generator):
 
 
 
-def test_product(task_generator):
-    
+def test_product(task_generator, foreign):
+    test_crontab(task_generator, foreign)
+    return True
+
+
+def test_crontab(task_generator, foreign):
     comment = "clawer %d task generator" % task_generator.clawer_id
     user_cron = CronTab(user=settings.CRONTAB_USER)
     user_cron.remove_all(comment=comment)
     user_cron.write_to_user(user=settings.CRONTAB_USER)
+    
+    if task_generator.status == ClawerTaskGenerator.STATUS_OFF:
+        return
+    
+    prior = task_generator.clawer.settings().prior
+    if foreign and prior != ClawerSetting.PRIOR_FOREIGN:
+        return
+    
     cmd = "./bg_cmd.sh"
-    if task_generator.clawer.settings().prior == ClawerSetting.PRIOR_FOREIGN:
+    if prior == ClawerSetting.PRIOR_FOREIGN:
         cmd = "./foreign_bg_cmd.sh"
     
     job = user_cron.new(command="cd /home/webapps/nice-clawer/confs/production; %s task_generator_run %d" % (cmd, task_generator.id), comment=comment)
     job.setall(task_generator.cron.strip())
     
     user_cron.write_to_user(user=settings.CRONTAB_USER)
-    return True
-
+    
                 
 
 class Command(BaseCommand):
@@ -90,6 +110,7 @@ class Command(BaseCommand):
         ),
     )
     
+    
     @wrapper_raven
     def handle(self, *args, **options):
-        test(options["foreign"])
+        install(options["foreign"])
