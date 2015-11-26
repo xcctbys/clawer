@@ -15,6 +15,7 @@ DATABASES = {
         'PASSWORD': 'dev012131',                  # Not used with sqlite3.
         'HOST': '123.57.22.110',                      # Set to empty string for localhost. Not used with sqlite3.
         'PORT': '3066',                      # Set to empty string for default. Not used with sqlite3.
+        'CONN_MAX_AGE': 10,
     }
 }
 

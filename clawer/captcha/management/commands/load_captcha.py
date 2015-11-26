@@ -19,7 +19,7 @@ from captcha.models import Captcha, Category
 class DownloadCaptcha(object):
     def __init__(self, url, category):
         self.url = url
-        self.count = 1000
+        self.count = 100
         self.category = category
         self.save_dir = os.path.join(settings.CAPTCHA_STORE, "%d" % self.category)
         if os.path.exists(self.save_dir) is False:
@@ -58,7 +58,7 @@ class Command(BaseCommand):
         make_option('--category',
             dest='category',
             default="1",
-            help='Captcha category. Default is 1. Values is 1|2.'
+            help='Captcha category. Default is 1. Values is 1|2|3.'
         ),
     )
     
@@ -69,6 +69,8 @@ class Command(BaseCommand):
             downloader = DownloadCaptcha('http://qyxy.baic.gov.cn/CheckCodeCaptcha?currentTimeMillis=1444875766745&num=87786', Category.NORMAL)
         elif category == Category.YUNSUAN:
             downloader = DownloadCaptcha("http://qyxy.baic.gov.cn/CheckCodeYunSuan?currentTimeMillis=1447655192940&num=48429", Category.YUNSUAN)
+        elif category == Category.ZHIHU:
+            downloader = DownloadCaptcha("http://www.zhihu.com/captcha.gif?r=1448087287415", Category.ZHIHU)
         else:
             downloader = None
             
