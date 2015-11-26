@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 
 from html5helper.utils import wrapper_raven
-from clawer.models import ClawerTaskGenerator, ClawerSetting
+from clawer.models import ClawerTaskGenerator, ClawerSetting, Clawer
 
 import random
 from optparse import make_option
@@ -15,18 +15,20 @@ from optparse import make_option
 def install(foreign=False):
     remove_unused(foreign)
     
-    task_generators = ClawerTaskGenerator.objects.exclude(status__in=[ClawerTaskGenerator.STATUS_OFF]).order_by("id")
-    
-    for task_generator in task_generators:
-        clawer_setting = task_generator.clawer.settings()
+    clawers = Clawer.objects.filter(status=Clawer.STATUS_ON)
+    for clawer in clawers:
+        clawer_setting = clawer.settings()
         print "foreign %s, prior %d" % (foreign, clawer_setting.prior)
         if foreign and clawer_setting.prior != ClawerSetting.PRIOR_FOREIGN:
             continue
         if foreign is False and clawer_setting.prior == ClawerSetting.PRIOR_FOREIGN:
             continue
-            
-        print "install %d" % task_generator.id
         
+        try:
+            task_generator = ClawerTaskGenerator.objects.filter(clawer=clawer).latest()
+        except:
+            continue
+            
         if test_alpha(task_generator) is False:
             continue
         if test_beta(task_generator) is False:
@@ -44,10 +46,10 @@ def install(foreign=False):
     
     
 def remove_unused(foreign=False):
-    task_generators = ClawerTaskGenerator.objects.filter(status__in=[ClawerTaskGenerator.STATUS_OFF]).order_by("id")
+    clawers = Clawer.objects.filter(status=Clawer.STATUS_OFF)
     
-    for task_generator in task_generators:
-        test_crontab(task_generator, foreign)
+    for clawer in clawers:
+        test_crontab(clawer.runing_task_generator(), foreign)
 
     
 def test_alpha(task_generator):
