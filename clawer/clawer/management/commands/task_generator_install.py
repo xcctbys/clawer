@@ -49,7 +49,10 @@ def remove_unused(foreign=False):
     clawers = Clawer.objects.filter(status=Clawer.STATUS_OFF)
     
     for clawer in clawers:
-        test_crontab(clawer.runing_task_generator(), foreign)
+        task_generator = clawer.runing_task_generator()
+        if not task_generator:
+            continue
+        test_crontab(task_generator, foreign)
 
     
 def test_alpha(task_generator):
