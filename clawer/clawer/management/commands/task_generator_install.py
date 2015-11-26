@@ -15,9 +15,7 @@ from optparse import make_option
 def install(foreign=False):
     remove_unused(foreign)
     
-    task_generators = ClawerTaskGenerator.objects.filter(status__in=[ClawerTaskGenerator.STATUS_ALPHA, 
-                                                                     ClawerTaskGenerator.STATUS_BETA, 
-                                                                     ClawerTaskGenerator.STATUS_PRODUCT]).order_by("id")
+    task_generators = ClawerTaskGenerator.objects.exclude(status__in=[ClawerTaskGenerator.STATUS_OFF]).order_by("id")
     
     for task_generator in task_generators:
         clawer_setting = task_generator.clawer.settings()
