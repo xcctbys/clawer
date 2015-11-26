@@ -25,7 +25,7 @@ def install(foreign=False):
             continue
         
         try:
-            task_generator = ClawerTaskGenerator.objects.filter(clawer=clawer).latest()
+            task_generator = ClawerTaskGenerator.objects.filter(clawer=clawer).order_by("-id")[0]
         except:
             continue
             
