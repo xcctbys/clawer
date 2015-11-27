@@ -12,7 +12,7 @@ NAME=uwsgi-clawer
 HOME=/home/webapps/nice-clawer/clawer
 PID=/tmp/uwsgi-clawer.pid
 CMD=/home/virtualenvs/py27/bin/uwsgi
-CONFIG=${HOME}/pro.ini
+CONFIG=${HOME}/cr.ini
 
 wait_for_pid () {
     try=0
