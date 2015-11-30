@@ -39,6 +39,7 @@ PYTHON = "/home/virtualenvs/py27/bin/python"
 CRONTAB_USER = "nginx"
 CLAWER_SOURCE = "/data/clawer/"
 CLAWER_RESULT = "/data/clawer_result/"
+CLAWER_RESULT_URL = "http://10.100.90.51/media/clawer_result/"
 
 REDIS = "redis://10.100.90.51/0"
 URL_REDIS = "redis://10.100.90.52/0"
