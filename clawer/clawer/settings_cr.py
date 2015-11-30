@@ -30,6 +30,8 @@ CACHES = {
     }
 }
 
+ALLOWED_HOSTS = ["*"]
+
 MEDIA_ROOT = "/data/media/"
 MEDIA_URL = "http://clawer.princetechs.com/media/"
 
