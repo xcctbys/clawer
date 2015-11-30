@@ -19,7 +19,7 @@ from captcha.models import Captcha, Category
 class DownloadCaptcha(object):
     def __init__(self, url, category):
         self.url = url
-        self.count = 100
+        self.count = 300
         self.category = category
         self.save_dir = os.path.join(settings.CAPTCHA_STORE, "%d" % self.category)
         if os.path.exists(self.save_dir) is False:
