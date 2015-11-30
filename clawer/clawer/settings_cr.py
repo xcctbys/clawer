@@ -33,7 +33,7 @@ CACHES = {
 ALLOWED_HOSTS = ["*"]
 
 MEDIA_ROOT = "/data/media/"
-MEDIA_URL = "http://clawer.princetechs.com/media/"
+MEDIA_URL = "http://10.100.90.51/media/"
 
 PYTHON = "/home/virtualenvs/py27/bin/python"
 CRONTAB_USER = "nginx"
