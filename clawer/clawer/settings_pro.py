@@ -43,6 +43,7 @@ REDIS = "redis://10.171.34.147/0"
 URL_REDIS = "redis://10.172.241.155/0"
 MONITOR_REDIS = "redis://10.171.34.147/0"
 
+CRONTAB_HOME = "/home/webapps/nice-clawer/confs/production"
 
 #captcha
 CAPTCHA_STORE = "/data/media/captcha"
