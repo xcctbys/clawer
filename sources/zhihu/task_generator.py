@@ -113,7 +113,7 @@ class Generator(object):
         data = resp.json()
         #parse all nodes
         for node in data["htmls"]:
-            bs = BeautifulSoup(node, "html5lib")
+            bs = BeautifulSoup(node)#, "html5lib")
             div = bs.find("div", {"class":"title"})
             a = div.find("a", {"class":"question-link"})
             link = urlparse.urljoin(self.HOST, a["href"])
@@ -139,9 +139,7 @@ class GeneratorTest(unittest.TestCase):
     def test_obtain_urls(self):
         self.generator = Generator()
         self.generator.obtain_urls()
-        
         logging.debug("urls count is %d", len(self.generator.uris))
-        
         self.assertGreater(len(self.generator.uris), 0)
         
         

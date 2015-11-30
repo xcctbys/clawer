@@ -1,0 +1,75 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+BeautifulSoup	ocr_train.py	/^from bs4 import BeautifulSoup$/;"	i
+BeautifulSoup	register_info_task_generator.py	/^from bs4 import BeautifulSoup$/;"	i
+DEBUG	ocr_train.py	/^DEBUG = False$/;"	v
+DEBUG	register_info_task_generator.py	/^DEBUG = True$/;"	v
+Enterprises	register_info_task_generator.py	/^Enterprises = [$/;"	v
+Generator	register_info_task_generator.py	/^class Generator(object):$/;"	c	inherits:object
+GeneratorTest	register_info_task_generator.py	/^class GeneratorTest(unittest.TestCase):$/;"	c	inherits:unittest.TestCase
+Ocr	ocr_train.py	/^class Ocr(object):$/;"	c	inherits:object
+Ocr	register_info_task_generator.py	/^class Ocr(object):$/;"	c	inherits:object
+OcrTrainTest	ocr_train.py	/^class OcrTrainTest(unittest.TestCase):$/;"	c	inherits:unittest.TestCase
+OpencvTrain	ocr_train.py	/^class OpencvTrain(object):$/;"	c	inherits:object
+SEARCH_ENTRY	register_info_task_generator.py	/^SEARCH_ENTRY = [$/;"	v
+STEP	register_info_task_generator.py	/^    STEP = 100$/;"	v	class:Generator
+TestTrainCaptcha	ocr_train.py	/^class TestTrainCaptcha(unittest.TestCase):$/;"	c	inherits:unittest.TestCase
+TrainCaptcha	ocr_train.py	/^class TrainCaptcha(object):$/;"	c	inherits:object
+__init__	ocr_train.py	/^    def __init__(self):$/;"	m	class:OpencvTrain	access:public
+__init__	ocr_train.py	/^    def __init__(self, d):$/;"	m	class:TrainCaptcha	access:public
+__init__	ocr_train.py	/^    def __init__(self, image_path, image_hash):$/;"	m	class:Ocr	access:public
+__init__	register_info_task_generator.py	/^    def __init__(self):$/;"	m	class:Generator	access:public
+__init__	register_info_task_generator.py	/^    def __init__(self, url):$/;"	m	class:Ocr	access:public
+cv2	ocr_train.py	/^import cv2$/;"	i
+filter	ocr_train.py	/^    def filter(self):$/;"	m	class:TrainCaptcha	access:public
+generator	register_info_task_generator.py	/^    generator = Generator()$/;"	v	class:GeneratorTest
+gray_path	ocr_train.py	/^    def gray_path(self):$/;"	m	class:TrainCaptcha	access:public
+hashlib	ocr_train.py	/^import hashlib$/;"	i
+hashlib	register_info_task_generator.py	/^import hashlib$/;"	i
+human_label	ocr_train.py	/^    def human_label(self):$/;"	m	class:TrainCaptcha	access:public
+json	ocr_train.py	/^import json$/;"	i
+json	register_info_task_generator.py	/^import json$/;"	i
+level	ocr_train.py	/^    level = logging.DEBUG$/;"	v
+level	ocr_train.py	/^    level = logging.WARNING$/;"	v
+level	register_info_task_generator.py	/^    level = logging.DEBUG$/;"	v
+level	register_info_task_generator.py	/^    level = logging.ERROR$/;"	v
+load_data	ocr_train.py	/^    def load_data(self):$/;"	m	class:OpencvTrain	access:public
+logging	ocr_train.py	/^import logging$/;"	i
+logging	register_info_task_generator.py	/^import logging$/;"	i
+machine_label	ocr_train.py	/^    def machine_label(self):$/;"	m	class:TrainCaptcha	access:public
+np	ocr_train.py	/^import numpy as np$/;"	i
+opencv_train	ocr_train.py	/^    opencv_train = OpencvTrain()$/;"	v	class:TestTrainCaptcha
+os	ocr_train.py	/^import os$/;"	i
+os	register_info_task_generator.py	/^import os$/;"	i
+pickle	ocr_train.py	/^import cPickle as pickle$/;"	i
+pickle	register_info_task_generator.py	/^import cPickle as pickle$/;"	i
+plt	ocr_train.py	/^from matplotlib import pyplot as plt$/;"	i
+pwd	ocr_train.py	/^import pwd$/;"	i
+pwd	register_info_task_generator.py	/^import pwd$/;"	i
+raw_path	ocr_train.py	/^    def raw_path(self):$/;"	m	class:TrainCaptcha	access:public
+requests	ocr_train.py	/^import requests$/;"	i
+requests	register_info_task_generator.py	/^import requests$/;"	i
+setUp	ocr_train.py	/^    def setUp(self):$/;"	m	class:OcrTrainTest	access:public
+setUp	ocr_train.py	/^    def setUp(self):$/;"	m	class:TestTrainCaptcha	access:public
+setUp	register_info_task_generator.py	/^    def setUp(self):$/;"	m	class:GeneratorTest	access:public
+subprocess	ocr_train.py	/^import subprocess$/;"	i
+subprocess	register_info_task_generator.py	/^import subprocess$/;"	i
+sys	ocr_train.py	/^import sys$/;"	i
+sys	register_info_task_generator.py	/^import sys$/;"	i
+test_filter	ocr_train.py	/^    def test_filter(self):$/;"	m	class:TestTrainCaptcha	access:public
+test_ocr	register_info_task_generator.py	/^    def test_ocr(self):$/;"	m	class:GeneratorTest	access:public
+to_text	ocr_train.py	/^    def to_text(self):$/;"	m	class:Ocr	access:public
+to_text	register_info_task_generator.py	/^    def to_text(self):$/;"	m	class:Ocr	access:public
+traceback	ocr_train.py	/^import traceback$/;"	i
+traceback	register_info_task_generator.py	/^import traceback$/;"	i
+train	ocr_train.py	/^    def train(self):$/;"	m	class:OpencvTrain	access:public
+unittest	ocr_train.py	/^import unittest$/;"	i
+unittest	register_info_task_generator.py	/^import unittest$/;"	i
+urllib	ocr_train.py	/^import urllib$/;"	i
+urllib	register_info_task_generator.py	/^import urllib$/;"	i
+urlparse	ocr_train.py	/^import urlparse$/;"	i
+urlparse	register_info_task_generator.py	/^import urlparse$/;"	i
