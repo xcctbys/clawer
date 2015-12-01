@@ -547,7 +547,7 @@ class GenerateClawerTask(object):
             self.end_time = time.time()
             
         self.generate_log.status = ClawerGenerateLog.STATUS_FAIL
-        self.generate_log.failed_reason = reason
+        self.generate_log.failed_reason = reason[:1024]
         self.generate_log.content_bytes = self.content_bytes
         self.generate_log.spend_msecs = int(1000*(self.end_time - self.start_time))
         self.generate_log.save()
