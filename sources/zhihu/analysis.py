@@ -81,6 +81,8 @@ class Analysis(object):
         divs = self.soup.find_all("div", {"class":"zm-item-answer  zm-item-expanded"})
         for div in divs:
             answer = {}
+            #aid
+            answer["aid"] = div["data-aid"]
             #parse answer author
             author_info_div = div.find("div", {"class":"zm-item-answer-author-info"})
             author_link = author_info_div.find("a", {"class":"author-link"})
@@ -90,10 +92,10 @@ class Analysis(object):
             #vote
             vote_div = div.find("div", {"class":"zm-item-vote-info"})
             answer["vote_count"] = int(vote_div.attrs["data-votecount"])
-            #print "vote count %d" % answer["vote_count"]
             #content
             content_div = div.find("div", {"class":"zm-editable-content clearfix"})
             answer["content"] = content_div.get_text().strip()
+            
             self.result["answers"].append(answer)
     
 

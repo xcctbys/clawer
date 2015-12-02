@@ -94,7 +94,7 @@ def test_crontab(task_generator, foreign):
     if prior == ClawerSetting.PRIOR_FOREIGN:
         cmd = "./foreign_bg_cmd.sh"
     
-    job = user_cron.new(command="cd /home/webapps/nice-clawer/confs/production; %s task_generator_run %d" % (cmd, task_generator.id), comment=comment)
+    job = user_cron.new(command="cd %s; %s task_generator_run %d" % (settings.CRONTAB_HOME, cmd, task_generator.id), comment=comment)
     job.setall(task_generator.cron.strip())
     
     user_cron.write_to_user(user=settings.CRONTAB_USER)
