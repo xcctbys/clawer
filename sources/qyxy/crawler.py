@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 #encoding=utf-8
+import raven
 import os
 import time
 import threading
@@ -136,7 +137,7 @@ class Crawler(object):
         self.ck_cracker = ck_cracker
         self.ckcode_image_path = self.json_restore_path + 'ckcode.jpg'
         self.crawl_time = CrawlerUtils.get_cur_date()
-        print self.ckcode_image_path
+
 
     def crawl_work(self, ent_number = 0):
         self.ent_number = str(ent_number)

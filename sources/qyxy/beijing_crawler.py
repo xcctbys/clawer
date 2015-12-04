@@ -12,8 +12,6 @@ from crawler import Crawler
 from crawler import CrawlerUtils
 from crawler import CheckCodeCracker
 
-DEBUG=True
-
 class CrawlerBeijingEnt(Crawler):
     html_restore_path = settings.html_restore_path + '/Beijing/'
     json_restore_path = settings.json_restore_path + '/Beijing/'
@@ -169,7 +167,10 @@ class CrawlerBeijingEnt(Crawler):
     def parse_post_check_page(self, page):
         if page == 'fail':
              logging.error('checkcode submitted error!')
+             if settings.sentry_open:
+                settings.sentry_client.captureMessage('checkcode submitted error!')
              return False
+
         soup = BeautifulSoup(page)
         r = soup.find_all('a', {'href':"#", 'onclick' : re.compile(r'openEntInfo')})
 
@@ -235,6 +236,9 @@ class CrawlerBeijingEnt(Crawler):
                 page = self.opener.open(next_url, data=urllib.urlencode(post_data)).read()
                 time.sleep(1)
             except Exception as e:
+                if settings.sentry_open:
+                    settings.sentry_client.captureException()
+
                 logging.error('open new tab page failed, url = %s, page_num = %d' % (next_url, p+1))
                 page = None
             finally:

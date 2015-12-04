@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #encoding=utf-8
-
+import raven
 import os
 import sys
 import re
@@ -41,6 +41,9 @@ class ParserBeijingEnt(Parser):
                             table = table.nextSibling
                 except Exception as e:
                     logging.error('parse failed, with exception %s' % e)
+                    if settings.sentry_open:
+                        settings.sentry_client.captureException()
+
                 finally:
                     pass
         return page_data
@@ -54,10 +57,14 @@ class ParserBeijingEnt(Parser):
                 multi_col_tag = td_tag.find('table').find('tr')
             if not multi_col_tag:
                 logging.deubg('invalid multi_col_tag, multi_col_tag = %s', multi_col_tag)
+                if settings.sentry_open:
+                    settings.sentry_client.captureMessage('invalid multi_col_tag, multi_col_tag = %s', multi_col_tag)
                 return data
 
             if len(columns) != len(multi_col_tag.find_all('td', recursive=False)):
                 logging.debug('column head size != column data size, columns head = %s, columns data = %s' % (columns, multi_col_tag.contents))
+                if settings.sentry_open:
+                    settings.sentry_client.captureMessage('column head size != column data size, columns head = %s, columns data = %s' % (columns, multi_col_tag.contents))
                 return data
 
             for id, col in enumerate(columns):
@@ -117,6 +124,8 @@ class ParserBeijingEnt(Parser):
                         sub_col_index += self.sub_column_count(th)
         except Exception as e:
             logging.error('exception occured in get_table_columns, except_type = %s' % type(e))
+            if settings.sentry_open:
+                settings.sentry_client.captureException()
         finally:
             return columns
 
@@ -222,6 +231,8 @@ class ParserBeijingEnt(Parser):
                         tds = tr.find_all('td')
                         if len(ths) != len(tds):
                             logging.debug('th size not equals td size in table %s, what\'s up??' % table_name)
+                            if settings.sentry_open:
+                                settings.sentry_client.captureMessage('th size not equals td size in table %s, what\'s up??' % table_name)
                             return
                         else:
                             for i in range(len(ths)):
@@ -229,6 +240,8 @@ class ParserBeijingEnt(Parser):
                                     table_dict[CrawlerUtils.get_raw_text_in_bstag(ths[i])] = CrawlerUtils.get_raw_text_in_bstag(tds[i])
         except Exception as e:
             logging.error('parse table %s failed with exception %s' % (table_name, type(e)))
+            if settings.sentry_open:
+                settings.sentry_client.captureException()
         finally:
             return table_dict
 
@@ -272,7 +285,8 @@ class ParserBeijingEnt(Parser):
                     table_name = self.get_table_title(soup.body.table)
                 except Exception as e:
                     logging.error('fail to get table name with exception %s' % e)
-
+                    if settings.sentry_open:
+                        settings.sentry_client.captureException()
                 try:
                     if len(pages) == 1:
                         table_data = self.parse_page(page, table_name)
@@ -282,6 +296,8 @@ class ParserBeijingEnt(Parser):
                             table_data += self.parse_page(p, table_name)
                 except Exception as e:
                     logging.error('fail to parse page with exception %s'%e)
+                    if settings.sentry_open:
+                        settings.sentry_client.captureException()
                 finally:
                     page_data[table_name] = table_data
         return page_data

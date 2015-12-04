@@ -23,6 +23,8 @@ def crawl_work(n, ent_queue):
         try:
             crawler.crawl_work(ent)
         except Exception as e:
+            if settings.sentry_open:
+                settings.sentry_captureException()
             print 'crawler %d failed to crawl enterprise(id = %s), with exception %s' %(n, ent, e)
             time.sleep(1)  # try again
             crawler.crawl_work(ent)
@@ -31,7 +33,8 @@ def crawl_work(n, ent_queue):
 
 def run():
     enterprise_list = CrawlerUtils.get_enterprise_list(settings.enterprise_list_path)
-
+    if settings.sentry_open:
+        settings.sentry_client.captureMessage('this is a test')
     ent_queue = Queue.Queue()
     for x in enterprise_list:
         ent_queue.put(x)
