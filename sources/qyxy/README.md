@@ -1,10 +1,11 @@
-### Beijing enterprise crawler 
+# Beijing enterprise crawler 
 ----
 ####1. source code
 (1) crawler.py contains several classes, they are:
 >a)CrawlerUtils 
 &nbsp;&nbsp;&nbsp;&nbsp;our tools class, there several useful functions which will be called frequently
-b)Crawler
+
+>b)Crawler
 &nbsp;&nbsp;&nbsp;&nbsp;our base crawler class
 
 
@@ -20,9 +21,13 @@ b)Crawler
 ####2. work flow of crawler
 (1) build a Crawler object (let's name it crawler) and a Parser objet(let's name it parser), crawler and parser is connected together by hoding reference of the other 
 so we can access crawler in parser and access parser in crawler
+
 (2) get the enterprise number 
+
 (3) Crawler start work with enterprise number
+
 (4) when crawler download a html page, our parser parse the html page to json data immediately
+
 (5) when we download all relative html pages of a enterprise and parse them over to json data, we write the json data to file 
 
 &nbsp;&nbsp;&nbsp;&nbsp;the crawl and parse process are work alternatively, instead of dividing them apart.
