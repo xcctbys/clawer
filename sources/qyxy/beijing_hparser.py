@@ -41,8 +41,7 @@ class ParserBeijingEnt(Parser):
                             table = table.nextSibling
                 except Exception as e:
                     logging.error('parse failed, with exception %s' % e)
-                    if settings.sentry_open:
-                        settings.sentry_client.captureException()
+                    raise e
 
                 finally:
                     pass
@@ -124,8 +123,7 @@ class ParserBeijingEnt(Parser):
                         sub_col_index += self.sub_column_count(th)
         except Exception as e:
             logging.error('exception occured in get_table_columns, except_type = %s' % type(e))
-            if settings.sentry_open:
-                settings.sentry_client.captureException()
+            raise e
         finally:
             return columns
 
@@ -240,8 +238,7 @@ class ParserBeijingEnt(Parser):
                                     table_dict[CrawlerUtils.get_raw_text_in_bstag(ths[i])] = CrawlerUtils.get_raw_text_in_bstag(tds[i])
         except Exception as e:
             logging.error('parse table %s failed with exception %s' % (table_name, type(e)))
-            if settings.sentry_open:
-                settings.sentry_client.captureException()
+            raise e
         finally:
             return table_dict
 
@@ -285,8 +282,7 @@ class ParserBeijingEnt(Parser):
                     table_name = self.get_table_title(soup.body.table)
                 except Exception as e:
                     logging.error('fail to get table name with exception %s' % e)
-                    if settings.sentry_open:
-                        settings.sentry_client.captureException()
+                    raise e
                 try:
                     if len(pages) == 1:
                         table_data = self.parse_page(page, table_name)
@@ -296,8 +292,7 @@ class ParserBeijingEnt(Parser):
                             table_data += self.parse_page(p, table_name)
                 except Exception as e:
                     logging.error('fail to parse page with exception %s'%e)
-                    if settings.sentry_open:
-                        settings.sentry_client.captureException()
+                    raise e
                 finally:
                     page_data[table_name] = table_data
         return page_data

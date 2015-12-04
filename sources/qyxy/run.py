@@ -18,23 +18,21 @@ def crawl_work(n, ent_queue):
             if ent_queue.empty():
                 print 'ent queue is empty, crawler %d stop' % n
                 return
+
         time.sleep(1)
         print 'crawler %d start to crawler enterprise(ent_id = %s)' % (n, ent)
         try:
             crawler.crawl_work(ent)
         except Exception as e:
-            if settings.sentry_open:
-                settings.sentry_captureException()
             print 'crawler %d failed to crawl enterprise(id = %s), with exception %s' %(n, ent, e)
             time.sleep(1)  # try again
             crawler.crawl_work(ent)
+            raise e
 
         ent_queue.task_done()
 
 def run():
     enterprise_list = CrawlerUtils.get_enterprise_list(settings.enterprise_list_path)
-    if settings.sentry_open:
-        settings.sentry_client.captureMessage('this is a test')
     ent_queue = Queue.Queue()
     for x in enterprise_list:
         ent_queue.put(x)
@@ -48,5 +46,11 @@ def run():
     print 'All crawlers work over'
 
 if __name__ == '__main__':
-    run()
+    try:
+        run()
+    except Exception as e:
+        if settings.sentry_open:
+                settings.sentry_client.captureException()
+    finally:
+        pass
 

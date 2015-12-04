@@ -236,11 +236,9 @@ class CrawlerBeijingEnt(Crawler):
                 page = self.opener.open(next_url, data=urllib.urlencode(post_data)).read()
                 time.sleep(1)
             except Exception as e:
-                if settings.sentry_open:
-                    settings.sentry_client.captureException()
-
                 logging.error('open new tab page failed, url = %s, page_num = %d' % (next_url, p+1))
                 page = None
+                raise e
             finally:
                 if page:
                     #more than one page display the same form, we should insert these pages into json
