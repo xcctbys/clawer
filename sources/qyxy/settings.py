@@ -2,19 +2,19 @@ import logging
 import raven
 
 #log level
-log_level = logging.DEBUG
+log_level = logging.WARN
 
 #denote whether to save html page
-save_html = True
+save_html = False
 
 html_restore_path = './enterprise_crawler'
-json_restore_path = './enterprise_crawler'
+json_restore_path = '/data/clawer_result/enterprise'
 
 #our enterprise list to be crawled
 enterprise_list_path = './enterprise_list/beijing.txt'
 
 #crawler num, for multi-thread crawl, if crawler_num is larger than 1, we may occur http 500 error possible
-crawler_num = 3
+crawler_num = 1
 
 
 #for sentry
