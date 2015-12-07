@@ -54,25 +54,28 @@ class DownloadCaptcha(object):
 class Command(BaseCommand):
     args = ""
     help = "Obtain all captcha."
-    option_list = BaseCommand.option_list + (
-        make_option('--category',
-            dest='category',
-            default="1",
-            help='Captcha category. Default is 1. Values is 1|2|3.'
-        ),
-    )
+    
+    def __init__(self):
+        self.urls = [
+            [Category.NORMAL, "http://qyxy.baic.gov.cn/CheckCodeCaptcha?currentTimeMillis=1444875766745&num=87786"],
+            [Category.YUNSUAN, "http://qyxy.baic.gov.cn/CheckCodeYunSuan?currentTimeMillis=1447655192940&num=48429"],
+            [Category.ZHIHU, "http://www.zhihu.com/captcha.gif?r=1448087287415"],
+            [Category.JIANGSHU, "http://www.jsgsj.gov.cn:58888/province/rand_img.jsp?type=7"],
+            [Category.TIANJIN, "http://tjcredit.gov.cn/verifycode"],
+            [Category.JIANGXI, "http://gsxt.jxaic.gov.cn/ECPS/verificationCode.jsp"],
+            [Category.CHONGQING, "http://gsxt.cqgs.gov.cn/sc.action?width=130&height=40&fs=23&t=1449473139130"],
+            [Category.SICHUAN, 'http://gsxt.scaic.gov.cn/ztxy.do?method=createYzm&dt=1449473634428&random=1449473634428'],
+            [Category.GUIZHOU, 'http://gsxt.gzgs.gov.cn/search!generateCode.shtml?validTag=searchImageCode&1449473693892'],
+            [Category.XIZHUANG, 'http://gsxt.xzaic.gov.cn/validateCode.jspx?type=0&id=0.6980565481876813'],
+            [Category.QINHAI, 'http://218.95.241.36/validateCode.jspx?type=0&id=0.9130336582967944'],
+            [Category.NINGXIA, 'http://gsxt.ngsh.gov.cn/ECPS/verificationCode.jsp?_=1449473855952'],
+            [Category.XINJIANG, 'http://gsxt.xjaic.gov.cn:7001/ztxy.do?method=createYzm&dt=1449473880582&random=1449473880582'],
+        ]
     
     @wrapper_raven
     def handle(self, *args, **options):
-        category = int(options["category"])
-        if category == Category.NORMAL:
-            downloader = DownloadCaptcha('http://qyxy.baic.gov.cn/CheckCodeCaptcha?currentTimeMillis=1444875766745&num=87786', Category.NORMAL)
-        elif category == Category.YUNSUAN:
-            downloader = DownloadCaptcha("http://qyxy.baic.gov.cn/CheckCodeYunSuan?currentTimeMillis=1447655192940&num=48429", Category.YUNSUAN)
-        elif category == Category.ZHIHU:
-            downloader = DownloadCaptcha("http://www.zhihu.com/captcha.gif?r=1448087287415", Category.ZHIHU)
-        else:
-            downloader = None
-            
-        if downloader:
+        
+        for item in self.urls:
+            downloader = DownloadCaptcha(item[1], item[0])
             downloader.download()
+        

@@ -35,6 +35,7 @@ MEDIA_URL = "http://clawer.princetechs.com/media/"
 
 PYTHON = "/home/virtualenvs/py27/bin/python"
 CRONTAB_USER = "nginx"
+CRONTAB_HOME = "/home/webapps/nice-clawer/confs/cr"
 CLAWER_SOURCE = "/data/clawer/"
 CLAWER_RESULT = "/data/clawer_result/"
 
