@@ -5,7 +5,6 @@ import time
 import re
 import urllib
 import unittest
-import logging
 import settings
 from bs4 import BeautifulSoup
 from crawler import Crawler
@@ -14,7 +13,6 @@ from crawler import CheckCodeCracker
 
 class CrawlerBeijingEnt(Crawler):
     html_restore_path = settings.html_restore_path + '/Beijing/'
-    json_restore_path = settings.json_restore_path + '/Beijing/'
     urls = {'host':'http://qyxy.baic.gov.cn',
             'official_site': 'http://qyxy.baic.gov.cn/beijing',
             'get_checkcode': 'http://qyxy.baic.gov.cn',
@@ -62,7 +60,7 @@ class CrawlerBeijingEnt(Crawler):
             if crack_result:
                 break
             else:
-                logging.debug('crack checkcode failed, total faiil count = %d' % count)
+                settings.logger.debug('crack checkcode failed, total faiil count = %d' % count)
 
     #ind-comm_pub information
     def crawl_ind_comm_pub_pages(self):
@@ -151,7 +149,7 @@ class CrawlerBeijingEnt(Crawler):
                 #parse the pre check page, get useful information
                 self.parse_pre_check_page(response)
                 return checkcode_url
-            logging.debug('get crackable checkcode img failed')
+            settings.logger.debug('get crackable checkcode img failed')
         return None
 
     #generate post data for submit checkcode and other necessary information
@@ -166,7 +164,7 @@ class CrawlerBeijingEnt(Crawler):
     #parse the page appears after we submit the checkcode
     def parse_post_check_page(self, page):
         if page == 'fail':
-             logging.error('checkcode submitted error!')
+             settings.logger.error('checkcode submitted error!')
              if settings.sentry_open:
                 settings.sentry_client.captureMessage('checkcode submitted error!')
              return False
@@ -178,7 +176,7 @@ class CrawlerBeijingEnt(Crawler):
         if r:
             ent = r[0]['onclick']
         else:
-            logging.debug('fail to find openEntInfo')
+            settings.logger.debug('fail to find openEntInfo')
 
         m = re.search(r'\'([\w]*)\'[ ,]+\'([\w]*)\'[ ,]+\'([\w]*)\'', ent)
         if m:
@@ -189,7 +187,7 @@ class CrawlerBeijingEnt(Crawler):
         if r:
             self.time_stamp = r[0]['value']
         else:
-            logging.debug('fail to get time stamp')
+            settings.logger.debug('fail to get time stamp')
         return True
 
     #parse the page appears before we submit the checkcode
@@ -236,7 +234,7 @@ class CrawlerBeijingEnt(Crawler):
                 page = self.opener.open(next_url, data=urllib.urlencode(post_data)).read()
                 time.sleep(1)
             except Exception as e:
-                logging.error('open new tab page failed, url = %s, page_num = %d' % (next_url, p+1))
+                settings.logger.error('open new tab page failed, url = %s, page_num = %d' % (next_url, p+1))
                 page = None
                 raise e
             finally:
@@ -260,7 +258,7 @@ class CrawlerBeijingEnt(Crawler):
                                             'clear':'true',
                                             'str':tab
                                             })
-        logging.info('get %s, url:\n%s\n' % (type, url))
+        settings.logger.info('get %s, url:\n%s\n' % (type, url))
         page = self.opener.open(url).read()
         time.sleep(1)
 
@@ -280,11 +278,11 @@ class TestCrawlwerBeijingEnt(unittest.TestCase):
         self.crawler.crawl_work('110000450096015')
 '''
 if __name__ == '__main__':
-    CrawlerUtils.set_logging(settings.log_level)
+    CrawlerUtils.set_settings.logger(settings.log_level)
     crawler = CrawlerBeijingEnt(CheckCodeCracker())
     #enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/beijing.txt')
-    enterprise_list = ['110000450096015']
+    enterprise_list = ['110000009017684']
     for ent_number in enterprise_list:
         ent_number = ent_number.rstrip('\n')
-        logging.info('###################   Start to crawl enterprise with id %s   ###################\n' % ent_number)
-        crawler.crawl_work(ent_number = ent_number)
+        settings.logger.info('###################   Start to crawl enterprise with id %s   ###################\n' % ent_number)
+        crawler.crawl_work(ent_number=ent_number)

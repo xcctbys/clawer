@@ -6,7 +6,6 @@ import sys
 import re
 import unittest
 import settings
-import logging
 from bs4 import BeautifulSoup
 from hparser import Parser
 from crawler import CrawlerUtils
@@ -40,7 +39,7 @@ class ParserBeijingEnt(Parser):
                                 page_data[table_name] = self.parse_table(table, table_name, page)
                             table = table.nextSibling
                 except Exception as e:
-                    logging.error('parse failed, with exception %s' % e)
+                    settings.logger.error('parse failed, with exception %s' % e)
                     raise e
 
                 finally:
@@ -55,13 +54,13 @@ class ParserBeijingEnt(Parser):
             if td_tag.find('table'):
                 multi_col_tag = td_tag.find('table').find('tr')
             if not multi_col_tag:
-                logging.deubg('invalid multi_col_tag, multi_col_tag = %s', multi_col_tag)
+                settings.logger.deubg('invalid multi_col_tag, multi_col_tag = %s', multi_col_tag)
                 if settings.sentry_open:
                     settings.sentry_client.captureMessage('invalid multi_col_tag, multi_col_tag = %s', multi_col_tag)
                 return data
 
             if len(columns) != len(multi_col_tag.find_all('td', recursive=False)):
-                logging.debug('column head size != column data size, columns head = %s, columns data = %s' % (columns, multi_col_tag.contents))
+                settings.logger.debug('column head size != column data size, columns head = %s, columns data = %s' % (columns, multi_col_tag.contents))
                 if settings.sentry_open:
                     settings.sentry_client.captureMessage('column head size != column data size, columns head = %s, columns data = %s' % (columns, multi_col_tag.contents))
                 return data
@@ -122,8 +121,7 @@ class ParserBeijingEnt(Parser):
                         columns.append((col_name, self.get_sub_columns(tr_tag.nextSibling.nextSibling, sub_col_index, self.sub_column_count(th))))
                         sub_col_index += self.sub_column_count(th)
         except Exception as e:
-            logging.error('exception occured in get_table_columns, except_type = %s' % type(e))
-            raise e
+            settings.logger.error('exception occured in get_table_columns, except_type = %s' % type(e))
         finally:
             return columns
 
@@ -228,7 +226,7 @@ class ParserBeijingEnt(Parser):
                         ths = tr.find_all('th')
                         tds = tr.find_all('td')
                         if len(ths) != len(tds):
-                            logging.debug('th size not equals td size in table %s, what\'s up??' % table_name)
+                            settings.logger.debug('th size not equals td size in table %s, what\'s up??' % table_name)
                             if settings.sentry_open:
                                 settings.sentry_client.captureMessage('th size not equals td size in table %s, what\'s up??' % table_name)
                             return
@@ -237,7 +235,7 @@ class ParserBeijingEnt(Parser):
                                 if CrawlerUtils.get_raw_text_in_bstag(ths[i]):
                                     table_dict[CrawlerUtils.get_raw_text_in_bstag(ths[i])] = CrawlerUtils.get_raw_text_in_bstag(tds[i])
         except Exception as e:
-            logging.error('parse table %s failed with exception %s' % (table_name, type(e)))
+            settings.logger.error('parse table %s failed with exception %s' % (table_name, type(e)))
             raise e
         finally:
             return table_dict
@@ -272,7 +270,7 @@ class ParserBeijingEnt(Parser):
             m = pat.search(base_page)
             if m:
                 next_url = CrawlerBeijingEnt.urls['host'] + m.group(1)
-                logging.info('get annual report, url:\n%s\n' % next_url)
+                settings.logger.info('get annual report, url:\n%s\n' % next_url)
                 page = self.crawler.crawl_page_by_url(next_url)
                 pages = self.crawler.get_all_pages_of_a_section(page, page_type)
 
@@ -281,7 +279,7 @@ class ParserBeijingEnt(Parser):
                     soup = BeautifulSoup(page)
                     table_name = self.get_table_title(soup.body.table)
                 except Exception as e:
-                    logging.error('fail to get table name with exception %s' % e)
+                    settings.logger.error('fail to get table name with exception %s' % e)
                     raise e
                 try:
                     if len(pages) == 1:
@@ -291,7 +289,7 @@ class ParserBeijingEnt(Parser):
                         for p in pages:
                             table_data += self.parse_page(p, table_name)
                 except Exception as e:
-                    logging.error('fail to parse page with exception %s'%e)
+                    settings.logger.error('fail to parse page with exception %s'%e)
                     raise e
                 finally:
                     page_data[table_name] = table_data
@@ -446,6 +444,6 @@ class TestParser(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    CrawlerUtils.set_logging(settings.log_level)
+    CrawlerUtils.set_settings.logger(settings.log_level)
     unittest.main()
     pass

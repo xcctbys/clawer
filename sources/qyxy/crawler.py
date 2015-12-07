@@ -14,6 +14,7 @@ import logging
 import codecs
 import CaptchaRecognition as CR
 import bs4
+import settings
 class CrawlerUtils(object):
     @staticmethod
     def make_dir(path):
@@ -129,27 +130,23 @@ class CheckCodeCracker(object):
 
 class Crawler(object):
     html_restore_path = './'
-    json_restore_path = './'
     #create mutex lock (on write json object to file)
     write_file_mutex = threading.Lock()
 
     def __init__(self, ck_cracker):
         self.ck_cracker = ck_cracker
-        self.ckcode_image_path = self.json_restore_path + 'ckcode.jpg'
-        self.crawl_time = CrawlerUtils.get_cur_date()
+        self.ckcode_image_path = self.html_restore_path + 'ckcode.jpg'
+        self.crawl_time = CrawlerUtils.get_cur_time()
 
 
     def crawl_work(self, ent_number = 0):
         self.ent_number = str(ent_number)
         self.ent_id = ''
         self.html_restore_path = self.__class__.html_restore_path + self.ent_number + '/'
-        self.json_restore_path = self.__class__.json_restore_path
 
         if not os.path.exists(self.html_restore_path):
             CrawlerUtils.make_dir(self.html_restore_path)
 
-        if not os.path.exists(self.json_restore_path):
-            CrawlerUtils.make_dir(self.json_restore_path)
 
         self.json_dict = {}
         self.opener = CrawlerUtils.make_opener()
@@ -160,7 +157,7 @@ class Crawler(object):
 
         #use multi-thread to crawl, when we write data to our single file, use mutex lock
         self.write_file_mutex.acquire()
-        CrawlerUtils.json_dump_to_file(self.json_restore_path + self.crawl_time + '.json', {self.ent_number : self.json_dict})
+        CrawlerUtils.json_dump_to_file(settings.json_restore_path, {self.ent_number : self.json_dict})
         self.write_file_mutex.release()
 
     def crack_checkcode(self):
