@@ -121,7 +121,7 @@ class ParserBeijingEnt(Parser):
                         columns.append((col_name, self.get_sub_columns(tr_tag.nextSibling.nextSibling, sub_col_index, self.sub_column_count(th))))
                         sub_col_index += self.sub_column_count(th)
         except Exception as e:
-            settings.logger.error('exception occured in get_table_columns, except_type = %s' % type(e))
+            settings.logger.warn('exception occured in get_table_columns, except_type = %s' % type(e))
         finally:
             return columns
 

@@ -1,8 +1,8 @@
 import logging
 
 #log
-log_level = logging.DEBUG
-log_file = './crawler.log'
+log_level = logging.WARN
+log_file = '/data/clawer_result/enterprise/crawler.log'
 logger = None
 
 #denote whether to save html page
