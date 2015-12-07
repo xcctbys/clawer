@@ -13,8 +13,9 @@ DATABASES = {
         'NAME': 'clawer',                      # Or path to database file if using sqlite3.
         'USER': 'dev',                      # Not used with sqlite3.
         'PASSWORD': 'dev012131',                  # Not used with sqlite3.
-        'HOST': '123.57.141.157',                      # Set to empty string for localhost. Not used with sqlite3.
+        'HOST': '123.57.22.110',                      # Set to empty string for localhost. Not used with sqlite3.
         'PORT': '3066',                      # Set to empty string for default. Not used with sqlite3.
+        'CONN_MAX_AGE': 10,
     }
 }
 
@@ -34,6 +35,7 @@ MEDIA_URL = "http://clawer.princetechs.com/media/"
 
 PYTHON = "/home/virtualenvs/py27/bin/python"
 CRONTAB_USER = "nginx"
+CRONTAB_HOME = "/home/webapps/nice-clawer/confs/cr"
 CLAWER_SOURCE = "/data/clawer/"
 CLAWER_RESULT = "/data/clawer_result/"
 
@@ -93,7 +95,7 @@ LOGGING = {
         'file': {
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': os.path.join("/home/web_log/nice-clawer/", "clawer.pro.log"),
-            'backupCount': 24,
+            'backupCount': 1,
             'formatter': 'verbose',
             'level': 'ERROR',
         },
@@ -110,14 +112,9 @@ LOGGING = {
             'level':'ERROR',
         },
         'django.request': {
-            'handlers': ['file'],
+            'handlers': ['null'],
             'level': 'ERROR',
             'propagate': True,
-        },
-        'django.db.backends': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
-            'propagate': False,
         },
     }
 }

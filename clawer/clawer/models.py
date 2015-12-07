@@ -299,6 +299,7 @@ class ClawerGenerateLog(models.Model):
     failed_reason = models.CharField(max_length=1024, null=True, blank=True)
     content_bytes = models.IntegerField(default=0)
     spend_msecs = models.IntegerField(default=0) #unit is microsecond
+    hostname = models.CharField(null=True, blank=True, max_length=16)
     add_datetime = models.DateTimeField(auto_now=True)
     
     class Meta:
@@ -320,6 +321,7 @@ class ClawerGenerateLog(models.Model):
             "failed_reason": self.failed_reason,
             "content_bytes": self.content_bytes,
             "spend_msecs": self.spend_msecs,
+            "hostname": self.hostname,
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }
         

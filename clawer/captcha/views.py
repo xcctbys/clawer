@@ -6,18 +6,26 @@ import traceback
 
 from html5helper.utils import get_request_ip, do_paginator
 from html5helper.decorator import render_template, render_json
-from captcha.models import Captcha, LabelLog
+from captcha.models import Captcha, LabelLog, Category
 from django.core.urlresolvers import reverse
 
 
 
 def index(request):
     title = u"图片识别"
-    captcha_count = Captcha.objects.filter(label_count__gt=2).count()
-    label_count = LabelLog.objects.count()
+    category = request.GET.get("category")
     
     random_count = 50
-    captchas = Captcha.objects.filter(label_count__lt=3)[:random_count]
+    if category:
+        category = int(category)
+        captchas = Captcha.objects.filter(label_count__lt=3, category=category)[:random_count]
+        captcha_count = Captcha.objects.filter(label_count__gt=2, category=category).count()
+        label_count = LabelLog.objects.filter(captcha__category=category).count()
+    else:
+        captchas = Captcha.objects.filter(label_count__lt=3)[:random_count]
+        captcha_count = Captcha.objects.filter(label_count__gt=2).count()
+        label_count = LabelLog.objects.count()
+        
     if len(captchas) > 1:
         random_index = random.randint(0, len(captchas))
         captcha = captchas[random_index]
@@ -27,7 +35,7 @@ def index(request):
         captcha = None
     
     return render_template("captcha/index.html", request=request, captcha_count=captcha_count, label_count=label_count, title=title,
-                           captcha=captcha)
+                           captcha=captcha, Category=Category, category_name=Category.name(category))
     
     
 def labeled(request, page=1):

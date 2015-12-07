@@ -6,24 +6,34 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 
 from html5helper.utils import wrapper_raven
-from clawer.models import ClawerTaskGenerator
+from clawer.models import ClawerTaskGenerator, ClawerSetting, Clawer
+
 import random
+from optparse import make_option
 
 
-
-def test():
-    task_generators = ClawerTaskGenerator.objects.filter(status__in=[ClawerTaskGenerator.STATUS_ALPHA, 
-                                                                     ClawerTaskGenerator.STATUS_BETA, 
-                                                                     ClawerTaskGenerator.STATUS_PRODUCT]).order_by("id")
+def install(foreign=False):
+    remove_unused(foreign)
     
-    for task_generator in task_generators:
-        print "test %d" % task_generator.id
+    clawers = Clawer.objects.filter(status=Clawer.STATUS_ON)
+    for clawer in clawers:
+        clawer_setting = clawer.settings()
+        print "foreign %s, prior %d" % (foreign, clawer_setting.prior)
+        if foreign and clawer_setting.prior != ClawerSetting.PRIOR_FOREIGN:
+            continue
+        if foreign is False and clawer_setting.prior == ClawerSetting.PRIOR_FOREIGN:
+            continue
         
+        try:
+            task_generator = ClawerTaskGenerator.objects.filter(clawer=clawer).order_by("-id")[0]
+        except:
+            continue
+            
         if test_alpha(task_generator) is False:
             continue
         if test_beta(task_generator) is False:
             continue
-        if test_product(task_generator) is False:
+        if test_product(task_generator, foreign) is False:
             continue
         
         task_generator.status = ClawerTaskGenerator.STATUS_ON
@@ -34,6 +44,16 @@ def test():
         ClawerTaskGenerator.objects.filter(clawer_id=task_generator, \
             status=ClawerTaskGenerator.STATUS_ON).exclude(id=task_generator.id).update(status=ClawerTaskGenerator.STATUS_OFF)
     
+    
+def remove_unused(foreign=False):
+    clawers = Clawer.objects.filter(status=Clawer.STATUS_OFF)
+    
+    for clawer in clawers:
+        task_generator = clawer.runing_task_generator()
+        if not task_generator:
+            continue
+        test_crontab(task_generator, foreign)
+
     
 def test_alpha(task_generator):
     path = task_generator.alpha_path()
@@ -52,25 +72,48 @@ def test_beta(task_generator):
 
 
 
-def test_product(task_generator):
-    
+def test_product(task_generator, foreign):
+    test_crontab(task_generator, foreign)
+    return True
+
+
+def test_crontab(task_generator, foreign):
     comment = "clawer %d task generator" % task_generator.clawer_id
     user_cron = CronTab(user=settings.CRONTAB_USER)
     user_cron.remove_all(comment=comment)
     user_cron.write_to_user(user=settings.CRONTAB_USER)
     
-    job = user_cron.new(command="cd /home/webapps/nice-clawer/confs/production; ./bg_cmd.sh task_generator_run %d" % (task_generator.id), comment=comment)
+    if task_generator.status == ClawerTaskGenerator.STATUS_OFF:
+        return
+    
+    prior = task_generator.clawer.settings().prior
+    if foreign and prior != ClawerSetting.PRIOR_FOREIGN:
+        return
+    
+    cmd = "./bg_cmd.sh"
+    if prior == ClawerSetting.PRIOR_FOREIGN:
+        cmd = "./foreign_bg_cmd.sh"
+    
+    job = user_cron.new(command="cd %s; %s task_generator_run %d" % (settings.CRONTAB_HOME, cmd, task_generator.id), comment=comment)
     job.setall(task_generator.cron.strip())
     
     user_cron.write_to_user(user=settings.CRONTAB_USER)
-    return True
-
+    
                 
 
 class Command(BaseCommand):
     args = ""
-    help = ""
+    help = "Install generator"
+    option_list = BaseCommand.option_list + (
+        make_option('--foreign',
+            dest='foreign',
+            action="store_true",
+            default=False,
+            help='Run task generators of foreigh'
+        ),
+    )
+    
     
     @wrapper_raven
     def handle(self, *args, **options):
-        test()
+        install(options["foreign"])

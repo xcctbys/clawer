@@ -89,8 +89,6 @@ class Ocr(object):
         
         return (chi, eng)
         
-         
-
 
 class GeneratorTest(unittest.TestCase):
     

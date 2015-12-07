@@ -480,12 +480,13 @@ class GenerateClawerTask(object):
         self.clawer = self.task_generator.clawer
         self.out_path = "/tmp/task_generator_%d" % self.task_generator.id
         self.monitor = RealTimeMonitor()
-        self.generate_log = ClawerGenerateLog(clawer=self.clawer, task_generator=self.task_generator)
+        self.hostname = socket.gethostname()[:16]
+        self.generate_log = ClawerGenerateLog(clawer=self.clawer, task_generator=self.task_generator, hostname=self.hostname)
         self.start_time = time.time()
         self.end_time = None
         self.content_bytes = 0
         self.url_cache = UrlCache()
-    
+        
     def run(self):
         from clawer.models import ClawerTaskGenerator, Clawer, ClawerTask, ClawerGenerateLog
         
@@ -546,7 +547,7 @@ class GenerateClawerTask(object):
             self.end_time = time.time()
             
         self.generate_log.status = ClawerGenerateLog.STATUS_FAIL
-        self.generate_log.failed_reason = reason
+        self.generate_log.failed_reason = reason[:1024]
         self.generate_log.content_bytes = self.content_bytes
         self.generate_log.spend_msecs = int(1000*(self.end_time - self.start_time))
         self.generate_log.save()
