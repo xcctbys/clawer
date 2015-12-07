@@ -3,6 +3,7 @@
 import os
 import time
 import re
+import random
 import urllib
 import unittest
 import settings
@@ -55,7 +56,7 @@ class CrawlerBeijingEnt(Crawler):
             post_data = self.generate_ckcode_post(currentTimeMillis=self.time_stamp, credit_ticket = self.credit_ticket, checkcode = ckcode, keyword = self.ent_number);
             next_url = CrawlerBeijingEnt.urls['post_checkcode']
             page = self.opener.open(next_url, data = urllib.urlencode(post_data)).read()
-            time.sleep(1)
+            time.sleep(random.uniform(0.2, 1))
             crack_result = self.parse_post_check_page(page)
             if crack_result:
                 break
@@ -136,8 +137,8 @@ class CrawlerBeijingEnt(Crawler):
     def get_checkcode_url(self):
         while True:
             response = self.opener.open(CrawlerBeijingEnt.urls['official_site']).read()
-            time.sleep(1)
-            soup = BeautifulSoup(response)
+            time.sleep(random.uniform(0.2, 1))
+            soup = BeautifulSoup(response, 'html.parser')
             ckimg_src= soup.find_all('img', id='MzImgExpPwd')[0].get('src')
             ckimg_src = str(ckimg_src)
             re_checkcode_captcha=re.compile(r'/([\s\S]*)\?currentTimeMillis')
@@ -169,7 +170,7 @@ class CrawlerBeijingEnt(Crawler):
                 settings.sentry_client.captureMessage('checkcode submitted error!')
              return False
 
-        soup = BeautifulSoup(page)
+        soup = BeautifulSoup(page, 'html.parser')
         r = soup.find_all('a', {'href':"#", 'onclick' : re.compile(r'openEntInfo')})
 
         ent = ''
@@ -192,7 +193,7 @@ class CrawlerBeijingEnt(Crawler):
 
     #parse the page appears before we submit the checkcode
     def parse_pre_check_page(self, page):
-         soup = BeautifulSoup(page)
+         soup = BeautifulSoup(page, 'html.parser')
          ckimg_src= soup.find_all('img', id='MzImgExpPwd')[0].get('src')
          ckimg_src = str(ckimg_src)
          re_currenttime_millis=re.compile(r'/CheckCodeCaptcha\?currentTimeMillis=([\s\S]*)')
@@ -202,14 +203,14 @@ class CrawlerBeijingEnt(Crawler):
 
     def crawl_page_by_url(self, url):
         page = self.opener.open(url).read()
-        time.sleep(1)
+        time.sleep(random.uniform(0.2, 1))
         if settings.save_html:
             CrawlerUtils.save_page_to_file(self.html_restore_path + 'detail.html', page)
         return page
 
     #there may be several pages in a section, get all these pages together, simplifying our parse job
     def get_all_pages_of_a_section(self, page, type):
-        soup = BeautifulSoup(page)
+        soup = BeautifulSoup(page, 'html.parser')
         page_count = 0
         page_size = 0
         pages_data = []
@@ -232,7 +233,7 @@ class CrawlerBeijingEnt(Crawler):
             post_data={'pageNos':str(p+1), 'clear':'', 'pageNo':str(p), 'pageSize':str(page_size), 'ent_id':self.ent_id}
             try:
                 page = self.opener.open(next_url, data=urllib.urlencode(post_data)).read()
-                time.sleep(1)
+                time.sleep(random.uniform(0.2, 1))
             except Exception as e:
                 settings.logger.error('open new tab page failed, url = %s, page_num = %d' % (next_url, p+1))
                 page = None
@@ -260,7 +261,7 @@ class CrawlerBeijingEnt(Crawler):
                                             })
         settings.logger.info('get %s, url:\n%s\n' % (type, url))
         page = self.opener.open(url).read()
-        time.sleep(1)
+        time.sleep(random.uniform(0.2, 1))
 
         if settings.save_html:
             CrawlerUtils.save_page_to_file(self.html_restore_path + type + '.html', page)

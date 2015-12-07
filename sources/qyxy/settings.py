@@ -6,16 +6,16 @@ log_file = '/data/clawer_result/enterprise/crawler.log'
 logger = None
 
 #denote whether to save html page
-save_html = False
+save_html = True
 
-html_restore_path = '/data/clawer_result/enterprise/html'
-json_restore_path = '/data/clawer_result/enterprise'
+html_restore_path = './enterprise_crawler'
+json_restore_path = './enterprise_crawler'
 
 #our enterprise list to be crawled
 enterprise_list_path = './enterprise_list/beijing.txt'
 
 #crawler num, for multi-thread crawl, if crawler_num is larger than 1, we may occur http 500 error possible
-crawler_num = 1
+crawler_num = 3
 
 
 #for sentry

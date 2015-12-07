@@ -18,7 +18,7 @@ class ParserBeijingEnt(Parser):
         self.crawler = crawler
 
     def parse_page(self, page, type):
-        soup = BeautifulSoup(page)
+        soup = BeautifulSoup(page, 'html.parser')
         page_data = {}
         if soup.body:
             if soup.body.table:
@@ -72,7 +72,7 @@ class ParserBeijingEnt(Parser):
             return CrawlerUtils.get_raw_text_in_bstag(td_tag)
 
     def get_columns_of_record_table(self, bs_table, page):
-        tbody = bs_table.find('tbody') or BeautifulSoup(page).find('tbody')
+        tbody = bs_table.find('tbody') or BeautifulSoup(page, 'html.parser').find('tbody')
         tr = None
         if tbody:
             if len(tbody.find_all('tr')) <= 1:
@@ -135,7 +135,7 @@ class ParserBeijingEnt(Parser):
 
             columns = self.get_columns_of_record_table(bs_table, page)
 
-            tbody = bs_table.find('tbody') or BeautifulSoup(page).find('tbody')
+            tbody = bs_table.find('tbody') or BeautifulSoup(page, 'html.parser').find('tbody')
             if columns:
                 col_span = 0
                 for col in columns:
@@ -242,7 +242,7 @@ class ParserBeijingEnt(Parser):
 
     def parse_ent_pub_annual_report_page(self, base_page, page_type):
         def get_year_of_annual_report(page):
-            soup = BeautifulSoup(page)
+            soup = BeautifulSoup(page, 'html.parser')
             t = soup.body.find('table')
             return CrawlerUtils.get_raw_text_in_bstag(t.find('tr'))
 
@@ -250,7 +250,7 @@ class ParserBeijingEnt(Parser):
             CrawlerUtils.save_page_to_file(self.crawler.html_restore_path + 'annual_report_base_info.html', base_page)
 
         page_data = {}
-        soup = BeautifulSoup(base_page)
+        soup = BeautifulSoup(base_page, 'html.parser')
         if soup.body.find('table'):
             base_table = soup.body.find('table')
             table_name = u'企业基本信息'#self.get_table_title(base_table)
@@ -276,7 +276,7 @@ class ParserBeijingEnt(Parser):
 
                 table_name = item[1]
                 try:
-                    soup = BeautifulSoup(page)
+                    soup = BeautifulSoup(page, 'html.parser')
                     table_name = self.get_table_title(soup.body.table)
                 except Exception as e:
                     settings.logger.error('fail to get table name with exception %s' % e)
@@ -314,7 +314,7 @@ class ParserBeijingEnt(Parser):
                             #has detail link
                             if next_url:
                                 detail_page = self.crawler.crawl_page_by_url(next_url)
-                                detail_soup = BeautifulSoup(detail_page)
+                                detail_soup = BeautifulSoup(detail_page, 'html.parser')
                                 before_modify_table = detail_soup.body.find_all('table')[1]
                                 table_data = self.parse_table(before_modify_table, 'before_modify', detail_page)
                                 item[columns[col_count][0]] = self.parse_table(before_modify_table, 'before_modify', detail_page)
@@ -428,7 +428,7 @@ class TestParser(unittest.TestCase):
         with open('./unittest_data/htmls/ind_comm_pub_reg_modify.html', 'r') as f:
             for l in f.readlines():
                 page += l
-        soup = BeautifulSoup(page)
+        soup = BeautifulSoup(page, 'html.parser')
         bs_table = soup.body.find('table')
         cols = self.parser.get_columns_of_record_table(bs_table, page)
 

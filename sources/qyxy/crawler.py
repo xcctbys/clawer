@@ -3,6 +3,7 @@
 import raven
 import os
 import time
+import random
 import threading
 import re
 import json
@@ -120,6 +121,10 @@ class CrawlerUtils(object):
     def get_cur_date():
         return time.strftime("%Y-%m-%d",time.localtime(time.time()))
 
+    @staticmethod
+    def get_random_ms():
+        return random.uniform(0.2, 1)
+
 class CheckCodeCracker(object):
     def __init__(self):
         self.cr = CR.CaptchaRecognition()
@@ -163,7 +168,7 @@ class Crawler(object):
     def crack_checkcode(self):
         checkcode_url =  self.get_checkcode_url()
         page = self.opener.open(checkcode_url).read()
-        time.sleep(1)
+        time.sleep(random.uniform(0.2, 1))
         with open(self.ckcode_image_path, 'w') as f:
             f.write(page)
         return self.ck_cracker.crack(self.ckcode_image_path)
