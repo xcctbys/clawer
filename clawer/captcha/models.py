@@ -17,8 +17,11 @@ class Category(object):
      QINHAI,
      NINGXIA,
      XINJIANG,
+     QUANGUO,
+     GUANGDONG,
+     SHANGHAI,
      #天津、江西、重庆、四川、贵州、西藏、山西、青海、宁夏、新疆
-     ) = range(1, 14)
+     ) = range(1, 17)
     
     choices = (
         (NORMAL, u"普通字母"),
@@ -34,6 +37,9 @@ class Category(object):
         (QINHAI, u"青海"),
         (NINGXIA, u"宁夏"),
         (XINJIANG, u"新疆"),
+        (QUANGUO, u"全国"),
+        (GUANGDONG, u"广东"),
+        (SHANGHAI, u"上海"),
     )
     
     @classmethod
