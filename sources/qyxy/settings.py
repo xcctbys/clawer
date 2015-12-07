@@ -7,7 +7,7 @@ log_level = logging.WARN
 #denote whether to save html page
 save_html = False
 
-html_restore_path = './enterprise_crawler'
+html_restore_path = '/data/clawer_result/enterprise/html'
 json_restore_path = '/data/clawer_result/enterprise'
 
 #our enterprise list to be crawled
