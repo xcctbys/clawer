@@ -21,7 +21,7 @@ class Category(object):
      GUANGDONG,
      SHANGHAI,
      #天津、江西、重庆、四川、贵州、西藏、山西、青海、宁夏、新疆
-     ) = range(1, 16)
+     ) = range(1, 17)
     
     choices = (
         (NORMAL, u"普通字母"),
