@@ -1,7 +1,7 @@
 #!/bin/bash
 
 WORKDIR="/home/webapps/nice-clawer/sources/qyxy"
-PYTHON="/home/virtualenvs/py27/bin/python"
+PYTHON="/home/virtualenvs/dj18/bin/python"
 
 
 function safe_run()
