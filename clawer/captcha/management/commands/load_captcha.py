@@ -75,7 +75,7 @@ class Command(BaseCommand):
             [Category.XINJIANG, 'http://gsxt.xjaic.gov.cn:7001/ztxy.do?method=createYzm&dt=1449473880582&random=1449473880582', 300],
             [Category.QUANGUO, 'http://gsxt.saic.gov.cn/zjgs/captcha?preset=&ra=0.6737781641715337', 1000],
             [Category.GUANGDONG, 'http://gsxt.gdgs.gov.cn/aiccips/verify.html?random=0.6461621058211715', 1000],
-            [Category.SHANGHAI, 'https://www.sgs.gov.cn/notice/captcha?preset=&ra=0.13763015669048162', 1000],
+            [Category.SHANGHAI, 'https://www.sgs.gov.cn/notice/captcha?preset=1&ra=0.13763015669048162', 1000],
         ]
     
     @wrapper_raven
