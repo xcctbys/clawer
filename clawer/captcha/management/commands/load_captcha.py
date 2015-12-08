@@ -12,6 +12,7 @@ from django.conf import settings
 
 from html5helper.utils import wrapper_raven
 from captcha.models import Captcha, Category
+import sys
 
 
 
@@ -84,4 +85,4 @@ class Command(BaseCommand):
     def do_handle(self, item):
         downloader = DownloadCaptcha(item[1], item[0], item[2])
         downloader.download()
-        
+        sys.exit()
