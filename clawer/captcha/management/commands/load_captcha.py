@@ -1,18 +1,19 @@
 # coding=utf-8
 
 import os
-from optparse import make_option
 import requests
 import logging
 import hashlib
 import multiprocessing
+import sys
 
 from django.core.management.base import BaseCommand
 from django.conf import settings
 
 from html5helper.utils import wrapper_raven
 from captcha.models import Captcha, Category
-import sys
+import traceback
+
 
 
 
@@ -33,7 +34,7 @@ class DownloadCaptcha(object):
             return 
         
         for i in range(0, self.count - finished):
-            r = requests.get(self.url)
+            r = requests.get(self.url, timeout=30)
             if r.status_code != 200:
                 logging.warn("request %s failed, status code %d", self.url, r.status_code)
                 continue
@@ -48,7 +49,7 @@ class DownloadCaptcha(object):
                 f.write(r.content)
                 
             captcha = Captcha.objects.create(url=self.url, category=self.category, image_hash=image_hash)
-            logging.debug("Download %d, image id %s, captcha id %d", i, image_hash, captcha.id)
+            logging.debug("Download %d, image id %s, captcha id %d, category %d", i, image_hash, captcha.id, self.category)
         
         
     
@@ -79,10 +80,16 @@ class Command(BaseCommand):
     
     @wrapper_raven
     def handle(self, *args, **options):
-        pool = multiprocessing.Pool(2)
-        pool.map(self.do_handle, self.urls)
-    
-    def do_handle(self, item):
-        downloader = DownloadCaptcha(item[1], item[0], item[2])
+        pool = multiprocessing.Pool(processes=2)
+        pool.map(run, self.urls, chunksize=5)
+        
+
+def run(item):
+    downloader = DownloadCaptcha(item[1], item[0], item[2])
+    try:
         downloader.download()
-        sys.exit()
+    except:
+        logging.warn("failed to download category %d: %s", downloader.category, traceback.format_exc(10))
+        
+    return downloader.category
+    
