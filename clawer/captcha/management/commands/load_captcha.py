@@ -5,6 +5,7 @@ from optparse import make_option
 import requests
 import logging
 import hashlib
+import multiprocessing
 
 from django.core.management.base import BaseCommand
 from django.conf import settings
@@ -77,8 +78,10 @@ class Command(BaseCommand):
     
     @wrapper_raven
     def handle(self, *args, **options):
-        
-        for item in self.urls:
-            downloader = DownloadCaptcha(item[1], item[0], item[2])
-            downloader.download()
+        pool = multiprocessing.Pool(2)
+        pool.map(self.do_handle, self.urls)
+    
+    def do_handle(self, item):
+        downloader = DownloadCaptcha(item[1], item[0], item[2])
+        downloader.download()
         
