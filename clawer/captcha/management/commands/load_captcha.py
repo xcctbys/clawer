@@ -34,7 +34,7 @@ class DownloadCaptcha(object):
             return 
         
         for i in range(0, self.count - finished):
-            r = requests.get(self.url, timeout=30)
+            r = requests.get(self.url, timeout=60)
             if r.status_code != 200:
                 logging.warn("request %s failed, status code %d", self.url, r.status_code)
                 continue

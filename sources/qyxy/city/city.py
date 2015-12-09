@@ -32,26 +32,49 @@ class  Spider(object):
             'User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36',
         }
         self.keywords = []
+        self.output_keywords = []
         self.result = [] #{'name':'', 'no':'', 'where':''}
         
     def transform(self):
         self._load_keywords()
+        self._load_output()
+        
+        i = 0
         for keyword in self.keywords:
-            self._parse(keyword)
+            if keyword in self.output_keywords:
+                continue
             
-        with open(self.output_path, "w") as f:
+            is_ok = True
+            
+            try:
+                self._parse(keyword)
+            except:
+                is_ok = False
+                
+            i += 1
+            logging.error(u"index %d, keyword %s, %s", i, keyword, is_ok)
+            
+        with open(self.output_path, "a") as f:
             for item in self.result:
                 f.write((u"%s,%s,%s,%s" % (item["name"], item["no"], item["where"], item["fund"])).encode("utf-8"))
         
     def _load_keywords(self):
         with open(self.keywords_path) as f:
             for line in f:
-                line = unicode(line, "utf-8")
+                line = unicode(line.strip(), "utf-8")
                 self.keywords.append(line)
+                
+    def _load_output(self):
+        with open(self.output_path) as f:
+            for line in f:
+                keyword = line.split(",")[0].strip()
+                self.output_keywords.append(unicode(keyword, "utf-8"))
+        
+        self.output_keywords = list(set(self.output_keywords))
                 
     def _parse(self, keyword):
         url = "%s?%s" % (self.query_url, urllib.urlencode({"term": keyword.encode("utf-8")}))
-        r = requests.get(url, headers=self.headers)
+        r = requests.get(url, headers=self.headers, timeout=60)
         if r.status_code != 200:
             logging.warn("request %s, return code %d", url, r.status_code)
             return
