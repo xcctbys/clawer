@@ -9,6 +9,7 @@ import multiprocessing
 import  sys
 import urllib
 from bs4 import BeautifulSoup
+import unittest
 
 
 DEBUG = False
@@ -40,21 +41,22 @@ class  Spider(object):
             
         with open(self.output_path, "w") as f:
             for item in self.result:
-                f.write((u"%s,%s,%s" % (item["name"], item["no"], item["where"])).encode("utf-8"))
+                f.write((u"%s,%s,%s,%s" % (item["name"], item["no"], item["where"], item["fund"])).encode("utf-8"))
         
     def _load_keywords(self):
         with open(self.keywords_path) as f:
             for line in f:
-                self.keywords.append(line.strip())
+                line = unicode(line, "utf-8")
+                self.keywords.append(line)
                 
     def _parse(self, keyword):
-        url = "%s?%s" % (self.query_url, urllib.urlencode({"term": keyword}))
+        url = "%s?%s" % (self.query_url, urllib.urlencode({"term": keyword.encode("utf-8")}))
         r = requests.get(url, headers=self.headers)
         if r.status_code != 200:
             logging.warn("request %s, return code %d", url, r.status_code)
             return
         
-        data = {"name":"", "no":"", "where":""}
+        data = {"name":"", "no":"", "where":"", "fund":""}
         soup = BeautifulSoup(r.text, "html5lib")
         div = soup.find("div", {"class":"search-r fl p20 pl40 w60p"})
         ul = div.find("ul")
@@ -62,58 +64,44 @@ class  Spider(object):
         for li in lis:
             h4 = li.find("h4")
             if not h4:
+                #logging.debug("not found h4")
                 continue
             title = h4.get_text().strip().strip("\"")
             if title != keyword:
+                #logging.debug(u"title %s != %s", title, keyword)
                 continue
             data["name"] = title
             p = li.find("p", {"class":"colorText4 f12"})
             content = p.get_text().strip()
-            tmp = content.split(" ")
-            print tmp
+            kvs = content.split(" ")
+            for kv in kvs:
+                if not kv.strip():
+                    continue
+                if kv.find(u"注册号：") > -1:
+                    data["no"] = kv.split(u"：")[1]
+                if kv.find(u"住所：") > -1:
+                    data["where"] = kv.split(u"：")[1]
+                if kv.find(u"注册资本：") > -1:
+                    data["fund"] = kv.split(u"：")[1]
             
+            break
+        
+        logging.debug("data is %s", data)  
         self.result.append(data)
         
-	def load(self):
-		with open (self.path,'r') as f:
-			for line in f.readlines():
-				self.kw=line.split(',')[1].strip()
-				self.city=line.split(',')[0].strip()
-				print self.kw
-				print self.city
-				url='http://report.bbdservice.com/show/searchCompany.do?term='+self.kw
-				headers={
-                    'User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36',
-	            }
-				self.url=url.decode('utf8')
-				b=spynner.Browser()
-				b.create_webview()
-				b.load(self.url,headers)
-				html=b.html.encode('utf8')
-				soup=bs4.BeautifulSoup(html)
-				q.put(soup)
-
-	def parse(self):
-		while True:
-			try:
-
-				self.soup=q.get()
-
-				self.text=self.soup.find_all('p',class_='colorText4 f12')
-				for s in self.text:
-					s=str(s.text)
-					if self.kw in s:
-						r=re.compile("注册号：([\\s\\S]*?) 类型")
-						self.number=r.findall(s)[0]
-						open('city2.txt','a').write(self.kw+','+self.city+','+self.number+'\n')
-						print 'successful...'
-						break
-			except q.empty:
-				break
-		print 'complete...'
+        
+class TestSpider(unittest.TestCase):
+    
+    def test_transform(self):
+        spider = Spider("test.txt")
+        spider.transform()
+        self.assertEqual(len(spider.result), 1)
 
 
 if __name__ == "__main__":
+    if DEBUG:
+        unittest.main()
+        
     spider = Spider("company_bonds.txt")
     spider.transform()
 
