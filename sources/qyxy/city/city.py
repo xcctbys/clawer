@@ -11,6 +11,7 @@ import urllib
 from bs4 import BeautifulSoup
 import unittest
 import os
+import pandas as pd
 
 
 DEBUG = False
@@ -28,7 +29,7 @@ class  Spider(object):
     def __init__(self, keywords_path):
         self.keywords_path = keywords_path
         self.query_url = "http://report.bbdservice.com/show/searchCompany.do"
-        self.output_path = "enterprise.out"
+        self.output_path = "enterprise.csv"
         self.headers = {
             'User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36',
         }
@@ -55,9 +56,12 @@ class  Spider(object):
             i += 1
             logging.error(u"index %d, keyword %s, %s", i, keyword, is_ok)
             
-        with open(self.output_path, "a") as f:
-            for item in self.result:
-                f.write((u"%s,%s,%s,%s\n" % (item["name"], item["no"], item["where"], item["fund"])).encode("utf-8"))
+        self._to_csv()
+                    
+    def _to_csv(self):
+        dataset = [(item["name"], item['no'], item["where"], item["fund"]) for x in self.result]
+        df = pd.DataFrame(data=dataset, columns=["name", "no", "where", "fund"])
+        df.to_csv(self.output_path)
         
     def _load_keywords(self):
         with open(self.keywords_path) as f:
