@@ -1,7 +1,7 @@
 #-*- coding:UTF-8 -*-
-import Image
-import ImageEnhance
-import ImageFilter
+from PIL import Image
+from PIL import ImageEnhance
+from PIL import ImageFilter
 import pandas as pd
 import os
 import numpy as np
