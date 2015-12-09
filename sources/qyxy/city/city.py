@@ -10,6 +10,7 @@ import  sys
 import urllib
 from bs4 import BeautifulSoup
 import unittest
+import os
 
 
 DEBUG = False
@@ -56,7 +57,7 @@ class  Spider(object):
             
         with open(self.output_path, "a") as f:
             for item in self.result:
-                f.write((u"%s,%s,%s,%s" % (item["name"], item["no"], item["where"], item["fund"])).encode("utf-8"))
+                f.write((u"%s,%s,%s,%s\n" % (item["name"], item["no"], item["where"], item["fund"])).encode("utf-8"))
         
     def _load_keywords(self):
         with open(self.keywords_path) as f:
@@ -65,6 +66,9 @@ class  Spider(object):
                 self.keywords.append(line)
                 
     def _load_output(self):
+        if os.path.exists(self.output_path) is False:
+            return
+        
         with open(self.output_path) as f:
             for line in f:
                 keyword = line.split(",")[0].strip()
@@ -101,11 +105,11 @@ class  Spider(object):
                 if not kv.strip():
                     continue
                 if kv.find(u"注册号：") > -1:
-                    data["no"] = kv.split(u"：")[1]
+                    data["no"] = kv.split(u"：")[1].strip()
                 if kv.find(u"住所：") > -1:
-                    data["where"] = kv.split(u"：")[1]
+                    data["where"] = kv.split(u"：")[1].strip()
                 if kv.find(u"注册资本：") > -1:
-                    data["fund"] = kv.split(u"：")[1]
+                    data["fund"] = kv.split(u"：")[1].strip()
             
             break
         
