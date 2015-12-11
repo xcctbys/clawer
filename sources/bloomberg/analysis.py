@@ -1,7 +1,7 @@
 # encoding=utf-8
-"""sina news
+"""bloomberg
 
-hits: http://tech.sina.com.cn/i/2015-10-20/doc-ifxiuyea9745859.shtml
+hits: http://www.bloomberg.com/news/articles/2015-11-11/apple-ipad-pro-review-bigger-better-
 """
 
 import json
@@ -10,9 +10,9 @@ import logging
 import unittest
 import requests
 import os
+import datetime
 
 from bs4 import BeautifulSoup
-
 
 DEBUG = False
 if DEBUG:
@@ -40,37 +40,37 @@ class Analysis(object):
         else:
             with open(self.path, "r") as f:
                 self.text = f.read()
+                if self.text == '':
+                    r = requests.get(self.url)
+                    self.text = r.content
 
-        self.soup = BeautifulSoup(self.text, "html.parser")
+        self.soup = BeautifulSoup(self.text, "html5lib")
         self.parse_title()
         self.parse_time()
         self.parse_content()
         logging.debug("result is %s", json.dumps(self.result, indent=4))
 
     def parse_title(self):
-        h1 = self.soup.find("h1", {"id": "main_title"})
+        h1 = self.soup.find("h1", {"class": "lede-headline"})
         if h1 != None:
-            self.result["title"] = h1.get_text().strip()
+            span = h1.find("span")
+            self.result["title"] = span.get_text().strip()
         else:
             self.result["title"] = ''
 
     def parse_time(self):
-        span = self.soup.find("span", {"class": "titer"})
-        if span != None:
-            self.result["time"] = span.get_text().strip()
+        time = self.soup.find("time", {"class": "published-at time-based"})
+        if time != None:
+            self.result["time"] = time.get_text().strip() + " system_time:" + datetime.datetime.today().strftime("%Y-%m-%d")
         else:
-            self.result["time"] = ''
+            self.result["time"] = "system_time:" + datetime.datetime.today().strftime("%Y-%m-%d")
 
     def parse_content(self):
-        div = self.soup.find("div", {"id": "artibody"})
+        div = self.soup.find("div", {"class": "article-body__content"})
+        all_p = div.find_all("p")
         content = ''
-        if div != None:
-            div = div.find_all('p')
-            for p in div:
-                if p.string == None:
-                            pass
-                else:
-                    content += p.get_text()
+        for p in all_p:
+            content += p.get_text().replace("\n", "")
         self.result["content"] = content
 
 
@@ -79,14 +79,14 @@ class TestAnalysis(unittest.TestCase):
 
     def setUp(self):
         unittest.TestCase.setUp(self)
-        self.path = "5859.txt"
+        self.path = "articletest.txt"
 
     def test_parse(self):
-        """http://tech.sina.com.cn/i/2015-10-20/doc-ifxiuyea9745859.shtml
+        """http://www.bloomberg.com/news/articles/2015-11-11/apple-ipad-pro-review-bigger-better-
         """
-        self.analysis = Analysis(self.path, "http://tech.sina.com.cn/i/2015-11-14/doc-ifxksqku2974020.shtml")
+        self.analysis = Analysis(self.path, "http://www.bloomberg.com/news/articles/2015-11-11/"
+                                            "apple-ipad-pro-review-bigger-better-")
         self.analysis.parse()
-
         self.assertNotEqual(self.analysis.result, {})
         self.assertIsNotNone(self.analysis.result["title"])
         self.assertIsNotNone(self.analysis.result["time"])

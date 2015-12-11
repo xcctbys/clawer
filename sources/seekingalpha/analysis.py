@@ -39,6 +39,9 @@ class Analysis(object):
         else:
             with open(self.path, "r") as f:
                 self.text = f.read()
+                if self.text == '':
+                    r = requests.get(self.url)
+                    self.text = r.content
 
         self.soup = BeautifulSoup(self.text, "html5lib")
         self.parse_title()
