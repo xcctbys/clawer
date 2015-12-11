@@ -59,35 +59,19 @@ class Command(BaseCommand):
     help = "Obtain all captcha."
     
     def __init__(self):
-        self.urls = [
-            [Category.NORMAL, "http://qyxy.baic.gov.cn/CheckCodeCaptcha?currentTimeMillis=1444875766745&num=87786", 300],
-            [Category.YUNSUAN, "http://qyxy.baic.gov.cn/CheckCodeYunSuan?currentTimeMillis=1447655192940&num=48429", 300],
-            [Category.ZHIHU, "http://www.zhihu.com/captcha.gif?r=1448087287415", 300],
-            [Category.JIANGSHU, "http://www.jsgsj.gov.cn:58888/province/rand_img.jsp?type=7", 300],
-            [Category.TIANJIN, "http://tjcredit.gov.cn/verifycode", 300],
-            [Category.JIANGXI, "http://gsxt.jxaic.gov.cn/ECPS/verificationCode.jsp", 300],
-            [Category.CHONGQING, "http://gsxt.cqgs.gov.cn/sc.action?width=130&height=40&fs=23&t=1449473139130", 300],
-            [Category.SICHUAN, 'http://gsxt.scaic.gov.cn/ztxy.do?method=createYzm&dt=1449473634428&random=1449473634428', 300],
-            [Category.GUIZHOU, 'http://gsxt.gzgs.gov.cn/search!generateCode.shtml?validTag=searchImageCode&1449473693892', 300],
-            [Category.XIZHUANG, 'http://gsxt.xzaic.gov.cn/validateCode.jspx?type=0&id=0.6980565481876813', 300],
-            [Category.QINHAI, 'http://218.95.241.36/validateCode.jspx?type=0&id=0.9130336582967944', 300],
-            [Category.NINGXIA, 'http://gsxt.ngsh.gov.cn/ECPS/verificationCode.jsp?_=1449473855952', 300],
-            [Category.XINJIANG, 'http://gsxt.xjaic.gov.cn:7001/ztxy.do?method=createYzm&dt=1449473880582&random=1449473880582', 300],
-            [Category.QUANGUO, 'http://gsxt.saic.gov.cn/zjgs/captcha?preset=&ra=0.6737781641715337', 1000],
-            [Category.GUANGDONG, 'http://gsxt.gdgs.gov.cn/aiccips/verify.html?random=0.6461621058211715', 1000],
-            [Category.SHANGHAI, 'https://www.sgs.gov.cn/notice/captcha?preset=1&ra=0.13763015669048162', 1000],
-            [Category.ALL, 'http://gsxt.saic.gov.cn/zjgs/captcha?preset=1&ra=0.6737781641715337', 300],
-            [Category.HEBEI, "http://www.hebscztxyxx.gov.cn/notice/captcha?preset=1&ra=0.12507317386321537"],
-        ]
+        self.urls = Category.full_choices
     
     @wrapper_raven
     def handle(self, *args, **options):
         pool = multiprocessing.Pool(processes=2)
-        pool.map(run, self.urls, chunksize=5)
+        pool.map(run, self.urls)
         
 
 def run(item):
-    downloader = DownloadCaptcha(item[1], item[0], item[2])
+    if not item[2]:
+        return -1
+    
+    downloader = DownloadCaptcha(item[2], item[0], item[3])
     try:
         downloader.download()
     except:
