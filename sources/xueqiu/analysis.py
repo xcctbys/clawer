@@ -11,6 +11,7 @@ import unittest
 import requests
 import os
 import re
+import datetime
 
 
 DEBUG = False
@@ -65,7 +66,7 @@ class Analysis(object):
         new_a["content"] = content.strip()
 
     def parse_add_datetime(self, new_a):
-        time = self.js_article.get("timeBefore")
+        time = self.js_article.get("timeBefore") + " system_time:" + datetime.datetime.today().strftime("%Y-%m-%d")
         new_a["add_datetime"] = time.strip()
 
     

@@ -28,7 +28,7 @@ class Analysis(object):
             for i in range(0,5):                                        #模拟网页下拉操作循环
                 try:
                     driver.execute_script(js)
-                    time.sleep(1)					#下拉时间等待
+                    time.sleep(1)
                 except:
                     break
             try:

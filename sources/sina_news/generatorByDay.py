@@ -32,11 +32,10 @@ logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: 
 class History(object):
 
     def __init__(self):
-        self.news_time_start = 20151021
-        self.count_date = 0
+        self.date_now = datetime.datetime.now()
         self.news_page = 1
         self.news_count = 1
-        self.path = "tmp/sina_news"
+        self.path = "/tmp/sina_news_by_day"
         try:
             pwname = pwd.getpwnam("nginx")
             self.uid = pwname.pw_uid
@@ -50,10 +49,14 @@ class History(object):
 
         with open(self.path, "r") as f:
             old = pickle.load(f)
-            self.count_date = old.count_date
-            self.news_page = old.news_page
-            self.news_count = old.news_count
-
+            if old.date_now.strftime("%Y-%m-%d") == self.date_now.strftime("%Y-%m-%d"):
+                self.news_page = old.news_page
+                self.news_count = old.news_count
+            else:
+                self.date_now = datetime.datetime.now()
+                self.news_page = 1
+                self.news_count = 1
+                self.save()
     def save(self):
         with open(self.path, "w") as f:
             pickle.dump(self, f)
@@ -71,10 +74,7 @@ class Generator(object):
         self.history.load()
 
     def obtain_urls(self):
-        date = (datetime.datetime.now() - datetime.timedelta(days = self.history.count_date)).strftime("%Y-%m-%d")
-        if int(date.replace("-", "")) < self.history.news_time_start:
-            return
-
+        date = (datetime.datetime.now() - datetime.timedelta(days = 1)).strftime("%Y-%m-%d")
         url = self.HOST + str(date) + '&ch=05&k=&offset_page=0&offset_num=0&num=40&asc=&page=' + str(self.history.news_page)
         try:
             jscontent = requests.get(url).content.decode("gbk")
@@ -92,12 +92,6 @@ class Generator(object):
         except:
             self.history.news_page += 1
             self.history.save()
-        if self.history.news_page > (self.history.news_count-1)/40+1:
-            self.history.count_date += 1
-            self.history.news_page = 1
-            self.history.news_count = 1
-            self.history.save()
-
 
 
 class GeneratorTest(unittest.TestCase):
@@ -113,7 +107,7 @@ class GeneratorTest(unittest.TestCase):
             logging.debug("urls is %s", uri)
 
         logging.debug("urls count is %d", len(self.generator.uris))
-        logging.debug("Date back is %d", self.generator.history.count_date)
+        logging.debug("Date back is %d", self.generator.history.date_now)
         logging.debug("Current page is %d", self.generator.history.news_page)
         logging.debug("Current news count is %d", self.generator.history.news_count)
 

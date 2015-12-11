@@ -32,8 +32,9 @@ logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: 
 class History(object):
 
     def __init__(self):
-        self.path = "/tmp/seekingalpha"                                  # 本地测试请去除tmp前“/”符号
-        self.timestamp_STEP = 0                                          # 回溯时间跨度步长数值
+        self.path = "/tmp/seekingalphaByDay"
+        self.timestamp_STEP = 0
+        self.date_now = datetime.datetime.now()
 
         try:
             pwname = pwd.getpwnam("nginx")
@@ -47,7 +48,10 @@ class History(object):
             return
         with open(self.path, "r") as f:
             old = pickle.load(f)
-            self.timestamp_STEP = old.timestamp_STEP
+            if old.date_now.strftime("%Y-%m-%d") == self.date_now.strftime("%Y-%m-%d"):
+                self.timestamp_STEP = old.timestamp_STEP
+            else:
+                self.timestamp_STEP = 0
 
     def save(self):
         with open(self.path, "w") as f:
@@ -61,9 +65,8 @@ class History(object):
 class Generator(object):
     HOST = 'http://seekingalpha.com/analysis/all/all/'
     articleHost = 'http://seekingalpha.com'
-    dateSTEP = 21600                                                            # 每步长回溯的时间跨度(s)
-    currentDay = datetime.datetime(2015, 10, 27, 23, 59, 59)                         # 手动输入日期
-    timeStamp = int(time.mktime(currentDay.timetuple()))                          # 转换输入日期格式
+    dateSTEP = 21600
+    timeStamp = int(time.time())
 
     def __init__(self):
         self.uris = set()
@@ -79,7 +82,7 @@ class Generator(object):
 
     def page_url(self):
         times = self.timeStamp - self.dateSTEP * self.history.timestamp_STEP
-        if times < 1437926400:                                                  # 截至时间戳设置(2015-07-27)
+        if times <= self.timeStamp - 86400:
             return
         url = self.HOST + str(times)
         self.obtain_urls(url)
@@ -87,7 +90,7 @@ class Generator(object):
         self.history.save()
 
     def obtain_urls(self, url):
-        r = requests.get(url)
+        r = requests.get(url, headers={"user-agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"})
         soup = BeautifulSoup(r.text, "html5lib")
         a = soup.find_all("a", {"class": "article_title"})
         for each in a:
