@@ -77,6 +77,7 @@ class Command(BaseCommand):
             [Category.GUANGDONG, 'http://gsxt.gdgs.gov.cn/aiccips/verify.html?random=0.6461621058211715', 1000],
             [Category.SHANGHAI, 'https://www.sgs.gov.cn/notice/captcha?preset=1&ra=0.13763015669048162', 1000],
             [Category.ALL, 'http://gsxt.saic.gov.cn/zjgs/captcha?preset=1&ra=0.6737781641715337', 300],
+            [Category.HEBEI, "http://www.hebscztxyxx.gov.cn/notice/captcha?preset=1&ra=0.12507317386321537"],
         ]
     
     @wrapper_raven
