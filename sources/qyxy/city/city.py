@@ -36,6 +36,7 @@ class  Spider(object):
         self.keywords = []
         self.output_keywords = []
         self.result = [] #{'name':'', 'no':'', 'where':''}
+        self.timeout = 90
         
     def transform(self):
         self._load_keywords()
@@ -59,9 +60,9 @@ class  Spider(object):
         self._to_csv()
                     
     def _to_csv(self):
-        dataset = [(item["name"], item['no'], item["where"], item["fund"]) for x in self.result]
+        dataset = [(x["name"].encode("utf-8"), x['no'], x["where"].encode("utf-8"), x["fund"].encode("utf-8")) for x in self.result]
         df = pd.DataFrame(data=dataset, columns=["name", "no", "where", "fund"])
-        df.to_csv(self.output_path)
+        df.to_csv(self.output_path, mode="a", index=False)
         
     def _load_keywords(self):
         with open(self.keywords_path) as f:
@@ -82,7 +83,7 @@ class  Spider(object):
                 
     def _parse(self, keyword):
         url = "%s?%s" % (self.query_url, urllib.urlencode({"term": keyword.encode("utf-8")}))
-        r = requests.get(url, headers=self.headers, timeout=60)
+        r = requests.get(url, headers=self.headers, timeout=self.timeout)
         if r.status_code != 200:
             logging.warn("request %s, return code %d", url, r.status_code)
             return
@@ -111,14 +112,21 @@ class  Spider(object):
                 if kv.find(u"注册号：") > -1:
                     data["no"] = kv.split(u"：")[1].strip()
                 if kv.find(u"住所：") > -1:
-                    data["where"] = kv.split(u"：")[1].strip()
+                    data["where"] = kv.split(u"：")[1].strip().replace(",", " ")
                 if kv.find(u"注册资本：") > -1:
-                    data["fund"] = kv.split(u"：")[1].strip()
+                    data["fund"] = self._clear_fund(kv.split(u"：")[1].strip().replace(",", " "))
             
             break
         
         logging.debug("data is %s", data)  
         self.result.append(data)
+        
+    def _clear_fund(self, fund):
+        data = ""
+        for c in fund:
+            if c.isnumeric():
+                data += c
+        return int(data)
         
         
 class TestSpider(unittest.TestCase):

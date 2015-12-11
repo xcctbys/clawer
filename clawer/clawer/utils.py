@@ -524,7 +524,7 @@ class GenerateClawerTask(object):
                 #trace it
                 self.monitor.trace_task_status(clawer_task)
             except:
-                logging.error("add %s failed: %s", js['uri'], traceback.format_exc(10))
+                logging.error("add %s failed: %s", line, traceback.format_exc(10))
                 self.failed(traceback.format_exc(10))
         
         out_f.close()
