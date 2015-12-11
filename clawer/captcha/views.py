@@ -20,11 +20,11 @@ def index(request):
         category = int(category)
         captchas = Captcha.objects.filter(label_count__lt=3, category=category)[:random_count]
         labeled_captcha_count = Captcha.objects.filter(label_count__gt=2, category=category).count()
-        captcha_count = Captcha.objects.filter(category=category).count()
+        captcha_count = Captcha.objects.filter(category=category).all().count()
     else:
         captchas = Captcha.objects.filter(label_count__lt=3)[:random_count]
         labeled_captcha_count = Captcha.objects.filter(label_count__gt=2).count()
-        captcha_count = Captcha.objects.count()
+        captcha_count = Captcha.objects.all().count()
         
     if len(captchas) > 1:
         random_index = random.randint(0, len(captchas))
