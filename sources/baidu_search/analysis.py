@@ -61,10 +61,10 @@ class Analysis(object):
 
     def parse_url(self, new_a):
         uri = self.div.h3.a["href"]
-        try:
-            new_a["url"] = requests.get(uri, timeout=5).url
-        except:
-            new_a["url"] = ""
+        target_url = requests.head(uri, headers={"user-agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36"
+                                                               " (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"
+                                                 }).headers
+        new_a["url"] = target_url["Location"]
 
     def content(self, new_a):
         time = self.div.find("div", {"class": "c-abstract"}).text
