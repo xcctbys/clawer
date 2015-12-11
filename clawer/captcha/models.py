@@ -74,6 +74,16 @@ class Category(object):
         
         return ""
     
+    @classmethod
+    def url(cls, category):
+        for item in cls.full_choices:
+            if item[0] == category:
+                return item[2]
+        
+        return ""
+    
+    
+    
 
 
 class Captcha(models.Model):

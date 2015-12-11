@@ -19,12 +19,12 @@ def index(request):
     if category:
         category = int(category)
         captchas = Captcha.objects.filter(label_count__lt=3, category=category)[:random_count]
-        captcha_count = Captcha.objects.filter(label_count__gt=2, category=category).count()
-        label_count = LabelLog.objects.filter(captcha__category=category).count()
+        labeled_captcha_count = Captcha.objects.filter(label_count__gt=2, category=category).count()
+        captcha_count = Captcha.objects.filter(category=category).count()
     else:
         captchas = Captcha.objects.filter(label_count__lt=3)[:random_count]
-        captcha_count = Captcha.objects.filter(label_count__gt=2).count()
-        label_count = LabelLog.objects.count()
+        labeled_captcha_count = Captcha.objects.filter(label_count__gt=2).count()
+        captcha_count = Captcha.objects.count()
         
     if len(captchas) > 1:
         random_index = random.randint(0, len(captchas))
@@ -34,8 +34,8 @@ def index(request):
     else:
         captcha = None
     
-    return render_template("captcha/index.html", request=request, captcha_count=captcha_count, label_count=label_count, title=title,
-                           captcha=captcha, Category=Category, category_name=Category.name(category))
+    return render_template("captcha/index.html", request=request, labeled_captcha_count=labeled_captcha_count, catpcha_count=captcha_count, title=title,
+                           captcha=captcha, Category=Category, category_name=Category.name(category), category_url=Category.url(category))
     
     
 def labeled(request, page=1):
