@@ -1,4 +1,4 @@
-#-*- coding:UTF-8 -*-
+# -*- coding:UTF-8 -*-
 from PIL import Image
 from PIL import ImageEnhance
 from PIL import ImageFilter
@@ -10,26 +10,35 @@ from sklearn.externals import joblib
 
 
 class CaptchaRecognition(object):
-    _s = 30  # start postion of first number
-    _w = 30  # width of each number
-    _h = 47  # end postion from top
-    _t = 3  # start postion of top
+    image_start = 30  # start postion of first number
+    image_width = 30  # width of each number
+    image_height = 47  # end postion from top
+    image_top = 3  # start postion of top
+    image_gap = 0
     _value_label = {}
+    image_label_count = 4
+    pixel_zero = 255
 
-    def __init__(self):
-        _list = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-                 "q", "w", "e", "r", "t", "y", "u", "i", "o", "p",
-                 "a", "s", "d", "f", "g", "h", "j", "k", "l", "z",
-                 "x", "c", "v", "b", "n", "m"]
+    def __init__(self, captcha_type="beijing"):
 
-        for i in range(len(_list)):
-            self._value_label[i] = _list[i]
-
-        model_file = "model/svm_20151116.m"
-        if os.path.isfile(model_file):
-            self.clf = joblib.load(model_file)
+        if captcha_type not in ["jiangsu", "beijing"]:
+            exit(1)
         else:
-            raise IOError
+            self.label_list = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+                               "q", "w", "e", "r", "t", "y", "u", "i", "o", "p",
+                               "a", "s", "d", "f", "g", "h", "j", "k", "l", "z",
+                               "x", "c", "v", "b", "n", "m"]
+
+        if captcha_type == "jiangsu":
+            self.image_label_count = 6
+            self.image_start = 0
+            self.image_width = 20
+            self.image_height = 47
+            self.image_top = 3
+            self.image_gap = 5
+
+        self.model_path = "model/" + captcha_type
+        self.model_file = self.model_path + "/model.m"
 
     def __get_pixel_list__(self, captcha_image):
 
@@ -43,20 +52,19 @@ class CaptchaRecognition(object):
                     _pixel_data.append(1.0)
         return _pixel_data
 
-    def __convertPoint__(self, image_dir):
+    def __convertPoint__(self, image_path):
         _data = []
-        image_name = image_dir
         try:
-            im = Image.open(image_name)
+            im = Image.open(image_path)
             (width, height) = im.size
             im = im.filter(ImageFilter.MedianFilter())
             enhancer = ImageEnhance.Contrast(im)
-            im = enhancer.enhance(2)
+            im = enhancer.enhance(10)
             im = im.convert('1')
-            for k in range(4):
-                left = max(0, self._s + self._w * k)
-                right = min(self._s + self._w * (k + 1), width)
-                sub_image = im.crop((left, self._t, right, self._h))
+            for k in range(self.image_label_count):
+                left = max(0, self.image_start + self.image_width * k + self.image_gap * k)
+                right = min(self.image_start + self.image_width * (k + 1) + self.image_gap * k, width)
+                sub_image = im.crop((left, self.image_top, right, self.image_height))
                 pixel_list = self.__get_pixel_list__(sub_image)
                 if k == 0:
                     _data = np.array([pixel_list])
@@ -66,10 +74,47 @@ class CaptchaRecognition(object):
         except IOError:
             pass
 
-    def predict_result(self, image_dir):
-        pixel_matrix = self.__convertPoint__(image_dir)
+    # def __get_images__(self, image_path):
+    #     images = []
+    #     for image in os.listdir(image_path):
+    #         if image != ".DS_Store":
+    #             images.append(image_path + "/" + image)
+    #     return images
+
+    def update_model(self, image_path, label_file):
+        if not os.path.isdir(self.model_path):
+            os.mkdir(self.model_path)
+        if not os.path.isdir(image_path):
+            exit(1)
+
+        image_label_pair = pd.read_csv(label_file)
+        index = 0
+        X = []
+        y = []
+        y_count = 0
+        for i in range(len(image_label_pair)):
+            image = image_path + "/" + str(image_label_pair.iloc[i]["name"])
+            labels = image_label_pair.iloc[i]["value"]
+            for i in range(self.image_label_count):
+                y.append(labels[i])
+                y_count += 1
+            if index == 0:
+                X = self.__convertPoint__(image)
+            else:
+                X = np.append(X, self.__convertPoint__(image), axis=0)
+            index += 1
+        model = SVC().fit(X, y)
+        joblib.dump(model, self.model_file)
+        return True
+
+    def predict_result(self, image_path):
+        if os.path.isfile(self.model_file):
+            self.clf = joblib.load(self.model_file)
+        else:
+            raise IOError
+        pixel_matrix = self.__convertPoint__(image_path)
         predict_result = ""
         for feature in pixel_matrix:
             _f = np.array([feature], dtype=np.float)
-            predict_result += str(self._value_label[self.clf.predict(_f)[0]])
+            predict_result += str(self.label_list[self.clf.predict(_f)[0]])
         return predict_result
