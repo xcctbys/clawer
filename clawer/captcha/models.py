@@ -32,6 +32,10 @@ class Category(object):
      ZHEJIANG,
      ANHUI,
      FUJIAN,
+     SHANDONG,
+     GUANGXI,
+     HAINAN,
+     HENAN,
      ALL,
      ) = range(1, 27)
     
@@ -61,6 +65,10 @@ class Category(object):
         (ZHEJIANG, u"浙江", '', 0),
         (ANHUI, u"安徽", 'http://www.ahcredit.gov.cn/validateCode.jspx?type=1&id=0.41052326137836004', 1000),
         (FUJIAN, u"福建", 'http://wsgs.fjaic.gov.cn/creditpub/captcha?preset=str-00&ra=0.7105599333444296', 300),
+        (SHANDONG, u"山东", 'http://218.57.139.24/securitycode?0.07734315576514572', 1000),
+        (GUANGXI, u"广西", 'http://gxqyxygs.gov.cn/validateCode.jspx?type=1&id=0.49213323240661666', 1000),
+        (HAINAN, u"海南", "", 0),
+        (HENAN, u"河南", "http://222.143.24.157/validateCode.jspx?type=1&id=0.9717317246571591", 1000),
         (ALL, u"全国工商总局-字母", 'http://gsxt.saic.gov.cn/zjgs/captcha?preset=1&ra=0.6737781641715337', 300),
     )
     
