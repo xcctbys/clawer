@@ -1,4 +1,29 @@
-# Beijing enterprise crawler 
+# Program Rules
+
+- 每个省份对应一个爬虫文件，代码格式如下：
+
+    class ${Province}Clawer(object):     #请替换${Province}为省名，如BeiJing
+        
+        def run(self):
+            pass
+            
+        ....
+
+- settings.py 是所有爬虫的配置文件
+- model 里面存放的是破解识别码需要的建模数据，每个省对应一个文件夹
+- enterprise_list 里面放的是所有的企业名单，现在暂时是一个省一个文件，比如： beijing.txt
+- CaptchaRecognition.py 是破解图片识别码的类，使用方法如下：
+
+    from CaptchaRecognition import CaptchaRecognition
+    
+    recognition = CaptchaRecognition("beijing")  #support jiangshu etc
+    result = recognition.predict_result(im_path)  # result is image code
+
+
+    
+
+
+## Beijing enterprise crawler 
 ----
 ####1. source code
 (1) crawler.py contains several classes, they are:
