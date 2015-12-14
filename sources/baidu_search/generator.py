@@ -14,6 +14,8 @@ try:
     import pwd
 except:
     pass
+from bs4 import BeautifulSoup
+import requests
 
 
 DEBUG = False
@@ -26,8 +28,6 @@ logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: 
 
 
 COMPANYS = [
-        u'上海万业企业股份有限公司',
-        u'杭州帷盛科技有限公司',
         u'上海万业企业股份有限公司',
         u'杭州帷盛科技有限公司',
         u'武汉开来建设集团有限公司',
@@ -1585,11 +1585,22 @@ class Generator(object):
         self.history.save()
 
     def page_url(self, current_company, current_keyword):
-        for page_num in range(0, 60, 10):
+        for page_num in range(0, 10, 10):
             params = {"wd": current_company.encode("gbk") + " " + current_keyword.encode("gbk"),
                       "pn": page_num}
             url = "%s%s" % (self.HOST, urllib.urlencode(params))
-            self.uris.add(url)
+            r = requests.get(url, headers={"user-agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"})
+            soup = BeautifulSoup(r.text, "html5lib")
+            contents = soup.find("div", {"id": "content_left"})
+            divs = contents.find_all("div", {"class": "result"})
+            for div in divs:
+                all_em = div.h3.find_all("em")
+                if len(all_em) > 1:
+                    for em in all_em:
+                        if current_keyword in em.text:
+                            target_head = requests.head(div.h3.a["href"], headers={"user-agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"}).headers
+                            target_url = target_head["Location"]
+                            self.uris.add(target_url)
 
 
 class GeneratorTest(unittest.TestCase):
