@@ -38,7 +38,7 @@ class Category(object):
      HENAN,
      ALL,
      ALL_1,
-     ) = range(1, 31)
+     ) = range(1, 32)
     
     full_choices = (
         (NORMAL, u"北京字母", 'http://qyxy.baic.gov.cn/CheckCodeCaptcha?currentTimeMillis=1444875766745&num=87786', 300),
