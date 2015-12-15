@@ -69,7 +69,7 @@ class Category(object):
         (GUANGXI, u"广西", 'http://gxqyxygs.gov.cn/validateCode.jspx?type=1&id=0.49213323240661666', 1000),
         (HAINAN, u"海南", "", 0),
         (HENAN, u"河南", "http://222.143.24.157/validateCode.jspx?type=1&id=0.9717317246571591", 1000),
-        (ALL, u"全国工商总局-字母", 'http://gsxt.saic.gov.cn/zjgs/captcha?preset=1&ra=0.6737781641715337', 300),
+        (ALL, u"全国工商总局-字母", 'http://gsxt.saic.gov.cn/zjgs/captcha?preset=1&ra=0.6737781641715337', 600),
     )
     
     choices = tuple([(x[0], x[1]) for x in full_choices])
