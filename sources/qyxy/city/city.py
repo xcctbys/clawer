@@ -31,11 +31,13 @@ class  Spider(object):
         self.keywords_path = keywords_path
         self.query_url = "http://report.bbdservice.com/show/searchCompany.do"
         self.output_path = "enterprise.csv"
+        self.unknown_keyword_path = "unknown.csv"
         self.headers = {
             'User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36',
         }
         self.keywords = []
         self.output_keywords = []
+        self.unknown_keywords = []
         self.result = [] #{'name':'', 'no':'', 'where':''}
         self.timeout = 90
         
@@ -59,6 +61,10 @@ class  Spider(object):
         dataset = [(x["name"].encode("utf-8"), x['no'], x["where"].encode("utf-8"), x["fund"].encode("utf-8")) for x in self.result]
         df = pd.DataFrame(data=dataset, columns=["name", "no", "where", "fund"])
         df.to_csv(self.output_path, mode="a", index=False, header=False)
+        
+        unknown_dataset = [(x.encode('utf-8')) for x in self.unknown_keywords]
+        unknown_df = pd.DataFrame(data=unknown_dataset, columns=["name"])
+        unknown_df.to_csv(self.unknown_keyword_path, mode="w", index=False, header=False)
         
     def _load_keywords(self):
         with open(self.keywords_path) as f:
@@ -120,6 +126,7 @@ class  Spider(object):
         
         if data["name"] is "":
             logging.warn(u"not found name for %s", keyword)
+            self.unknown_keywords.append(keyword)
             return
         
         logging.debug("data is %s", data)  
