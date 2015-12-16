@@ -19,7 +19,7 @@ DEBUG = False
 if DEBUG:
     level = logging.DEBUG
 else:
-    level = logging.ERROR
+    level = logging.WARN
 
 logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: %(message)s")
 
@@ -64,6 +64,7 @@ class  Spider(object):
         with open(self.keywords_path) as f:
             for line in f:
                 line = unicode(line.strip(), "utf-8")
+                line = line.replace("(", u"（").replace(")", u"）")
                 self.keywords.append(line)
                 
     def _load_output(self):
@@ -93,14 +94,10 @@ class  Spider(object):
         div = soup.find("div", {"class":"table-text"})
         children_div = div.find_all("div", {"class":"div-table"})
         for child in children_div:
-            table = child.find("table", {"border": 0})
+            table = child.find("table", {"border":"0"})
             span = table.find("span", {"class":"spa-size"})
-            if not span:
-                #logging.debug("not found h4")
-                continue
             title = span.get_text().strip()
             if title != keyword:
-                #logging.debug(u"title %s != %s", title, keyword)
                 continue
             data["name"] = title
             
@@ -120,6 +117,10 @@ class  Spider(object):
                 elif key.find(u"住所") > -1:
                     data["where"] = value
             break
+        
+        if data["name"] is "":
+            logging.warn(u"not found name for %s", keyword)
+            return
         
         logging.debug("data is %s", data)  
         self.result.append(data)
