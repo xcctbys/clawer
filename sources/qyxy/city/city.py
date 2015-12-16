@@ -12,6 +12,7 @@ from bs4 import BeautifulSoup
 import unittest
 import os
 import pandas as pd
+import csv
 
 
 DEBUG = False
@@ -43,26 +44,21 @@ class  Spider(object):
         self._load_output()
         
         i = 0
-        for keyword in self.keywords:
-            if keyword in self.output_keywords:
-                continue
-            
-            is_ok = True
-            
-            try:
+        try:
+            for keyword in self.keywords:
+                if keyword in self.output_keywords:
+                    continue
                 self._parse(keyword)
-            except:
-                is_ok = False
                 
-            i += 1
-            logging.error(u"index %d, keyword %s, %s", i, keyword, is_ok)
-            
-        self._to_csv()
+                i += 1
+                logging.error(u"index %d, keyword %s", i, keyword)
+        finally:
+            self._to_csv()
                     
     def _to_csv(self):
         dataset = [(x["name"].encode("utf-8"), x['no'], x["where"].encode("utf-8"), x["fund"].encode("utf-8")) for x in self.result]
         df = pd.DataFrame(data=dataset, columns=["name", "no", "where", "fund"])
-        df.to_csv(self.output_path, mode="a", index=False)
+        df.to_csv(self.output_path, mode="a", index=False, header=False)
         
     def _load_keywords(self):
         with open(self.keywords_path) as f:
@@ -75,8 +71,11 @@ class  Spider(object):
             return
         
         with open(self.output_path) as f:
-            for line in f:
-                keyword = line.split(",")[0].strip()
+            reader = csv.reader(f)
+            for line in reader:
+                keyword = line[0].strip()
+                if not keyword:
+                    continue
                 self.output_keywords.append(unicode(keyword, "utf-8"))
         
         self.output_keywords = list(set(self.output_keywords))
@@ -88,34 +87,38 @@ class  Spider(object):
             logging.warn("request %s, return code %d", url, r.status_code)
             return
         
-        data = {"name":"", "no":"", "where":"", "fund":""}
+        data = {"name":"", "no":"", "where":"", "fund":"", "legal_person":"", "birthday":"", }
+        
         soup = BeautifulSoup(r.text, "html5lib")
-        div = soup.find("div", {"class":"search-r fl p20 pl40 w60p"})
-        ul = div.find("ul")
-        lis = ul.find_all("li")
-        for li in lis:
-            h4 = li.find("h4")
-            if not h4:
+        div = soup.find("div", {"class":"table-text"})
+        children_div = div.find_all("div", {"class":"div-table"})
+        for child in children_div:
+            table = child.find("table", {"border": 0})
+            span = table.find("span", {"class":"spa-size"})
+            if not span:
                 #logging.debug("not found h4")
                 continue
-            title = h4.get_text().strip().strip("\"")
+            title = span.get_text().strip()
             if title != keyword:
                 #logging.debug(u"title %s != %s", title, keyword)
                 continue
             data["name"] = title
-            p = li.find("p", {"class":"colorText4 f12"})
-            content = p.get_text().strip()
-            kvs = content.split(" ")
-            for kv in kvs:
-                if not kv.strip():
-                    continue
-                if kv.find(u"注册号：") > -1:
-                    data["no"] = kv.split(u"：")[1].strip()
-                if kv.find(u"住所：") > -1:
-                    data["where"] = kv.split(u"：")[1].strip().replace(",", " ")
-                if kv.find(u"注册资本：") > -1:
-                    data["fund"] = self._clear_fund(kv.split(u"：")[1].strip().replace(",", " "))
             
+            ul = child.find("ul")
+            lis = ul.find_all("li")
+            for li in lis:
+                key = li.find("span", {"class":"span-color"}).get_text().strip()
+                value = li.find("span", {"class":"left"}).get_text().strip()
+                if key.find(u"注册号") > -1:
+                    data["no"] = value
+                elif key.find(u"法定代表人") > -1:
+                    data["legal_preson"] = value
+                elif key.find(u"注册资本") > -1:
+                    data["fund"] = value
+                elif key.find(u"成立日期") > -1:
+                    data["birthday"] = value
+                elif key.find(u"住所") > -1:
+                    data["where"] = value
             break
         
         logging.debug("data is %s", data)  
