@@ -1,4 +1,4 @@
-#encoding=utf-8
+# encoding=utf-8
 """ example is https://www.google.com.hk/webhp?hl=zh-CN&as_q=&as_epq=&as_oq=&as_eq=&as_nlo=&as_nhi=&lr=&cr=&as_qdr=w&as_sitesearch=&as_occt=any&safe=active&as_filetype=&as_rights=#newwindow=1&safe=strict&hl=zh-CN&tbs=qdr:w&q=ipone
 
 """
@@ -8,9 +8,9 @@ import urllib
 import json
 import logging
 import unittest
-import requests
 import os
 import cPickle as pickle
+import datetime
 
 try:
     import pwd
@@ -270,13 +270,12 @@ keywords = [
 ]
 
 
-
 class History(object):
 
     def __init__(self):
         self.current_keyword = 0
-        self.current_count = 237
-        self.path = "/tmp/googleSearch"                                  #本地测试请去除tmp前“/”符号
+        self.current_date = datetime.date.today()
+        self.path = "/tmp/googleSearch"
         try:
             pwname = pwd.getpwnam("nginx")
             self.uid = pwname.pw_uid
@@ -290,9 +289,12 @@ class History(object):
 
         with open(self.path, "r") as f:
             old = pickle.load(f)
-            self.current_keyword = old.current_keyword
-            self.current_count = old.current_count
-
+            if old.current_date == self.current_date:
+                self.current_keyword = old.current_keyword
+            else:
+                self.current_date = datetime.date.today()
+                self.current_keyword = 0
+                self.save()
 
     def save(self):
         with open(self.path, "w") as f:
@@ -301,17 +303,14 @@ class History(object):
                 os.chown(self.path, self.uid, self.gid)
 
 
-
-
 class Generator(object):
     HOST = "https://www.google.com.hk/webhp?hl=zh-CN&as_q=&as_epq=&as_oq=&as_eq=&as_nlo=&as_nhi=&lr=&cr=&as_qdr=w&as" \
            "_sitesearch=&as_occt=any&safe=active&as_filetype=&as_rights=#newwindow=1&safe=strict&hl=zh-CN&tbs=qdr:w&"
-    STEP = 11                                                       #每次输出的url步长
+    STEP = 11  # 输出url的步长
 
     def __init__(self):
         self.uris = set()
         self.history = History()
-
         try:
             pwname = pwd.getpwnam("nginx")
             self.uid = pwname.pw_uid
@@ -321,25 +320,19 @@ class Generator(object):
 
         self.history.load()
 
-
-
     def obtain_urls(self):
-        if self.history.current_count <= 0:
+        if self.history.current_keyword >= len(keywords):  # 判断关键字索引值是否大于实际长度
             return
-        if self.history.current_count < self.STEP - 1:
-            self.STEP = self.history.current_count
-        for i in range(1, self.STEP):
+
+        for i in range(1, self.STEP):  # 以步长数遍历关键词
             keyword = keywords[self.history.current_keyword]
             self.page_url(keyword)
-        self.history.current_count -= self.STEP
-        self.history.save()
+            self.history.current_keyword += 1
+            self.history.save()
 
-    def page_url(self, keyword):
+    def page_url(self, keyword):  # 构造url并加入uris
         url = self.HOST + urllib.urlencode({"q": keyword.encode("utf8")})
         self.uris.add(url)
-        self.history.current_keyword += 1
-        self.history.save()
-
 
 
 class GeneratorTest(unittest.TestCase):
@@ -356,7 +349,6 @@ class GeneratorTest(unittest.TestCase):
         self.assertGreater(len(self.generator.uris), 0)
 
 
-
 if __name__ == "__main__":
     if DEBUG:
         unittest.main()
@@ -364,4 +356,4 @@ if __name__ == "__main__":
     generator = Generator()
     generator.obtain_urls()
     for uri in generator.uris:
-        print json.dumps({"uri":uri})
+        print json.dumps({"uri": uri})

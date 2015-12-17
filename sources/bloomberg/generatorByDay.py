@@ -150,7 +150,6 @@ keywords = [
 ]
 
 
-
 class History(object):
 
     def __init__(self):
@@ -171,10 +170,10 @@ class History(object):
 
         with open(self.path, "r") as f:
             old = pickle.load(f)
-            if old.current_time.strftime("%Y-%m-%d") == self.current_time.strftime("%Y-%m-%d"):
+            if old.current_time.strftime("%Y-%m-%d") == self.current_time.strftime("%Y-%m-%d"):  # pickle内时间与当前时间一致则继续爬取
                 self.current_keyword = old.current_keyword
                 self.current_count = old.current_count
-            else:
+            else:  # pickle内时间与当前时间不一致则重置索引值
                 self.current_keyword = 0
                 self.current_count = 117
 
@@ -183,7 +182,6 @@ class History(object):
             pickle.dump(self, f)
             if hasattr(self, "uid"):
                 os.chown(self.path, self.uid, self.gid)
-
 
 
 class Generator(object):
@@ -203,8 +201,6 @@ class Generator(object):
             logging.error(traceback.format_exc(10))
 
         self.history.load()
-
-
 
     def obtain_urls(self):
         if self.history.current_count <= 0:
@@ -238,6 +234,7 @@ class Generator(object):
             else:
                 continue
 
+
 class GeneratorTest(unittest.TestCase):
 
     def setUp(self):
@@ -250,7 +247,6 @@ class GeneratorTest(unittest.TestCase):
         logging.debug("urls count is %d", len(self.generator.uris))
 
         self.assertGreater(len(self.generator.uris), 0)
-
 
 
 if __name__ == "__main__":

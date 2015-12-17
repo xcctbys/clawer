@@ -23,7 +23,6 @@ else:
 logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: %(message)s")
 
 
-
 class Analysis(object):
 
     def __init__(self, path, url=None):
@@ -51,28 +50,27 @@ class Analysis(object):
         logging.debug("result is %s", json.dumps(self.result, indent=4))
 
     def parse_title(self):
-        h1 = self.soup.find("h1", {"class": "lede-headline"})
+        h1 = self.soup.find("h1", {"class": "lede-headline"})  # 在解析完毕的网页代码中找到class属性为lede-headline的h1标签
         if h1 != None:
-            span = h1.find("span")
-            self.result["title"] = span.get_text().strip()
+            span = h1.find("span")  # 如果h1存在则在h1标签下级查找span标签
+            self.result["title"] = span.get_text().strip()  # 提取span标签内容
         else:
             self.result["title"] = ''
 
     def parse_time(self):
-        time = self.soup.find("time", {"class": "published-at time-based"})
-        if time != None:
+        time = self.soup.find("time", {"class": "published-at time-based"})  # 在解析完毕的网页代码中找到class属性为published-at time-based的time标签
+        if time != None:  # 如果time存在则提取time标签内容并加上系统时间
             self.result["time"] = time.get_text().strip() + " system_time:" + datetime.datetime.today().strftime("%Y-%m-%d")
-        else:
+        else:  # 如果time不存在则只存入系统时间
             self.result["time"] = "system_time:" + datetime.datetime.today().strftime("%Y-%m-%d")
 
     def parse_content(self):
-        div = self.soup.find("div", {"class": "article-body__content"})
-        all_p = div.find_all("p")
-        content = ''
-        for p in all_p:
-            content += p.get_text().replace("\n", "")
+        div = self.soup.find("div", {"class": "article-body__content"})  # 在解析完毕的网页代码中找到class属性为article-body__content的div标签
+        all_p = div.find_all("p")  # 在目标div中查找所有的p标签
+        content = ''  # 初始化content
+        for p in all_p:  # 遍历所有的p标签
+            content += p.get_text().replace("\n", "")  # 提取p标签中内容
         self.result["content"] = content
-
 
 
 class TestAnalysis(unittest.TestCase):
@@ -91,7 +89,6 @@ class TestAnalysis(unittest.TestCase):
         self.assertIsNotNone(self.analysis.result["title"])
         self.assertIsNotNone(self.analysis.result["time"])
         self.assertIsNotNone(self.analysis.result["content"])
-
 
 
 if __name__ == "__main__":

@@ -292,6 +292,7 @@ class GeneratorTest(unittest.TestCase):
 
 
 if __name__ == "__main__":
+    # 实现任何日期运行都能锁定时间跨度为最近的周三到周二（当前周周一运行时生成时间跨度为上上周三到上周二,当前周周三运行时生成时间跨度为上周三到这周二...）
     weekday = datetime.datetime.today().weekday()
     if weekday < 2:
         starTime = (datetime.datetime.now() - datetime.timedelta(days=weekday + 12)).strftime("%Y-%m-%d")
@@ -306,7 +307,7 @@ if __name__ == "__main__":
     generator = Generator()
     generator.obtain_urls(starTime, endTime)
     sName = str(starTime) + "-" + str(endTime)
-    f = open(sName + ".txt", "w+")
+    f = open(sName + ".txt", "w+")  # 创建txt文本并写入url
     for uri in generator.uris:
         f.write(uri)
         f.write("\n")

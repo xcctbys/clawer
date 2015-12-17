@@ -26,7 +26,7 @@ logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: 
 class History(object):
 
     def __init__(self):
-        self.page = 1
+        self.page = 1  # 初始化page索引值
         self.path = "/tmp/china_court_all"
         try:
             pwname = pwd.getpwnam("nginx")
@@ -51,7 +51,7 @@ class History(object):
 
 
 class Generator(object):
-    STEP = 21
+    STEP = 21  # 每次输出生成的url页数步长（每次输出20页的url）
 
     def __init__(self):
         self.uris = set()
@@ -59,12 +59,12 @@ class Generator(object):
         self.history.load()
 
     def obtain_urls(self):
-        for i in range(1, self.STEP):
+        for i in range(1, self.STEP):  # 遍历步长实现翻页
             url = "http://rmfygg.court.gov.cn/psca/lgnot/solr/searchBulletinInterface.do?callback=jQuery" \
                   "152043560746777802706_1448866417716&start=" + str(self.history.page) + "&limit=16&wd=rmfybulletin" \
                   "&list%5B0%5D=bltntype%3A&_=1448866625744"
             self.uris.add(url)
-            self.history.page += 1
+            self.history.page += 1  # 页码索引值加一
         self.history.save()
 
 

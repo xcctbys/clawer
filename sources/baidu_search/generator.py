@@ -16,9 +16,10 @@ except:
     pass
 from bs4 import BeautifulSoup
 import requests
+import urllib3
+urllib3.disable_warnings()
 
-
-DEBUG = False
+DEBUG = False  # 是否开启DEBUG
 if DEBUG:
     level = logging.DEBUG
 else:
@@ -26,7 +27,7 @@ else:
 
 logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: %(message)s")
 
-
+# 所需搜索爬取的公司名称
 COMPANYS = [
         u'上海万业企业股份有限公司',
         u'杭州帷盛科技有限公司',
@@ -1529,7 +1530,7 @@ COMPANYS = [
         u'中国南方航空股份有限公司',
         u'方兴地产投资管理(上海)有限公司'
 ]
-
+# 所需爬取的相应关键词
 KEYWORD = [
         u'违约',
         u'逾期',
@@ -1541,11 +1542,11 @@ KEYWORD = [
 ]
 
 
-class History(object):
+class History(object):  # 实现程序的可持续性，每次运行时读取上次运行时保存的参数，跳到相应位置继续执行程序
 
     def __init__(self):
-        self.company_num = 0
-        self.path = "/tmp/baidu_company_search"
+        self.company_num = 0  # 初始化pickle中用作公司名称位置索引值
+        self.path = "/tmp/baidu_company_search"  # pickle文件存放路径（提交至平台的代码记住带上tmp前斜杠）
         try:
             pwname = pwd.getpwnam("nginx")
             self.uid = pwname.pw_uid
@@ -1553,15 +1554,15 @@ class History(object):
         except:
             logging.error(traceback.format_exc(10))
 
-    def load(self):
-        if os.path.exists(self.path) is False:
+    def load(self):  # pickle的载入
+        if os.path.exists(self.path) is False:  # 读取pickle失败则返回
             return
 
-        with open(self.path, "r") as f:
+        with open(self.path, "r") as f:  # 打开pickle文件并载入
             old = pickle.load(f)
-            self.company_num = old.company_num
+            self.company_num = old.company_num  # 取出文件中存入的索引值
 
-    def save(self):
+    def save(self):  # pickle的保存
         with open(self.path, "w") as f:
             pickle.dump(self, f)
             if hasattr(self, "uid"):
@@ -1571,36 +1572,36 @@ class History(object):
 class Generator(object):
     HOST = "https://www.baidu.com/s?"
 
-    def __init__(self):
+    def __init__(self):  # 初始化
         self.uris = set()
         self.history = History()
         self.history.load()
 
     def search_url(self):
-        company = COMPANYS[self.history.company_num]
-        for each_keyword in KEYWORD:
+        company = COMPANYS[self.history.company_num]  # 根据索引值找到此次程序运行所要搜索的公司名称
+        for each_keyword in KEYWORD:  # 遍历搜索关键词
             keyword = each_keyword
-            self.page_url(company, keyword)
-        self.history.company_num += 1
-        self.history.save()
+            self.page_url(company, keyword)  # 传参调用url构造函数
+        self.history.company_num += 1  # 索引值加一
+        self.history.save()  # 将索引值存入pickle
 
     def page_url(self, current_company, current_keyword):
-        for page_num in range(0, 10, 10):
+        for page_num in range(0, 10, 10):  # 遍历实现baidu搜索结果页翻页（第一页为0，第二页为10，第三页为20...）
             params = {"wd": current_company.encode("gbk") + " " + current_keyword.encode("gbk"),
-                      "pn": page_num}
-            url = "%s%s" % (self.HOST, urllib.urlencode(params))
-            r = requests.get(url, headers={"user-agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"})
-            soup = BeautifulSoup(r.text, "html5lib")
-            contents = soup.find("div", {"id": "content_left"})
-            divs = contents.find_all("div", {"class": "result"})
-            for div in divs:
-                all_em = div.h3.find_all("em")
+                      "pn": page_num}  # 构造url参数
+            url = "%s%s" % (self.HOST, urllib.urlencode(params))  # 构造url
+            r = requests.get(url, headers={"user-agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"})  # 浏览器代理请求url
+            soup = BeautifulSoup(r.text, "html5lib")  # 使用html5lib解析页面内容
+            contents = soup.find("div", {"id": "content_left"})  # 找到页面中id为content_left的div
+            divs = contents.find_all("div", {"class": "result"})  # 在目标div中找到所有class为result的div
+            for div in divs:  # 遍历divs获取每一条div
+                all_em = div.h3.find_all("em")  # 找到div.h3标签中所有的em标签
                 if len(all_em) > 1:
                     for em in all_em:
-                        if current_keyword in em.text:
+                        if current_keyword in em.text:  # 判断关键词是否在em标签中，若判断为真则使用浏览器代理获取目标url中的headers信息
                             target_head = requests.head(div.h3.a["href"], headers={"user-agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"}).headers
-                            target_url = target_head["Location"]
-                            self.uris.add(target_url)
+                            target_url = target_head["Location"]  # 获取目标链接真实url
+                            self.uris.add(target_url)  # 将url加入uris中
 
 
 class GeneratorTest(unittest.TestCase):
@@ -1621,11 +1622,11 @@ class GeneratorTest(unittest.TestCase):
 
 if __name__ == "__main__":
 
-    if DEBUG:
+    if DEBUG:  # 如果DEBUG为True则进入测试单元
         unittest.main()
 
     generator = Generator()
     generator.search_url()
 
-    for uri in generator.uris:
+    for uri in generator.uris:  # 遍历输出uris
         print json.dumps({"uri": uri})

@@ -147,12 +147,11 @@ keywords = [
 ]
 
 
-
 class History(object):
 
     def __init__(self):
-        self.current_keyword = 0
-        self.page_count = 1
+        self.current_keyword = 0  # 关键词索引
+        self.page_count = 1  # 页码索引
         self.path = "/tmp/bloombergThreeMonth"
         try:
             pwname = pwd.getpwnam("nginx")
@@ -195,11 +194,11 @@ class Generator(object):
         self.history.load()
 
     def obtain_urls(self):
-        if self.history.current_keyword < 116:
-            keyword = keywords[self.history.current_keyword]
+        if self.history.current_keyword < 116:  # 判断关键词索引是否在范围内
+            keyword = keywords[self.history.current_keyword]  # 根据索引提取关键词
             self.obtain_page(keyword)
 
-    def obtain_page(self, keyword):
+    def obtain_page(self, keyword):  # 构造搜索结果页url并调用obtain_target_url函数（参数startTime为搜索的时间范围，-3m为三个月内，-1d为一天内）
         para = {"query": keyword.encode("utf8"), "startTime": "-3m", "page": self.history.page_count}
         url = self.HOST + urllib.urlencode(para)
         self.obtain_target_url(url)
@@ -207,22 +206,23 @@ class Generator(object):
     def obtain_target_url(self, current_url):
         r = requests.get(current_url, headers={"user-agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"})
         soup = BeautifulSoup(r.text, "html5lib")
-        count = int(soup.find("span", {"class": "search-category-facet__count active"}).get_text())
-        if self.history.page_count <= (count - 1) / 10 + 1:
-            article = soup.find_all("div", {"class": "search-result"})
-            for each in article:
+        count = int(soup.find("span", {"class": "search-category-facet__count active"}).get_text())  # 提取搜索结果页码中的文章总量
+        if self.history.page_count <= (count - 1) / 10 + 1:  # 页码索引是否小于等于最大页码（每页十篇文章，最大页码通过文章总量计算得出）
+            article = soup.find_all("div", {"class": "search-result"})  # 获取所有文章url所在标签的标签内容
+            for each in article:  # 遍历每篇文章所在标签并提取文章url
                 article = each.find_all("h1", {"class": "search-result-story__headline"})[0]
                 article_url = article.find("a")["href"]
                 if article_url != '':
-                    uri = "http://www.bloomberg.com/" + article_url
+                    uri = "http://www.bloomberg.com/" + article_url  # 构造目标文章url
                     self.uris.add(uri)
                 else:
                     continue
-            self.history.page_count += 1
+            self.history.page_count += 1  # 提取当前页面后将页码索引加一
         else:
-            self.history.current_keyword += 1
-            self.history.page_count = 1
+            self.history.current_keyword += 1  # 关键词索引加一
+            self.history.page_count = 1  # 将页码索引重置为一
         self.history.save()
+
 
 class GeneratorTest(unittest.TestCase):
 
@@ -236,7 +236,6 @@ class GeneratorTest(unittest.TestCase):
         logging.debug("urls count is %d", len(self.generator.uris))
 
         self.assertGreater(len(self.generator.uris), 0)
-
 
 
 if __name__ == "__main__":

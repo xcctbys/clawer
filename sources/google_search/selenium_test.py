@@ -1,5 +1,5 @@
 # encoding=utf-8
-"""此代码于本地环境运行，拉起浏览器模拟人工操作获取所需数据，每次运行需人工更改存放有url的txt文件文件名以及生成json文件文件名
+"""此代码于本地环境运行，拉起浏览器模拟人工操作获取所需数据
 """
 import json
 import time
@@ -17,15 +17,15 @@ else:
     endTime = (datetime.datetime.now() - datetime.timedelta(days=weekday - 1)).strftime("%Y-%m-%d")
 
 sName = str(starTime) + "-" + str(endTime)
-textpath = sName + ".txt"   # 存放的url文本路径
+textpath = sName + ".txt"   # 读取的url文本
 text = open(textpath)
 arr = []
-for lines in text.readlines():
+for lines in text.readlines():  # 依次读每一行并将其加入列表
     lines=lines.replace("\n", "")
     arr.append(lines)
 text.close()
 
-f = open(sName + ".json", 'w+')    # 所需写入json文件文件名
+f = open(sName + ".json", 'w+')    # 写入的json文件
 for url in arr:
     driver.get(url)
     time.sleep(3)
@@ -35,14 +35,14 @@ for url in arr:
     except:
         time.sleep(1)   # 模拟点击获取数据失败后再次尝试
         driver.find_element_by_partial_link_text(u'工具').click()
-        result = driver.find_element_by_id('resultStats').text
-    keyword = driver.title
+        result = driver.find_element_by_id('resultStats').text  # 提取所需结果
+    keyword = driver.title  # 提取关键词
     data = {}
     data["keyword"] = keyword
     data["result"] = result
 
     jsonStr = json.dumps(data)
-    f.write(jsonStr)
+    f.write(jsonStr)  # 将构造的json写入文件
     f.write('\n')
 driver.quit()
 f.close

@@ -1,9 +1,7 @@
-#encoding=utf-8
+# encoding=utf-8
 
 
-import urllib
 import json
-import sys
 import logging
 import unittest
 import requests
@@ -23,8 +21,6 @@ else:
     level = logging.ERROR
     
 logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: %(message)s")
-
-
 
 
 class History(object):
@@ -85,7 +81,7 @@ class Generator(object):
             return False
         
         soup = BeautifulSoup(r.text, "html.parser")
-        news_container = soup.find("div", {"id":"articlelistnew"})   
+        news_container = soup.find("div", {"id": "articlelistnew"})
         divs = news_container.find_all("div")
         
         for div in divs:
@@ -115,8 +111,6 @@ class Generator(object):
         tmp = span["data-pager"].split("|")
         self.history.total_page = int(tmp[1])/int(tmp[2])
         logging.debug("total page is %d", self.history.total_page)
-        
-        
 
 
 class GeneratorTest(unittest.TestCase):
@@ -132,8 +126,6 @@ class GeneratorTest(unittest.TestCase):
         
         self.assertNotEqual(self.generator.uris, [])
         self.assertGreater(len(self.generator.uris), 80)
-        
-        
 
 if __name__ == "__main__":
     if DEBUG:
@@ -142,4 +134,4 @@ if __name__ == "__main__":
     generator = Generator()
     generator.obtain_urls()
     for uri in generator.uris:
-        print json.dumps({"uri":uri, "download_engine":"phantomjs"})
+        print json.dumps({"uri": uri, "download_engine": "phantomjs"})

@@ -1,5 +1,5 @@
 # encoding=utf-8
-"""china court
+"""baidu search
 
 hits: http://wo.cs.com.cn/html/2012-11/24/content_461302.htm?div=-1
 """
@@ -13,7 +13,7 @@ import os
 
 from bs4 import BeautifulSoup
 
-DEBUG = False
+DEBUG = False  # 是否开启DEBUG
 if DEBUG:
     level = logging.DEBUG
 else:
@@ -22,9 +22,9 @@ else:
 logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: %(message)s")
 
 
-class Analysis(object):
+class Analysis(object):  # 页面分析类
 
-    def __init__(self, path, url=None):
+    def __init__(self, path, url=None):  # 值初始化
         self.path = path
         self.url = url
         self.result = {}
@@ -33,29 +33,29 @@ class Analysis(object):
         self.soup = None
 
     def parse(self):
-        if os.path.exists(self.path) is False:
+        if os.path.exists(self.path) is False:  # 如果读取需要解析的文件失败则发起请求获取目标页面源码
             r = requests.get(self.url, headers={"user-agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"})
             self.text = r.content
         else:
-            with open(self.path, "r") as f:
+            with open(self.path, "r") as f:  # 读取下载器已经下载至本地的文件
                 self.text = f.read()
-        self.soup = BeautifulSoup(self.text, "html5lib")
-        html_content = self.soup.find("html")
+        self.soup = BeautifulSoup(self.text, "html5lib")  # 使用html5lib解析页面
+        html_content = self.soup.find("html")  # 获取html标签中内容
 
         self.result["html"] = str(html_content)
         logging.debug("result is %s", json.dumps(self.result, indent=4))
 
 
-class TestAnalysis(unittest.TestCase):
+class TestAnalysis(unittest.TestCase):  # 测试类（当DEBUG为True时运行）
 
     def setUp(self):
         unittest.TestCase.setUp(self)
-        self.path = "test.txt"
+        self.path = "test.txt"  # 需解析的文件名
 
     def test_parse(self):
         """http://wo.cs.com.cn/html/2012-11/24/content_461302.htm?div=-1
         """
-        self.analysis = Analysis(self.path, "http://wo.cs.com.cn/html/2012-11/24/content_461302.htm?div=-1")
+        self.analysis = Analysis(self.path, "http://wo.cs.com.cn/html/2012-11/24/content_461302.htm?div=-1")  # 需解析的url
         self.analysis.parse()
 
         self.assertNotEqual(self.analysis.result, [])
