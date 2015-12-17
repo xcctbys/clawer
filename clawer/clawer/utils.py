@@ -598,7 +598,7 @@ class MonitorClawer(object):
         
         need_report = False
         
-        last_hour = self.hour - datetime.timedelta(minutes=120)
+        last_hour = self.hour - datetime.timedelta(minutes=360)
         clawer_hour_monitors = list(ClawerHourMonitor.objects.filter(hour__gt=last_hour).order_by("hour"))
         if len(clawer_hour_monitors) < 2:
             return
