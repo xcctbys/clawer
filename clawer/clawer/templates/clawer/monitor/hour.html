@@ -1,0 +1,113 @@
+{% extends "clawer/base.html"%}
+{% load static %}
+
+
+{% block body %}
+<body>
+
+
+<div id="toolbar">
+    <select class="easyui-combogrid" type="text" id="id_clawer_select" data-options="required:true" style="width:100px;" ></select>
+
+</div>
+
+
+
+<table id="grid" class="easyui-datagrid" style="width:100%;height:100%"
+        url="{% url clawer.apis.monitor.hour %}" showFooter="true"
+        data-options="singleSelect:true,collapsible:true,method:'get'" rownumbers="true" pagination="true"
+        toolbar="#toolbar" fitColumns="true">
+        
+    <thead data-options="frozen:true">
+        <tr>
+            <th data-options="field:'id',width:80" sortable="true">ID</th>
+            <th data-options="field:'hour',">时间</th>
+        </tr>
+    </thead>
+    <thead>
+        <tr>
+            <th data-options="field:'clawer',"  formatter="formatClawer">爬虫</th>
+            <th data-options="field:'content_bytes',"  formatter="formatBytes">返回字节</th>
+            <th data-options="field:'add_datetime',">添加时间</th>
+        </tr>
+    </thead>    
+</table>
+
+
+<!-- failed reason win -->
+<div id="failed_reason_win" class="easyui-window" title="失败详情" closed="true" style="width:80%;height:90%;padding:5px;">
+</div>
+<!-- failed reason win end -->
+
+
+
+<script type="text/javascript">
+
+function formatClawer(val) {
+	if(!val) {
+		return "";
+	}
+	return val.id+"("+val.name+")";
+}
+
+
+function formatBytes(val) {
+	if(!val) {
+		return 0;
+	}
+	
+	var G = 1024*1024*1024;
+	var M = 1024*1024;
+	var K = 1024;
+	
+	if(val > G) {
+		return (val/G).toFixed(2) + "G";
+	} else if(val > M) {
+		return (val/M).toFixed(2) + "M";
+	} else if(val > K) {
+		return (val/K).toFixed(2) + "K";
+	}
+	
+	return val;
+}
+
+
+function load_clawers() {
+	var url = "{% url clawer.apis.home.clawer_all %}";
+		
+	$("#id_clawer_select").combogrid({
+		panelWidth:450,
+		mode: 'remote',
+		url: url,
+		idField: 'id',
+	    textField: 'name',
+		columns: [[
+			{field:'id',title:'ID',width:80,sortable:true},
+			{field:'name',title:'名称',width:120,sortable:true},
+			{field:'info',title:'简介',width:250,sortable:true}
+		]],
+		onChange: function(new_value, old_value) {
+			reload_datagrid();
+		}
+	});
+	
+}
+
+function reload_datagrid() {
+	var clawer_id = $("#id_clawer_select").combobox("getValue");
+	
+	$('#grid').datagrid('load', {
+	    clawer: clawer_id
+	});
+}
+
+
+$(document).ready(function(){
+	load_clawers();
+});
+</script>
+
+
+
+</body>
+{% endblock %}

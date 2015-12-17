@@ -231,6 +231,7 @@ def clawer_setting_update(request):
     clawer_setting.download_js = form.cleaned_data["download_js"]
     clawer_setting.download_engine = form.cleaned_data["download_engine"]
     clawer_setting.prior = form.cleaned_data["prior"]
+    clawer_setting.report_mails = form.cleaned_data["report_mails"]
     clawer_setting.save()
     
     clawer.status = form.cleaned_data["status"]

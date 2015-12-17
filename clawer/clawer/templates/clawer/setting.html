@@ -39,6 +39,7 @@
             <th data-options="field:'engine'," formatter="formatSettingDownloadEngine">下载引擎</th>
             <th data-options="field:'cookie'," formatter="formatSettingCookie">Cookie</th>
             <th data-options="field:'crontab'," formatter="formatCrontab">任务生成器Cron</th>
+            <th data-options="field:'report_mails'," formatter="formatSettingReportMails">报警邮箱</th>
             <th data-options="field:'s2'," formatter="formatSettingLastUpdateDatetime">最后修改时间</th>
         </tr>
     </thead>    
@@ -64,17 +65,21 @@
                 <td><input name="analysis" class="easyui-numberbox" style="width: 50%;"></td>
             </tr>
             <tr>
+                <td>报警邮箱</td>
+                <td><input name="report_mails" class="easyui-textbox" style="width: 80%; height: 30px;" placeholder="多个邮箱以空格分离" /></td>
+            </tr>
+            <tr>
                 <td>Proxy</td>
                 <td><input name="proxy" class="easyui-textbox" style="width: 60%; height: 80px;" placeholder="多个proxy，请换行" multiline="true" /></td>
             </tr>
             <tr>
                 <td>Cookie</td>
-                <td><input name="cookie" class="easyui-textbox" style="width: 60%; height: 100px;" placeholder="Cookie" multiline="true" /></td>
+                <td><input name="cookie" class="easyui-textbox" style="width: 60%; height: 80px;" placeholder="Cookie" multiline="true" /></td>
             </tr>
             <tr>
                 <td>下载后执行JS</td>
                 <td>
-                    <input name="download_js" class="easyui-textbox" style="width: 80%; height: 100px;" placeholder="Cookie" multiline="true" />
+                    <input name="download_js" class="easyui-textbox" style="width: 60%; height: 100px;" placeholder="Cookie" multiline="true" />
                     <p><small>只有在下载引擎为selenium时候，才会执行</small></p>
                 </td>
             </tr>
@@ -131,6 +136,16 @@ function formatSettingDispatch(val, row) {
 	return row.setting.dispatch;
 }
 
+
+function formatSettingReportMails(val, row) {
+	if(!row.setting) {
+		return "-";
+	}
+	
+	return row.setting.report_mails;
+}
+
+
 function formatSettingPrior(val, row) {
 	if(!row.setting) {
 		return "-";
@@ -138,6 +153,7 @@ function formatSettingPrior(val, row) {
 	
 	return row.setting.prior_name;
 }
+
 
 function formatSettingCookie(val, row) {
 	if(!row.setting) {
@@ -147,12 +163,14 @@ function formatSettingCookie(val, row) {
 	return row.setting.cookie;
 }
 
+
 function formatSettingAnalysis(val, row) {
 	if(!row.setting) {
 		return "";
 	}
 	return row.setting.analysis;
 }
+
 
 function formatSettingLastUpdateDatetime(val, row) {
 	if(!row.setting) {
@@ -225,7 +243,8 @@ $(document).ready(function(){
 		    analysis: row.setting.analysis,
 		    proxy: row.setting.proxy,
 		    cookie: row.setting.cookie,
-		    download_js: row.setting.download_js
+		    download_js: row.setting.download_js,
+		    report_mails: row.setting.report_mails
 		});
 		$("#id_download_engine").combobox("setValue", row.setting.download_engine);
 		$("#id_status").combobox("setValue", row.status);

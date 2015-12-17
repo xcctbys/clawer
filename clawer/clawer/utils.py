@@ -15,12 +15,15 @@ import os
 import json
 
 from django.conf import settings
+from django.core.mail import send_mail
 
 from html5helper.utils import do_paginator
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 import threading
 import hashlib
 import urlparse
+import datetime
+import stat
 
 
 
@@ -552,6 +555,67 @@ class GenerateClawerTask(object):
         self.generate_log.spend_msecs = int(1000*(self.end_time - self.start_time))
         self.generate_log.save()
         
+
+class MonitorClawer(object):
+    
+    def __init__(self):
+        from clawer.models import Clawer
+        
+        self.result_path = settings.CLAWER_RESULT
+        self.clawers = Clawer.objects.filter(status=Clawer.STATUS_ON)
+        self.hour = datetime.datetime.now().replace(minute=0, second=0, microsecond=0) - datetime.timedelta(minutes=60)
+    
+    def monitor(self):
+        if os.path.exists(self.result_path) is False:
+            return
+        
+        for clawer in self.clawers:
+            self._do_check(clawer)
+            
+        for clawer in self.clawers:
+            self._do_report(clawer)
+        
+    def _do_check(self, clawer):
+        from clawer.models import ClawerHourMonitor
+        
+        clawer_hour_monitor = ClawerHourMonitor(clawer=clawer, hour=self.hour)
+        target_path = os.path.join(self.result_path, "%s/%s" % (clawer.id, self.hour.strftime("%Y/%m/%d/%H.json.gz")))
+        if os.path.exists(target_path) is False:
+            clawer_hour_monitor.bytes = 0
+        else:
+            file_stat = os.stat(target_path)
+            clawer_hour_monitor.bytes = file_stat[stat.ST_SIZE]
+            
+        clawer_hour_monitor.save()
+    
+    def _do_report(self, clawer):
+        from clawer.models import ClawerHourMonitor
+        
+        need_report = False
+        
+        last_hour = self.hour - datetime.timedelta(minutes=120)
+        clawer_hour_monitors = list(ClawerHourMonitor.objects.filter(hour__gt=last_hour).order_by("hour"))
+        if len(clawer_hour_monitors) < 2:
+            return
+        current = clawer_hour_monitors[-1]
+        
+        for item in clawer_hour_monitors:
+            if current == item:
+                continue
+            delta = current.bytes - item.bytes
+            if delta < 0 and abs(delta)*4 < item.bytes:
+                need_report = True
+                break
+            
+        if need_report is False:
+            return
+        
+        #send mail
+        report_mails = clawer.settings().valid_report_mails()
+        send_mail(u'爬虫[%s]在%s，数据异常' % (current.hour.strftime("%Y-%m-%d %H时")), 
+                  u'当前归并数据大小%d' % current.bytes, 'robot@princetechs.com', report_mails, 
+                  fail_silently=False)
+
 
 #rqworker function
 def download_clawer_task(clawer_task, clawer_setting):

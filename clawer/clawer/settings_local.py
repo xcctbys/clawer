@@ -30,28 +30,22 @@ PYTHON = "/Users/pengxt/Documents/pyenv/dj14/bin/python"
 CRONTAB_USER = "pengxt"
 CLAWER_SOURCE = "/Users/pengxt/Documents/clawer/source/"
 CLAWER_RESULT = "/Users/pengxt/Documents/clawer/result/"
-
-BROKER_URL = 'redis://127.0.0.1:6379/0'
-CELERYD_TIMER_PRECISION = 1
-TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
-CELERY_RESULT_BACKEND='djcelery.backends.cache:CacheBackend'
-CELERYD_MAX_TASKS_PER_CHILD = 1024
-CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
+CLAWER_RESULT_URL = "http://localhost:8000/media/clawer/result/"
 
 
 MEDIA_URL = 'http://localhost:8000/media/'
-MEDIA_ROOT = os.path.join(os.path.dirname(__file__), "../../../media/")
+MEDIA_ROOT = os.path.join(os.path.dirname(__file__), "media")
 
 REDIS = "redis://localhost:6379//0"
 URL_REDIS = "redis://localhost:6379//0"
 MONITOR_REDIS = "redis://localhost:6379//0"
 
 #captcha
-CAPTCHA_STORE = "/Users/pengxt/Documents/captcha"
+CAPTCHA_STORE = os.path.join(os.path.dirname(__file__), "captcha")
 
 
 RAVEN_CONFIG = {
-    'dsn': 'http://c63b0d71513f4569b661e81bcfe8f903:c16131fe0f8d4195b0ea8be642aaa419@coredump.51zhi.com//4',
+    'dsn': '',
 }
 
 

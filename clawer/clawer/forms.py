@@ -33,4 +33,5 @@ class UpdateClawerSetting(forms.Form):
     download_engine = forms.ChoiceField(choices=Download.ENGINE_CHOICES)
     status = forms.ChoiceField(choices=Clawer.STATUS_CHOICES)
     prior = forms.ChoiceField(choices=ClawerSetting.PRIOR_CHOICES)
+    report_mails = forms.CharField(max_length=1024, required=False)
     

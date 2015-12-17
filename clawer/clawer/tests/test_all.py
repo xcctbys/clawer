@@ -11,10 +11,12 @@ from django.contrib.auth.models import User as DjangoUser, Group
 
 from clawer.models import MenuPermission, Clawer, ClawerTask,\
     ClawerTaskGenerator, ClawerAnalysis, ClawerAnalysisLog, Logger,\
-    ClawerDownloadLog, RealTimeMonitor, ClawerSetting, ClawerGenerateLog
+    ClawerDownloadLog, RealTimeMonitor, ClawerSetting, ClawerGenerateLog,\
+    ClawerHourMonitor
 from clawer.management.commands import task_generator_run, task_analysis, task_analysis_merge, task_dispatch
 from clawer.management.commands import task_generator_install
-from clawer.utils import UrlCache, Download
+from clawer.utils import UrlCache, Download, MonitorClawer
+from django.conf import settings
 
 
 class TestHomeViews(TestCase):
@@ -71,6 +73,11 @@ class TestMonitorViews(TestCase):
         
     def test_realtime_monitor(self):
         url = reverse("clawer.views.monitor.realtime_dashboard")
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        
+    def test_hour(self):
+        url = reverse("clawer.views.monitor.hour")
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         
@@ -200,6 +207,18 @@ class TestMonitorApi(TestCase):
         clawer.delete()
         clawer_generator.delete()
         clawer_task.delete()
+        
+    def test_hour(self):
+        clawer = Clawer.objects.create(name="hi", info="good")
+        hour = datetime.datetime.now().replace(minute=0, second=0, microsecond=0)
+        clawer_hour_monitor = ClawerHourMonitor.objects.create(clawer=clawer, hour=hour, bytes=300)
+        url = reverse("clawer.apis.monitor.hour")
+        
+        resp = self.logined_client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        
+        clawer.delete()
+        clawer_hour_monitor.delete()
                 
         
 class TestHomeApi(TestCase):
@@ -557,3 +576,54 @@ class TestDownload(TestCase):
         print downloader.spend_time
         self.assertIsNotNone(downloader.content)
     
+    
+class TestMonitorClawer(TestCase):
+    def setUp(self):
+        TestCase.setUp(self)
+        self.user = DjangoUser.objects.create_user(username="xxx", password="xxx")
+        self.group = Group.objects.create(name=MenuPermission.GROUPS[0])
+        self.user.groups.add(self.group)
+        
+    def tearDown(self):
+        TestCase.tearDown(self)
+        self.user.delete()
+        self.group.delete()
+        
+    def test_check(self):
+        clawer = Clawer.objects.create(name="hi", info="good")
+        hour = datetime.datetime.now().replace(minute=0, second=0, microsecond=0) - datetime.timedelta(minutes=60)
+        path = os.path.join(settings.CLAWER_RESULT, "%d/%s" % (clawer.id, hour.strftime("%Y/%m/%d/%H.json.gz")))
+        parent = os.path.dirname(path)
+        if os.path.exists(parent) is False:
+            os.makedirs(parent, 0775)
+        with open(path, "w") as f:
+            f.write("hello world")
+        
+        monitor = MonitorClawer()
+        monitor._do_check(clawer)
+        
+        clawer_hour_monitors = ClawerHourMonitor.objects.filter(clawer=clawer, hour=hour).all()
+        self.assertGreater(len(clawer_hour_monitors), 0)
+        
+        clawer.delete()
+        clawer_hour_monitors.delete()
+        os.remove(path)
+        
+    def test_report(self):
+        clawer = Clawer.objects.create(name="hi", info="good")
+        clawer_setting = clawer.settings()
+        clawer_setting.report_mails = "xiaotaop@princetechs.com"
+        clawer_setting.save()
+        hour = datetime.datetime.now().replace(minute=0, second=0, microsecond=0)
+        last_hour = hour - datetime.timedelta(minutes=60)
+        clawer_hour_monitor = ClawerHourMonitor.objects.create(clawer=clawer, hour=hour, bytes=300)
+        last_clawer_hour_monitor = ClawerHourMonitor.objects.create(clawer=clawer, hour=last_hour, bytes=300*10)
+        
+        monitor = MonitorClawer()
+        monitor._do_report(clawer)
+        
+        clawer_hour_monitors = ClawerHourMonitor.objects.filter(clawer=clawer).all()
+        self.assertGreater(len(clawer_hour_monitors), 0)
+        
+        clawer.delete()
+        clawer_hour_monitors.delete()

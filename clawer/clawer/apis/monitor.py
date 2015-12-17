@@ -7,11 +7,9 @@ import datetime
 from html5helper.decorator import render_json
 from clawer.models import Clawer, ClawerTask, ClawerTaskGenerator,\
     ClawerAnalysis, ClawerAnalysisLog, Logger, LoggerCategory, ClawerDownloadLog,\
-    RealTimeMonitor
-from clawer.utils import check_auth_for_api, EasyUIPager, Download
-from clawer.forms import UpdateClawerTaskGenerator, UpdateClawerAnalysis,\
-    AddClawerTask, UpdateClawerSetting
-from html5helper.utils import get_request_ip
+    RealTimeMonitor, ClawerHourMonitor
+from clawer.utils import check_auth_for_api, EasyUIPager
+
 
 
 
@@ -34,3 +32,13 @@ def task_stat(request):
     return result
 
 
+@render_json
+@check_auth_for_api
+def hour(request):
+    clawer_id = request.GET.get("clawer")
+    
+    qs = ClawerHourMonitor.objects.all()
+    if clawer_id:
+        qs = qs.filter(clawer_id=clawer_id)
+        
+    return EasyUIPager(qs, request).query()

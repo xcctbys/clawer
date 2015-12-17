@@ -429,6 +429,7 @@ class ClawerSetting(models.Model):
     download_js = models.TextField(blank=True, null=True)
     prior = models.IntegerField(default=PRIOR_NORMAL)
     last_update_datetime = models.DateTimeField(auto_now_add=True, auto_now=True)
+    report_mails = models.CharField(blank=True, null=True, max_length=256)
     add_datetime = models.DateTimeField(auto_now_add=True)
     
     class Meta:
@@ -452,6 +453,15 @@ class ClawerSetting(models.Model):
         else:
             return DownloadQueue.QUEUE_NAME
         
+    def valid_report_mails(self):
+        valid = []
+        mails = self.report_mails.split(" ")
+        for mail in mails:
+            if mail.find("@") == -1:
+                continue
+            valid.append(mail)
+        return valid
+                
     def as_json(self):
         result = {
             "dispatch": self.dispatch,
@@ -462,6 +472,7 @@ class ClawerSetting(models.Model):
             "prior_name": self.prior_name(),
             "cookie": self.cookie,
             "download_js": self.download_js,
+            "report_mails": self.report_mails,
             "last_update_datetime": self.last_update_datetime.strftime("%Y-%m-%d %H:%M:%S"),
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }
@@ -552,6 +563,28 @@ class UserProfile(models.Model):
             "nickname": self.nickname,
             "username": self.user.username,
         }
+        
+
+
+class ClawerHourMonitor(models.Model):
+    clawer = models.ForeignKey(Clawer)
+    hour = models.DateTimeField()  #only to hour
+    bytes = models.IntegerField(default=0)
+    add_datetime = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        app_label = "clawer"     
+        ordering = ["-id"]
+    
+    def as_json(self):
+        data = {"id": self.id,
+            "hour": self.hour.strftime("%Y-%m-%d %H:%M:%S"),
+            "bytes": self.bytes,
+            "clawer": self.clawer.as_json(),
+            "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        return data
+
 
 
 class MenuPermission:
@@ -573,7 +606,8 @@ class MenuPermission:
             {"id":105, "text":u"数据下载", "url":settings.MEDIA_URL, "groups":GROUPS},
         ]},
         {"id":3, "text": u"实时监控", "url":"", "children": [
-            {"id":101, "text":u"实时Dashboard", "url":"clawer.views.monitor.realtime_dashboard", "groups":GROUPS},
+            {"id":301, "text":u"实时Dashboard", "url":"clawer.views.monitor.realtime_dashboard", "groups":GROUPS},
+            {"id":301, "text":u"每小时结果", "url":"clawer.views.monitor.hour", "groups":GROUPS},
         ]},
         
         {"id":2, "text": u"系统管理", "url":"", "children": [
