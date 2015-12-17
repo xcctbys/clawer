@@ -591,6 +591,7 @@ class MonitorClawer(object):
             print "target size is %s" % clawer_hour_monitor.bytes
             
         clawer_hour_monitor.save()
+        print "clawer hour monitor id %d, bytes %d" % (clawer_hour_monitor.id, clawer_hour_monitor.bytes)
     
     def _do_report(self, clawer):
         from clawer.models import ClawerHourMonitor
