@@ -591,7 +591,7 @@ class TestMonitorClawer(TestCase):
         
     def test_check(self):
         clawer = Clawer.objects.create(name="hi", info="good")
-        hour = datetime.datetime.now().replace(minute=0, second=0, microsecond=0) - datetime.timedelta(minutes=60)
+        hour = datetime.datetime.now().replace(minute=0, second=0, microsecond=0) - datetime.timedelta(minutes=120)
         path = os.path.join(settings.CLAWER_RESULT, "%d/%s" % (clawer.id, hour.strftime("%Y/%m/%d/%H.json.gz")))
         parent = os.path.dirname(path)
         if os.path.exists(parent) is False:

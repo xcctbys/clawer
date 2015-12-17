@@ -40,6 +40,13 @@ REDIS = "redis://localhost:6379//0"
 URL_REDIS = "redis://localhost:6379//0"
 MONITOR_REDIS = "redis://localhost:6379//0"
 
+EMAIL_BACKEND = 'django_smtp_ssl.SSLEmailBackend'
+EMAIL_HOST = 'smtp.exmail.qq.com'
+EMAIL_PORT = 465   
+EMAIL_HOST_USER='robot@princetechs.com'  
+EMAIL_HOST_PASSWORD='Robot0023' 
+USE_TLS = True
+
 #captcha
 CAPTCHA_STORE = os.path.join(os.path.dirname(__file__), "captcha")
 

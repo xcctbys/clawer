@@ -29,6 +29,14 @@ CACHES = {
     }
 }
 
+EMAIL_BACKEND = 'django_smtp_ssl.SSLEmailBackend'
+EMAIL_HOST = 'smtp.exmail.qq.com'
+EMAIL_PORT = 465   
+EMAIL_HOST_USER='robot@princetechs.com'  
+EMAIL_HOST_PASSWORD='Robot0023' 
+USE_TLS = True
+
+
 MEDIA_ROOT = "/data/media/"
 MEDIA_URL = "http://clawer.princetechs.com/media/"
 
