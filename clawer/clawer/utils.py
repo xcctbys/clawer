@@ -563,7 +563,7 @@ class MonitorClawer(object):
         
         self.result_path = settings.CLAWER_RESULT
         self.clawers = Clawer.objects.filter(status=Clawer.STATUS_ON)
-        self.hour = datetime.datetime.now().replace(minute=0, second=0, microsecond=0) - datetime.timedelta(minutes=60)
+        self.hour = datetime.datetime.now().replace(minute=0, second=0, microsecond=0) - datetime.timedelta(minutes=120)
     
     def monitor(self):
         if os.path.exists(self.result_path) is False:
