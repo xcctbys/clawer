@@ -10,7 +10,7 @@ function safe_run()
 
     (
         flock -xn -w 10 200 || exit 1
-        cd ${WORKDIR};${PYTHON} manage_pro.py $*
+        cd ${WORKDIR}; PYTHONWARNINGS="ignore:Unverified HTTPS request" ${PYTHON}  manage_pro.py $*
     ) 200>${file}
 }
 

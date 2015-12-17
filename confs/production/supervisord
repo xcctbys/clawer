@@ -85,8 +85,12 @@ case "$1" in
     ;;
     restart)
         $0 stop
-        sleep 1
+        sleep 3
         $0 start
+    ;;
+    reload)
+        echo -n "Reload ${NAME}"
+        kill -s HUP `cat ${PID}`
     ;;
     *)
         echo "Usage: $0 {start|stop|restart}" 
