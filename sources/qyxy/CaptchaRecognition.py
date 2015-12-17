@@ -30,12 +30,12 @@ class CaptchaRecognition(object):
             jiangsu
             zongju: for national gov and shanghai
             zhongwen: for Anhui, Guangxi, Heilongjiang, Henan
-
+            guangdong: for Guangdong Province
         :return: None
         '''
 
         captcha_type = captcha_type.lower()
-        if captcha_type not in ["jiangsu", "beijing", "zongju", "zhongwen"]:
+        if captcha_type not in ["jiangsu", "beijing", "zongju", "zhongwen", "guangdong"]:
             exit(1)
         elif captcha_type in ["jiangsu", "beijing", "zongju"]:
             self.label_list = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
@@ -44,6 +44,11 @@ class CaptchaRecognition(object):
                                "x", "c", "v", "b", "n", "m"]
             self.to_denoise = True
             self.masker = 255
+        elif captcha_type in ["guangdong"]:
+            self.to_denoise = True
+            self.masker = 255
+            self.label_list = [u"零", u"壹", u"贰", u"叁", u"肆", u"伍", u"陆", u"柒", u"捌", u"玖", u"拾", u"加", u"减", u"乘", u"除",
+                               u"等", u"于"]
         elif captcha_type in ["zhongwen"]:
             self.to_denoise = False
             self.masker = 200
@@ -139,6 +144,14 @@ class CaptchaRecognition(object):
             self.image_height = 50
             self.image_top = 0
             self.image_gap = 12
+        elif captcha_type in ["guangdong"]:
+            self.image_label_count = 5
+            self.image_start = 26
+            self.image_width = 25
+            self.image_height = 40
+            self.image_top = 0
+            self.image_gap = 0
+
 
         self.model_path = "model/" + captcha_type
         self.model_file = self.model_path + "/model.m"
@@ -207,7 +220,7 @@ class CaptchaRecognition(object):
             else:
                 x = np.append(x, self.__convertPoint__(image), axis=0)
             index += 1
-        model = SVC(kernel="linear", class_weight="auto", tol=1e-10).fit(x, y)
+        model = SVC(kernel="linear", class_weight="auto", tol=1e-15).fit(x, y)
         joblib.dump(model, self.model_file)
         return True
 
