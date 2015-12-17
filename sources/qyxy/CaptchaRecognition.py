@@ -18,6 +18,7 @@ class CaptchaRecognition(object):
     image_label_count = 4
     masker = 255
     to_denoise = True
+    to_calculate = False
     pixel_index = 1
 
     def __init__(self, captcha_type="beijing"):
@@ -46,6 +47,7 @@ class CaptchaRecognition(object):
             self.masker = 255
         elif captcha_type in ["guangdong"]:
             self.to_denoise = True
+            self.to_calculate = True
             self.masker = 255
             self.label_list = [u"零", u"壹", u"贰", u"叁", u"肆", u"伍", u"陆", u"柒", u"捌", u"玖", u"拾", u"加", u"减", u"乘", u"除",
                                u"等", u"于"]
@@ -224,6 +226,25 @@ class CaptchaRecognition(object):
         joblib.dump(model, self.model_file)
         return True
 
+    def __calculate__(self, results):
+        first = results[0]
+        char = results[1]
+        second = results[2]
+        first_num = self.label_list.index(first)
+        second_num = self.label_list.index(second)
+
+        if char == u"加":
+            return first_num + second_num
+        elif char == u"减":
+            return first_num - second_num
+        elif char == u"乘":
+            return first_num * second_num
+        elif char == u"除":
+            return first_num / second_num
+        else:
+            return 0
+
+
     def predict_result(self, image_path):
         if os.path.isfile(self.model_file):
             self.clf = joblib.load(self.model_file)
@@ -235,4 +256,8 @@ class CaptchaRecognition(object):
             _f = np.array([feature], dtype=np.float)
             predict = self.clf.predict(_f)[0]
             predict_result += unicode(self.label_list[int(predict)])
-        return predict_result
+
+        if self.to_calculate:
+            return self.__calculate__((predict_result))
+        else:
+            return predict_result
