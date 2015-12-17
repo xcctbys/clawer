@@ -577,11 +577,14 @@ class MonitorClawer(object):
         
     def _do_check(self, clawer):
         from clawer.models import ClawerHourMonitor
+        #remove old
+        ClawerHourMonitor.objects.filter(clawer=clawer, hour=self.hour).delete()
         
         clawer_hour_monitor = ClawerHourMonitor(clawer=clawer, hour=self.hour)
         target_path = os.path.join(self.result_path, "%s/%s" % (clawer.id, self.hour.strftime("%Y/%m/%d/%H.json.gz")))
         if os.path.exists(target_path) is False:
             clawer_hour_monitor.bytes = 0
+            print "target path is %s" % target_path
         else:
             file_stat = os.stat(target_path)
             clawer_hour_monitor.bytes = file_stat[stat.ST_SIZE]
