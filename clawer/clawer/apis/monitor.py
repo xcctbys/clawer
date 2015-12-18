@@ -50,6 +50,6 @@ def hour_echarts(request):
     serie = [x.bytes for x in qs]
     result["series"].append(serie)
     
-    result["xAxis"] = [x.hour.strftime("%d %H") for x in qs]
+    result["xAxis"] = [x.hour.strftime("%d日%H") for x in qs]
     
     return result
