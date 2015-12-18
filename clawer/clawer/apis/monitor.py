@@ -1,13 +1,7 @@
 #encoding=utf-8
 
-
-import json
-import datetime
-
 from html5helper.decorator import render_json
-from clawer.models import Clawer, ClawerTask, ClawerTaskGenerator,\
-    ClawerAnalysis, ClawerAnalysisLog, Logger, LoggerCategory, ClawerDownloadLog,\
-    RealTimeMonitor, ClawerHourMonitor
+from clawer.models import ClawerTask, RealTimeMonitor, ClawerHourMonitor
 from clawer.utils import check_auth_for_api, EasyUIPager
 
 
@@ -42,3 +36,20 @@ def hour(request):
         qs = qs.filter(clawer_id=clawer_id)
         
     return EasyUIPager(qs, request).query()
+
+
+
+@render_json
+@check_auth_for_api
+def hour_echarts(request):
+    clawer_id = request.GET.get("clawer_id")
+    result = {"is_ok":True, "series":[], "xAxis":[]}
+    
+    qs = ClawerHourMonitor.objects.filter(clawer_id=clawer_id).order_by("hour")
+    
+    serie = [x.bytes for x in qs]
+    result["series"].append(serie)
+    
+    result["xAxis"] = [x.hour.strftime("%d %H:%M") for x in qs]
+    
+    return result

@@ -8,7 +8,7 @@
 
 <div id="toolbar">
     <select class="easyui-combogrid" type="text" id="id_clawer_select" data-options="required:true" style="width:100px;" ></select>
-
+    <a class="easyui-linkbutton" href="javascript:void(0)" id="show_echarts_btn">图形化</a>
 </div>
 
 
@@ -34,10 +34,13 @@
 </table>
 
 
-<!-- failed reason win -->
-<div id="failed_reason_win" class="easyui-window" title="失败详情" closed="true" style="width:80%;height:90%;padding:5px;">
+<!-- echarts win -->
+<div id="echarts_win" class="easyui-window" title="" closed="true" style="width:80%;height:90%;padding:5px;">
+    <div id="echarts" style="height:300px;width:98%;"></div>
+    
+    <script src="{% static 'echarts/build/dist/echarts.js' %}"></script>
 </div>
-<!-- failed reason win end -->
+<!-- echarts win -->
 
 
 
@@ -104,6 +107,103 @@ function reload_datagrid() {
 
 $(document).ready(function(){
 	load_clawers();
+	
+	$("#show_echarts_btn").bind("click", function(e){
+		var win = $("#echarts_win");
+		var clawer_id = $("#id_clawer_select").combobox("getValue");
+		
+		if(!clawer_id) {
+			$.messager.alert("warning", "请先选择一个爬虫");
+			return;
+		}
+		
+		win.window({"title": clawer_id});
+		win.window('open');
+		
+		//begin to render echarts
+		require.config({
+		    paths: {
+		        echarts: "{% static 'echarts/build/dist' %}"
+		    }
+		});
+
+		require(
+		        [
+		            'echarts',
+		            'echarts/chart/bar',
+		            'echarts/chart/line'
+		        ],
+		        function (ec) {
+		            // 基于准备好的dom，初始化echarts图表
+		            var chart = ec.init(document.getElementById('echarts')); 
+		            
+		            chart.showLoading({
+		                text: '正在努力的读取数据中...',    //loading话术
+		            });
+		                    
+		            function load_data() {
+		            	var url = "{% url clawer.apis.monitor.hour_echarts %}";
+		            	
+		            	$.getJSON(url, {clawer_id:clawer_id}, function(resp){
+		            		
+		            		var option = {
+		           				tooltip : {
+		           			        trigger: 'axis'
+		           			    },
+			           			legend: {
+			           		        data:['字节数']
+			           		    },
+			           			xAxis : [
+		                            {
+		                                type : 'category',
+		                                boundaryGap : false,
+		                                data : resp.xAxis
+		                            }
+		                        ],
+		                        yAxis : [
+		                            {
+		                                type : 'value'
+		                            }
+		                        ],
+		                        calculable : true,
+		                        toolbox: {
+		                            show : true,
+		                            feature : {
+		                                mark : {show: true},
+		                                dataView : {show: true, readOnly: false},
+		                                magicType : {show: true, type: ['line', 'bar', 'stack', 'tiled']},
+		                                restore : {show: true},
+		                                saveAsImage : {show: true}
+		                            }
+		                        },
+		                        dataZoom : {
+		                            show : true,
+		                            realtime : true,
+		                            start : 0,
+		                            end : 100
+		                        },
+		                        series: [
+									{
+									    name:"bytes", 
+										type:'line',
+										smooth:true,
+										itemStyle: {normal: {areaStyle: {type: 'default'}}},
+										data: resp.series[0]
+									}
+		                        ]
+		                    };
+		            		
+		            		chart.hideLoading();
+		            		chart.setOption(option); 
+		            	});
+		            }
+		            
+		            load_data();
+		            
+		        }
+		    );
+		
+	});
 });
 </script>
 
