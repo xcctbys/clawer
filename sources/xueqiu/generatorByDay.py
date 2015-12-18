@@ -151,7 +151,6 @@ keywords = [
 ]
 
 
-
 class History(object):
 
     def __init__(self):
@@ -187,10 +186,9 @@ class History(object):
                 os.chown(self.path, self.uid, self.gid)
 
 
-
 class Generator(object):
     HOST = "http://xueqiu.com/statuses/search.json?"
-    MAXPAGE = 6
+    MAXPAGE = 6  # 每个关键词抓取的页码上限
 
     def __init__(self):
         self.uris = ''
@@ -220,13 +218,11 @@ class Generator(object):
             return
         self.obtain_urls(url, current_cookie)
 
-    def obtain_urls(self , url, cookie):
+    def obtain_urls(self, url, cookie):
         self.uris = url
         self.cookie = cookie
         self.history.current_page_num += 1
         self.history.save()
-
-
 
 
 class GeneratorTest(unittest.TestCase):
@@ -238,10 +234,8 @@ class GeneratorTest(unittest.TestCase):
         self.generator = Generator()
         self.generator.search_url()
 
-
         logging.debug("urls is %s", self.generator.uris)
         logging.debug("cookie is %s", self.generator.cookie)
-
 
 
 if __name__ == "__main__":
@@ -252,4 +246,4 @@ if __name__ == "__main__":
     generator = Generator()
     generator.search_url()
 
-    print json.dumps({"uri":generator.uris, "cookie":generator.cookie})
+    print json.dumps({"uri": generator.uris, "cookie": generator.cookie})

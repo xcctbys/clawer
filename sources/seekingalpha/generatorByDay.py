@@ -28,12 +28,11 @@ else:
 logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: %(message)s")
 
 
-
 class History(object):
 
     def __init__(self):
         self.path = "/tmp/seekingalphaByDay"
-        self.timestamp_STEP = 0
+        self.timestamp_STEP = 0  # 初始化回溯时间戳倍数索引
         self.date_now = datetime.datetime.now()
 
         try:
@@ -60,12 +59,10 @@ class History(object):
                 os.chown(self.path, self.uid, self.gid)
 
 
-
-
 class Generator(object):
     HOST = 'http://seekingalpha.com/analysis/all/all/'
     articleHost = 'http://seekingalpha.com'
-    dateSTEP = 21600
+    dateSTEP = 21600  # 每次运行回溯的时间戳跨度
     timeStamp = int(time.time())
 
     def __init__(self):
@@ -82,7 +79,7 @@ class Generator(object):
 
     def page_url(self):
         times = self.timeStamp - self.dateSTEP * self.history.timestamp_STEP
-        if times <= self.timeStamp - 86400:
+        if times <= self.timeStamp - 86400:  # 如果回溯时间戳长度大于一天则返回
             return
         url = self.HOST + str(times)
         self.obtain_urls(url)
@@ -97,7 +94,6 @@ class Generator(object):
             self.uris.add(self.articleHost + each["href"])
 
 
-
 class GeneratorTest(unittest.TestCase):
 
     def setUp(self):
@@ -110,7 +106,6 @@ class GeneratorTest(unittest.TestCase):
         logging.debug("urls count is %d", len(self.generator.uris))
 
         self.assertGreater(len(self.generator.uris), 0)
-
 
 
 if __name__ == "__main__":

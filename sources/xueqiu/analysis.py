@@ -1,4 +1,4 @@
-#encoding=utf-8
+# encoding=utf-8
 """china court
 
 hits: http://xueqiu.com/statuses/search.json?page=1&q=3D%E6%89%93%E5%8D%B0&_=1445322237058
@@ -54,8 +54,7 @@ class Analysis(object):
             self.list.append(new_a)
         self.result["list"] = self.list
         logging.debug("result is %s", json.dumps(self.result, indent=4))
-        
-        
+
     def parse_title(self, new_a):
         title = self.js_article.get("title")
         new_a["title"] = title
@@ -70,7 +69,6 @@ class Analysis(object):
         new_a["add_datetime"] = time.strip()
 
     
-
 class TestAnalysis(unittest.TestCase):
     
     def setUp(self):

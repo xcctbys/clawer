@@ -1,4 +1,4 @@
-#encoding=utf-8
+# encoding=utf-8
 """此代码于本地环境运行，拉起浏览器模拟人工操作获取所需数据，每次运行需人工更改存放有url的txt文件文件名以及生成json文件文件名
 """
 import json
@@ -6,17 +6,16 @@ import time
 from selenium import webdriver
 
 
-
 class Analysis(object):
     def __init__(self):
-        self.textpath=r"test.txt"                                       #存放的url文本路径
-        self.result = {"twittes_list" : []}
-        self.arr=[]
+        self.textpath=r"test.txt"  # 读取url文本路径
+        self.result = {"twittes_list": []}
+        self.arr = []
 
     def get_url(self):
         text=open(self.textpath)
         for lines in text.readlines():
-            lines=lines.replace("\n","")
+            lines=lines.replace("\n", "")
             self.arr.append(lines)
         text.close()
 
@@ -24,10 +23,10 @@ class Analysis(object):
         driver = webdriver.Firefox()
         for url in self.arr:
             driver.get(url)
-            js="var q=document.documentElement.scrollTop+=100000"       #运用于firefox以及safari浏览器环境下（其他浏览器请改为js="var q=document.body.scrollTop+=100000"）
-            for i in range(0,5):                                        #模拟网页下拉操作循环
+            js = "var q=document.documentElement.scrollTop+=100000"  # 运用于firefox以及safari浏览器环境下（其他浏览器请改为js="var q=document.body.scrollTop+=100000"）
+            for i in range(0, 5):  # 模拟网页下拉操作（循环5次）
                 try:
-                    driver.execute_script(js)
+                    driver.execute_script(js)  # 运行js
                     time.sleep(1)
                 except:
                     break
@@ -48,9 +47,10 @@ class Analysis(object):
                     continue
         driver.quit()
 
+
 if __name__ == "__main__":
 
-    sName = 'test.json'                                                 #写入json文件文件名
+    sName = 'test.json'  # 需要写入json文件的文件名
     f = open(sName,'w+')
 
     analysis = Analysis()
