@@ -1,22 +1,20 @@
 # encoding=utf-8
-""" example is http://seekingalpha.com/analysis/all/all/1443809545?summaries_state
+""" example is http://www.live.chinacourt.org/fygg/index/kindid/6.shtml
 """
 
-import json
 import logging
+import json
 import unittest
-import requests
+import traceback
 import os
-import time
-import datetime
 import cPickle as pickle
-from bs4 import BeautifulSoup
-
 try:
     import pwd
 except:
     pass
-import traceback
+import time
+import requests
+import re
 
 
 DEBUG = False
@@ -31,9 +29,8 @@ logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: 
 class History(object):
 
     def __init__(self):
-        self.path = "/tmp/seekingalpha"
-        self.timestamp_STEP = 0  # 回溯时间跨度步长数值
-
+        self.page = 1
+        self.path = "/tmp/china_court_bankruptcy"
         try:
             pwname = pwd.getpwnam("nginx")
             self.uid = pwname.pw_uid
@@ -44,9 +41,10 @@ class History(object):
     def load(self):
         if os.path.exists(self.path) is False:
             return
+
         with open(self.path, "r") as f:
             old = pickle.load(f)
-            self.timestamp_STEP = old.timestamp_STEP
+            self.page = old.page
 
     def save(self):
         with open(self.path, "w") as f:
@@ -56,39 +54,33 @@ class History(object):
 
 
 class Generator(object):
-    HOST = 'http://seekingalpha.com/analysis/all/all/'
-    articleHost = 'http://seekingalpha.com'
-    dateSTEP = 21600  # 每步长回溯的时间跨度为六小时(单位s)
-    currentDay = datetime.datetime(2015, 10, 27, 23, 59, 59)  # 手动输入截至日期
-    timeStamp = int(time.mktime(currentDay.timetuple()))  # 转换输入日期格式为时间戳
+    STEP = 21
 
     def __init__(self):
         self.uris = set()
         self.history = History()
-
-        try:
-            pwname = pwd.getpwnam("nginx")
-            self.uid = pwname.pw_uid
-            self.gid = pwname.pw_gid
-        except:
-            logging.error(traceback.format_exc(10))
         self.history.load()
+        self.timeStamp = int(time.time())
 
-    def page_url(self):
-        times = self.timeStamp - self.dateSTEP * self.history.timestamp_STEP
-        if times < 1437926400:  # 开始时间戳设置(2015-07-27)
-            return
-        url = self.HOST + str(times)
-        self.obtain_urls(url)
-        self.history.timestamp_STEP += 1
+    def obtain_urls(self):
+        for i in range(1, self.STEP):
+            url = "http://rmfygg.court.gov.cn/psca/lgnot/solr/searchBulletinInterface.do?callback=jQuery" \
+                  "152043560746777802706_1448866417716&start=" + str(self.history.page) + "&limit=16&wd=rmfybulletin" \
+                  "&list%5B0%5D=bltntype%3A64&_=" + str(self.timeStamp)
+
+            r = requests.get(url, headers={"user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"})
+            if r.status_code != 200:
+                return
+            js_content = re.sub(r"^.*?\(", "", r.text)
+            js_content = js_content[:-1]
+            js_dict = json.loads(js_content)
+            js_list = js_dict.get("objs")
+            if len(js_list) < 1:
+                return
+
+            self.uris.add(url)
+            self.history.page += 1
         self.history.save()
-
-    def obtain_urls(self, url):
-        r = requests.get(url)
-        soup = BeautifulSoup(r.text, "html5lib")
-        a = soup.find_all("a", {"class": "article_title"})
-        for each in a:
-            self.uris.add(self.articleHost + each["href"])
 
 
 class GeneratorTest(unittest.TestCase):
@@ -98,7 +90,10 @@ class GeneratorTest(unittest.TestCase):
 
     def test_obtain_urls(self):
         self.generator = Generator()
-        self.generator.page_url()
+        self.generator.obtain_urls()
+
+        for uri in self.generator.uris:
+            logging.debug("urls is %s", uri)
 
         logging.debug("urls count is %d", len(self.generator.uris))
 
@@ -106,11 +101,12 @@ class GeneratorTest(unittest.TestCase):
 
 
 if __name__ == "__main__":
+
     if DEBUG:
         unittest.main()
 
     generator = Generator()
-    generator.page_url()
+    generator.obtain_urls()
 
     for uri in generator.uris:
         print json.dumps({"uri": uri})

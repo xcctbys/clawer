@@ -22,7 +22,6 @@ else:
 logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: %(message)s")
 
 
-
 class Analysis(object):
 
     def __init__(self, path, url=None):
@@ -71,7 +70,6 @@ class Analysis(object):
         self.result["content"] = content
 
 
-
 class TestAnalysis(unittest.TestCase):
 
     def setUp(self):
@@ -88,7 +86,6 @@ class TestAnalysis(unittest.TestCase):
         self.assertIsNotNone(self.analysis.result["title"])
         self.assertIsNotNone(self.analysis.result["time"])
         self.assertIsNotNone(self.analysis.result["content"])
-
 
 
 if __name__ == "__main__":

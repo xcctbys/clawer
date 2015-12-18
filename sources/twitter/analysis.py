@@ -8,7 +8,6 @@ import json
 import sys
 import logging
 import unittest
-import requests
 import os
 
 from bs4 import BeautifulSoup
@@ -20,7 +19,6 @@ else:
     level = logging.ERROR
 
 logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: %(message)s")
-
 
 
 class Analysis(object):
@@ -61,7 +59,6 @@ class Analysis(object):
                 self.result["twitter"].append(data)
 
 
-
 class TestAnalysis(unittest.TestCase):
 
     def setUp(self):
@@ -76,7 +73,6 @@ class TestAnalysis(unittest.TestCase):
         self.analysis.parse()
         self.assertNotEqual(self.analysis.result, {})
         self.assertIsNotNone(self.analysis.result["twitter"])
-
 
 
 if __name__ == "__main__":

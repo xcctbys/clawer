@@ -2,7 +2,6 @@
 """ example is http://xueqiu.com/k?q=iphone
 """
 
-import re
 import logging
 import json
 import urllib
@@ -10,15 +9,11 @@ import unittest
 import requests
 import traceback
 import os
-import time
-import cookielib
 import cPickle as pickle
 try:
     import pwd
 except:
     pass
-
-from bs4 import BeautifulSoup
 
 
 DEBUG = False
@@ -155,7 +150,6 @@ keywords = [
 ]
 
 
-
 class History(object):
 
     def __init__(self):
@@ -185,7 +179,6 @@ class History(object):
                 os.chown(self.path, self.uid, self.gid)
 
 
-
 class Generator(object):
     HOST = "http://xueqiu.com/statuses/search.json?"
 
@@ -200,26 +193,24 @@ class Generator(object):
 
     def page_url(self, keyword):
         r = requests.get("http://xueqiu.com/", headers={"user-agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"})
-        xq_a_token = r.cookies["xq_a_token"]
-        current_cookie = "xq_a_token=" + xq_a_token + "; path=/; domain=.xueqiu.com; HttpOnly"
+        xq_a_token = r.cookies["xq_a_token"]  # 访问http://xueqiu.com获取需要的cookies
+        current_cookie = "xq_a_token=" + xq_a_token + "; path=/; domain=.xueqiu.com; HttpOnly"  # 构造cookies
         url = self.HOST + urllib.urlencode({"page": str(self.history.current_page_num)}) + "&" + urllib.urlencode({"q": keyword.encode("utf8")})
         jscontent = requests.get(url, headers={"user-agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36", "cookie": current_cookie}).text
         js_dict = json.loads(jscontent)
-        js_count = js_dict.get("count")
-        if js_count == None or (js_count-1)/20+1 < self.history.current_page_num:
+        js_count = js_dict.get("count")  # 获取文章总数
+        if js_count == None or (js_count-1)/20+1 < self.history.current_page_num:  # 判断当前页是否为空或当前页码索引超出当前关键词最大结果页
             self.history.current_page_num = 1
             self.history.current_keyword_num += 1
             self.history.save()
             return
         self.obtain_urls(url, current_cookie)
 
-    def obtain_urls(self , url, cookie):
+    def obtain_urls(self, url, cookie):
         self.uris = url
         self.cookie = cookie
         self.history.current_page_num += 1
         self.history.save()
-
-
 
 
 class GeneratorTest(unittest.TestCase):
@@ -231,10 +222,8 @@ class GeneratorTest(unittest.TestCase):
         self.generator = Generator()
         self.generator.search_url()
 
-
         logging.debug("urls is %s", self.generator.uris)
         logging.debug("cookie is %s", self.generator.cookie)
-
 
 
 if __name__ == "__main__":
@@ -245,4 +234,4 @@ if __name__ == "__main__":
     generator = Generator()
     generator.search_url()
 
-    print json.dumps({"uri":generator.uris, "cookie":generator.cookie})
+    print json.dumps({"uri": generator.uris, "cookie": generator.cookie})  # 输出url以及cookies

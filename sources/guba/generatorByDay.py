@@ -62,13 +62,13 @@ class Generator(object):
         self.uris = set()
         self.history = History()
         self.history.load()
-        self.step = 5
+        self.step = 5  # 生成器生成url的页数步长
 
     def page_url(self, page):
         return "http://guba.eastmoney.com/list,szzs,f_%d.html" % page
         
     def obtain_urls(self):
-        if self.history.current_page > 40:
+        if self.history.current_page > 40:  # 判断是否大于每日爬取页码最大值
             return
         end = self.history.current_page + self.step
         while self.history.current_page < end:
@@ -82,7 +82,7 @@ class Generator(object):
         if r.status_code != 200:
             return False
         
-        soup = BeautifulSoup(r.text, "html.parser")
+        soup = BeautifulSoup(r.text, "html.parser")  # 使用hmtl.parser解析网页
         news_container = soup.find("div", {"id": "articlelistnew"})
         divs = news_container.find_all("div")
         

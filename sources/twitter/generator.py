@@ -1,4 +1,4 @@
-#encoding=utf-8
+# encoding=utf-8
 """ example is http://www.twitter.com/search?q=additive+manufacturing since:2015-08-05 until:2015-08-06&src=typd
 """
 
@@ -7,9 +7,7 @@ import urllib
 import json
 import logging
 import unittest
-import requests
 import os
-import time
 import datetime
 import cPickle as pickle
 
@@ -150,13 +148,12 @@ keywords = [
 ]
 
 
-
 class History(object):
 
     def __init__(self):
         self.current_keyword = 0
         self.current_count = 117
-        self.path = "/tmp/twitter"                                  #本地测试请去除tmp前“/”符号
+        self.path = "/tmp/twitter"
         try:
             pwname = pwd.getpwnam("nginx")
             self.uid = pwname.pw_uid
@@ -173,7 +170,6 @@ class History(object):
             self.current_keyword = old.current_keyword
             self.current_count = old.current_count
 
-
     def save(self):
         with open(self.path, "w") as f:
             pickle.dump(self, f)
@@ -181,16 +177,11 @@ class History(object):
                 os.chown(self.path, self.uid, self.gid)
 
 
-
-
 class Generator(object):
     HOST = 'http://www.twitter.com/search?'
-    STEP = 11                                                       #每次输出的url步长
-    dateSTEP = 1                                                    #回溯的时间长度
-    currentDay = datetime.datetime.now()                            #使用系统当前日期
-
-    # a = "2015-09-18"                                              #手动输入日期
-    # currentDay = datetime.datetime.strptime(a, "%Y-%m-%d")        #转换输入日期格式
+    STEP = 11  # 每次输出的url数量步长
+    dateSTEP = 1  # 回溯的时间长度
+    currentDay = datetime.datetime.now()
 
     def __init__(self):
         self.uris = set()
@@ -204,8 +195,6 @@ class Generator(object):
             logging.error(traceback.format_exc(10))
 
         self.history.load()
-
-
 
     def obtain_urls(self):
         if self.history.current_count <= 0:
@@ -226,7 +215,6 @@ class Generator(object):
         self.history.save()
 
 
-
 class GeneratorTest(unittest.TestCase):
 
     def setUp(self):
@@ -241,7 +229,6 @@ class GeneratorTest(unittest.TestCase):
         self.assertGreater(len(self.generator.uris), 0)
 
 
-
 if __name__ == "__main__":
     if DEBUG:
         unittest.main()
@@ -250,4 +237,4 @@ if __name__ == "__main__":
     generator.obtain_urls()
 
     for uri in generator.uris:
-        print json.dumps({"uri":uri})
+        print json.dumps({"uri": uri})

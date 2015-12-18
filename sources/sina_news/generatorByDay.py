@@ -16,9 +16,6 @@ try:
 except:
     pass
 
-from bs4 import BeautifulSoup
-
-
 DEBUG = False
 if DEBUG:
     level = logging.DEBUG
@@ -26,7 +23,6 @@ else:
     level = logging.ERROR
 
 logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: %(message)s")
-
 
 
 class History(object):
@@ -49,20 +45,20 @@ class History(object):
 
         with open(self.path, "r") as f:
             old = pickle.load(f)
-            if old.date_now.strftime("%Y-%m-%d") == self.date_now.strftime("%Y-%m-%d"):
+            if old.date_now.strftime("%Y-%m-%d") == self.date_now.strftime("%Y-%m-%d"):  # 若当前系统时间与pickle内保存时间数值一致则继续爬取
                 self.news_page = old.news_page
                 self.news_count = old.news_count
-            else:
+            else:  # 若时间改变则重置pickle值
                 self.date_now = datetime.datetime.now()
                 self.news_page = 1
                 self.news_count = 1
                 self.save()
+
     def save(self):
         with open(self.path, "w") as f:
             pickle.dump(self, f)
             if hasattr(self, "uid"):
                 os.chown(self.path, self.uid, self.gid)
-
 
 
 class Generator(object):
@@ -74,23 +70,23 @@ class Generator(object):
         self.history.load()
 
     def obtain_urls(self):
-        date = (datetime.datetime.now() - datetime.timedelta(days = 1)).strftime("%Y-%m-%d")
+        date = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
         url = self.HOST + str(date) + '&ch=05&k=&offset_page=0&offset_num=0&num=40&asc=&page=' + str(self.history.news_page)
         try:
-            jscontent = requests.get(url).content.decode("gbk")
+            jscontent = requests.get(url).content.decode("gbk")  # 正则处理网页json后使用json.loads解析
             jscontent = jscontent.replace('var jsonData =', '')
             jscontent = jscontent.replace(';', '')
             jscontent = re.sub(r"(,?)(\w+?)\s+?:", r"\1'\2' :", jscontent)
             jscontent = jscontent.replace("'", "\"")
             js_dict = json.loads(jscontent)
-            self.history.news_count = js_dict.get("count")
+            self.history.news_count = js_dict.get("count")  # 获取当日新闻数量
             js_list = js_dict.get("list")
             for each in js_list:
                 self.uris.add(each.get("url"))
-            self.history.news_page += 1
+            self.history.news_page += 1  # 抓取完毕后页码索引加一并存入pickle
             self.history.save()
         except:
-            self.history.news_page += 1
+            self.history.news_page += 1  # 若解析过程失败则跳过该页
             self.history.save()
 
 
@@ -114,7 +110,6 @@ class GeneratorTest(unittest.TestCase):
         self.assertGreater(len(self.generator.uris), 0)
 
 
-
 if __name__ == "__main__":
 
     if DEBUG:
@@ -124,4 +119,4 @@ if __name__ == "__main__":
     generator.obtain_urls()
 
     for uri in generator.uris:
-        print json.dumps({"uri":uri})
+        print json.dumps({"uri": uri})

@@ -184,8 +184,6 @@ class History(object):
                 os.chown(self.path, self.uid, self.gid)
 
 
-
-
 class Generator(object):
     HOST = 'http://www.twitter.com/search?'
     STEP = 11
@@ -203,8 +201,6 @@ class Generator(object):
             logging.error(traceback.format_exc(10))
 
         self.history.load()
-
-
 
     def obtain_urls(self):
         if self.history.current_count <= 0:
@@ -225,7 +221,6 @@ class Generator(object):
         self.history.save()
 
 
-
 class GeneratorTest(unittest.TestCase):
 
     def setUp(self):
@@ -240,7 +235,6 @@ class GeneratorTest(unittest.TestCase):
         self.assertGreater(len(self.generator.uris), 0)
 
 
-
 if __name__ == "__main__":
     if DEBUG:
         unittest.main()
@@ -249,4 +243,4 @@ if __name__ == "__main__":
     generator.obtain_urls()
 
     for uri in generator.uris:
-        print json.dumps({"uri":uri})
+        print json.dumps({"uri": uri})
