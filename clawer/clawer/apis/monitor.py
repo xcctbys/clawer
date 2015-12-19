@@ -1,7 +1,7 @@
 #encoding=utf-8
 
 from html5helper.decorator import render_json
-from clawer.models import ClawerTask, RealTimeMonitor, ClawerHourMonitor
+from clawer.models import ClawerTask, RealTimeMonitor, ClawerHourMonitor, Clawer
 from clawer.utils import check_auth_for_api, EasyUIPager
 
 
@@ -43,13 +43,23 @@ def hour(request):
 @check_auth_for_api
 def hour_echarts(request):
     clawer_id = request.GET.get("clawer_id")
-    result = {"is_ok":True, "series":[], "xAxis":[]}
+    result = {"is_ok":True, "series":[], "xAxis":[], "clawers":[]}
     
-    qs = ClawerHourMonitor.objects.filter(clawer_id=clawer_id).order_by("hour")
-    
-    serie = [x.bytes for x in qs]
-    result["series"].append(serie)
-    
-    result["xAxis"] = [x.hour.strftime("%d日%H") for x in qs]
+    clawers = []
+    if clawer_id:
+        clawer = Clawer.objects.get(id=clawer_id)
+        clawers.append(clawer)
+    else:
+        clawers = Clawer.objects.filter(status=Clawer.STATUS_ON)
+        
+    for clawer in clawers:
+        qs = ClawerHourMonitor.objects.filter(clawer_id=clawer.id).order_by("hour")
+        
+        serie = [x.bytes for x in qs]
+        result["series"].append(serie)
+        result["clawers"].append(clawer.as_json())
+        
+        if not result["xAxis"]:
+            result["xAxis"] = [x.hour.strftime("%d日%H") for x in qs]
     
     return result
