@@ -7,7 +7,7 @@
 
 <script src="{% static 'echarts/build/dist/echarts.js' %}"></script>
 
-<div id="echarts" style="height:300px;width:98%; margin-bottom:20px;"></div>
+<div id="echarts" style="height:400px;width:98%; margin-bottom:20px;"></div>
 
 
 <div id="toolbar">
@@ -185,7 +185,7 @@ $(document).ready(function(){
 		            		
 		            		for(var i=0; i<resp.clawers.length; i++) {
 		            			var serie = {
-								    name:"bytes", 
+								    name: resp.clawers[i].name, 
 									type:'line',
 									smooth:true,
 									itemStyle: {normal: {areaStyle: {type: 'default'}}},
