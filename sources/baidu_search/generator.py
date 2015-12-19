@@ -1548,13 +1548,7 @@ class History(object):  # 实现程序的可持续性，每次运行时读取上
     def __init__(self):
         self.company_num = 0  # 初始化pickle中用作公司名称位置索引值
         self.path = "/tmp/baidu_company_search"  # pickle文件存放路径（提交至平台的代码记住带上tmp前斜杠）
-        try:
-            pwname = pwd.getpwnam("nginx")
-            self.uid = pwname.pw_uid
-            self.gid = pwname.pw_gid
-        except:
-            logging.error(traceback.format_exc(10))
-
+        
     def load(self):  # pickle的载入
         if os.path.exists(self.path) is False:  # 读取pickle失败则返回
             return
@@ -1566,8 +1560,6 @@ class History(object):  # 实现程序的可持续性，每次运行时读取上
     def save(self):  # pickle的保存
         with open(self.path, "w") as f:
             pickle.dump(self, f)
-            if hasattr(self, "uid"):
-                os.chown(self.path, self.uid, self.gid)
 
 
 class Generator(object):
