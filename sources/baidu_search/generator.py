@@ -16,8 +16,9 @@ except:
     pass
 from bs4 import BeautifulSoup
 import requests
-import urllib3
-urllib3.disable_warnings()
+
+requests.packages.urllib3.disable_warnings()
+
 
 DEBUG = False  # 是否开启DEBUG
 if DEBUG:
