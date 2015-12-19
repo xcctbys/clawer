@@ -1583,7 +1583,7 @@ class Generator(object):
             params = {"wd": current_company.encode("gbk") + " " + current_keyword.encode("gbk"),
                       "pn": page_num}  # 构造url参数
             url = "%s%s" % (self.HOST, urllib.urlencode(params))  # 构造url
-            r = requests.get(url, headers={"user-agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"})  # 浏览器代理请求url
+            r = requests.get(url, verify=False, headers={"user-agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"})  # 浏览器代理请求url
             soup = BeautifulSoup(r.text, "html5lib")  # 使用html5lib解析页面内容
             contents = soup.find("div", {"id": "content_left"})  # 找到页面中id为content_left的div
             divs = contents.find_all("div", {"class": "result"})  # 在目标div中找到所有class为result的div
