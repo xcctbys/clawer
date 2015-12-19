@@ -28,6 +28,7 @@
         <tr>
             <th data-options="field:'clawer'," formatter="formatClawer">爬虫</th>
             <th data-options="field:'bytes',"  sortable="true" formatter="formatBytes">返回字节</th>
+            <th data-options="field:'is_exception',"  sortable="true" formatter="formatIsException">是否异常</th>
             <th data-options="field:'add_datetime'," sortable="true">添加时间</th>
         </tr>
     </thead>    
@@ -53,6 +54,17 @@ function formatClawer(val) {
 	return val.id+"("+val.name+")";
 }
 
+function formatIsException(val) {
+	if(val == null) {
+		return "";
+	}
+	
+	if(!val) {
+		return "×";
+	} else {
+		return "√";
+	}
+}
 
 function formatBytes(val) {
 	if(!val) {
@@ -76,7 +88,7 @@ function formatBytes(val) {
 
 
 function load_clawers() {
-	var url = "{% url clawer.apis.home.clawer_all %}";
+	var url = "{% url clawer.apis.home.clawer_all %}" + "?status=1";
 		
 	$("#id_clawer_select").combogrid({
 		panelWidth:450,

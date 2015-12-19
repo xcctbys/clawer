@@ -570,6 +570,7 @@ class ClawerHourMonitor(models.Model):
     clawer = models.ForeignKey(Clawer)
     hour = models.DateTimeField()  #only to hour
     bytes = models.IntegerField(default=0)
+    is_exception = models.BooleanField(default=False)
     add_datetime = models.DateTimeField(auto_now_add=True)
     
     class Meta:
@@ -581,6 +582,7 @@ class ClawerHourMonitor(models.Model):
             "hour": self.hour.strftime("%Y-%m-%d %H:%M:%S"),
             "bytes": self.bytes,
             "clawer": self.clawer.as_json(),
+            "is_exception": self.is_exception,
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }
         return data
