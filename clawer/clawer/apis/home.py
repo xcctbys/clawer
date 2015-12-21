@@ -21,6 +21,7 @@ from html5helper.utils import get_request_ip
 @check_auth_for_api
 def clawer_all(request):
     obj_id = request.GET.get("obj_id")
+    status = request.GET.get("status")
     q = request.POST.get("q")  # use like
     
     queryset = Clawer.objects
@@ -28,6 +29,8 @@ def clawer_all(request):
         queryset = queryset.filter(id=int(obj_id))
     if q:
         queryset = queryset.filter(name__icontains=q)
+    if status:
+        queryset = queryset.filter(status=int(status))
         
     pager = EasyUIPager(queryset, request)
     return pager.query()

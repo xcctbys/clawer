@@ -610,16 +610,18 @@ class MonitorClawer(object):
             delta = current.bytes - item.bytes
             if delta < 0 and abs(delta)*4 < item.bytes:
                 need_report = True
+                current.is_exception = True
+                current.save()
                 break
             
         if need_report is False:
             return
         
         #send mail
-        report_mails = clawer.settings().valid_report_mails()
+        report_mails = clawer.settings().valid_report_mails() or list(settings.ADMINS)
         send_mail(u'爬虫[%s]在%s，数据异常' % (current.hour.strftime("%Y-%m-%d %H时")), 
-                  u'当前归并数据大小%d' % current.bytes, 'robot@princetechs.com', report_mails, 
-                  fail_silently=False)
+                      u'当前归并数据大小%d' % current.bytes, 'robot@princetechs.com', report_mails, 
+                      fail_silently=False)
 
 
 #rqworker function
