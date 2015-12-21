@@ -22,7 +22,7 @@
     <li>已标记：{{labeled_captcha_count}}</li>
     <li>总图片：{{catpcha_count|default:0}}</li>
     <li><a href="{% url captcha.views.labeled %}">看看我们的战绩</a></li>
-    <li>图片地址： <a href="{{ category_url }}" target="_blank">{{ category_url }}</a></li>
+    <li>图片地址： <a href="{{ category.url }}" target="_blank">{{ category.url }}</a></li>
 </ul>
 
 
