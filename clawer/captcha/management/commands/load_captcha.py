@@ -59,19 +59,19 @@ class Command(BaseCommand):
     help = "Obtain all captcha."
     
     def __init__(self):
-        self.urls = Category.full_choices
+        self.categories = Category.objects.all()
     
     @wrapper_raven
     def handle(self, *args, **options):
         pool = multiprocessing.Pool(processes=2)
-        pool.map(run, self.urls)
+        pool.map(run, self.categories)
         
 
-def run(item):
-    if not item[2]:
+def run(category):
+    if not category.url:
         return -1
     
-    downloader = DownloadCaptcha(item[2], item[0], item[3])
+    downloader = DownloadCaptcha(category.url, category.id, category.max_number)
     try:
         downloader.download()
     except:

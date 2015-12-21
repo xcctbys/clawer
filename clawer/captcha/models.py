@@ -6,7 +6,7 @@ import urlparse
 
 # Create your models here.
 
-class Category(object):
+class Category(models.Model):
     (NORMAL, 
      YUNSUAN, 
      ZHIHU, 
@@ -74,31 +74,17 @@ class Category(object):
         (ALL_1, u"全国工商总局-字母1", 'http://gsxt.saic.gov.cn/zjgs/captcha?preset=1&ra=0.6737781641715337', 300),
     )
     
-    choices = tuple([(x[0], x[1]) for x in full_choices])
+    name = models.CharField(max_length=128)
+    url = models.CharField(max_length=1024)
+    max_number = models.IntegerField(default=0)
     
-    @classmethod
-    def name(cls, category):
-        for item in cls.choices:
-            if item[0] == category:
-                return item[1]
-        
-        return ""
+    class Meta:
+        app_label = "captcha"
     
-    @classmethod
-    def url(cls, category):
-        for item in cls.full_choices:
-            if item[0] == category:
-                return item[2]
-        
-        return ""
-    
-    
-    
-
 
 class Captcha(models.Model):
     url = models.URLField()
-    category = models.IntegerField(choices=Category.choices)
+    category = models.IntegerField()
     image_hash = models.CharField(max_length=32)
     label_count = models.IntegerField(default=0)
     add_datetime = models.DateTimeField(auto_now_add=True)

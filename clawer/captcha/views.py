@@ -13,18 +13,20 @@ from django.core.urlresolvers import reverse
 
 def index(request):
     title = u"图片识别"
-    category = request.GET.get("category")
+    category_id = request.GET.get("category_id")
     
     random_count = 50
-    if category:
-        category = int(category)
-        captchas = Captcha.objects.filter(label_count__lt=3, category=category)[:random_count]
-        labeled_captcha_count = Captcha.objects.filter(label_count__gt=2, category=category).count()
-        captcha_count = Captcha.objects.filter(category=category).all().count()
+    if category_id:
+        category_id = int(category_id)
+        category = Category.objects.get(id=category_id)
+        captchas = Captcha.objects.filter(label_count__lt=3, category=category_id)[:random_count]
+        labeled_captcha_count = Captcha.objects.filter(label_count__gt=2, category=category_id).count()
+        captcha_count = Captcha.objects.filter(category=category_id).all().count()
     else:
         captchas = Captcha.objects.filter(label_count__lt=3)[:random_count]
         labeled_captcha_count = Captcha.objects.filter(label_count__gt=2).count()
         captcha_count = Captcha.objects.all().count()
+        category = None
         
     if len(captchas) > 1:
         random_index = random.randint(0, len(captchas))
@@ -33,9 +35,11 @@ def index(request):
         captcha = captchas[0]
     else:
         captcha = None
+        
+    categories = Category.objects.all()
     
     return render_template("captcha/index.html", request=request, labeled_captcha_count=labeled_captcha_count, catpcha_count=captcha_count, title=title,
-                           captcha=captcha, Category=Category, category_name=Category.name(category), category_url=Category.url(category))
+                           captcha=captcha, categories=categories, category=category)
     
     
 def labeled(request, page=1):

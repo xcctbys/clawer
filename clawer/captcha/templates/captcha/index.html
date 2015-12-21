@@ -10,11 +10,11 @@
         <!-- Single button -->
 		<div class="btn-group">
 		  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-		    {{category_name|default:"选择分组"}} <span class="caret"></span>
+		    {% if category %}{{category.name}}{% else %}请选择分组{% endif %} <span class="caret"></span>
 		  </button>
 		  <ul class="dropdown-menu">
-		    {% for item in Category.choices %}
-		    <li><a href="{% url captcha.views.index %}?category={{item.0}}">{{item.1}}</a></li>
+		    {% for item in categories %}
+		    <li><a href="{% url captcha.views.index %}?category_id={{item.id}}">{{item.name}}</a></li>
 		    {% endfor %}
 		  </ul>
 		</div>
