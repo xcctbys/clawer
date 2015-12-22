@@ -27,18 +27,18 @@ class CaptchaRecognition(object):
         :param captcha_type:
             captcha_type用于选择模型类型和验证码分割位置.
 
-            beijing
-            jiangsu
+            beijing: for Beijing
+            jiangsu: for Jiangsu Province
             zongju: for national gov and shanghai
-            zhongwen: for Anhui, Guangxi, Heilongjiang, Henan
+            liaoning: for Liaoning Province
             guangdong: for Guangdong Province
         :return: None
         '''
 
         captcha_type = captcha_type.lower()
-        if captcha_type not in ["jiangsu", "beijing", "zongju", "zhongwen", "guangdong"]:
+        if captcha_type not in ["jiangsu", "beijing", "zongju", "liaoning", "guangdong"]:
             exit(1)
-        elif captcha_type in ["jiangsu", "beijing", "zongju"]:
+        elif captcha_type in ["jiangsu", "beijing", "zongju", "liaoning"]:
             self.label_list = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
                                "q", "w", "e", "r", "t", "y", "u", "i", "o", "p",
                                "a", "s", "d", "f", "g", "h", "j", "k", "l", "z",
@@ -132,6 +132,15 @@ class CaptchaRecognition(object):
             self.image_height = 47
             self.image_top = 3
             self.image_gap = 5
+        elif captcha_type == "liaoning":
+            self.image_label_count = 4
+            self.image_start = 11
+            self.image_width = 9
+            self.image_height = 31
+            self.image_top = 0
+            self.image_gap = 11
+            self.to_denoise = False
+            self.masker = 254
         elif captcha_type == "zongju":
             self.image_label_count = 4
             self.image_start = 0
@@ -210,7 +219,7 @@ class CaptchaRecognition(object):
         y_count = 0
         for i in range(len(image_label_pair)):
             image = image_path + "/" + str(image_label_pair.iloc[i]["name"])
-            labels = image_label_pair.iloc[i]["value"]
+            labels = str(image_label_pair.iloc[i]["value"])
             for l in range(self.image_label_count):
                 try:
                     y.append(self.label_list.index(labels[l]))
