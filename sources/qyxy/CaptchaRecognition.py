@@ -41,7 +41,7 @@ class CaptchaRecognition(object):
         captcha_type = captcha_type.lower()
         if captcha_type not in ["jiangsu", "beijing", "zongju", "liaoning", "guangdong", "hubei", "tianjin",
                                 "qinghai", "shanxi", "henan", "guangxi", "xizang", "heilongjiang", "anhui", "shaanxi",
-                                "ningxia"]:
+                                "ningxia","chognqing"]:
             exit(1)
         elif captcha_type in ["jiangsu", "beijing", "zongju", "liaoning"]:
             self.label_list = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
@@ -51,7 +51,7 @@ class CaptchaRecognition(object):
             self.to_denoise = True
             self.masker = 255
         elif captcha_type in ["guangdong", "hubei", "tianjin", "qinghai", "shanxi", "henan", "guangxi", "xizang",
-                              "heilongjiang", "anhui","shaanxi","ningxia"]:
+                              "heilongjiang", "anhui","shaanxi","ningxia","chognqing"]:
             self.to_denoise = True
             self.masker = 255
             self.to_calculate = True
@@ -76,6 +76,19 @@ class CaptchaRecognition(object):
             self.customized_width = 20
             self.to_binarized = True
             self.masker = 150
+        elif captcha_type == "chongqing":
+            self.image_label_count = 6
+            self.masker = 40
+            self.customized_postisions = True
+            self.position_left = [0, 23, 40, 65, 85, 105]
+            self.position_right = [15, 45, 60, 90, 110, 120]
+            self.image_top = 8
+            self.image_height = 40
+            self.to_denoise = False
+            self.to_calculate = True
+            self.to_binarized = True
+            self.customized_width = 25
+            self.double_denoise = False
         elif captcha_type == "hubei":
             self.image_label_count = 6
             self.masker = 110
