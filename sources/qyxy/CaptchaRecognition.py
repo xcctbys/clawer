@@ -39,7 +39,8 @@ class CaptchaRecognition(object):
         '''
 
         captcha_type = captcha_type.lower()
-        if captcha_type not in ["jiangsu", "beijing", "zongju", "liaoning", "guangdong" ,"tianjin","hubei"]:
+        if captcha_type not in ["jiangsu", "beijing", "zongju", "liaoning", "guangdong", "hubei", "tianjin",
+                                "qinghai", "shanxi", "henan", "guangxi", "xizang", "heilongjiang", "anhui"]:
             exit(1)
         elif captcha_type in ["jiangsu", "beijing", "zongju", "liaoning"]:
             self.label_list = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
@@ -48,13 +49,15 @@ class CaptchaRecognition(object):
                                "x", "c", "v", "b", "n", "m"]
             self.to_denoise = True
             self.masker = 255
-        elif captcha_type in ["guangdong", "hubei", "tianjin"]:
+        elif captcha_type in ["guangdong", "hubei", "tianjin", "qinghai", "shanxi", "henan", "guangxi", "xizang",
+                              "heilongjiang", "anhui"]:
             self.to_denoise = True
-            self.to_calculate = True
             self.masker = 255
+            self.to_calculate = True
             self.label_list = [u"零", u"壹", u"贰", u"叁", u"肆", u"伍", u"陆", u"柒", u"捌", u"玖", u"拾", u"加", u"减", u"乘", u"除",
                                u"等", u"于", u"以", u"上", u"去", u"?", u"0", u"1", u"2", u"3", u"4", u"5", u"6", u"7", u"8",
                                u"9"]
+        
 
 
         if captcha_type == "jiangsu":
@@ -89,6 +92,20 @@ class CaptchaRecognition(object):
             self.to_binarized = True
             self.customized_width = 40
             self.double_denoise = False
+        elif captcha_type in ["qinghai", "shanxi", "henan", "guangxi", "xizang", "heilongjiang", "anhui"]:
+            self.image_label_count = 7
+            self.masker = 110
+            self.customized_postisions = True
+            self.position_left = [0, 25, 55, 75, 95, 125, 150]
+            self.position_right = [30, 60, 80, 100, 135, 155, 175]
+            self.image_top = 0
+            self.image_height = 50
+            self.to_denoise = False
+            self.to_calculate = False
+            self.to_binarized = True
+            self.customized_width = 40
+            self.double_denoise = False
+        
         elif captcha_type == "liaoning":
             self.image_label_count = 4
             self.image_start = 11
@@ -222,8 +239,18 @@ class CaptchaRecognition(object):
 
         number_pattern = u"[0-9壹贰叁肆伍陆柒捌玖拾零]+"
         numbers = re.findall(number_pattern, results)
-        if len(numbers) < 2:
+        if len(numbers) < 1:
             return 2
+        elif len(numbers) == 1:
+            first_num = self.__convert_to_number__(numbers[0])
+            if results.__contains__(u"乘"):
+
+                if first_num == 0:
+                    return 0
+                else:
+                    return first_num * 2
+            else:
+                return first_num
 
         first_num = self.__convert_to_number__(numbers[0])
         second_num = self.__convert_to_number__(numbers[1])
@@ -236,8 +263,10 @@ class CaptchaRecognition(object):
             return first_num * second_num
         elif results.__contains__(u"除"):
             return first_num / second_num
-        else:
+        elif first_num == 0 or second_num == 0:
             return 0
+        else:
+            return first_num + second_num
 
 
     def predict_result(self, image_path):
