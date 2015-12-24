@@ -41,7 +41,7 @@ class CaptchaRecognition(object):
         captcha_type = captcha_type.lower()
         if captcha_type not in ["jiangsu", "beijing", "zongju", "liaoning", "guangdong", "hubei", "tianjin",
                                 "qinghai", "shanxi", "henan", "guangxi", "xizang", "heilongjiang", "anhui", "shaanxi",
-                                "ningxia","chognqing","sichuan"]:
+                                "ningxia","chognqing","sichuan","gansu"]:
             exit(1)
         elif captcha_type in ["jiangsu", "beijing", "zongju", "liaoning"]:
             self.label_list = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
@@ -51,7 +51,7 @@ class CaptchaRecognition(object):
             self.to_denoise = True
             self.masker = 255
         elif captcha_type in ["guangdong", "hubei", "tianjin", "qinghai", "shanxi", "henan", "guangxi", "xizang",
-                              "heilongjiang", "anhui","shaanxi","ningxia","chognqing","sichuan"]:
+                              "heilongjiang", "anhui","shaanxi","ningxia","chognqing","sichuan","gansu"]:
             self.to_denoise = True
             self.masker = 255
             self.to_calculate = True
@@ -102,6 +102,19 @@ class CaptchaRecognition(object):
             self.to_binarized = True
             self.customized_width = 20
             self.double_denoise = False
+        elif captcha_type == "gansu":
+            self.image_label_count = 3
+            self.customized_postisions = True
+            self.position_left = [5, 19, 37]
+            self.position_right = [19, 37, 55]
+            self.image_top = 25
+            self.image_height = 45
+            self.to_denoise = False
+            self.customized_width = 20
+            self.to_calculate = False
+            self.to_binarized = False
+            self.masker = 580
+            self.to_summarized = True
         elif captcha_type == "hubei":
             self.image_label_count = 6
             self.masker = 110
@@ -193,6 +206,8 @@ class CaptchaRecognition(object):
                         _pixel_data.append(1.0)
                 elif self.to_binarized:
                     _pixel_data.append(1.0 if captcha_image.getpixel((i, j)) < self.masker else 0.0)
+                elif self.to_summarized:
+                    _pixel_data.append(0.0 if sum(captcha_image.getpixel((i, j))) > self.masker else 1.0)
                 else:
                     _pixel_data.append(1.0 if captcha_image.getpixel((i, j))[self.pixel_index] > self.masker else 0.0)
         if self.customized_width is not None:
