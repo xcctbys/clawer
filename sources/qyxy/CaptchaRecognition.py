@@ -48,7 +48,7 @@ class CaptchaRecognition(object):
         if captcha_type not in ["jiangsu", "beijing", "zongju", "liaoning", "guangdong", "hubei", "tianjin",
                                 "qinghai", "shanxi", "henan", "guangxi", "xizang", "heilongjiang", "anhui", "shaanxi",
                                 "ningxia", "chongqing", "sichuan", "hunan", "gansu", "xinjiang", "guizhou", "shandong",
-                                "neimenggu", "zhejiang"]:
+                                "neimenggu", "zhejiang","jilin"]:
             exit(1)
         elif captcha_type in ["jiangsu", "beijing", "zongju", "liaoning"]:
             self.label_list = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
@@ -59,7 +59,7 @@ class CaptchaRecognition(object):
             self.masker = 255
         elif captcha_type in ["guangdong", "hubei", "tianjin", "qinghai", "shanxi", "henan", "guangxi", "xizang",
                               "heilongjiang", "anhui", "shaanxi", "ningxia", "chongqing", "sichuan", "hunan", "gansu",
-                              "xinjiang", "guizhou", "shandong", "neimenggu", "zhejiang"]:
+                              "xinjiang", "guizhou", "shandong", "neimenggu", "zhejiang","jilin"]:
             self.to_denoise = True
             self.masker = 255
             self.to_calculate = True
@@ -138,7 +138,7 @@ class CaptchaRecognition(object):
             self.to_binarized = False
             self.masker = 445
             self.to_summarized = True
-        elif captcha_type in ["shandong", "neimenggu", "zhejiang"]:
+        elif captcha_type == "shandong":
             self.image_label_count = 4
             self.customized_postisions = True
             self.position_left = [10, 29, 54, 74]
@@ -151,7 +151,19 @@ class CaptchaRecognition(object):
             self.to_binarized = False
             self.masker = 370
             self.to_summarized = True
-            captcha_type = "shandong"
+        elif captcha_type == "jilin":
+            self.image_label_count = 4
+            self.customized_postisions = True
+            self.position_left = [13, 34, 53, 73]
+            self.position_right = [34, 53, 73, 94]
+            self.image_top = 12
+            self.image_height = 32
+            self.to_denoise = False
+            self.customized_width = 30
+            self.to_calculate = False
+            self.to_binarized = False
+            self.masker = 410
+            self.to_summarized = True
         elif captcha_type == "ningxia":
             self.image_label_count = 6
             self.masker = 100
