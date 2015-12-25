@@ -15,12 +15,18 @@ class CaptchaRecognition(object):
     image_height = 47  # end postion from top
     image_top = 3  # start postion of top
     image_gap = 0
-    _value_label = {}
     image_label_count = 4
     masker = 255
     to_denoise = True
-    to_calculate = False
     pixel_index = 1
+    to_calculate = False
+    customized_postisions = False
+    double_denoise = False
+    customized_width = None
+    position_left = None
+    position_right = None
+    to_binarized = False
+    to_summarized = False
 
     def __init__(self, captcha_type="beijing"):
         '''
@@ -141,7 +147,7 @@ class CaptchaRecognition(object):
             self.image_height = 32
             self.to_denoise = False
             self.customized_width = 30
-            self.to_calculate = False
+            self.to_calculate = True
             self.to_binarized = False
             self.masker = 370
             self.to_summarized = True
@@ -155,6 +161,7 @@ class CaptchaRecognition(object):
             self.image_top = 0
             self.image_height = 40
             self.to_denoise = False
+            self.to_calculate = True
             self.to_binarized = True
             self.customized_width = 40
             self.double_denoise = False
@@ -170,6 +177,7 @@ class CaptchaRecognition(object):
             self.to_binarized = True
             self.customized_width = 30
             self.double_denoise = False
+            self.to_calculate = True
         elif captcha_type in ["qinghai", "shanxi", "henan", "guangxi", "xizang", "heilongjiang", "anhui"]:
             self.image_label_count = 5
             self.masker = 420
@@ -317,7 +325,6 @@ class CaptchaRecognition(object):
         elif len(numbers) == 1:
             first_num = self.__convert_to_number__(numbers[0])
             if results.__contains__(u"乘"):
-
                 if first_num == 0:
                     return 0
                 else:
