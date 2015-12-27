@@ -89,6 +89,7 @@ class CaptchaRecognition(object):
             self.masker = 150
         elif captcha_type in ["yunnan", "fujian"]:
             self.image_label_count = 3
+            self.margin = 8
             self.customized_postisions = True
             self.position_left = [0, 40, 74]
             self.position_right = [40, 80, 110]
@@ -129,6 +130,21 @@ class CaptchaRecognition(object):
             self.to_binarized = True
             self.customized_width = 20
             self.double_denoise = False
+        elif captcha_type == "hunan":
+            self.margin = 8
+            self.image_label_count = 3
+            self.masker = 450
+            self.customized_postisions = True
+            self.position_left = [0, 28, 68, 96, 128]
+            self.position_right = [30, 68, 108, 131, 160]
+            self.image_top = 5
+            self.image_height = 35
+            self.image_width = 160
+            self.to_denoise = False
+            self.to_calculate = False
+            self.to_binarized = True
+            self.customized_width = 25
+            self.anti_noise = True
         elif captcha_type == "gansu":
             self.image_label_count = 3
             self.customized_postisions = True
