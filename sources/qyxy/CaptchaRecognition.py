@@ -6,7 +6,10 @@ import pandas as pd
 import os
 import re
 import numpy as np
+from AntiNoise import AntiNoise
 from sklearn.svm import SVC
+from sklearn.neural_network import BernoulliRBM
+from sklearn.pipeline import Pipeline
 from sklearn.externals import joblib
 
 class CaptchaRecognition(object):
@@ -48,7 +51,7 @@ class CaptchaRecognition(object):
         if captcha_type not in ["jiangsu", "beijing", "zongju", "liaoning", "guangdong", "hubei", "tianjin",
                                 "qinghai", "shanxi", "henan", "guangxi", "xizang", "heilongjiang", "anhui", "shaanxi",
                                 "ningxia", "chongqing", "sichuan", "hunan", "gansu", "xinjiang", "guizhou", "shandong",
-                                "neimenggu", "zhejiang","jilin"]:
+                                "neimenggu", "zhejiang","jilin","yunnan"]:
             exit(1)
         elif captcha_type in ["jiangsu", "beijing", "zongju", "liaoning"]:
             self.label_list = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
@@ -59,7 +62,7 @@ class CaptchaRecognition(object):
             self.masker = 255
         elif captcha_type in ["guangdong", "hubei", "tianjin", "qinghai", "shanxi", "henan", "guangxi", "xizang",
                               "heilongjiang", "anhui", "shaanxi", "ningxia", "chongqing", "sichuan", "hunan", "gansu",
-                              "xinjiang", "guizhou", "shandong", "neimenggu", "zhejiang","jilin"]:
+                              "xinjiang", "guizhou", "shandong", "neimenggu", "zhejiang","jilin","yunnan"]:
             self.to_denoise = True
             self.masker = 255
             self.to_calculate = True
@@ -84,6 +87,22 @@ class CaptchaRecognition(object):
             self.customized_width = 20
             self.to_binarized = True
             self.masker = 150
+        elif captcha_type in ["yunnan", "fujian"]:
+            self.image_label_count = 3
+            self.customized_postisions = True
+            self.position_left = [0, 40, 74]
+            self.position_right = [40, 80, 110]
+            self.image_top = 5
+            self.image_height = 38
+            self.image_width = 160
+            self.to_denoise = False
+            self.customized_width = 25
+            self.to_calculate = True
+            self.to_binarized = False
+            self.masker = 540
+            self.to_summarized = True
+            self.anti_noise = True
+            captcha_type = "yunnan"
         elif captcha_type == "chongqing":
             self.image_label_count = 6
             self.masker = 40
@@ -258,67 +277,103 @@ class CaptchaRecognition(object):
 
     def __convertPoint__(self, image_path):
         _data = []
-        try:
-            im = Image.open(image_path)
-            (width, height) = im.size
-            if self.to_denoise:
-                if self.double_denoise:
-                    im = im.convert('L')
-                im = im.filter(ImageFilter.MedianFilter())
-                enhancer = ImageEnhance.Contrast(im)
-                im = enhancer.enhance(10)
-                im = im.convert('L')
-            elif self.to_binarized:
-                im = im.convert("L")
-            for k in range(self.image_label_count):
-                if not self.customized_postisions:
-                    left = max(0, self.image_start + self.image_width * k + self.image_gap * k)
-                    right = min(self.image_start + self.image_width * (k + 1) + self.image_gap * k, width)
-                else:
-                    left = self.position_left[k]
-                    right = self.position_right[k]
-                sub_image = im.crop((left, self.image_top, right, self.image_height))
-                pixel_list = self.__get_pixel_list__(sub_image)
-                if k == 0:
+        if not self.anti_noise:
+          try:
+              im = Image.open(image_path)
+              (width, height) = im.size
+              if self.to_denoise:
+                  if self.double_denoise:
+                      im = im.convert('L')
+                  im = im.filter(ImageFilter.MedianFilter())
+                  enhancer = ImageEnhance.Contrast(im)
+                  im = enhancer.enhance(10)
+                  im = im.convert('L')
+              elif self.to_binarized:
+                  im = im.convert("L")
+              for k in range(self.image_label_count):
+                  if not self.customized_postisions:
+                      left = max(0, self.image_start + self.image_width * k + self.image_gap * k)
+                      right = min(self.image_start + self.image_width * (k + 1) + self.image_gap * k, width)
+                  else:
+                      left = self.position_left[k]
+                      right = self.position_right[k]
+                  sub_image = im.crop((left, self.image_top, right, self.image_height))
+                  pixel_list = self.__get_pixel_list__(sub_image)
+                  if k == 0:
+                      _data = np.array([pixel_list])
+                  else:
+                      try:
+                          _data = np.append(_data, [pixel_list], axis=0)
+                      except:
+                          print image_path, len(pixel_list), len(_data[0])
+                          exit(1)
+              return _data
+          except IOError:
+              pass
+        else:
+            an = AntiNoise(image_path, self.masker)
+            pixels = an.pixels
+            self.__update_positions__(pixels)
+            for i in range(self.image_label_count):
+                left = self.position_left[i]
+                right = self.position_right[i]
+                pixel_list = []
+                height = self.image_height - self.image_top
+                for x in range(left, right):
+                    for y in range(self.image_top, self.image_height):
+                        pixel_list.append(pixels[y][x])
+                if self.customized_width is not None:
+                    difference = self.customized_width - (right - left)
+                    half = difference / 2
+                    pixel_list = [0.0] * half * height + pixel_list + [0.0] * height * (difference - half)
+                if i == 0:
                     _data = np.array([pixel_list])
                 else:
-                    try:
-                        _data = np.append(_data, [pixel_list], axis=0)
-                    except:
-                        print image_path, len(pixel_list), len(_data[0])
-                        exit(1)
-            return _data
-        except IOError:
-            pass
+                    _data = np.append(_data, [pixel_list], axis=0)
 
-    def update_model(self, image_path, label_file):
+            return _data
+
+    def update_model(self, image_path, label_file, train_size):
         if not os.path.isdir(self.model_path):
             os.mkdir(self.model_path)
         if not os.path.isdir(image_path):
             exit(1)
 
         image_label_pair = pd.read_csv(label_file, encoding="utf-8")
+        image_label_pair = image_label_pair[:train_size]
         index = 0
         x = []
         y = []
         y_count = 0
+        start = datetime.datetime.now()
+        start_time = datetime.datetime.now()
         for i in range(len(image_label_pair)):
             image = image_path + "/" + str(image_label_pair.iloc[i]["name"])
-            labels = str(image_label_pair.iloc[i]["value"])
+            labels = image_label_pair.iloc[i]["value"]
+            if type(labels) == int:
+                labels = str(labels)
             for l in range(self.image_label_count):
-                try:
-                    y.append(self.label_list.index(labels[l]))
-                except:
-                    print labels[l]
+                y.append(self.label_list.index(labels[l]))
                 y_count += 1
             if index == 0:
                 x = self.__convertPoint__(image)
             else:
                 x = np.append(x, self.__convertPoint__(image), axis=0)
+            # print len(y), len(x)
             index += 1
-        model = SVC(kernel="linear", class_weight="auto", tol=1e-15).fit(x, y)
+            end_time = datetime.datetime.now()
+            if i in range(0, len(image_label_pair), len(image_label_pair) / 20):
+                print u"数据集已完成:", round(float(i) / len(image_label_pair), 4) * 100, "%", u"所用时间:", end_time - start_time
+                start_time = datetime.datetime.now()
+        print u"数据集已生成 共用时", datetime.datetime.now() - start, u"开始建模"
+        rbm = BernoulliRBM(random_state=0, verbose=True, learning_rate=0.02, n_iter=400, n_components=650,
+                           batch_size=12)
+        svm = SVC(kernel="linear", tol=5e-14, class_weight="balanced")
+        classifier = Pipeline(steps=[("rbm", rbm), ("svm", svm)])
+        model = classifier.fit(x, y)
         joblib.dump(model, self.model_file)
         return True
+
 
     def __convert_to_number__(self, number):
         digits = {u"零": 0, u"〇": 0, u"壹": 1, u"贰": 2, u"叁": 3, u"肆": 4, u"伍": 5, u"陆": 6, u"柒": 7, u"捌": 8, u"玖": 9,
