@@ -51,7 +51,7 @@ class CaptchaRecognition(object):
         if captcha_type not in ["jiangsu", "beijing", "zongju", "liaoning", "guangdong", "hubei", "tianjin",
                                 "qinghai", "shanxi", "henan", "guangxi", "xizang", "heilongjiang", "anhui", "shaanxi",
                                 "ningxia", "chongqing", "sichuan", "hunan", "gansu", "xinjiang", "guizhou", "shandong",
-                                "neimenggu", "zhejiang","jilin","yunnan"]:
+                                "neimenggu", "zhejiang","jilin","yunnan","fujian"]:
             exit(1)
         elif captcha_type in ["jiangsu", "beijing", "zongju", "liaoning"]:
             self.label_list = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
@@ -62,7 +62,7 @@ class CaptchaRecognition(object):
             self.masker = 255
         elif captcha_type in ["guangdong", "hubei", "tianjin", "qinghai", "shanxi", "henan", "guangxi", "xizang",
                               "heilongjiang", "anhui", "shaanxi", "ningxia", "chongqing", "sichuan", "hunan", "gansu",
-                              "xinjiang", "guizhou", "shandong", "neimenggu", "zhejiang","jilin","yunnan"]:
+                              "xinjiang", "guizhou", "shandong", "neimenggu", "zhejiang","jilin","yunnan","fujian"]:
             self.to_denoise = True
             self.masker = 255
             self.to_calculate = True
@@ -104,6 +104,19 @@ class CaptchaRecognition(object):
             self.to_summarized = True
             self.anti_noise = True
             captcha_type = "yunnan"
+        elif captcha_type == "neimenggu":
+            self.margin = 8
+            self.image_label_count = 3
+            self.masker = 450
+            self.customized_postisions = True
+            self.image_top = 0
+            self.image_height = 40
+            self.image_width = 180
+            self.to_denoise = False
+            self.to_calculate = False
+            self.to_binarized = True
+            self.customized_width = 30
+            self.anti_noise = True
         elif captcha_type == "chongqing":
             self.image_label_count = 6
             self.masker = 40
