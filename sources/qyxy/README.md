@@ -20,6 +20,26 @@
         result = recognition.predict_result(im_path)  # result is image code
 
 
+## settings.py 说明
+
+
+	#log
+	log_level = logging.WARN
+	log_file = '/data/clawer_result/enterprise/crawler.log'
+	logger = None
+
+	save_html = True   # 是否保存html
+	html_restore_path = './enterprise_crawler'  #如果save_html为True，html存储在子目录下。子目录以省份命名。
+
+	json_restore_path = './enterprise_crawler'   #最后结果转为json，输出到子目录下。子目录格式：${省份名}/${YEAR}/${MONTH}/ 。 每天一个文件，需要使用zlib压缩，文件名格式为； ${DAY}.json.gz 。 每行对应一个企业的JSON对象。
+
+	enterprise_list_path = './enterprise_list/'  # 企业名单，每个省对应一个文件，如北京为beijing.txt
+
+## 输出格式
+
+
+
+
 ## Beijing enterprise crawler 
 ----
 ####1. source code
