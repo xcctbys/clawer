@@ -1,6 +1,7 @@
 import numpy as np
 from PIL import Image
 
+
 class AntiNoise(object):
     offset = 3
     threshold = 20
@@ -25,8 +26,10 @@ class AntiNoise(object):
         return pixels
 
     def __print_pixels__(self):
-        for line in self.pixels:
-            print "\t".join(["x" if x == 1 else "" for x in line])
+        # print 0, "\t".join([str(x) for x in range(0, 180)])
+        for i in range(10, 50):
+            line = self.pixels[i]
+            print i, "\t".join(["x" if x == 1 else "" for x in line])
 
     def __remove_noise__(self):
         for h in range(len(self.pixels)):
@@ -34,16 +37,27 @@ class AntiNoise(object):
                 self.pixels[h][w] = 1 if self.pixels[h][w] == 1 else 0
 
     def __noise_detection__(self):
+
+        ys = []
+        xs = []
         for h in range(self.height):
             for w in range(self.width):
                 ys0, xs0 = self.__noise_detection_helper(w, h, 0)
                 ys1, xs1 = self.__noise_detection_helper(w, h, 1)
-                ys = ys0 + ys1
-                xs = xs0 + xs1
-                if len(ys) >= self.offset:
-                    for i in range(len(ys)):
-                        self.pixels[ys[i]][xs[i]] = 2
+                ys += ys0 + ys1
+                xs += xs0 + xs1
+
+        if len(ys) >= self.offset:
+            for i in range(len(ys)):
+                self.pixels[ys[i]][xs[i]] = 2
         self.__remove_noise__()
+        # for w in range(self.width):
+        #     for h in range(self.height):
+        #         self.__noise_detection_helper(w, h, 0)
+        #         self.__noise_detection_helper(w, h, 1)
+        # self.__remove_noise__()
+        # print "Noise Detection is finished. Please have a check."
+        # self.__print_pixels__()
 
     def __noise_detection_helper(self, x=0, y=0, direction=0, last_empty=False):
         '''
@@ -62,7 +76,7 @@ class AntiNoise(object):
             If both the last position and the current one are empty , it will be considered to stop;
             otherwise, it is going to detect next position.
         '''
-        
+        # print x, y
         if y == 0 and direction == 0:
             return [], []
         elif y == self.height - 1 and direction == 1:
@@ -173,7 +187,8 @@ class AntiNoise(object):
         x_list += new_x_list
         return y_list, x_list
 
-#
-# if __name__ == '__main__':
-#     image_path = "raw/images/Hunan/Hunan_000.png"
-#     an = AntiNoise(image_path, 450)
+
+# #
+if __name__ == '__main__':
+    image_path = "raw/images/zongju/zongju1_481.png"
+    an = AntiNoise(image_path, 550)
