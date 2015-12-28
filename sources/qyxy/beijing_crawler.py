@@ -18,10 +18,10 @@ class BeijingCrawler(Crawler):
     """北京工商爬虫
     """
     #html数据的存储路径
-    html_restore_path = settings.html_restore_path + '/Beijing/'
+    html_restore_path = settings.html_restore_path + '/beijing/'
 
     #验证码图片的存储路径
-    ckcode_image_path = settings.html_restore_path + '/Beijing/ckcode.jpg'
+    ckcode_image_path = settings.json_restore_path + '/beijing/ckcode.jpg'
 
     #多线程爬取时往最后的json文件中写时的加锁保护
     write_file_mutex = threading.Lock()
@@ -342,14 +342,14 @@ class BeijingCrawler(Crawler):
         page = resp.content
 
         time.sleep(random.uniform(0.2, 1))
-        #self.write_file_mutex.acquire()
+        self.write_file_mutex.acquire()
         with open(self.ckcode_image_path, 'wb') as f:
             f.write(page)
         if not self.code_cracker:
             print 'invalid code cracker'
             return ''
         ckcode = self.code_cracker.predict_result(self.ckcode_image_path)
-        #self.write_file_mutex.release()
+        self.write_file_mutex.release()
         return ckcode
 
     def generate_time_stamp(self):

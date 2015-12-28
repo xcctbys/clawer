@@ -21,10 +21,10 @@ class JiangsuCrawler(Crawler):
     """江苏工商公示信息网页爬虫
     """
     #html数据的存储路径
-    html_restore_path = settings.html_restore_path + '/Jiangsu/'
+    html_restore_path = settings.html_restore_path + '/jiangsu/'
 
     #验证码图片的存储路径
-    ckcode_image_path = settings.html_restore_path + '/Jiangsu/ckcode.jpg'
+    ckcode_image_path = settings.json_restore_path + '/Jiangsu/ckcode.jpg'
 
     #多线程爬取时往最后的json文件中写时的加锁保护
     write_file_mutex = threading.Lock()
