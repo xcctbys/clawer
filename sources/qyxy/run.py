@@ -1,21 +1,34 @@
 #!/usr/bin/env python
 #!encoding=utf-8
 import os
+import sys
 import raven
-import urllib2
+import zlib
 import random
 import time
 import logging
 import Queue
 import threading
-from beijing_crawler import CrawlerBeijingEnt
-from crawler import CheckCodeCracker
+from beijing_crawler import BeijingCrawler
+from jiangsu_crawler import JiangsuCrawler
+from CaptchaRecognition import CaptchaRecognition
 from crawler import CrawlerUtils
 import settings
+
 failed_ent = {}
+province_crawler = {
+    'beijing': BeijingCrawler,
+    'jiangsu': JiangsuCrawler
+}
+
+
+def set_codecracker():
+    for province in province_crawler.keys():
+        province_crawler.get(province).code_cracker = CaptchaRecognition(province)
+
 
 def config_logging():
-    settings.logger = logging.getLogger('beijing-enterprise-crawler')
+    settings.logger = logging.getLogger('enterprise-crawler')
     settings.logger.setLevel(settings.log_level)
     fh = logging.FileHandler(settings.log_file)
     fh.setLevel(settings.log_level)
@@ -28,8 +41,9 @@ def config_logging():
     settings.logger.addHandler(fh)
     settings.logger.addHandler(ch)
 
-def crawl_work(n, ent_queue):
-    crawler = CrawlerBeijingEnt(CheckCodeCracker())
+
+def crawl_work(n, province, json_restore_path, ent_queue):
+    crawler = province_crawler[province](json_restore_path)
     while True:
         try:
             ent = ent_queue.get(timeout=3)
@@ -41,20 +55,15 @@ def crawl_work(n, ent_queue):
         time.sleep(random.uniform(0.2, 1))
         settings.logger.info('crawler %d start to crawler enterprise(ent_id = %s)' % (n, ent))
         try:
-            crawler.crawl_work(ent)
+            crawler.run(ent)
         except Exception as e:
             settings.logger.error('crawler %d failed to crawl enterprise(id = %s), with exception %s' %(n, ent, e))
-            # if (isinstance(e, urllib2.HTTPError) and e.code == 500) or (isinstance(e, urllib2.URLError) and e.code == 54):
-            #     settings.logger.info('failed to crawl enterprise(id = %s) with %s, push it into queue again to crawl it later' % (ent, e))
-            #     ent_queue.put(ent)
-
             if failed_ent.get(ent, 0) > 3:
                 settings.logger.error('Failed to crawl and parse enterprise %s' % ent)
                 #report to sentry
                 if settings.sentry_open:
                     settings.sentry_client.captureException()
                 return  #end this thread
-
             else:
                 failed_ent[ent] = failed_ent.get(ent, 0) + 1
                 settings.logger.warn('failed to crawl enterprise(id = %s) %d times!' % (ent, failed_ent[ent]))
@@ -63,30 +72,78 @@ def crawl_work(n, ent_queue):
             ent_queue.task_done()
 
 
-def run():
-    enterprise_list = CrawlerUtils.get_enterprise_list(settings.enterprise_list_path)
+def run(province, enterprise_list, json_restore_path):
     ent_queue = Queue.Queue()
     for x in enterprise_list:
         ent_queue.put(x)
 
     for i in range(settings.crawler_num):
-        worker = threading.Thread(target=crawl_work,args=(i, ent_queue))
+        worker = threading.Thread(target=crawl_work,args=(i, province, json_restore_path, ent_queue))
         worker.start()
         time.sleep(random.uniform(1, 2))
 
     ent_queue.join()
     settings.logger.info('All crawlers work over')
 
+
+def crawl_province(province, cur_date):
+    #创建存储路径
+    json_restore_dir = '%s/%s/%s/%s' % (settings.json_restore_path, p, cur_date[0], cur_date[1])
+    if not os.path.exists(json_restore_dir):
+        CrawlerUtils.make_dir(json_restore_dir)
+
+    #获取企业名单
+    enterprise_list = CrawlerUtils.get_enterprise_list(settings.enterprise_list_path + p + '.txt')
+
+    #json存储文件名
+    json_restore_path = '%s/%s.json' % (json_restore_dir, cur_date[2])
+
+    #将企业名单放入队列
+    ent_queue = Queue.Queue()
+    for x in enterprise_list:
+        ent_queue.put(x)
+
+    #开启多个线程，每个线程均执行 函数 crawl_work
+    for i in range(settings.crawler_num):
+        worker = threading.Thread(target=crawl_work,args=(i, province, json_restore_path, ent_queue))
+        worker.start()
+        time.sleep(random.uniform(1, 2))
+
+    #等待结束
+    ent_queue.join()
+    settings.logger.info('All %s crawlers work over' % province)
+
+    #压缩保存
+    with open(json_restore_path, 'r') as f:
+        compressed_data = zlib.compress(f.read())
+        compressed_json_restore_path = json_restore_path + '.gz'
+        with open(compressed_json_restore_path, 'wb') as cf:
+            cf.write(compressed_data)
+    #删除json文件，只保留  .gz 文件
+    os.remove(json_restore_path)
+
+
 if __name__ == '__main__':
     config_logging()
+
     if not os.path.exists(settings.json_restore_path):
         CrawlerUtils.make_dir(settings.json_restore_path)
 
-    settings.json_restore_path += ('/' + CrawlerUtils.get_cur_time() + '.json')
-
-
     if settings.sentry_open:
-        settings.sentry_client =  raven.Client(
+        settings.sentry_client = raven.Client(
             dsn=settings.sentry_dns,
         )
-    run()
+
+    set_codecracker()
+    cur_date = CrawlerUtils.get_cur_y_m_d()
+
+    if len(sys.argv) < 2:
+        settings.logger.warn('usage: run.py province... (province 是所要爬取的省份列表 用空格分开, all表示爬取全部)')
+    elif len(sys.argv) == 2 and sys.argv[1] == 'all':
+        for p in province_crawler.keys():
+            crawl_province(p, cur_date)
+    else:
+        provinces = sys.argv[1:]
+        for p in provinces:
+            crawl_province(p, cur_date)
+
