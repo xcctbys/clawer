@@ -13,6 +13,18 @@ from sklearn.pipeline import Pipeline
 from sklearn.externals import joblib
 
 class CaptchaRecognition(object):
+  
+    '''
+
+      Should you find any problems or any models with extremely low accuracy in predict results,
+      please feel free to contact me.
+      
+      Author: Yutong Zhou
+      Email: yutongz@princetechs.com
+
+
+    '''
+
     image_start = 30  # start postion of first number
     image_width = 30  # width of each number
     image_height = 47  # end postion from top
@@ -35,16 +47,22 @@ class CaptchaRecognition(object):
         '''
 
         :param captcha_type:
-            captcha_type用于选择模型类型和验证码分割位置.
 
-            beijing: for Beijing
-            jiangsu: for Jiangsu Province
-            zongju: for national gov and shanghai
-            liaoning: for Liaoning Province
-            guangdong: for Guangdong Province
-            tianjin: for Tianjin Province
-            hubei: for Hubei Province
-        :return: None
+            captcha_type points out the province captcha you want to use.
+            There are few provinces in the same models, but the difference can be ignored.
+            You are allowed to use the specific province name as the model name.
+            
+            For example: 
+              beijing is for the model of Beijing City.
+              fujian is for Fujian Province, although Yunan has the same model with Fujian.
+
+            Attention:
+               zongju stands for the national gov.
+               shanxi stands for Shanxi Province, where Taiyuan is the Captial city.
+               shaanxi is for Shaanxi Province, whose Captial is Xi'an.
+               Neimenggu is for Inner Mengolia.
+
+        :return: predict results
         '''
 
         captcha_type = captcha_type.lower()
@@ -113,7 +131,7 @@ class CaptchaRecognition(object):
             self.image_height = 40
             self.image_width = 180
             self.to_denoise = False
-            self.to_calculate = False
+            self.to_calculate = True
             self.to_binarized = True
             self.customized_width = 30
             self.anti_noise = True
@@ -154,7 +172,7 @@ class CaptchaRecognition(object):
             self.image_height = 35
             self.image_width = 160
             self.to_denoise = False
-            self.to_calculate = False
+            self.to_calculate = True
             self.to_binarized = True
             self.customized_width = 25
             self.anti_noise = True
@@ -263,11 +281,17 @@ class CaptchaRecognition(object):
             self.masker = 254
         elif captcha_type == "zongju":
             self.image_label_count = 4
-            self.image_start = 0
-            self.image_width = 35
-            self.image_height = 43
-            self.image_top = 7
-            self.image_gap = 5
+            self.image_width = 180
+            self.image_height = 50
+            self.image_top = 5
+            self.margin = 10.0
+            self.masker = 550
+            self.customized_postisions = True
+            self.to_denoise = False
+            self.to_calculate = False
+            self.to_binarized = True
+            self.customized_width = 25
+            self.anti_noise = True
         elif captcha_type in ["guangdong"]:
             self.image_label_count = 5
             self.image_start = 26
@@ -444,6 +468,41 @@ class CaptchaRecognition(object):
         else:
             return first_num + second_num
 
+    def __update_positions__(self, pixels):
+        pixels_sum = sum(pixels)
+        # print pixels_sum
+        start = 0
+        for i in range(10):
+            count = pixels_sum[i]
+            if count > self.margin:
+                start = i
+                break
+            else:
+                start = i
+
+        position_left = range(start, self.image_width, self.customized_width)[:self.image_label_count]
+        index = 0
+        # print position_left
+        for i in range(1, self.image_label_count):
+            index = position_left[i]
+            l = pixels_sum[index]
+            while l <= self.margin:
+                index += 1
+                if index > self.image_width - 1:
+                    break
+                l = pixels_sum[index]
+            left = range(index, self.image_width, self.customized_width)[:(self.image_label_count - i)]
+            position_left = position_left[:i] + left
+
+        if len(position_left) != self.image_label_count:
+            self.position_left = []
+        else:
+            position_right = [0] * self.image_label_count
+            for i in range(self.image_label_count):
+                position_right[i] = min(self.image_width - 1, position_left[i] + self.customized_width)
+
+            self.position_left = position_left
+            self.position_right = position_right
 
     def predict_result(self, image_path):
         if os.path.isfile(self.model_file):
