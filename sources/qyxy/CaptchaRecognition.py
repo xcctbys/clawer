@@ -512,6 +512,14 @@ class CaptchaRecognition(object):
             self.position_right = position_right
 
     def predict_result(self, image_path):
+        '''
+        This function will return two results.
+        The first one is the predict value, 
+        and the second one is used to pass the Captcha.
+
+        If the captcha is in the type of calculation, the second value is a number;
+        and if the captcha is the type of letters and/or numbers, the second value is the content.
+        '''
         if os.path.isfile(self.model_file):
             self.clf = joblib.load(self.model_file)
         else:
@@ -528,6 +536,6 @@ class CaptchaRecognition(object):
             predict_result += unicode(self.label_list[int(predict)])
 
         if self.to_calculate:
-            return self.__calculate__((predict_result))
+            return predict_result, self.__calculate__((predict_result))
         else:
-            return predict_result
+            return predict_result, predict_result
