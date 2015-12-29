@@ -367,6 +367,8 @@ class CaptchaRecognition(object):
             an = AntiNoise(image_path, self.masker)
             pixels = an.pixels
             self.__update_positions__(pixels)
+            if len(self.position_left) != self.image_label_count:
+                return None
             for i in range(self.image_label_count):
                 left = self.position_left[i]
                 right = self.position_right[i]
@@ -510,6 +512,8 @@ class CaptchaRecognition(object):
         else:
             raise IOError
         pixel_matrix = self.__convertPoint__(image_path)
+        if pixel_matrix is None:
+            return ""
         predict_result = u""
         for feature in pixel_matrix:
             _f = np.array([feature], dtype=np.float)
