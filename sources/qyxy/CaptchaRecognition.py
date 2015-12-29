@@ -71,14 +71,17 @@ class CaptchaRecognition(object):
                                 "ningxia", "chongqing", "sichuan", "hunan", "gansu", "xinjiang", "guizhou", "shandong",
                                 "neimenggu", "zhejiang","jilin","yunnan","fujian"]:
             exit(1)
-        elif captcha_type in ["jiangsu", "beijing", "zongju", "liaoning"]:
+        elif captcha_type in ["jiangsu", "beijing", "liaoning"]:
             self.label_list = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
                                "q", "w", "e", "r", "t", "y", "u", "i", "o", "p",
                                "a", "s", "d", "f", "g", "h", "j", "k", "l", "z",
-                               "x", "c", "v", "b", "n", "m"]
+                               "x", "c", "v", "b", "n", "m",
+                               "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P",
+                               "A", "S", "D", "F", "G", "H", "J", "K", "L",
+                               "Z", "X", "C", "V", "B", "N", "M"]
             self.to_denoise = True
             self.masker = 255
-        elif captcha_type in ["guangdong", "hubei", "tianjin", "qinghai", "shanxi", "henan", "guangxi", "xizang",
+        elif captcha_type in ["guangdong", "hubei","zongju", "tianjin", "qinghai", "shanxi", "henan", "guangxi", "xizang",
                               "heilongjiang", "anhui", "shaanxi", "ningxia", "chongqing", "sichuan", "hunan", "gansu",
                               "xinjiang", "guizhou", "shandong", "neimenggu", "zhejiang","jilin","yunnan","fujian"]:
             self.to_denoise = True
@@ -105,7 +108,7 @@ class CaptchaRecognition(object):
             self.customized_width = 20
             self.to_binarized = True
             self.masker = 150
-        elif captcha_type in ["yunnan", "fujian"]:
+        elif captcha_type in ["yunnan", "fujian","zongju"]:
             self.image_label_count = 3
             self.margin = 8
             self.customized_postisions = True
