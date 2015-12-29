@@ -148,7 +148,7 @@ class CaptchaRecognition(object):
             self.to_binarized = True
             self.customized_width = 25
             self.double_denoise = False
-        elif captcha_type in ["sichuan","xinjiang]:
+        elif captcha_type in ["sichuan","xinjiang"]:
             self.image_label_count = 5
             self.masker = 110
             self.customized_postisions = True
@@ -518,6 +518,8 @@ class CaptchaRecognition(object):
         for feature in pixel_matrix:
             _f = np.array([feature], dtype=np.float)
             predict = self.clf.predict(_f)[0]
+            if int(predict) >= len(self.label_list) or int(predict) < 0:
+                return ""
             predict_result += unicode(self.label_list[int(predict)])
 
         if self.to_calculate:
