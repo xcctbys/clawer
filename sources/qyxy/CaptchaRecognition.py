@@ -70,7 +70,7 @@ class CaptchaRecognition(object):
         if captcha_type not in ["jiangsu", "beijing", "zongju", "liaoning", "guangdong", "hubei", "tianjin",
                                 "qinghai", "shanxi", "henan", "guangxi", "xizang", "heilongjiang", "anhui", "shaanxi",
                                 "ningxia", "chongqing", "sichuan", "hunan", "gansu", "xinjiang", "guizhou", "shandong",
-                                "neimenggu", "zhejiang","heibei","jilin","yunnan","fujian"]:
+                                "neimenggu", "zhejiang","heibei","jilin","yunnan","fujian","hebei"]:
             exit(1)
         elif captcha_type in ["jiangsu", "beijing", "liaoning"]:
             self.label_list = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
@@ -84,7 +84,7 @@ class CaptchaRecognition(object):
             self.masker = 255
         elif captcha_type in ["guangdong", "hubei","zongju", "tianjin", "qinghai", "shanxi", "henan", "guangxi", "xizang",
                               "heilongjiang", "anhui", "shaanxi", "ningxia", "chongqing", "sichuan", "hunan", "gansu",
-                              "xinjiang", "guizhou", "shandong","hebei", "neimenggu", "zhejiang","jilin","yunnan","fujian"]:
+                              "xinjiang", "guizhou", "shandong","hebei", "neimenggu", "zhejiang","jilin","yunnan","fujian","hebei"]:
             self.to_denoise = True
             self.masker = 255
             self.to_calculate = True
@@ -109,7 +109,7 @@ class CaptchaRecognition(object):
             self.customized_width = 20
             self.to_binarized = True
             self.masker = 150
-        elif captcha_type in ["yunnan", "fujian","zongju","hebei"]:
+        elif captcha_type in ["yunnan", "fujian","zongju"]:
             self.image_label_count = 3
             self.margin = 8
             self.customized_postisions = True
@@ -165,7 +165,7 @@ class CaptchaRecognition(object):
             self.to_binarized = True
             self.customized_width = 20
             self.double_denoise = False
-        elif captcha_type == "hunan":
+        elif captcha_type in ["hunan","hebei"]:
             self.margin = 8
             self.image_label_count = 3
             self.masker = 450
@@ -180,6 +180,7 @@ class CaptchaRecognition(object):
             self.to_binarized = True
             self.customized_width = 25
             self.anti_noise = True
+            captcha_type = "hunan"
         elif captcha_type == "gansu":
             self.image_label_count = 3
             self.customized_postisions = True
