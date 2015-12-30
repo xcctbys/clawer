@@ -1,20 +1,19 @@
 import logging
 
 #log
-log_level = logging.WARN
-log_file = '/data/clawer_result/enterprise/crawler.log'
+log_level = logging.DEBUG
+log_file = './crawler.log'
 logger = None
 
-#denote whether to save html page
-save_html = True
+#whether to save html page
+save_html = False
 
 html_restore_path = './enterprise_crawler'
 json_restore_path = './enterprise_crawler'
 
 #our enterprise list to be crawled
-enterprise_list_path = './enterprise_list/beijing.txt'
+enterprise_list_path = './enterprise_list/'
 
-#crawler num, for multi-thread crawl, if crawler_num is larger than 1, we may occur http 500 error possible
 crawler_num = 3
 
 

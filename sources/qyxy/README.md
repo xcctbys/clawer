@@ -29,6 +29,7 @@
 	logger = None
 
 	save_html = True   # 是否保存html
+
 	html_restore_path = './enterprise_crawler'  #如果save_html为True，html存储在子目录下。子目录以省份命名。
 
 	json_restore_path = './enterprise_crawler'   #最后结果转为json，输出到子目录下。子目录格式：${省份名}/${YEAR}/${MONTH}/ 。 每天一个文件，需要使用zlib压缩，文件名格式为； ${DAY}.json.gz 。 每行对应一个企业的JSON对象。
@@ -36,50 +37,50 @@
 	enterprise_list_path = './enterprise_list/'  # 企业名单，每个省对应一个文件，如北京为beijing.txt
 
 ## 输出格式
+    #每行一个企业，为一个key-value对，key为企业的注册号，value为一个字典，里面包含所有页面解析后的信息。
+    {ent_number_1: {all_data_of_ent_1}}
+    {ent_number_2: {all_data_of_ent_2}}
+    ....
+    #all_data为该企业所有页面解析后的数据，具体包括：
+    (一) 工商公示信息
+    (1) 'ind_comm_pub_reg_basic': 登记信息-基本信息
+    (2) 'ind_comm_pub_reg_shareholder': 登记信息-股东信息
+    (3) 'ind_comm_pub_reg_modify': 登记信息-变更信息
+    (4) 'ind_comm_pub_arch_key_persons': 备案信息-主要人员信息
+    (5) 'ind_comm_pub_arch_branch': 备案信息-分支机构信息
+    (6) 'ind_comm_pub_arch_liquidation': 备案信息-清算信息
+    (7) 'ind_comm_pub_movable_property_reg': 动产抵押登记信息
+    (8) 'ind_comm_pub_equity_ownership_reg': 股权出置登记信息
+    (9) 'ind_comm_pub_administration_sanction': 行政处罚信息
+    (10) 'ind_comm_pub_business_exception': 经营异常信息
+    (11) 'ind_comm_pub_serious_violate_law': 严重违法信息
+    (12) 'ind_comm_pub_spot_check': 抽查检查信息
 
+    (二) 企业公示信息
+    (1) 'ent_pub_ent_annual_report': 企业年报
+    (2) 'ent_pub_shareholder_capital_contribution': 企业投资人出资比例
+    (3) 'ent_pub_equity_change': 股权变更信息
+    (4) 'ent_pub_administration_license': 行政许可信息
+    (5) 'ent_pub_knowledge_property': 知识产权出资登记
+    (6) 'ent_pub_administration_sanction': 行政许可信息
+    
+    (三) 其他部门公示信息
+    (1) 'other_dept_pub_administration_license': 行政许可信息
+    (2) 'other_dept_pub_administration_sanction': 行政处罚信息
 
+    (四) 司法协助信息
+    (1) 'judical_assist_equity_freeze': 股权冻结信息
+    (2) 'judical_assist_shareholder_modify': 股东变更信息
 
+    在all_data 中的各个最顶层的key-value对的key为 以上的各个名称，比如工商公示信息-登记信息-基本信息的key为 'ind_comm_pub_reg_basic'  
+    value为 从页面中爬取的工商公示信息-登记信息-基本信息的具体数据。
 
-## Beijing enterprise crawler 
-----
-####1. source code
-(1) crawler.py contains several classes, they are:
->a)CrawlerUtils 
-&nbsp;&nbsp;&nbsp;&nbsp;our tools class, there several useful functions which will be called frequently
+    具体数据有两种类型：普通键值对构成的字典、列表。普通的字典格式对应于页面上不规则的表格数据(比如 工商公示信息-登记信息-基本信息的表格);  
+    列表格式对应于页面上规则的记录类型的表格，比如 工商公示信息-登记信息-股东信息。有些表格中含有详情页连接，详情页的数据爬取后作为value放在对应的位置。
+    
+    具体的json格式，参见 json_data_example 目录下的文件。
 
->b)Crawler
-&nbsp;&nbsp;&nbsp;&nbsp;our base crawler class
-
-
-(2)hparser.py contains class Parser, the base class of a html page parser
-
-(3)beijing_crawler.py contains class CrawlerBeijingEnt
-&nbsp;&nbsp;&nbsp;&nbsp;CrawlerBeijingEnt is the derived class of Crawler, it crawls html page of beijing enterprise
-
-(4) beijing_hparser.py contains class ParserBeijingEnt
-&nbsp;&nbsp;&nbsp;&nbsp;ParserBeijingEnt is the derived class of hparser.Parser, it parses the html page of beijing enterprise
-
-
-####2. work flow of crawler
-(1) build a Crawler object (let's name it crawler) and a Parser objet(let's name it parser), crawler and parser is connected together by hoding reference of the other 
-so we can access crawler in parser and access parser in crawler
-
-(2) get the enterprise number 
-
-(3) Crawler start work with enterprise number
-
-(4) when crawler download a html page, our parser parse the html page to json data immediately
-
-(5) when we download all relative html pages of a enterprise and parse them over to json data, we write the json data to file 
-
-&nbsp;&nbsp;&nbsp;&nbsp;the crawl and parse process are work alternatively, instead of dividing them apart.
-note that, a Crawler object corresponds a Parser object, they work in the same thread.
-
-####3. run the program
-&nbsp;&nbsp;&nbsp;&nbsp;there are some setting parameters in settings.py, we can change the program's behaviour by modifying the parameters
-
-&nbsp;&nbsp;&nbsp;&nbsp;a key parameter is the crawler_num, because the crawler can run in multi-thread mode, this paramter denotes the thread number
-to run our crawl and parse work. 
-
-&nbsp;&nbsp;&nbsp;&nbsp;just execute run.py to start crawl and parse work
+## 代码说明
+    crawler.py 中定义了 CrawlerUtils 类，封装了一些常用的函数；Crawler 类，为爬虫类的基类，其他爬虫最好从该类继承；Parser 类，为解析页面的基类，
+    其他的页面解析类最好继承于它，因为其中封装了一些可能会用到的解析html表格的函数。
 
