@@ -439,7 +439,7 @@ class AnalysisClawerTask(object):
             
             safe_process = SafeProcess([settings.PYTHON, path], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=out_f)
             p = safe_process.run(30)
-            p.stdin.write(json.dumps({"path":self.clawer_task.store, "url":self.clawer_task.uri}))
+            p.stdin.write(json.dumps({"path":self.clawer_task.store, "url":self.clawer_task.uri, "args":self.clawer_task.args}))
             p.stdin.close()
             
             err = p.stderr.read()
@@ -522,8 +522,11 @@ class GenerateClawerTask(object):
                 if self.url_cache.check_url(js["uri"]):
                     continue
                 
-                clawer_task = ClawerTask.objects.create(clawer=self.clawer, task_generator=self.task_generator, uri=js["uri"],
-                                      cookie=js.get("cookie"))
+                clawer_task = ClawerTask.objects.create(clawer=self.clawer, 
+                                                        task_generator=self.task_generator, 
+                                                        uri=js["uri"],
+                                                        cookie=js.get("cookie"), 
+                                                        args=js.get("args"))
                 #trace it
                 self.monitor.trace_task_status(clawer_task)
             except:

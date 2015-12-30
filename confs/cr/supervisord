@@ -85,8 +85,17 @@ case "$1" in
     ;;
     restart)
         $0 stop
-        sleep 1
+        sleep 5
         $0 start
+    ;;
+    reload)
+        echo "Reload ${NAME}"
+        if [ ! -r $PID ] ; then
+            echo "warning, no pid file found - ${NAME} is not running ?" 
+            exit 1
+        fi
+
+        kill -s HUP `cat ${PID}`
     ;;
     *)
         echo "Usage: $0 {start|stop|restart}" 
