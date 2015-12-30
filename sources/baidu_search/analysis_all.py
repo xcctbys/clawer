@@ -31,7 +31,7 @@ class Analysis(object):  # 页面分析类
         self.div = None
         self.text = None
         self.soup = None
-        self.args = args
+        self.args = args # 传入查询的公司和关键字参数
 
     def parse(self):
         if os.path.exists(self.path) is False:  # 如果读取需要解析的文件失败则发起请求获取目标页面源码

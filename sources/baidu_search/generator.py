@@ -1591,7 +1591,7 @@ class Generator(object):
             for div in divs:  # 遍历divs获取每一条div
                 all_em = div.h3.find_all("em")  # 找到div.h3标签中所有的em标签
                 if len(all_em) > 1:
-                    ems = [em.get_text().strip() for em in all_em]
+                    ems = [em.get_text().strip() for em in all_em] # 将em建为一个列表
                     if current_company in ems and current_keyword in ems: # 判断关键词是否在em标签中，若判断为真则使用浏览器代理获取目标url中的headers信息
                         target_head = requests.head(div.h3.a["href"], headers={"user-agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"}).headers
                         target_url = target_head["Location"]  # 获取目标链接真实url
