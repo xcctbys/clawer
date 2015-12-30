@@ -68,9 +68,9 @@
     (1) 'other_dept_pub_administration_license': 行政许可信息
     (2) 'other_dept_pub_administration_sanction': 行政处罚信息
 
-    (四) 司法协助信息
-    (1) 'judical_assist_equity_freeze': 股权冻结信息
-    (2) 'judical_assist_shareholder_modify': 股东变更信息
+    (四) 司法协助公示信息
+    (1) 'judical_assist_pub_equity_freeze': 股权冻结信息
+    (2) 'judical_assist_pub_shareholder_modify': 股东变更信息
 
     在all_data 中的各个最顶层的key-value对的key为 以上的各个名称，比如工商公示信息-登记信息-基本信息的key为 'ind_comm_pub_reg_basic'  
     value为 从页面中爬取的工商公示信息-登记信息-基本信息的具体数据。

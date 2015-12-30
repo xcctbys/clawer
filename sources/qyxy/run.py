@@ -9,16 +9,22 @@ import time
 import logging
 import Queue
 import threading
-from beijing_crawler import BeijingCrawler
-from jiangsu_crawler import JiangsuCrawler
+
+import settings
 from CaptchaRecognition import CaptchaRecognition
 from crawler import CrawlerUtils
-import settings
+from beijing_crawler import BeijingCrawler
+from jiangsu_crawler import JiangsuCrawler
+from zongju_crawler import ZongjuCrawler
+from shanghai_crawler import ShanghaiCrawler
+
 
 failed_ent = {}
 province_crawler = {
     'beijing': BeijingCrawler,
-    'jiangsu': JiangsuCrawler
+    'jiangsu': JiangsuCrawler,
+    'zongju': ZongjuCrawler,
+    'shanghai': ShanghaiCrawler
 }
 
 
@@ -145,5 +151,10 @@ if __name__ == '__main__':
     else:
         provinces = sys.argv[1:]
         for p in provinces:
-            crawl_province(p, cur_date)
+            if not p in province_crawler.keys():
+                settings.logger.warn('province %s is not supported currently' % p)
+            else:
+                crawl_province(p, cur_date)
+
+
 

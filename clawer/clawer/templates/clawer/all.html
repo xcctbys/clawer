@@ -70,7 +70,7 @@
 				<input id="clawer" name="clawer" type="hidden" />
 				<ol class="text-muted">
 				    <li>支持<code>requests, Beautiful Soup, python标准库</code></li>
-				    <li>执行后输出json数据，每行json格式：{"uri":"", "cookie":""}。 <small>例子：{"url":"http://www.github.com", "cookie":"kkk"}</small></li>
+				    <li>执行后输出json数据，每行json格式：{"uri":"", "cookie":"", "args":""}。 <small>例子：{"url":"http://www.github.com", "cookie":"kkk", "args":"kk=ss"}</small></li>
 				    <li>
 				        <ul>
 				            <li>requests: 支持使用requests库下载，不渲染页面js。</li>
@@ -122,7 +122,7 @@
 				<input id="clawer" name="clawer" type="hidden" />
 				<ol class="text-muted">
 				    <li>支持<code>requests, Beautiful Soup, python标准库</code></li>
-				    <li>从stdin读取json数据，格式： {"path":"文件路径", "url":""}</li>
+				    <li>从stdin读取json数据，格式： {"path":"文件路径", "url":"", "args":""}</li>
 				    <li>执行后输出json格式 <small>例子：{"name":"hello"}</small></li>
 				    <li>运行时间不能超过120秒</li>
 				</ol>

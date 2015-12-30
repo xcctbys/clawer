@@ -378,6 +378,7 @@ class ClawerTask(models.Model):
     task_generator = models.ForeignKey(ClawerTaskGenerator, blank=True, null=True)
     uri = models.CharField(max_length=1024)
     cookie = models.CharField(max_length=1024, blank=True, null=True)
+    args = models.CharField(max_length=1024, blank=True, null=True)
     status = models.IntegerField(default=STATUS_LIVE, choices=STATUS_CHOICES)
     store = models.CharField(max_length=512, blank=True, null=True)
     add_datetime = models.DateTimeField(auto_now_add=True)

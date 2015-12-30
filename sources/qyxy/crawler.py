@@ -27,11 +27,11 @@ class CrawlerUtils(object):
             if exc.errno == errno.EEXIST and os.path.isdir(path):
                 pass
             else:
-                raise
+                raise exc
 
     @staticmethod
     def set_logging(level):
-        logging.basicConfig(level = level, format="%(levelname)s %(asctime)s %(lineno)d:: %(message)s")
+        logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: %(message)s")
 
     @staticmethod
     def set_opener_header(opener, header):
@@ -132,6 +132,7 @@ class CrawlerUtils(object):
         cur_date = time.strftime("%Y-%m-%d")
         return cur_date.split('-')
 
+
 class Crawler(object):
     """爬虫的基类
     """
@@ -224,11 +225,14 @@ class Parser(object):
                 columns.append((CrawlerUtils.get_raw_text_in_bstag(th), self.get_sub_columns(tr_tag.nextSibling.nextSibling, 0, self.sub_column_count(th))))
         return columns
 
-    def get_table_title(self, table_tag):
+    def get_table_title(self, table_tag, redundent_title=False):
         """获取表名
         """
         if table_tag.find('tr'):
-            return CrawlerUtils.get_raw_text_in_bstag(table_tag.find('tr').th)
+            if not redundent_title:
+                return CrawlerUtils.get_raw_text_in_bstag(table_tag.find('tr').th)
+            elif len(table_tag.find_all('table', recursive=False)) > 1:
+                return CrawlerUtils.get_raw_text_in_bstag(table_tag.find_all('table', recursive=False)[1])
         return ''
 
     def get_record_table_columns_by_tr(self, tr_tag):

@@ -41,6 +41,7 @@ class CaptchaRecognition(object):
     position_left = None
     position_right = None
     to_binarized = False
+    anti_noise = False
     to_summarized = False
 
     def __init__(self, captcha_type="beijing"):
@@ -69,18 +70,21 @@ class CaptchaRecognition(object):
         if captcha_type not in ["jiangsu", "beijing", "zongju", "liaoning", "guangdong", "hubei", "tianjin",
                                 "qinghai", "shanxi", "henan", "guangxi", "xizang", "heilongjiang", "anhui", "shaanxi",
                                 "ningxia", "chongqing", "sichuan", "hunan", "gansu", "xinjiang", "guizhou", "shandong",
-                                "neimenggu", "zhejiang","jilin","yunnan","fujian"]:
+                                "neimenggu", "zhejiang","heibei","jilin","yunnan","fujian","hebei","shanghai"]:
             exit(1)
-        elif captcha_type in ["jiangsu", "beijing", "zongju", "liaoning"]:
+        elif captcha_type in ["jiangsu", "beijing", "liaoning"]:
             self.label_list = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
                                "q", "w", "e", "r", "t", "y", "u", "i", "o", "p",
                                "a", "s", "d", "f", "g", "h", "j", "k", "l", "z",
-                               "x", "c", "v", "b", "n", "m"]
+                               "x", "c", "v", "b", "n", "m",
+                               "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P",
+                               "A", "S", "D", "F", "G", "H", "J", "K", "L",
+                               "Z", "X", "C", "V", "B", "N", "M"]
             self.to_denoise = True
             self.masker = 255
-        elif captcha_type in ["guangdong", "hubei", "tianjin", "qinghai", "shanxi", "henan", "guangxi", "xizang",
+        elif captcha_type in ["guangdong", "hubei","shanghai","zongju", "tianjin", "qinghai", "shanxi", "henan", "guangxi", "xizang",
                               "heilongjiang", "anhui", "shaanxi", "ningxia", "chongqing", "sichuan", "hunan", "gansu",
-                              "xinjiang", "guizhou", "shandong", "neimenggu", "zhejiang","jilin","yunnan","fujian"]:
+                              "xinjiang", "guizhou", "shandong","hebei", "neimenggu", "zhejiang","jilin","yunnan","fujian","hebei"]:
             self.to_denoise = True
             self.masker = 255
             self.to_calculate = True
@@ -105,7 +109,7 @@ class CaptchaRecognition(object):
             self.customized_width = 20
             self.to_binarized = True
             self.masker = 150
-        elif captcha_type in ["yunnan", "fujian"]:
+        elif captcha_type in ["yunnan", "fujian","zongju","shanghai"]:
             self.image_label_count = 3
             self.margin = 8
             self.customized_postisions = True
@@ -148,7 +152,7 @@ class CaptchaRecognition(object):
             self.to_binarized = True
             self.customized_width = 25
             self.double_denoise = False
-        elif captcha_type in ["sichuan","xinjiang]:
+        elif captcha_type in ["sichuan","xinjiang"]:
             self.image_label_count = 5
             self.masker = 110
             self.customized_postisions = True
@@ -161,7 +165,7 @@ class CaptchaRecognition(object):
             self.to_binarized = True
             self.customized_width = 20
             self.double_denoise = False
-        elif captcha_type == "hunan":
+        elif captcha_type in ["hunan","hebei"]:
             self.margin = 8
             self.image_label_count = 3
             self.masker = 450
@@ -176,6 +180,7 @@ class CaptchaRecognition(object):
             self.to_binarized = True
             self.customized_width = 25
             self.anti_noise = True
+            captcha_type = "hunan"
         elif captcha_type == "gansu":
             self.image_label_count = 3
             self.customized_postisions = True
@@ -279,19 +284,19 @@ class CaptchaRecognition(object):
             self.image_gap = 11
             self.to_denoise = False
             self.masker = 254
-        elif captcha_type == "zongju":
-            self.image_label_count = 4
-            self.image_width = 180
-            self.image_height = 50
-            self.image_top = 5
-            self.margin = 10.0
-            self.masker = 550
-            self.customized_postisions = True
-            self.to_denoise = False
-            self.to_calculate = False
-            self.to_binarized = True
-            self.customized_width = 25
-            self.anti_noise = True
+        # elif captcha_type == "zongju":
+        #     self.image_label_count = 4
+        #     self.image_width = 180
+        #     self.image_height = 50
+        #     self.image_top = 5
+        #     self.margin = 10.0
+        #     self.masker = 550
+        #     self.customized_postisions = True
+        #     self.to_denoise = False
+        #     self.to_calculate = False
+        #     self.to_binarized = True
+        #     self.customized_width = 25
+        #     self.anti_noise = True
         elif captcha_type in ["guangdong"]:
             self.image_label_count = 5
             self.image_start = 26
@@ -367,6 +372,8 @@ class CaptchaRecognition(object):
             an = AntiNoise(image_path, self.masker)
             pixels = an.pixels
             self.__update_positions__(pixels)
+            if len(self.position_left) != self.image_label_count:
+                return None
             for i in range(self.image_label_count):
                 left = self.position_left[i]
                 right = self.position_right[i]
@@ -505,18 +512,30 @@ class CaptchaRecognition(object):
             self.position_right = position_right
 
     def predict_result(self, image_path):
+        '''
+        This function will return two results.
+        The first one is the predict value, 
+        and the second one is used to pass the Captcha.
+
+        If the captcha is in the type of calculation, the second value is a number;
+        and if the captcha is the type of letters and/or numbers, the second value is the content.
+        '''
         if os.path.isfile(self.model_file):
             self.clf = joblib.load(self.model_file)
         else:
             raise IOError
         pixel_matrix = self.__convertPoint__(image_path)
+        if pixel_matrix is None:
+            return "", ""
         predict_result = u""
         for feature in pixel_matrix:
             _f = np.array([feature], dtype=np.float)
             predict = self.clf.predict(_f)[0]
+            if int(predict) >= len(self.label_list) or int(predict) < 0:
+                return "", ""
             predict_result += unicode(self.label_list[int(predict)])
 
         if self.to_calculate:
-            return self.__calculate__((predict_result))
+            return predict_result, self.__calculate__((predict_result))
         else:
-            return predict_result
+            return predict_result, predict_result

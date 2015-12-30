@@ -29,7 +29,8 @@ class BeijingCrawler(Crawler):
     urls = {'host': 'http://qyxy.baic.gov.cn',
             'official_site': 'http://qyxy.baic.gov.cn/beijing',
             'get_checkcode': 'http://qyxy.baic.gov.cn',
-            'post_checkcode': 'http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!getBjQyList.dhtml',
+            'post_checkcode': 'http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!checkCode.dhtml',
+            'open_info_entry': 'http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!getBjQyList.dhtml',
             'ind_comm_pub_reg_basic': 'http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!openEntInfo.dhtml?',
             'ind_comm_pub_reg_shareholder': 'http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!tzrFrame.dhtml?',
             'ind_comm_pub_reg_modify': 'http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!biangengFrame.dhtml?',
@@ -97,15 +98,26 @@ class BeijingCrawler(Crawler):
         while count < 10:
             count += 1
             ckcode = self.crack_checkcode()
-            post_data = {'currentTimeMillis': self.time_stamp, 'credit_ticket': self.credit_ticket, 'checkcode': ckcode, 'keyword': self.ent_number};
-            next_url = BeijingCrawler.urls['post_checkcode']
+            post_data = {'currentTimeMillis': self.time_stamp, 'credit_ticket': self.credit_ticket, 'checkcode': ckcode[1], 'keyword': self.ent_number};
+            next_url = self.urls['post_checkcode']
             resp = self.reqst.post(next_url, data=post_data)
             if resp.status_code != 200:
-                settings.logger.log('failed to get crackcode image by url %s, fail count = %d' % (next_url, count))
+                settings.logger.warn('failed to get crackcode image by url %s, fail count = %d' % (next_url, count))
                 continue
-            page = resp.content
-            time.sleep(random.uniform(0.2, 1))
-            crack_result = self.parse_post_check_page(page)
+
+            settings.logger.info('crack code = %s, %s, response =  %s' %(ckcode[0], ckcode[1], resp.content))
+
+            if resp.content == 'fail':
+                settings.logger.debug('crack checkcode failed, total fail count = %d' % count)
+                continue
+
+            next_url = self.urls['open_info_entry']
+            resp = self.reqst.post(next_url, data=post_data)
+            if resp.status_code != 200:
+                settings.logger.warn('failed to open info entry by url %s, fail count = %d' % (next_url, count))
+                continue
+
+            crack_result = self.parse_post_check_page(resp.content)
             if crack_result:
                 return True
             else:
@@ -179,9 +191,9 @@ class BeijingCrawler(Crawler):
         """获取验证码的url
         """
         while True:
-            resp = self.reqst.get(BeijingCrawler.urls['official_site'])
+            resp = self.reqst.get(self.urls['official_site'])
             if resp.status_code != 200:
-                settings.logger.log('failed to get crackcode url')
+                settings.logger.error('failed to get crackcode url')
                 continue
             response = resp.content
             time.sleep(random.uniform(0.2, 1))
@@ -193,7 +205,7 @@ class BeijingCrawler(Crawler):
             checkcode_type = re_checkcode_captcha.findall(ckimg_src)[0]
 
             if checkcode_type == 'CheckCodeCaptcha':
-                checkcode_url= BeijingCrawler.urls['get_checkcode'] + ckimg_src
+                checkcode_url= self.urls['get_checkcode'] + ckimg_src
                 #parse the pre check page, get useful information
                 self.parse_pre_check_page(response)
                 return checkcode_url
@@ -204,9 +216,9 @@ class BeijingCrawler(Crawler):
         """解析提交验证码之后的页面，获取必要的信息
         """
         if page == 'fail':
-            settings.logger.error('checkcode submitted error!')
+            settings.logger.error('checkcode error!')
             if settings.sentry_open:
-                settings.sentry_client.captureMessage('checkcode submitted error!')
+                settings.sentry_client.captureMessage('checkcode error!')
             return False
 
         soup = BeautifulSoup(page, 'html.parser')
@@ -235,18 +247,18 @@ class BeijingCrawler(Crawler):
         """解析提交验证码之前的页面
         """
         soup = BeautifulSoup(page, 'html.parser')
-        ckimg_src= soup.find_all('img', id='MzImgExpPwd')[0].get('src')
+        ckimg_src = soup.find_all('img', id='MzImgExpPwd')[0].get('src')
         ckimg_src = str(ckimg_src)
-        re_currenttime_millis=re.compile(r'/CheckCodeCaptcha\?currentTimeMillis=([\s\S]*)')
+        re_currenttime_millis = re.compile(r'/CheckCodeCaptcha\?currentTimeMillis=([\s\S]*)')
         self.credit_ticket = soup.find_all('input',id='credit_ticket')[0].get('value')
-        self.time_stamp= re_currenttime_millis.findall(ckimg_src)[0]
+        self.time_stamp = re_currenttime_millis.findall(ckimg_src)[0]
 
     def crawl_page_by_url(self, url):
         """通过url直接获取页面
         """
         resp = self.reqst.get(url)
         if resp.status_code != 200:
-            settings.logger.log('failed to crawl page by url' % url)
+            settings.logger.error('failed to crawl page by url' % url)
             return
         page = resp.content
         time.sleep(random.uniform(0.2, 1))
@@ -283,7 +295,7 @@ class BeijingCrawler(Crawler):
             return pages_data
 
         if not url:
-            next_url = BeijingCrawler.urls[type].rstrip('?')
+            next_url = self.urls[type].rstrip('?')
         else:
             next_url = url
 
@@ -292,7 +304,7 @@ class BeijingCrawler(Crawler):
             try:
                 resp = self.reqst.post(next_url, data=post_data)
                 if resp.status_code != 200:
-                    settings.logger.log('failed to get all page of a section')
+                    settings.logger.error('failed to get all page of a section')
                     return pages_data
                 page = resp.content
                 time.sleep(random.uniform(0.2, 1))
@@ -310,7 +322,7 @@ class BeijingCrawler(Crawler):
         Args:
             tab: 访问页面时在url后面所用到的数据。1 工商公示信息， 2 企业公示信息， 3 其他部门公示信息
         """
-        url = CrawlerUtils.add_params_to_url(BeijingCrawler.urls[type],
+        url = CrawlerUtils.add_params_to_url(self.urls[type],
                                             {'entId':self.ent_id,
                                              'ent_id':self.ent_id,
                                              'entid':self.ent_id,
@@ -341,14 +353,21 @@ class BeijingCrawler(Crawler):
             return
         page = resp.content
 
-        time.sleep(random.uniform(0.2, 1))
+        time.sleep(random.uniform(2, 4))
+
         self.write_file_mutex.acquire()
         with open(self.ckcode_image_path, 'wb') as f:
             f.write(page)
         if not self.code_cracker:
             print 'invalid code cracker'
             return ''
-        ckcode = self.code_cracker.predict_result(self.ckcode_image_path)
+        try:
+            ckcode = self.code_cracker.predict_result(self.ckcode_image_path)
+        except Exception as e:
+            settings.logger.warn('exception occured when crack checkcode')
+            ckcode = ('', '')
+        finally:
+            pass
         self.write_file_mutex.release()
         return ckcode
 
@@ -362,7 +381,6 @@ class BeijingParser(Parser):
     """北京工商页面的解析类
     """
     def __init__(self, crawler):
-        super(self.__class__, self).__init__(crawler)
         self.crawler = crawler
 
     def parse_page(self, page, type):
@@ -468,7 +486,7 @@ class BeijingParser(Parser):
             pat = re.compile(r'<iframe +id="%s" +src=\'(/entPub/entPubAction!.+)\'' % item[0])
             m = pat.search(base_page)
             if m:
-                next_url = BeijingCrawler.urls['host'] + m.group(1)
+                next_url = self.crawler.urls['host'] + m.group(1)
                 settings.logger.info('get annual report, url:\n%s\n' % next_url)
                 page = self.crawler.crawl_page_by_url(next_url)
                 pages = self.crawler.get_all_pages_of_a_section(page, page_type, next_url)
@@ -552,7 +570,7 @@ class BeijingParser(Parser):
                 addition_url = m1.group(1)
                 query_key = m1.group(2)
 
-                next_url = CrawlerUtils.add_params_to_url(BeijingCrawler.urls['host'] + addition_url,
+                next_url = CrawlerUtils.add_params_to_url(self.crawler.urls['host'] + addition_url,
                                                           {query_key:val,
                                                           'entId':self.crawler.ent_id,
                                                             'ent_id':self.crawler.ent_id,
@@ -564,10 +582,10 @@ class BeijingParser(Parser):
             #detail link type 2, for example : ind_comm_pub_info --- registration info ---- modify info
             m = pat_show_dialog.search(detail_op)
             val = m.group(1)
-            next_url = BeijingCrawler.urls['host'] + val
+            next_url = self.crawler.urls['host'] + val
         elif 'href' in bs4_tag.attrs.keys():
             #detail link type 3, for example : ent pub info ----- enterprise annual report
-            next_url = BeijingCrawler.urls['host'] + bs4_tag['href']
+            next_url = self.crawler.urls['host'] + bs4_tag['href']
 
         return next_url
 
