@@ -24,7 +24,7 @@ class JiangsuCrawler(Crawler):
     html_restore_path = settings.html_restore_path + '/jiangsu/'
 
     #验证码图片的存储路径
-    ckcode_image_path = settings.json_restore_path + '/Jiangsu/ckcode.jpg'
+    ckcode_image_path = settings.json_restore_path + '/jiangsu/ckcode.jpg'
 
     #多线程爬取时往最后的json文件中写时的加锁保护
     write_file_mutex = threading.Lock()
@@ -36,7 +36,7 @@ class JiangsuCrawler(Crawler):
             'ind_comm_pub_skeleton': 'http://www.jsgsj.gov.cn:58888/ecipplatform/inner_ci/ci_queryCorpInfor_gsRelease.jsp',
             'ent_pub_skeleton': 'http://www.jsgsj.gov.cn:58888/ecipplatform/inner_ci/ci_queryCorpInfo_qyRelease.jsp',
             'other_dept_pub_skeleton': 'http://www.jsgsj.gov.cn:58888/ecipplatform/inner_ci/ci_queryCorpInfo_qtbmRelease.jsp',
-            'judical_assist_skeleton': 'http://www.jsgsj.gov.cn:58888/ecipplatform/inner_ci/ci_queryJudicialAssistance.jsp',
+            'judical_assist_pub_skeleton': 'http://www.jsgsj.gov.cn:58888/ecipplatform/inner_ci/ci_queryJudicialAssistance.jsp',
             'annual_report_skeleton': 'http://www.jsgsj.gov.cn:58888/ecipplatform/reportCheck/company/cPublic.jsp',
 
             'ci_enter': 'http://www.jsgsj.gov.cn:58888/ecipplatform/ciServlet.json?ciEnter=true',
@@ -94,8 +94,8 @@ class JiangsuCrawler(Crawler):
             'other_dept_pub_administration_license': {'url_type': 'common_enter', 'post_type': 'common_enter', 'propertiesName': 'xingzheng'},
             'other_dept_pub_administration_sanction': {'url_type': 'common_enter', 'post_type': 'common_enter', 'propertiesName': 'xingzhengchufa'},
 
-            'judical_assist_equity_freeze': {'url_type': 'common_enter', 'post_type': 'common_enter', 'propertiesName': 'gqdjList'},
-            'judical_assist_shareholder_modify': {'url_type': 'common_enter', 'post_type': 'common_enter', 'propertiesName': 'gdbgList'}
+            'judical_assist_pub_equity_freeze': {'url_type': 'common_enter', 'post_type': 'common_enter', 'propertiesName': 'gqdjList'},
+            'judical_assist_pub_shareholder_modify': {'url_type': 'common_enter', 'post_type': 'common_enter', 'propertiesName': 'gdbgList'}
         }
 
     def run(self, ent_number=0):
@@ -114,7 +114,7 @@ class JiangsuCrawler(Crawler):
         self.crawl_ind_comm_pub_pages()
         self.crawl_ent_pub_pages()
         self.crawl_other_dept_pub_pages()
-        self.crawl_judical_assist_pub_pages()
+        self.crawl_judical_assist_pub_pub_pages()
 
         #采用多线程，在写入文件时需要注意加锁
         self.write_file_mutex.acquire()
@@ -129,8 +129,8 @@ class JiangsuCrawler(Crawler):
         count = 0
         while count < 3:
             ckcode = self.crack_checkcode()
-            data = {'name': self.ent_number, 'verifyCode': ckcode}
-            resp = self.reqst.post(JiangsuCrawler.urls['post_checkcode'], data=data)
+            data = {'name': self.ent_number, 'verifyCode': ckcode[1]}
+            resp = self.reqst.post(self.urls['post_checkcode'], data=data)
             if resp.status_code != 200:
                 settings.logger.error("crawl post check page failed!")
                 count += 1
@@ -146,7 +146,7 @@ class JiangsuCrawler(Crawler):
     def get_page_data(self, page_name, real_post_data=None):
         """获取页面数据，通过页面名称，和post_data， 江苏的页面中几乎全部都是post方式来获取数据
         """
-        url = JiangsuCrawler.urls[self.post_info[page_name].get('url_type')]
+        url = self.urls[self.post_info[page_name].get('url_type')]
         settings.logger.info('get %s, url:\n%s\n' % (page_name, url))
         if real_post_data:
             return self.get_pages(url, real_post_data)
@@ -237,18 +237,18 @@ class JiangsuCrawler(Crawler):
             page_data = self.get_page_data(item)
             self.json_dict[item] = self.parser.parse_page(item, page_data)
 
-    def crawl_judical_assist_pub_pages(self):
+    def crawl_judical_assist_pub_pub_pages(self):
         """爬取司法协助信息
         """
-        if not self.parser.judical_assist_skeleton_built:
-            page = self.crawl_skeleton_page('judical_assist_skeleton')
+        if not self.parser.judical_assist_pub_skeleton_built:
+            page = self.crawl_skeleton_page('judical_assist_pub_skeleton')
             if not page:
                 settings.logger.error('crawl judical assist skeleton failed!')
                 return False
-            self.parser.parse_page('judical_assist_skeleton', page)
+            self.parser.parse_page('judical_assist_pub_skeleton', page)
 
-        for item in ('judical_assist_equity_freeze',    #股权冻结信息
-                    'judical_assist_shareholder_modify' #股东变更信息
+        for item in ('judical_assist_pub_equity_freeze',    #股权冻结信息
+                    'judical_assist_pub_shareholder_modify' #股东变更信息
         ):
             page_data = self.get_page_data(item)
             self.json_dict[item] = self.parser.parse_page(item, page_data)
@@ -278,7 +278,7 @@ class JiangsuCrawler(Crawler):
         """爬取网页表格的框架页面，在江苏的网页中， 工商公示信息, 企业公示信息，其他部门公示信息，司法协助信息
         所有的tab页面中的表格结构都在一个最开始的页面中给出
         """
-        url = JiangsuCrawler.urls[name]
+        url = self.urls[name]
         post_data = {'org': self.corp_org, 'id': self.corp_id, 'seq_id': self.corp_seq_id,
                      'reg_no': self.ent_number, 'name': self.ent_number,
                      'containContextPath': 'ecipplatform', 'corp_name': self.ent_number}
@@ -290,7 +290,8 @@ class JiangsuCrawler(Crawler):
 
     def parse_post_check_page(self, page):
         """解析提交验证码之后的页面，提取所需要的信息，比如corp id等
-        :param page 提交验证码之后的页面
+        Args:
+            page: 提交验证码之后的页面
         """
         m = re.search(r'onclick=\\\"\w+\(\'([\w\./]+)\',\'(\w*)\',\'(\w*)\',\'(\w*)\',\'(\w*)\',\'(\w*)\',\'(\w*)\'\)', page)
         if m:
@@ -347,20 +348,27 @@ class JiangsuCrawler(Crawler):
         """破解验证码
         :return 破解后的验证码
         """
-        resp = self.reqst.get(JiangsuCrawler.urls['official_site'])
+        resp = self.reqst.get(self.urls['official_site'])
         if resp.status_code != 200:
             return None
 
-        resp = self.reqst.get(JiangsuCrawler.urls['get_checkcode'])
+        resp = self.reqst.get(self.urls['get_checkcode'])
         if resp.status_code != 200:
             return None
+        time.sleep(random.uniform(2, 4))
 
         self.write_file_mutex.acquire()
         with open(self.ckcode_image_path, 'wb') as f:
             f.write(resp.content)
-        ck_code = self.code_cracker.predict_result(self.ckcode_image_path)
+        try:
+            ckcode = self.code_cracker.predict_result(self.ckcode_image_path)
+        except Exception as e:
+            settings.logger.warn('exception occured when crack checkcode')
+            ckcode = ('', '')
+        finally:
+            pass
         self.write_file_mutex.release()
-        return ck_code
+        return ckcode
 
     def crawl_page_by_url(self, url):
         """根据url直接爬取页面
@@ -426,7 +434,7 @@ class JiangsuParser(Parser):
         self.ind_comm_pub_skeleton_built = False
         self.ent_pub_skeleton_built = False
         self.other_dept_pub_skeleton_built = False
-        self.judical_assist_skeleton_built = False
+        self.judical_assist_pub_skeleton_built = False
         self.annual_report_skeleton_built = False
         #指定各个网页所属于的表格类型，便于解析
         self.parse_table_items = {}
@@ -435,7 +443,7 @@ class JiangsuParser(Parser):
         """解析页面，给外部调用的接口"""
         if not page:
             return {}
-        if name in ('ind_comm_pub_skeleton', 'ent_pub_skeleton', 'other_dept_pub_skeleton', 'judical_assist_skeleton', 'annual_report_skeleton'):
+        if name in ('ind_comm_pub_skeleton', 'ent_pub_skeleton', 'other_dept_pub_skeleton', 'judical_assist_pub_skeleton', 'annual_report_skeleton'):
             return self.parse_skeleton_page(name, page)
         elif name == 'ent_pub_annual_report':
             return self.parse_annual_report_page(page)
@@ -470,8 +478,8 @@ class JiangsuParser(Parser):
             self.parse_ent_pub_skeleton(page)
         elif name == 'other_dept_pub_skeleton':
             self.parse_other_dept_pub_skeleton(page)
-        elif name == 'judical_assist_skeleton':
-            self.parse_judical_assist_skeleton(page)
+        elif name == 'judical_assist_pub_skeleton':
+            self.parse_judical_assist_pub_skeleton(page)
         elif name == 'annual_report_skeleton':
             self.parse_annual_report_skeleton(page)
         else:
@@ -699,10 +707,10 @@ class JiangsuParser(Parser):
         self.parse_table_items['other_dept_pub_administration_sanction'] = self.get_list_table_items(table)
         self.other_dept_pub_skeleton_built = True
 
-    def parse_judical_assist_skeleton(self, page):
+    def parse_judical_assist_pub_skeleton(self, page):
         """解析司法协助信息 页面表结构
         """
-        if self.judical_assist_skeleton_built:
+        if self.judical_assist_pub_skeleton_built:
             return
         soup = BeautifulSoup(page, 'html.parser')
         #司法股权冻结信息
@@ -710,15 +718,15 @@ class JiangsuParser(Parser):
         if not table:
             print 'parse judical assist skeleton failed, do not find equity freeze table!'
             return
-        self.parse_table_items['judical_assist_equity_freeze'] = self.get_list_table_items(table)
+        self.parse_table_items['judical_assist_pub_equity_freeze'] = self.get_list_table_items(table)
 
         #司法股东变更登记信息
         table = soup.find('table', attrs={'name': 'gdbgTAB'})
         if not table:
             print 'parse judical assist skeleton failed, do not find shareholder modify table!'
             return
-        self.parse_table_items['judical_assist_shareholder_modify'] = self.get_list_table_items(table)
-        self.judical_assist_skeleton_built = True
+        self.parse_table_items['judical_assist_pub_shareholder_modify'] = self.get_list_table_items(table)
+        self.judical_assist_pub_skeleton_built = True
 
     def parse_annual_report_skeleton(self, page):
         """解析 企业年报页面结构
@@ -826,31 +834,31 @@ class JiangsuParser(Parser):
         return shareholder_info
 
 
-class TestParser(unittest.TestCase):
-    def setUp(self):
-        unittest.TestCase.setUp(self)
-        self.crawler = JiangsuCrawler()
-        self.parser = self.crawler.parser
-
-    def test_parse_ind_comm_pub_skeleton(self):
-        with open('./unittest_data/htmls/ind_comm_pub_skeleton.html') as f:
-            page = f.read()
-            self.parser.parse_ind_comm_pub_skeleton(page)
-
-    def test_parse_ent_pub_skeleton(self):
-        with open('./unittest_data/htmls/ent_pub_skeleton.html') as f:
-            page = f.read()
-            self.parser.parse_ent_pub_skeleton(page)
-
-    def test_parse_other_dept_pub_skeleton(self):
-        with open('./unittest_data/htmls/other_dept_pub_skeleton.html') as f:
-            page = f.read()
-            self.parser.parse_other_dept_pub_skeleton(page)
-
-    def test_parse_judical_assist_skeleton(self):
-        with open('./unittest_data/htmls/judical_assist_skeleton.html') as f:
-            page = f.read()
-            self.parser.parse_judical_assist_skeleton(page)
+# class TestParser(unittest.TestCase):
+#     def setUp(self):
+#         unittest.TestCase.setUp(self)
+#         self.crawler = JiangsuCrawler()
+#         self.parser = self.crawler.parser
+#
+#     def test_parse_ind_comm_pub_skeleton(self):
+#         with open('./unittest_data/htmls/ind_comm_pub_skeleton.html') as f:
+#             page = f.read()
+#             self.parser.parse_ind_comm_pub_skeleton(page)
+#
+#     def test_parse_ent_pub_skeleton(self):
+#         with open('./unittest_data/htmls/ent_pub_skeleton.html') as f:
+#             page = f.read()
+#             self.parser.parse_ent_pub_skeleton(page)
+#
+#     def test_parse_other_dept_pub_skeleton(self):
+#         with open('./unittest_data/htmls/other_dept_pub_skeleton.html') as f:
+#             page = f.read()
+#             self.parser.parse_other_dept_pub_skeleton(page)
+#
+#     def test_parse_judical_assist_pub_skeleton(self):
+#         with open('./unittest_data/htmls/judical_assist_pub_skeleton.html') as f:
+#             page = f.read()
+#             self.parser.parse_judical_assist_pub_skeleton(page)
 
 if __name__ == '__main__':
     from CaptchaRecognition import CaptchaRecognition
