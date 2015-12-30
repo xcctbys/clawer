@@ -526,13 +526,13 @@ class CaptchaRecognition(object):
             raise IOError
         pixel_matrix = self.__convertPoint__(image_path)
         if pixel_matrix is None:
-            return ""
+            return "", ""
         predict_result = u""
         for feature in pixel_matrix:
             _f = np.array([feature], dtype=np.float)
             predict = self.clf.predict(_f)[0]
             if int(predict) >= len(self.label_list) or int(predict) < 0:
-                return ""
+                return "", ""
             predict_result += unicode(self.label_list[int(predict)])
 
         if self.to_calculate:
