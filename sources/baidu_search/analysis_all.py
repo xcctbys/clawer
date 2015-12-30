@@ -24,13 +24,14 @@ logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: 
 
 class Analysis(object):  # 页面分析类
 
-    def __init__(self, path, url=None):  # 值初始化
+    def __init__(self, path, url=None, args=None):  # 值初始化
         self.path = path
         self.url = url
         self.result = {}
         self.div = None
         self.text = None
         self.soup = None
+        self.args = args
 
     def parse(self):
         if os.path.exists(self.path) is False:  # 如果读取需要解析的文件失败则发起请求获取目标页面源码
@@ -43,6 +44,7 @@ class Analysis(object):  # 页面分析类
         html_content = self.soup.find("html")  # 获取html标签中内容
 
         self.result["html"] = str(html_content)
+        self.result["keyword"] = str(self.args)
         logging.debug("result is %s", json.dumps(self.result, indent=4))
 
 
@@ -51,6 +53,7 @@ class TestAnalysis(unittest.TestCase):  # 测试类（当DEBUG为True时运行�
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.path = "test.txt"  # 需解析的文件名
+        self.args = "公司 诉讼"
 
     def test_parse(self):
         """http://wo.cs.com.cn/html/2012-11/24/content_461302.htm?div=-1

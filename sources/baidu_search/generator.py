@@ -1547,7 +1547,7 @@ class History(object):  # 实现程序的可持续性，每次运行时读取上
 
     def __init__(self):
         self.company_num = 0  # 初始化pickle中用作公司名称位置索引值
-        self.path = "/tmp/baidu_company_search"  # pickle文件存放路径（提交至平台的代码记住带上tmp前斜杠）
+        self.path = "/tmp/new_baidu_company_search"  # pickle文件存放路径（提交至平台的代码记住带上tmp前斜杠）
         
     def load(self):  # pickle的载入
         if os.path.exists(self.path) is False:  # 读取pickle失败则返回
@@ -1567,6 +1567,7 @@ class Generator(object):
 
     def __init__(self):  # 初始化
         self.uris = set()
+        self.args = set()
         self.history = History()
         self.history.load()
 
@@ -1590,11 +1591,12 @@ class Generator(object):
             for div in divs:  # 遍历divs获取每一条div
                 all_em = div.h3.find_all("em")  # 找到div.h3标签中所有的em标签
                 if len(all_em) > 1:
-                    for em in all_em:
-                        if current_keyword in em.text:  # 判断关键词是否在em标签中，若判断为真则使用浏览器代理获取目标url中的headers信息
-                            target_head = requests.head(div.h3.a["href"], headers={"user-agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"}).headers
-                            target_url = target_head["Location"]  # 获取目标链接真实url
-                            self.uris.add(target_url)  # 将url加入uris中
+                    ems = [em.get_text().strip() for em in all_em]
+                    if current_company in ems and current_keyword in ems: # 判断关键词是否在em标签中，若判断为真则使用浏览器代理获取目标url中的headers信息
+                        target_head = requests.head(div.h3.a["href"], headers={"user-agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"}).headers
+                        target_url = target_head["Location"]  # 获取目标链接真实url
+                        test = "%s%s%s%s%s" % (target_url, " ", current_company, " ", current_keyword)  # 将url、公司、关键字重新组合
+                        self.uris.add(test)  # 将url加入uris中
 
 
 class GeneratorTest(unittest.TestCase):
@@ -1622,4 +1624,5 @@ if __name__ == "__main__":
     generator.search_url()
 
     for uri in generator.uris:  # 遍历输出uris
-        print json.dumps({"uri": uri})
+        str_uri = str(uri.encode("utf-8")).split(" ")
+        print json.dumps({"uri": str_uri[0], "args": str_uri[1]})
