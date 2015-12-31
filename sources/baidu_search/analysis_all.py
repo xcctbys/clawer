@@ -13,7 +13,7 @@ import os
 import urllib
 from bs4 import BeautifulSoup
 
-DEBUG = True  # 是否开启DEBUG
+DEBUG = False  # 是否开启DEBUG
 if DEBUG:
     level = logging.DEBUG
 else:
@@ -45,11 +45,7 @@ class Analysis(object):  # 页面分析类
         html_data = urllib.urlencode({"html_data": html_content})
         self.result["html"] = html_data.split('html_data=')[1]
         self.result["keyword"] = self.args
-        list = ['1','2','4']
-        print len(list)
-        for i in range(1, len(list), 2):
-            print i+1
-        # logging.debug("result is %s", json.dumps(self.result, indent=4))
+        logging.debug("result is %s", json.dumps(self.result, indent=4))
 
 
 class TestAnalysis(unittest.TestCase):  # 测试类（当DEBUG为True时运行）
