@@ -10,10 +10,10 @@ import logging
 import unittest
 import requests
 import os
-
+import urllib
 from bs4 import BeautifulSoup
 
-DEBUG = False  # 是否开启DEBUG
+DEBUG = True  # 是否开启DEBUG
 if DEBUG:
     level = logging.DEBUG
 else:
@@ -24,7 +24,7 @@ logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: 
 
 class Analysis(object):  # 页面分析类
 
-    def __init__(self, path, url=None, args=None):  # 值初始化
+    def __init__(self, path, args, url=None):  # 值初始化
         self.path = path
         self.url = url
         self.result = {}
@@ -42,10 +42,14 @@ class Analysis(object):  # 页面分析类
                 self.text = f.read()
         self.soup = BeautifulSoup(self.text, "html5lib")  # 使用html5lib解析页面
         html_content = self.soup.find("html")  # 获取html标签中内容
-
-        self.result["html"] = str(html_content)
-        self.result["keyword"] = str(self.args)
-        logging.debug("result is %s", json.dumps(self.result, indent=4))
+        html_data = urllib.urlencode({"html_data": html_content})
+        self.result["html"] = html_data.split('html_data=')[1]
+        self.result["keyword"] = self.args
+        list = ['1','2','4']
+        print len(list)
+        for i in range(1, len(list), 2):
+            print i+1
+        # logging.debug("result is %s", json.dumps(self.result, indent=4))
 
 
 class TestAnalysis(unittest.TestCase):  # 测试类（当DEBUG为True时运行）
@@ -58,7 +62,7 @@ class TestAnalysis(unittest.TestCase):  # 测试类（当DEBUG为True时运行�
     def test_parse(self):
         """http://wo.cs.com.cn/html/2012-11/24/content_461302.htm?div=-1
         """
-        self.analysis = Analysis(self.path, "http://wo.cs.com.cn/html/2012-11/24/content_461302.htm?div=-1")  # 需解析的url
+        self.analysis = Analysis(self.path, self.args, "http://wo.cs.com.cn/html/2012-11/24/content_461302.htm?div=-1")  # 需解析的url
         self.analysis.parse()
 
         self.assertNotEqual(self.analysis.result, [])
@@ -73,7 +77,8 @@ if __name__ == "__main__":
 
     in_json = json.loads(in_data)
     url = in_json.get("url")
-    analysis = Analysis(in_json["path"], url)
+    args = in_json.get("args")
+    analysis = Analysis(in_json["path"], args, url)
     analysis.parse()
 
     print json.dumps(analysis.result)
