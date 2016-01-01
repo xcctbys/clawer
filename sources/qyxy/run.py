@@ -10,7 +10,7 @@ import logging
 import Queue
 import threading
 
-import settings
+import settings_pro as settings
 from CaptchaRecognition import CaptchaRecognition
 from crawler import CrawlerUtils
 from beijing_crawler import BeijingCrawler
