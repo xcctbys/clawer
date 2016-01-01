@@ -8,8 +8,8 @@ logger = None
 #whether to save html page
 save_html = False
 
-html_restore_path = './enterprise_crawler'
-json_restore_path = './enterprise_crawler'
+html_restore_path = '/data/clawer_result/enterprise/html'
+json_restore_path = '/data/clawer_result/enterprise/json'
 
 #our enterprise list to be crawled
 enterprise_list_path = './enterprise_list/'
