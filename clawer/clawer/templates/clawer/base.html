@@ -1,0 +1,129 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html>
+<head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        
+        <title>Nice Clawer Boss</title>
+        <link rel="stylesheet" href="{% static 'clawer/css/common.css' %}" media="screen">
+        
+        <link rel="stylesheet" type="text/css" href="{% static 'clawer/easyui/themes/default/easyui.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'clawer/easyui/themes/icon.css' %}">
+        
+        <script type="text/javascript" src="{% static 'clawer/easyui/jquery.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'clawer/easyui/jquery.easyui.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'clawer/easyui/locale/easyui-lang-zh_CN.js' %}"></script>
+        <script type="text/javascript" src="{% static 'clawer/form/jquery.form.js' %}"></script>
+        
+        {% block extra_css %}{% endblock %}
+        
+        {% block extra_js %}{% endblock %}
+</head>
+
+
+
+{% block body %}
+<body class="easyui-layout" data-options="fit: true,border : false">
+
+    {% block content %}{% endblock %}
+    
+    <!-- login window -->
+    <div id="login_win" class="easyui-window" closed="true" closable="false" collapsible="false" minimizable="false" title="登陆" style="width:300px;height:200px" data-options="iconCls:'icon-save',modal:true">
+        <form id="login_form" method="get" action="{% url clawer.apis.user.login %}">
+            <table style="border: 0px solid #9f9f9f;" cellspacing="10">
+                <tr>
+                    <td><label for="username">用户:</label></td>
+                    <td><input class="easyui-textbox" type="text" name="username" required="required" /></td>
+                </tr>
+                <tr>
+                    <td><label for="password">密码:</label></td>
+                    <td><input class="easyui-textbox" type="password" name="password" required="required" /></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td><a href="#" id="login_btn" class="easyui-linkbutton">登陆</a></td>
+                </tr>
+            </table>
+        </form>
+    </div>
+    <script>
+    function logout() {
+        var url = "{% url clawer.apis.user.logout %}";
+        $.getJSON(url, function(resp){
+            if(resp.is_ok) {
+                $("#login_info").html("已经退出");
+            }
+        });
+    }
+    
+    $(document).ready(function(){
+    	
+    	function keepalive() {
+            var keepalive_url = "{% url clawer.apis.user.keepalive %}";
+            
+            $.getJSON(keepalive_url, function(resp){
+                if(resp.is_ok == false) {
+                    $("#login_win").window("open");
+                    return;
+                }
+            
+                show_user_info(resp.profile);
+                $("#login_win").window("close");
+            });
+        }
+    	
+    	function show_user_info(profile) {
+    		var content = profile.username + ", ";
+    		content += "ID:" + profile.id + ", ";
+    		
+            content += "<a href='#' onclick='logout();'>退出</a>";
+            $("#login_info").html(content);
+    	}
+        
+        keepalive();
+    	window.setInterval(function(){
+    		keepalive();
+    	}, 30000);
+    	
+    	$("#login_btn").bind("click", function(){
+    		var url = "{% url clawer.apis.user.login %}";
+    		
+    		$.ajax({
+    	        type: "GET",
+    	        url: url,
+    	        data:$('#login_form').serialize(),
+    	        cache: false,
+    	        dataType: "json",
+    	        error: function(xhr, status, err) {
+    	            $("#login_btn").linkbutton("enable");
+    	        },
+    	        success: function(data){
+    	            $("#login_btn").linkbutton("enable");
+    	            
+    	            if(data.is_ok == false) {
+    	                $.messager.alert("warning", data.reason);
+    	            	return;
+    	            }
+    	            
+    	            show_user_info(data.profile);
+    	            
+    	            $("#login_form").form("reset");
+    	            $("#login_form").form("clear");
+    	            $("#login_win").window("close");
+    	            //to reload page
+    	            window.location.href = window.location.href;
+    	        }
+    	    });
+    	});
+    	
+    });
+    </script>
+    <!-- end login window -->
+      
+</body>
+{% endblock %}
+
+</html>
