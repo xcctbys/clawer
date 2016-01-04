@@ -3,10 +3,11 @@
 import os
 import sys
 import raven
-import zlib
 import gzip
 import random
 import time
+from datetime import datetime, timedelta
+
 import logging
 import Queue
 import threading
@@ -33,6 +34,8 @@ province_crawler = {
     'shanghai': ShanghaiCrawler
 }
 
+max_crawl_time = 0
+start_crawl_time = None
 
 def set_codecracker():
     for province in province_crawler.keys():
@@ -57,6 +60,14 @@ def config_logging():
 def crawl_work(n, province, json_restore_path, ent_queue):
     crawler = province_crawler[province](json_restore_path)
     while True:
+        cur_time = datetime.now()
+        if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
+            settings.logger.info('crawl time over, exit!')
+            while not ent_queue.empty():
+                ent = ent_queue.get(timeout=3)
+                ent_queue.task_done()
+            break
+
         try:
             ent = ent_queue.get(timeout=3)
         except Exception as e:
@@ -132,7 +143,12 @@ def crawl_province(province, cur_date):
 #        with open(compressed_json_restore_path, 'wb') as cf:
 #            cf.write(compressed_data)
 
+
     #压缩保存
+    if not os.path.exists(json_restore_path):
+        settings.logger.warn('json restore path %s does not exist!'%json_restore_path)
+        return
+
     with open(json_restore_path, 'r') as f:
         data = f.read()
         compressed_json_restore_path = json_restore_path + '.gz'
@@ -157,18 +173,37 @@ if __name__ == '__main__':
     set_codecracker()
     cur_date = CrawlerUtils.get_cur_y_m_d()
 
-    if len(sys.argv) < 2:
-        settings.logger.warn('usage: run.py province... (province 是所要爬取的省份列表 用空格分开, all表示爬取全部)')
-    elif len(sys.argv) == 2 and sys.argv[1] == 'all':
+    if len(sys.argv) < 3:
+        settings.logger.warn('usage: run.py max_crawl_time(minutes) province... (max_crawl_time 是最大爬取时间，以分钟计;province 是所要爬取的省份列表 用空格分开, all表示爬取全部)')
+        exit(1)
+
+    try:
+        max_crawl_time = int(sys.argv[1])
+        settings.max_crawl_time = timedelta(minutes=max_crawl_time)
+    except ValueError as e:
+        settings.logger.error('invalid max_crawl_time, should be a integer')
+        exit(1)
+
+    settings.logger.info('即将开始爬取，最长爬取时间为 %s' % settings.max_crawl_time)
+    settings.start_crawl_time = datetime.now()
+
+    if sys.argv[2] == 'all':
         for p in province_crawler.keys():
+            cur_time = datetime.now()
+            if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
+                settings.logger.info('crawl time over, exit!')
+                break
             crawl_province(p, cur_date)
     else:
-        provinces = sys.argv[1:]
+        provinces = sys.argv[2:]
         for p in provinces:
+            cur_time = datetime.now()
+            if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
+                settings.logger.info('crawl time over, exit!')
+                break
+
             if not p in province_crawler.keys():
                 settings.logger.warn('province %s is not supported currently' % p)
             else:
                 crawl_province(p, cur_date)
-
-
 

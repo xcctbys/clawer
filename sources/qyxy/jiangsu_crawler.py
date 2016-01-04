@@ -10,6 +10,7 @@ import urllib
 import unittest
 import threading
 import copy
+from datetime import datetime, timedelta
 
 ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
 if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
@@ -105,6 +106,8 @@ class JiangsuCrawler(Crawler):
         }
 
     def run(self, ent_number=0):
+        Crawler.run(self, ent_number)
+        '''
         self.ent_number = str(ent_number)
         #对每个企业都指定一个html的存储目录
         self.html_restore_path = self.html_restore_path + self.ent_number + '/'
@@ -127,13 +130,20 @@ class JiangsuCrawler(Crawler):
         CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.json_dict})
         self.write_file_mutex.release()
         return True
+        '''
 
     def crawl_check_page(self):
         """爬取验证码页面，包括下载验证码图片以及破解验证码
         :return true or false
         """
         count = 0
-        while count < 3:
+        while count < 10:
+            cur_time = datetime.now()
+            if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
+                settings.logger.info('crawl time over, exit!')
+                return False
+
+
             ckcode = self.crack_checkcode()
             data = {'name': self.ent_number, 'verifyCode': ckcode[1]}
             resp = self.reqst.post(self.urls['post_checkcode'], data=data)
