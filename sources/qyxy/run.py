@@ -4,13 +4,19 @@ import os
 import sys
 import raven
 import zlib
+import gzip
 import random
 import time
 import logging
 import Queue
 import threading
 
-import settings_pro as settings
+ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
+if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
+    import settings_pro as settings
+else:
+    import settings
+
 from CaptchaRecognition import CaptchaRecognition
 from crawler import CrawlerUtils
 from beijing_crawler import BeijingCrawler
@@ -119,12 +125,20 @@ def crawl_province(province, cur_date):
     ent_queue.join()
     settings.logger.info('All %s crawlers work over' % province)
 
+#    #压缩保存
+#    with open(json_restore_path, 'r') as f:
+#        compressed_data = zlib.compress(f.read())
+#        compressed_json_restore_path = json_restore_path + '.gz'
+#        with open(compressed_json_restore_path, 'wb') as cf:
+#            cf.write(compressed_data)
+
     #压缩保存
     with open(json_restore_path, 'r') as f:
-        compressed_data = zlib.compress(f.read())
+        data = f.read()
         compressed_json_restore_path = json_restore_path + '.gz'
-        with open(compressed_json_restore_path, 'wb') as cf:
-            cf.write(compressed_data)
+        with gzip.open(compressed_json_restore_path, 'wb') as cf:
+            cf.write(data)
+       
     #删除json文件，只保留  .gz 文件
     os.remove(json_restore_path)
 

@@ -84,3 +84,7 @@
     crawler.py 中定义了 CrawlerUtils 类，封装了一些常用的函数；Crawler 类，为爬虫类的基类，其他爬虫最好从该类继承；Parser 类，为解析页面的基类，
     其他的页面解析类最好继承于它，因为其中封装了一些可能会用到的解析html表格的函数。
 
+
+## 生产环境部署
+    使用settings_pro.py 配置文件，设置环境变量  ENT_CRAWLER_SETTINGS='settings_pro'
+

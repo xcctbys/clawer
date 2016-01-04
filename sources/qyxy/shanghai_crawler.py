@@ -2,7 +2,13 @@
 #encoding=utf-8
 import os
 import threading
-import settings
+
+ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
+if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
+    import settings_pro as settings
+else:
+    import settings
+
 from crawler import CrawlerUtils
 from zongju_crawler import ZongjuCrawler
 from zongju_crawler import ZongjuParser
@@ -18,12 +24,12 @@ class ShanghaiCrawler(ZongjuCrawler):
     #多线程爬取时往最后的json文件中写时的加锁保护
     write_file_mutex = threading.Lock()
 
-    urls = {'host': 'http://qyxy.baic.gov.cn',
-            'official_site': 'http://www.sgs.gov.cn/notice/home',
-            'get_checkcode': 'http://www.sgs.gov.cn/notice/captcha?preset=',
-            'post_checkcode': 'http://www.sgs.gov.cn/notice/security/verify_captcha',
-            'get_info_entry': 'http://www.sgs.gov.cn/notice/search/ent_info_list',
-            'open_info_entry': 'http://www.sgs.gov.cn/notice/notice/view?',
+    urls = {'host': 'https://qyxy.baic.gov.cn',
+            'official_site': 'https://www.sgs.gov.cn/notice/home',
+            'get_checkcode': 'https://www.sgs.gov.cn/notice/captcha?preset=',
+            'post_checkcode': 'https://www.sgs.gov.cn/notice/security/verify_captcha',
+            'get_info_entry': 'https://www.sgs.gov.cn/notice/search/ent_info_list',
+            'open_info_entry': 'https://www.sgs.gov.cn/notice/notice/view?',
             'open_detail_info_entry': ''
             }
 
