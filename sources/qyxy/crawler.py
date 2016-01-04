@@ -13,8 +13,12 @@ import codecs
 import copy
 import bs4
 from bs4 import BeautifulSoup
-import settings
 
+ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
+if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
+    import settings_pro as settings
+else:
+    import settings
 
 class CrawlerUtils(object):
     """爬虫工具类，封装了一些常用函数
