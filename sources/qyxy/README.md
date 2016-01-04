@@ -88,3 +88,5 @@
 ## 生产环境部署
     使用settings_pro.py 配置文件，设置环境变量  ENT_CRAWLER_SETTINGS='settings_pro'
 
+## 运行程序
+    python run.py max_crawl_time province_list

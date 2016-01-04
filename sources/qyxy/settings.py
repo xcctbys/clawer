@@ -14,8 +14,8 @@ json_restore_path = './enterprise_crawler'
 #our enterprise list to be crawled
 enterprise_list_path = './enterprise_list/'
 
+#thread number
 crawler_num = 3
-
 
 #for sentry
 sentry_open = False

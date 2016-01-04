@@ -7,6 +7,7 @@ import re
 import random
 import urllib
 import threading
+from datetime import datetime, timedelta
 
 ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
 if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
@@ -69,8 +70,11 @@ class BeijingCrawler(Crawler):
     def run(self, ent_number=0):
         """爬取的主函数
         """
-        self.ent_number = str(ent_number)
         self.ent_id = ''
+        Crawler.run(self, ent_number)
+
+        '''
+        self.ent_number = str(ent_number)
         self.html_restore_path = BeijingCrawler.html_restore_path + self.ent_number + '/'
 
         if settings.save_html and os.path.exists(self.html_restore_path):
@@ -97,12 +101,19 @@ class BeijingCrawler(Crawler):
         self.write_file_mutex.acquire()
         CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.json_dict})
         self.write_file_mutex.release()
+        '''
 
     def crawl_check_page(self):
         """爬取验证码页面，包括获取验证码url，下载验证码图片，破解验证码并提交
         """
         count = 0
         while count < 10:
+            cur_time = datetime.now()
+            if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
+                settings.logger.info('crawl time over, exit!')
+                return False
+
+
             count += 1
             ckcode = self.crack_checkcode()
             post_data = {'currentTimeMillis': self.time_stamp, 'credit_ticket': self.credit_ticket, 'checkcode': ckcode[1], 'keyword': self.ent_number};
