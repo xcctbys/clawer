@@ -14,5 +14,5 @@ function safe_run()
     ) 200>${file}
 }
 
-time safe_run $*
+ENT_CRAWLER_SETTINGS=settings_pro time safe_run $*
 
