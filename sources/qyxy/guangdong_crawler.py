@@ -12,6 +12,9 @@ import codecs
 import unittest
 from bs4 import BeautifulSoup
 import CaptchaRecognition as CR
+from Guangdong0 import Guangdong0
+from Guangdong1 import Guangdong1
+from Guangdong2 import Guangdong2
 
 urls = {
     'host': 'http://gsxt.gdgs.gov.cn/aiccips/',
@@ -35,8 +38,23 @@ if DEBUG:
     level = logging.DEBUG
 else:
     level = logging.ERROR
+formatter = logging.Formatter("%(levelname)s %(asctime)s %(lineno)d:: %(message)s")
+filename = 'guangdong/mylog.log'
+#logging.basicConfig(level=level, format=formatter)
+fh = logging.FileHandler(filename)
+fh.setLevel(level)
+fh.setFormatter(formatter)
+ch = logging.StreamHandler()
+ch.setLevel(level)
+ch.setFormatter(formatter)
 
-logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: %(message)s")
+logger = logging.getLogger('guangdong')
+logger.setLevel(level)
+
+logger.addHandler(fh)
+logger.addHandler(ch)
+
+
 
 ##
 
@@ -63,10 +81,10 @@ class Crawler(object):
     def crawl_page_search(self, url):
         r = self.requests.get( url)
         if r.status_code != 200:
-            logging.error(u"Something wrong when getting the url:%s , status_code=%d", url, r.status_code)
+            logger.error(u"Something wrong when getting the url:%s , status_code=%d", url, r.status_code)
             return
         r.encoding = "utf-8"
-        #logging.debug("searchpage html :\n  %s", r.text)
+        #logger.debug("searchpage html :\n  %s", r.text)
         self.html_search = r.text
     #获得搜索结果展示页面
     def get_page_showInfo(self, url, datas):
@@ -74,13 +92,13 @@ class Crawler(object):
         if r.status_code != 200:
             return False
         r.encoding = "utf-8"
-        #logging.debug("showInfo page html :\n  %s", r.text)
+        #logger.debug("showInfo page html :\n  %s", r.text)
         self.html_showInfo = r.text
 
     #分析 展示页面， 获得搜索到的企业列表
     def analyze_showInfo(self):
         if self.html_showInfo is None:
-            logging.error(u"Getting Page ShowInfo failed\n")
+            logger.error(u"Getting Page ShowInfo failed\n")
         # call Object Analyze's method
         self.ents = self.analysis.analyze_showInfo(self.html_showInfo)
 
@@ -92,12 +110,12 @@ class Crawler(object):
             count+= 1
             r = self.requests.get( url_Captcha)
             if r.status_code != 200:
-                logging.error(u"Something wrong when getting the Captcha url:%s , status_code=%d", url_Captcha, r.status_code)
+                logger.error(u"Something wrong when getting the Captcha url:%s , status_code=%d", url_Captcha, r.status_code)
                 return
             self.Captcha = r.content
-            #logging.debug("Captcha page html :\n  %s", self.Captcha)
+            #logger.debug("Captcha page html :\n  %s", self.Captcha)
             if self.save_captcha():
-                logging.debug("Captcha is saved successfully \n" )
+                logger.debug("Captcha is saved successfully \n" )
                 result = self.crack_captcha()
                 print result
                 datas= {
@@ -111,7 +129,7 @@ class Crawler(object):
                     self.get_page_showInfo(url_showInfo, datas_showInfo)
                     break
                 else:
-                    logging.debug(u"crack Captcha failed, the %d time(s)", count)
+                    logger.debug(u"crack Captcha failed, the %d time(s)", count)
         return
     #获得验证的结果信息
     def get_check_response(self, url, datas):
@@ -123,7 +141,7 @@ class Crawler(object):
     #调用函数，破解验证码图片并返回结果
     def crack_captcha(self):
         if os.path.exists(self.path_captcha) is False:
-            logging.error(u"Captcha path is not found\n")
+            logger.error(u"Captcha path is not found\n")
             return
         result = self.CR.predict_result(self.path_captcha)
         print result
@@ -133,15 +151,15 @@ class Crawler(object):
     def save_captcha(self):
         url_Captcha = self.path_captcha
         if self.Captcha is None:
-            logging.error(u"Can not store Captcha: None\n")
-            logging.debug(u"Can not store Captcha: None\n")
+            logger.error(u"Can not store Captcha: None\n")
+            logger.debug(u"Can not store Captcha: None\n")
             return False
 
         f = open(url_Captcha, 'w')
         try:
             f.write(self.Captcha)
         except IOError:
-            logging.debug("%s can not be written", url_Captcha)
+            logger.debug("%s can not be written", url_Captcha)
         finally:
             f.close
         return True
@@ -157,7 +175,7 @@ class Crawler(object):
     def crawl_page_main(self ):
         sub_json_dict= {}
         if not self.ents:
-            logging.error(u"Get no search result\n")
+            logger.error(u"Get no search result\n")
         try:
 
             for ent in self.ents:
@@ -166,54 +184,67 @@ class Crawler(object):
                 #http://gsxt.gdgs.gov.cn/aiccips /GSpublicity/GSpublicityList.html?service=entInfo_+8/Z3ukM3JcWEfZvXVt+QiLPiIqemiEqqq4l7n9oAh/FI+v6zW/DL40+AV4Hja1y-dA+Hj5oOjXjQTgAhKSP1lA==
 
                 #HOSTS =["www.szcredit.com.cn", "121.8.226.101:7001", "gsxt.gdgs.gov.cn"]
-                logging.debug(u"ent name:%s\n"% ent)
+
+                m = re.match('http', ent)
+                if m is None:
+                    ent = urls['host']+ ent[3:]
+                logger.debug(u"ent name:%s\n"% ent)
                 for i, item in enumerate(HOSTS):
-                    if ent.find(item):
+                    if ent.find(item) != -1:
 
                         #"www.szcredit.com.cn"
                         if i==0:
+                            Guangdong = Guangdong0()
+                            sub_json_dict =  Guangdong.run(ent)
+                            """
                             rid = ent[ent.index("rid")+4: len(ent)]
-                            #logging.debug(u"Ent rid = %s\n", rid)
+                            #logger.debug(u"Ent rid = %s\n", rid)
                             url = "http://www.szcredit.com.cn/web/GSZJGSPT/QyxyDetail.aspx?rid=" + rid
-                            sub_json_dict["crawl_ind_comm_pub_pages"] =  self.crawl_ind_comm_pub_pages(url, i)
+                            sub_json_dict.update(self.crawl_ind_comm_pub_pages(url, i))
                             url = "http://www.szcredit.com.cn/web/GSZJGSPT/QynbDetail.aspx?rid=" + rid
-                            sub_json_dict["crawl_ent_pub_pages"] =  self.crawl_ent_pub_pages(url, i)
+                            sub_json_dict.update(self.crawl_ent_pub_pages(url, i))
                             url = "http://www.szcredit.com.cn/web/GSZJGSPT/QtbmDetail.aspx?rid=" + rid
-                            sub_json_dict["crawl_other_dept_pub_pages"] =  self.crawl_other_dept_pub_pages(url, i)
+                            sub_json_dict.update(self.crawl_other_dept_pub_pages(url, i))
                             #json_dump_to_file("final_json.json", self.json_dict)
-
+                            """
                         #"121.8.226.101:7001"
                         elif i==1:
+                            print "1"
+                            guangdong = Guangdong1()
+                            sub_json_dict =  guangdong.run(ent)
+                            """
                             pripid = ent[ent.index("pripid")+7: len(ent)]
                             url = "http://121.8.226.101:7001/search/search!entityShow?entityVo.pripid=" + pripid
-                            sub_json_dict["crawl_ind_comm_pub_pages"] =  self.crawl_ind_comm_pub_pages(url, i, post_data)
+                            sub_json_dict.update(self.crawl_ind_comm_pub_pages(url, i))
                             url = "http://121.8.226.101:7001/search/search!enterpriseShow?entityVo.pripid="+ pripid
-                            sub_json_dict["crawl_ent_pub_pages"] =  self.crawl_ent_pub_pages(url, i)
+                            sub_json_dict.update(self.crawl_ent_pub_pages(url, i))
                             url = "http://121.8.226.101:7001/search/search!otherDepartShow?entityVo.pripid=" + pripid
-                            sub_json_dict["crawl_other_dept_pub_pages"] =  self.crawl_other_dept_pub_pages(url, i)
+                            sub_json_dict.update(self.crawl_other_dept_pub_pages(url, i))
                             url = "http://121.8.226.101:7001/search/search!judicialShow?entityVo.pripid=" + pripid
-                            sub_json_dict["crawl_judical_assist_pub_pages"] = self.crawl_judical_assist_pub_pages(url, i)
+                            sub_json_dict.update(self.crawl_judical_assist_pub_pages(url, i))
+                            """
                         # gsxt.gdgs.gov.cn/aiccips
                         elif i==2:
-                            #http://gsxt.gdgs.gov.cn/aiccips/GSpublicity/GSpublicityList.html?service=entInfo
-                            #http://gsxt.gdgs.gov.cn/aiccips/BusinessAnnals/BusinessAnnalsList.html
-                            #http://gsxt.gdgs.gov.cn/aiccips/OtherPublicity/environmentalProtection.html
-                            #http://gsxt.gdgs.gov.cn/aiccips/judiciaryAssist/judiciaryAssistInit.html
+                            print '2'
+                            guangdong = Guangdong2()
+                            sub_json_dict = guangdong.run(ent)
+                            """
                             url = ent
                             page_entInfo = self.crawl_page_by_url(url)['page']
                             post_data = self.analysis.parse_page_data_2(page_entInfo)
-                            sub_json_dict["crawl_ind_comm_pub_pages"] =  self.crawl_ind_comm_pub_pages(url, i, post_data)
+                            sub_json_dict.update(self.crawl_ind_comm_pub_pages(url, i, post_data))
                             url = "http://gsxt.gdgs.gov.cn/aiccips/BusinessAnnals/BusinessAnnalsList.html"
-                            sub_json_dict["crawl_ent_pub_pages"] =  self.crawl_ent_pub_pages(url, i, post_data)
+                            sub_json_dict.update(self.crawl_ent_pub_pages(url, i, post_data))
                             url = "http://gsxt.gdgs.gov.cn/aiccips/OtherPublicity/environmentalProtection.html"
-                            sub_json_dict["crawl_other_dept_pub_pages"] =  self.crawl_other_dept_pub_pages(url, i, post_data)
+                            sub_json_dict.update(self.crawl_other_dept_pub_pages(url, i, post_data))
                             url = "http://gsxt.gdgs.gov.cn/aiccips/judiciaryAssist/judiciaryAssistInit.html"
-                            sub_json_dict["crawl_judical_assist_pub_pages"] = self.crawl_judical_assist_pub_pages(url, i, post_data)
+                            sub_json_dict.update(self.crawl_judical_assist_pub_pages(url, i, post_data))
+                            """
                         break
                 else:
-                    logging.error(u"There are no response hosts\n")
+                    logger.error(u"There are no response hosts\n")
         except Exception as e:
-            logging.error(u"An error ocurred when getting the main page, error: %s"% type(e))
+            logger.error(u"An error ocurred when getting the main page, error: %s"% type(e))
             raise e
         finally:
             return sub_json_dict
@@ -242,75 +273,87 @@ class Crawler(object):
                 #html_to_file("pub.html", page)
                 table_xingzhengchufa = self.crawl_xingzhengchufa_table_0(url, page)
                 table_biangengxinxi = self.crawl_biangengxinxi_table_0(url, table_xingzhengchufa)
-                for item in  (  'jibenxinxi',
-                                'biangengxinxi',
-                                'beian',
-                                'dongchandiya',
-                                'guquanchuzi',
-                                'xingzhengchufa',
-                                'jingyingyichang',
-                                'yanzhongweifa',
-                                'chouchajiancha',
-                            ):
-                    if item == 'biangengxinxi':
-                        sub_json_dict[item] = self.analysis.parse_page(table_biangengxinxi, item)
-                    elif item == 'xingzhengchufa':
-                        sub_json_dict[item] = self.analysis.parse_page(table_xingzhengchufa, item)
-                    else :
-                        sub_json_dict[item] = self.analysis.parse_page(page, item)
+                """
+                'ind_comm_pub_reg_basic',  #登记信息-基本信息
+                'ind_comm_pub_reg_shareholder', # 登记信息-股东信息
+                'ind_comm_pub_reg_modify', # 登记信息-变更信息
+                'ind_comm_pub_arch_key_persons', # 备案信息-主要人员信息
+                'ind_comm_pub_arch_branch', # 备案信息-分支机构信息
+                'ind_comm_pub_arch_liquidation', # 备案信息-清算信息
+                'ind_comm_pub_movable_property_reg', # 动产抵押登记信息
+                'ind_comm_pub_equity_ownership_reg', # 股权出置登记信息
+                'ind_comm_pub_administration_sanction', # 行政处罚信息
+                'ind_comm_pub_business_exception', # 经营异常信息
+                'ind_comm_pub_serious_violate_law', # 严重违法信息
+                'ind_comm_pub_spot_check', # 抽查检查信息
+                """
+                sub_json_dict['ind_comm_pub_reg_basic'], sub_json_dict['ind_comm_pub_reg_shareholder'] = self.analysis.parse_page(page, 'jibenxinxi')
+                a, sub_json_dict['ind_comm_pub_arch_key_persons'], sub_json_dict['ind_comm_pub_arch_branch'], sub_json_dict['ind_comm_pub_arch_liquidation'] = self.analysis.parse_page(page, 'beian')
+                sub_json_dict['ind_comm_pub_reg_modify'] = self.analysis.parse_page(table_biangengxinxi, 'biangengxinxi')
+                sub_json_dict['ind_comm_pub_movable_property_reg'] = self.analysis.parse_page(page, 'dongchandiya')
+                sub_json_dict['ind_comm_pub_equity_ownership_reg'] = self.analysis.parse_page(page, 'guquanchuzi')
+                sub_json_dict['ind_comm_pub_business_exception'] = self.analysis.parse_page(page, 'jingyingyichang')
+                sub_json_dict['ind_comm_pub_serious_violate_law'] = self.analysis.parse_page(page, 'yanzhongweifa')
+                sub_json_dict['ind_comm_pub_spot_check'] = self.analysis.parse_page(page, 'chouchajiancha')
+                sub_json_dict['ind_comm_pub_administration_sanction'] = self.analysis.parse_page(table_biangengxinxi, 'xingzhengchufa')
+
             elif types==1:
                 page = self.crawl_page_by_url(url)['page']
-                for item in  (  'jibenxinxi',
-                                'beian',
-                                'dongchandiya',
-                                'guquanchuzi',
-                                'xingzhengchufa',
-                                'jingyingyichang',
-                                'yanzhongweifa',
-                                'chouchajiancha',
-                                'xingzhengchufa',
-                            ):
-                    sub_json_dict[item] = self.analysis.parse_page_1(page, item, post_data)
-
+                sub_json_dict['ind_comm_pub_reg_basic'], sub_json_dict['ind_comm_pub_reg_shareholder'], sub_json_dict['ind_comm_pub_reg_modify'] = self.analysis.parse_page_1(page, 'jibenxinxi')
+                sub_json_dict['ind_comm_pub_arch_key_persons'], sub_json_dict['ind_comm_pub_arch_branch'], sub_json_dict['ind_comm_pub_arch_liquidation'] = self.analysis.parse_page_1(page, 'beian')
+                sub_json_dict['ind_comm_pub_equity_ownership_reg'] = self.analysis.parse_page_1(page, 'guquanchuzi')
+                sub_json_dict['ind_comm_pub_movable_property_reg'] = self.analysis.parse_page_1(page, 'dongchandiya')
+                sub_json_dict['ind_comm_pub_business_exception'] = self.analysis.parse_page_1(page, 'jingyingyichang')
+                sub_json_dict['ind_comm_pub_serious_violate_law'] = self.analysis.parse_page_1(page, 'yanzhongweifa')
+                sub_json_dict['ind_comm_pub_spot_check'] = self.analysis.parse_page_1(page, 'chouchajiancha')
+                sub_json_dict['ind_comm_pub_administration_sanction'] = self.analysis.parse_page_1(page, 'xingzhengchufa')
                 pass
             elif types == 2:
-
-
-                #html_to_file("pub_page_2.html", page)
-                tabs = [
-                        'curStoPleInfo',    #股权出质
+                tabs = (
                         'entInfo',          # 登记信息
+                        'curStoPleInfo',    #股权出质
                         'entCheckInfo',     #备案信息
                         'pleInfo',          #动产抵押登记信息
                         'cipPenaltyInfo',   #行政处罚
                         'cipUnuDirInfo',    #经营异常
                         'cipBlackInfo',     #严重违法
                         'cipSpotCheInfo',   #抽查检查
-                        ]
+                        )
 
-                div_names = [
-                                'guquanchuzhi',
+                div_names = (
                                 'jibenxinxi',
+                                'guquanchuzhi',
                                 'beian',
                                 'dongchandiya',
                                 'xingzhengchufa',
                                 'jingyingyichang',
                                 'yanzhongweifa',
                                 'chouchajiancha',
-                            ]
-
+                            )
                 for tab, div_name in zip(tabs, div_names):
                     #url = "http://gsxt.gdgs.gov.cn/aiccips/GSpublicity/GSpublicityList.html?service=" + tab
                     url = urls['prefix_GSpublicity'] + tab
-
                     page = self.crawl_page_by_url_post(url, post_data)['page']
-                    #html_to_file("pub_page.html", page)
-
-                    sub_json_dict[div_name] =  self.analysis.parse_page_2(page, div_name, post_data)
-                    json_dump_to_file("com_pub_2.json", sub_json_dict)
+                    if div_name == 'jibenxinxi':
+                        sub_json_dict['ind_comm_pub_reg_basic'], sub_json_dict['ind_comm_pub_reg_shareholder'], sub_json_dict['ind_comm_pub_reg_modify'] =  self.analysis.parse_page_2(page, div_name, post_data)
+                    elif div_name == 'beian':
+                        sub_json_dict['ind_comm_pub_arch_key_persons'], sub_json_dict['ind_comm_pub_arch_branch'], sub_json_dict['ind_comm_pub_arch_liquidation'] = self.analysis.parse_page_2(page, div_name, post_data)
+                    elif div_name == 'guquanchuzhi':
+                        sub_json_dict['ind_comm_pub_equity_ownership_reg'] = self.analysis.parse_page_2(page, div_name, post_data)
+                    elif div_name == 'dongchandiya':
+                        sub_json_dict['ind_comm_pub_movable_property_reg'] = self.analysis.parse_page_2(page, div_name, post_data)
+                    elif div_name == 'xingzhengchufa':
+                        sub_json_dict['ind_comm_pub_administration_sanction'] = self.analysis.parse_page_2(page, div_name, post_data)
+                    elif div_name == 'jingyingyichang':
+                        sub_json_dict['ind_comm_pub_business_exception'] = self.analysis.parse_page_2(page, div_name, post_data)
+                    elif div_name == 'yanzhongweifa':
+                        sub_json_dict['ind_comm_pub_serious_violate_law'] = self.analysis.parse_page_2(page, div_name, post_data)
+                    elif div_name == 'chouchajiancha':
+                        sub_json_dict['ind_comm_pub_spot_check'] = self.analysis.parse_page_2(page, div_name, post_data)
+                    #json_dump_to_file("com_pub_2.json", sub_json_dict)
 
         except Exception as e:
-            logging.debug(u"An error ocurred in crawl_ind_comm_pub_pages: %s, type is %d"% (type(e), types))
+            logger.debug(u"An error ocurred in crawl_ind_comm_pub_pages: %s, type is %d"% (type(e), types))
             raise e
         finally:
             return sub_json_dict
@@ -347,7 +390,7 @@ class Crawler(object):
                                 'touzirenjichuzi', #股东及出资信息
                                 'zizhizigexuke', #行政许可
                                 'xingzhengchufa',#行政处罚
-                                'zhishichanquanchuzidengji', #知识产权出质登记信息                                
+                                'zhishichanquanchuzidengji', #知识产权出质登记信息
                                 'guquanbiangeng'# 股权变更信息
                             )
                 for title, item in zip(titles, tables):
@@ -362,14 +405,14 @@ class Crawler(object):
                     "inproper"  :   "http://gsxt.gdgs.gov.cn/aiccips/intPropertyMsg.html",          #知识产权出质登记信息
                     "guquanbiangeng":   "http://gsxt.gdgs.gov.cn/aiccips/GDGQTransferMsg/shareholderTransferMsg.html",#股权变更信息
                 }
-                
+
                 for (title, ids) in zip(titles, ent_pub_page_urls):
                     url = ent_pub_page_urls[ids]
                     page = self.crawl_page_by_url_post(url, post_data)['page']
                     sub_json_dict[title] = self.analysis.parse_page_2(page, ids, post_data)
                 #json_dump_to_file("crawl_ent_pub_pages.json", sub_json_dict)
         except Exception as e:
-            logging.debug(u"An error ocurred in crawl_ent_pub_pages: %s, types = %d"% (type(e), types))
+            logger.debug(u"An error ocurred in crawl_ent_pub_pages: %s, types = %d"% (type(e), types))
             raise e
         finally:
             return sub_json_dict
@@ -379,7 +422,7 @@ class Crawler(object):
         sub_json_dict={}
         titles =(   'other_dept_pub_administration_license',#行政许可信息
                     'other_dept_pub_administration_sanction',#行政处罚信息
-        }
+                )
         try:
             if types==0:
                 page = self.crawl_page_by_url(url)['page']
@@ -407,7 +450,7 @@ class Crawler(object):
                     sub_json_dict[title] = self.analysis.parse_page_2(page, ids, post_data)
                 #json_dump_to_file("crawl_other_dept_pub_pages.json", sub_json_dict)
         except Exception as e:
-            logging.debug(u"An error ocurred in crawl_other_dept_pub_pages: %s, types = %d"% (type(e), types))
+            logger.debug(u"An error ocurred in crawl_other_dept_pub_pages: %s, types = %d"% (type(e), types))
             raise e
         finally:
             return sub_json_dict
@@ -442,7 +485,7 @@ class Crawler(object):
                     sub_json_dict[title] = self.analysis.parse_page_2(page, ids, post_data)
                 #json_dump_to_file("crawl_judical_assist_pub_pages.json", sub_json_dict)
         except Exception as e:
-            logging.debug(u"An error ocurred in crawl_other_dept_pub_pages: %s, types = %d"% (type(e), types))
+            logger.debug(u"An error ocurred in crawl_other_dept_pub_pages: %s, types = %d"% (type(e), types))
             raise e
         finally:
             return sub_json_dict
@@ -451,7 +494,7 @@ class Crawler(object):
     def crawl_page_by_url(self, url):
         r = self.requests.get( url)
         if r.status_code != 200:
-            logging.error(u"Getting page by url:%s\n, return status %s\n"% (url, r.status_code))
+            logger.error(u"Getting page by url:%s\n, return status %s\n"% (url, r.status_code))
             return False
         # 为了防止页面间接跳转，获取最终目标url
         return {'page' : r.text, 'url': r.url}
@@ -462,13 +505,13 @@ class Crawler(object):
         else :
             r = self.requests.post(url, data)
         if r.status_code != 200:
-            logging.error(u"Getting page by url with post:%s\n, return status %s\n"% (url, r.status_code))
+            logger.error(u"Getting page by url with post:%s\n, return status %s\n"% (url, r.status_code))
             return False
         return {'page': r.text, 'url': r.url}
 
     # main function
     def work(self):
-        ens = read_ent_from_file("./enterprise_list/guangdong.txt")
+        ens = read_ent_from_file("./enterprise_list/guangdong1.txt")
         if not os.path.exists("./enterprise_crawler"):
             os.makedirs("./enterprise_crawler")
         for i, ent in enumerate(ens):
@@ -478,7 +521,7 @@ class Crawler(object):
             data = self.crawl_page_main()
             self.json_dict[ent[2]] = data
             json_dump_to_file("./enterprise_crawler/%s.json" % ent[0], self.json_dict)
-            logging.debug(u"Now %s was finished\n"% ent[0])
+            logger.debug(u"Now %s was finished\n"% ent[0])
 
 class Analyze(object):
 
@@ -493,9 +536,10 @@ class Analyze(object):
         soup = BeautifulSoup(text, "html5lib")
         divs = soup.find_all("div", {"class":"list"})
         for div in divs:
-            logging.debug(u"div.ul.li.a['href'] = %s\n", div.ul.li.a['href'])
+            logger.debug(u"div.ul.li.a['href'] = %s\n", div.ul.li.a['href'])
             self.Ent.append(div.ul.li.a['href'])
         return self.Ent
+
     def analyze_xingzhengchufa(self, text):
         soup = BeautifulSoup(text, "html5lib")
         generator = soup.find("input", {"id": "__VIEWSTATEGENERATOR"})['value']
@@ -603,15 +647,19 @@ class Analyze(object):
             if td_tag.find('table'):
                 multi_col_tag = td_tag.find('table').find('tr')
             if not multi_col_tag:
-                logging.error('invalid multi_col_tag, multi_col_tag = %s', multi_col_tag)
+                logger.error('invalid multi_col_tag, multi_col_tag = %s', multi_col_tag)
                 return data
-
-            if len(columns) != len(multi_col_tag.find_all('td', recursive=False)):
-                logging.error('column head size != column data size, columns head = %s, columns data = %s' % (columns, multi_col_tag.contents))
+            #数据表中会出现多出一空列的情况，fuck it。 要判断最后一列内容是否为空。
+            tds = multi_col_tag.find_all('td', recursive = False)
+            len_tds = len(tds)
+            if not tds[len(tds)-1].get_text().strip() :
+                len_tds= len_tds - 1
+            if len(columns) != len_tds:
+                logger.error('column head size != column data size, columns head = %s, columns data = %s' % (columns, multi_col_tag.contents))
                 return data
 
             for id, col in enumerate(columns):
-                data[col[0]] = self.get_column_data(col[1], multi_col_tag.find_all('td', recursive=False)[id])
+                data[col[0]] = self.get_column_data(col[1], tds[id])
             return data
         else:
             return self.get_raw_text_by_tag(td_tag)
@@ -669,10 +717,10 @@ class Analyze(object):
                 tr = bs_table.find_all('tr')[0]
             elif bs_table.find_all('tr')[1].find('th') and not bs_table.find_all('tr')[1].find('td') and len(bs_table.find_all('tr')[1].find_all('th')) > 1:
                 tr = bs_table.find_all('tr')[1]
-        #logging.debug(u"get_columns_of_record_table->tr:%s\n", tr)
+        #logger.debug(u"get_columns_of_record_table->tr:%s\n", tr)
         ret_val=  self.get_record_table_columns_by_tr(tr, table_name)
-        #logging.debug(u"table columns:%s\n"% table_name)
-        #logging.debug(u"ret_val->%s\n", ret_val)
+        #logger.debug(u"table columns:%s\n"% table_name)
+        #logger.debug(u"ret_val->%s\n", ret_val)
         return  ret_val
 
     def get_record_table_columns_by_tr(self, tr_tag, table_name):
@@ -682,7 +730,7 @@ class Analyze(object):
         try:
             sub_col_index = 0
             if len(tr_tag.find_all('th'))==0:
-                logging.error(u"The table %s has no columns"% table_name)
+                logger.error(u"The table %s has no columns"% table_name)
                 return columns
             #排除仅仅出现一列重复的名字
             count = 0
@@ -703,10 +751,332 @@ class Analyze(object):
                 columns= columns[: len(columns)/2]
 
         except Exception as e:
-            logging.error(u'exception occured in get_table_columns_by_tr, except_type = %s, table_name = %s' % (type(e), table_name))
+            logger.error(u'exception occured in get_table_columns_by_tr, except_type = %s, table_name = %s' % (type(e), table_name))
         finally:
             return columns
 
+    def parse_page(self, page, types):
+        soup = BeautifulSoup(page, 'html5lib')
+        page_data = {}
+        if soup.body:
+            if soup.body.table:
+                try:
+
+                    divs = soup.body.find('div', {"id": types})
+                    table = None
+                    if not divs:
+                        table = soup.body.find('table')
+                    else :
+                        table = divs.find('table')
+                    #print table
+                    while table:
+                        if table.name == 'table':
+                            table_name = self.get_table_title(table)
+                            page_data[table_name] = self.parse_table(table, table_name, page)
+                        table = table.nextSibling
+
+                except Exception as e:
+                    logger.error(u'parse failed, with exception %s' % e)
+                    raise e
+
+                finally:
+                    pass
+        return page_data
+
+    def parse_table(self, bs_table, table_name, page):
+        table_dict = None
+        try:
+            # tb_title = self.get_table_title(bs_table)
+            #this is a fucking dog case, we can't find tbody-tag in table-tag, but we can see tbody-tag in table-tag
+            #in case of that, we use the whole html page to locate the tbody
+
+            columns = self.get_columns_of_record_table(bs_table, page, table_name)
+            tbody = None
+            if len(bs_table.find_all('tbody'))>1:
+                tbody = bs_table.find_all('tbody')[1]
+            else:
+                tbody = bs_table.find('tbody') or BeautifulSoup(page, 'html5lib').find('tbody')
+            if columns:
+                col_span = 0
+                for col in columns:
+                    if type(col[1]) == list:
+                        col_span += len(col[1])
+                    else:
+                        col_span += 1
+
+                column_size = len(columns)
+                item_array = []
+                if not tbody:
+                    records_tag = bs_table
+                else:
+                    records_tag = tbody
+                for tr in records_tag.find_all('tr'):
+                    if tr.find('td') and col_span == column_size and len(tr.find_all('td', recursive=False)) % column_size == 0:
+                        col_count = 0
+                        item = {}
+                        for td in tr.find_all('td',recursive=False):
+                            if td.find('a'):
+                                #try to retrieve detail link from page
+                                next_url = self.get_detail_link(td.find('a'), urls['prefix_url_0'])
+
+                                #has detail link
+                                if next_url:
+                                    detail_page = self.crawler.crawl_page_by_url(next_url)['page']
+                                    #html_to_file("next.html", detail_page['page'])
+                                    if table_name == u'企业年报':
+                                        #logger.debug(u"next_url = %s, table_name= %s\n", detail_page['url'], table_name)
+                                        page_data = self.parse_ent_pub_annual_report_page(detail_page, table_name + '_detail')
+
+                                        item[columns[col_count][0]] = page_data #this may be a detail page data
+                                    else:
+                                        page_data = self.parse_page(detail_page, table_name + '_detail')
+                                        item[columns[col_count][0]] = page_data #this may be a detail page data
+                                else:
+                                    #item[columns[col_count]] = CrawlerUtils.get_raw_text_in_bstag(td)
+                                    item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
+                            else:
+                                item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
+                            col_count += 1
+                            if col_count == column_size:
+                                item_array.append(item.copy())
+                                col_count = 0
+                    #this case is for the ind-comm-pub-reg-shareholders----details'table
+                    #a fucking dog case!!!!!!
+                    elif tr.find('td') and len(tr.find_all('td', recursive=False)) == col_span and col_span != column_size:
+                        col_count = 0
+                        sub_col_index = 0
+                        item = {}
+                        sub_item = {}
+                        for td in tr.find_all('td',recursive=False):
+                            if td.find('a'):
+                                #try to retrieve detail link from page
+                                next_url = self.get_detail_link(td.find('a'), urls['prefix_url_0'])
+                                #has detail link
+                                if next_url:
+                                    detail_page = self.crawler.crawl_page_by_url(next_url)['page']
+
+                                    if table_name == u'企业年报':
+                                        #logger.debug(u"2next_url = %s, table_name= %s\n", next_url, table_name)
+
+                                        page_data = self.parse_ent_pub_annual_report_page(detail_page, table_name + '_detail')
+                                        item[columns[col_count][0]] = page_data #this may be a detail page data
+                                    else:
+                                        page_data = self.parse_page(detail_page, table_name + '_detail')
+                                        item[columns[col_count][0]] = page_data #this may be a detail page data
+                                else:
+                                    #item[columns[col_count]] = CrawlerUtils.get_raw_text_in_bstag(td)
+                                    item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
+                            else:
+                                if type(columns[col_count][1]) == list:
+                                    sub_key = columns[col_count][1][sub_col_index][1]
+                                    sub_item[sub_key] = self.get_raw_text_by_tag(td)
+                                    sub_col_index += 1
+                                    if sub_col_index == len(columns[col_count][1]):
+                                        item[columns[col_count][0]] = sub_item.copy()
+                                        sub_item = {}
+                                        col_count += 1
+                                        sub_col_index = 0
+                                else:
+                                    item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
+                                    col_count += 1
+                            if col_count == column_size:
+                                item_array.append(item.copy())
+                                col_count = 0
+                    # 我给跪了，数据表无缘无故最后的多出一空列
+                    elif tr.find('td') and len(tr.find_all('td', recursive=False)) == col_span+1 and col_span != column_size:
+                        col_count = 0
+                        sub_col_index = 0
+                        item = {}
+                        sub_item = {}
+                        tds = tr.find_all('td',recursive=False)[:-1]
+                        for i, td in enumerate(tds):
+                            if type(columns[col_count][1]) == list:
+                                sub_key = columns[col_count][1][sub_col_index][1]
+                                sub_item[sub_key] = self.get_raw_text_by_tag(td)
+                                sub_col_index += 1
+                                if sub_col_index == len(columns[col_count][1]):
+                                    item[columns[col_count][0]] = sub_item.copy()
+                                    sub_item = {}
+                                    col_count += 1
+                                    sub_col_index = 0
+                            else:
+                                item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
+                                col_count += 1
+                            if col_count == column_size:
+                                item_array.append(item.copy())
+                                col_count = 0
+
+                table_dict = item_array
+            else:
+                table_dict = {}
+                for tr in bs_table.find_all('tr'):
+                    if tr.find('th') and tr.find('td'):
+                        ths = tr.find_all('th')
+                        tds = tr.find_all('td')
+                        if len(ths) != len(tds):
+                            logger.error(u'th size not equals td size in table %s, what\'s up??' % table_name)
+                            return
+                        else:
+                            for i in range(len(ths)):
+                                if self.get_raw_text_by_tag(ths[i]):
+                                    table_dict[self.get_raw_text_by_tag(ths[i])] = self.get_raw_text_by_tag(tds[i])
+        except Exception as e:
+            logger.error(u'parse table %s failed with exception %s， types= 0' % (table_name, type(e)))
+            raise e
+        finally:
+            return table_dict
+
+    # 第一种类型的年报页面
+    def parse_ent_pub_annual_report_page(self, page_dict, table_name):
+        url = page_dict['url']
+        page = page_dict['page']
+        page_data= {}
+        soup = BeautifulSoup(page, "html5lib")
+        number = len(soup.find('ul', {'id': 'ContentPlaceHolder1_ulTag'}).find_all('li'))
+        if number == 0 :
+            logger.error(u"Could not find tab in annual report page")
+            return
+        generator = soup.find("input", {"id": "__VIEWSTATEGENERATOR"})['value']
+        validation = soup.find("input", {"id": "__EVENTVALIDATION"})['value']
+        state = soup.find("input", {"id": "__VIEWSTATE"})['value']
+        ContentPlaceHolder = "ctl00$ContentPlaceHolder1$UpdatePanel1|ctl00$ContentPlaceHolder1$lbtnTag0"
+        target = "ctl00$ContentPlaceHolder1$lbtnTag0"
+        data= {
+            'ctl00$ContentPlaceHolder1$smObj':ContentPlaceHolder, #ctl00$ContentPlaceHolder1$UpdatePanel1|ctl00$ContentPlaceHolder1$lbtnTag1
+            '__EVENTTARGET': target,   #ctl00$ContentPlaceHolder1$lbtnTag0
+            '__EVENTARGUMENT': '',
+            '__VIEWSTATE':state,
+            '__VIEWSTATEGENERATOR':generator,
+            '__EVENTVALIDATION':validation,
+            '__ASYNCPOST':'true',
+        }
+        r = self.crawler.requests.post(url, data, headers = {'X-Requested-With': 'XMLHttpRequest', 'X-MicrosoftAjax': 'Delta=true', 'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'} )
+        if r.status_code != 200:
+            logger.error(u'Could not get response page')
+            return False
+        page = r.text
+        #html_to_file("annual.html", page)
+        table_name = ""
+        try:
+            soup = BeautifulSoup(page, 'html5lib')
+            content_table = soup.find_all('table')[1:]
+            for table in content_table:
+                table_name = self.get_table_title(table)
+                #logger.debug(u"annual report table_name= %s\n", table_name)
+                table_data = self.parse_report_table(table, table_name)
+                page_data[table_name] = table_data
+        except Exception as e:
+            logger.error(u'annual page: fail to get table data with exception %s' % e)
+            raise e
+
+        #html_to_file("annual.html", page)
+        for i in range(number-1):
+            state = re.compile(r"__VIEWSTATE\|(.*?)\|").search(page).group().split('|')[1]
+            generator = re.compile(r"__VIEWSTATEGENERATOR\|(.*?)\|").search(page).group().split('|')[1]
+            validation = re.compile(r"__EVENTVALIDATION\|(.*?)\|").search(page).group().split('|')[1]
+            ContentPlaceHolder = "ctl00$ContentPlaceHolder1$UpdatePanel1|ctl00$ContentPlaceHolder1$lbtnTag%d"%(i+1)
+            target = "ctl00$ContentPlaceHolder1$lbtnTag%d"%(i+1)
+            data= {
+                'ctl00$ContentPlaceHolder1$smObj':ContentPlaceHolder, #ctl00$ContentPlaceHolder1$UpdatePanel1|ctl00$ContentPlaceHolder1$lbtnTag1
+                '__EVENTTARGET': target,   #ctl00$ContentPlaceHolder1$lbtnTag0
+                '__EVENTARGUMENT': '',
+                '__VIEWSTATE':state,
+                '__VIEWSTATEGENERATOR':generator,
+                '__EVENTVALIDATION':validation,
+                '__ASYNCPOST':'true',
+            }
+            r = self.crawler.requests.post(url, data, headers = {'X-Requested-With': 'XMLHttpRequest', 'X-MicrosoftAjax': 'Delta=true', 'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',} )
+            if r.status_code != 200:
+                logger.error(u'Could not get response page')
+                return False
+            page = r.text
+            #html_to_file("annual.html", page)
+            table_name = ""
+            try:
+                soup = BeautifulSoup(page, 'html5lib')
+                content_table = soup.find_all('table')[1:]
+                for table in content_table:
+                    table_name = self.get_table_title(table)
+                    #logger.debug(u"annual report table_name= %s\n", table_name)
+                    table_data = self.parse_report_table(table, table_name)
+                    #json_dump_to_file('report_json.json', table_data)
+                    page_data[table_name] = table_data
+
+            except Exception as e:
+                logger.error(u'annual page: fail to parse page with exception %s'%e)
+                raise e
+        #json_dump_to_file('report_json.json', page_data)
+        return page_data
+    #   分析第0种情况的年度报表
+    def parse_report_table(self, table, table_name):
+        table_dict = {}
+
+        try:
+            if table_name == u'基本信息':
+                rowspan_name = ""
+                item={}
+                sub_item= {}
+                trs = table.find_all("tr")[1:]
+                i =0
+                while i < len(trs):
+                    tr  = trs[i]
+                    titles = tr.find_all("td", {"align": True})
+                    datas = tr.find_all("td", {"align": False})
+                    if len(titles) != len(datas):
+                        if len(titles) - len(datas) == 1:
+                            row_num = int(titles[0]['rowspan'])
+                            rowspan_name = titles[0].get_text().strip()
+                            sub_item = {}
+                            sub_item.update(dict(zip([ t.get_text().strip() for t in titles[1:]], [d.get_text().strip() for d in datas])))
+                            j=1
+                            while j < row_num:
+                                tr= trs[i + j]
+                                titles = tr.find_all("td", {"align": True})
+                                datas = tr.find_all("td", {"align": False})
+                                sub_item.update(dict(zip([t.get_text().strip() for t in titles], [ d.get_text().strip() for d in datas])))
+                                j= j+1
+                            i = i+ row_num-1
+                            item[rowspan_name] = sub_item
+                            #json_dump_to_file("sub_item.json", item)
+
+                    else:
+                        item.update(dict(zip([t.get_text().strip() for t in titles], [ d.get_text().strip() for d in datas])))
+                    i+=1
+                #json_dump_to_file("sub_item.json", item)
+
+                table_dict[table_name] = item
+            else:
+                item={}
+                sub_item= []
+                tables = table.find_all("tr")[1:]
+
+                while tables:
+                    tds =  tables[0].find_all("td")
+                    flag = False
+                    for td in tds:
+                        if not td.has_attr('align'):
+                            flag = True
+                            break
+                    #如果第一排有横向的数据
+                    if flag:
+                        first_line = tables[0].find_all("td")
+                        item[first_line[0].get_text().strip()] = first_line[1].get_text().strip()
+                        tables = tables[1:]
+                        continue
+                    columns = [ td.get_text().strip() for td in tables[0].find_all("td")]
+                    for tr in tables[1:]:
+                        data = [td.get_text().strip() for td in tr.find_all("td")]
+                        sub_item.append( dict( zip(columns, data)) )
+                    item['list'] = sub_item
+                    break
+
+                table_dict[table_name] = item
+
+        except Exception as e:
+            logging.error(u"parse report table %s failed with exception %s\n"%(table_name, type(e)))
+            raise e
+
+        return table_dict
 
     # 如果是第二种： http://gsxt.gdgs.gov.cn/aiccips/ q情况
     def parse_ent_pub_annual_report_page_2(self, base_page, page_type):
@@ -723,9 +1093,9 @@ class Analyze(object):
                     page_data[table_name] = self.parse_table_2(detail_base_table )
                     pass
                 else:
-                    logging.error(u"Can't find details of base informations for annual report")
+                    logger.error(u"Can't find details of base informations for annual report")
             except Exception as e:
-                logging.error(u"fail to get table name with exception %s" % (type(e)))
+                logger.error(u"fail to get table name with exception %s" % (type(e)))
             try:
                 table = detail_base_table.nextSibling.nextSibling
                 while table:
@@ -736,7 +1106,7 @@ class Analyze(object):
                         page_data[table_name] =self.parse_table_2(table, columns, {}, table_name)
                     table = table.nextSibling
             except Exception as e:
-                logging.error(u"fail to parse the rest tables with exception %s" %(type(e)))
+                logger.error(u"fail to parse the rest tables with exception %s" %(type(e)))
         else:
             pass
         return page_data
@@ -757,7 +1127,7 @@ class Analyze(object):
             data['regOrg'] = soup.find("input", {"id": "regOrg"})['value']
 
         except Exception as e:
-            logging.error(u"parse page failed in function parse_page_data_2\n" )
+            logger.error(u"parse page failed in function parse_page_data_2\n" )
             raise e
         finally:
             return data
@@ -777,7 +1147,7 @@ class Analyze(object):
                         ths = tr.find_all('th')
                         tds = tr.find_all('td')
                         if len(ths) != len(tds):
-                            logging.error(u'th size not equals td size in table %s, what\'s up??' % table_name)
+                            logger.error(u'th size not equals td size in table %s, what\'s up??' % table_name)
                             return
                         else:
                             for i in range(len(ths)):
@@ -786,16 +1156,16 @@ class Analyze(object):
 
                 page_data[table_name] = sub_dict
             except Exception as e:
-                logging.error(u"fail to get table name with exception %s" % (type(e)))
+                logger.error(u"fail to get table name with exception %s" % (type(e)))
             try:
                 tables = soup.body.find_all('table')[1:]
                 for table in tables:
-                        table_name = self.get_table_title(table)
-                        page_data[table_name] = []
-                        columns = self.get_columns_of_record_table(table, base_page, table_name)
-                        page_data[table_name] =self.parse_table_1(table, columns, {}, table_name)
+                    table_name = self.get_table_title(table)
+                    page_data[table_name] = []
+                    columns = self.get_columns_of_record_table(table, base_page, table_name)
+                    page_data[table_name] =self.parse_table_1(table, columns, {}, table_name)
             except Exception as e:
-                logging.error(u"fail to parse the rest tables with exception %s" %(type(e)))
+                logger.error(u"fail to parse the rest tables with exception %s" %(type(e)))
         else:
             pass
         return page_data
@@ -839,7 +1209,7 @@ class Analyze(object):
                         table = table.nextSibling
 
                 except Exception as e:
-                    logging.error(u'parse failed, with exception %s' % e)
+                    logger.error(u'parse failed, with exception %s' % e)
                     raise e
 
                 finally:
@@ -922,18 +1292,17 @@ class Analyze(object):
                         if tr.find('td') and len(tr.find_all('td', recursive=False)) % column_size == 0:
                             col_count = 0
                             item = {}
-                            print "table_name=%s"%table_name
                             for td in tr.find_all('td',recursive=False):
                                 if td.find('a'):
                                     next_url = self.get_detail_link(td.find('a'), urls['prefix_url_1'])
                                     #has detail link
                                     if next_url:
-                                        detail_page = self.crawler.crawl_page_by_url(next_url)
+                                        detail_page = self.crawler.crawl_page_by_url(next_url)['page']
                                         #html_to_file("next.html", detail_page['page'])
                                         if table_name == u'基本信息':
-                                            page_data = self.parse_ent_pub_annual_report_page_1(detail_page['page'], table_name+ '_detail')
+                                            page_data = self.parse_ent_pub_annual_report_page_1(detail_page, table_name+ '_detail')
                                         else:
-                                            page_data = self.parse_page_2(detail_page['page'], table_name + '_detail')
+                                            page_data = self.parse_page_1(detail_page, table_name + '_detail')
                                         item[columns[col_count][0]] = page_data #this may be a detail page data
                                     else:
                                         item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
@@ -956,12 +1325,10 @@ class Analyze(object):
                                     #has detail link
                                     if next_url:
                                         detail_page = self.crawler.crawl_page_by_url(next_url)['page']
-                                        html_to_file("next.html", detail_page['page'])
-
                                         if table_name == u'基本信息':
-                                            page_data = self.parse_ent_pub_annual_report_page_1(detail_page['page'], table_name+ '_detail')
+                                            page_data = self.parse_ent_pub_annual_report_page_1(detail_page, table_name+ '_detail')
                                         else:
-                                            page_data = self.parse_page_2(detail_page['page'], table_name + '_detail')
+                                            page_data = self.parse_page_1(detail_page, table_name + '_detail')
                                         item[columns[col_count][0]] = page_data #this may be a detail page data
                                     else:
                                         #item[columns[col_count]] = CrawlerUtils.get_raw_text_in_bstag(td)
@@ -991,14 +1358,14 @@ class Analyze(object):
                         ths = tr.find_all('th')
                         tds = tr.find_all('td')
                         if len(ths) != len(tds):
-                            logging.error(u'th size not equals td size in table %s, what\'s up??' % table_name)
+                            logger.error(u'th size not equals td size in table %s, what\'s up??' % table_name)
                             return
                         else:
                             for i in range(len(ths)):
                                 if self.get_raw_text_by_tag(ths[i]):
                                     table_dict[self.get_raw_text_by_tag(ths[i])] = self.get_raw_text_by_tag(tds[i])
         except Exception as e:
-            logging.error(u'parse table %s failed with exception %s' % (table_name, type(e)))
+            logger.error(u'parse table %s failed with exception %s' % (table_name, type(e)))
             raise e
         finally:
             return table_dict
@@ -1022,7 +1389,6 @@ class Analyze(object):
                     while table:
                         if table.name == 'table':
                             table_name = self.get_table_title(table)
-                            print table_name
                             if table_name== None :
                                 table_name = div_id
                             page_data[table_name] = []
@@ -1031,7 +1397,7 @@ class Analyze(object):
 
                         elif table.name == 'div':
                             if not columns:
-                                logging.error(u"Can not find columns when parsing page 2, table :%s"%div_id)
+                                logger.error(u"Can not find columns when parsing page 2, table :%s"%div_id)
                                 break
                             page_data[table_name] =  self.parse_table_2(table, columns, post_data, table_name)
                             columns = []
@@ -1039,7 +1405,7 @@ class Analyze(object):
 
 
                 except Exception as e:
-                    logging.error(u'parse failed, with exception %s' % e)
+                    logger.error(u'parse failed, with exception %s' % e)
                     raise e
 
                 finally:
@@ -1081,7 +1447,7 @@ class Analyze(object):
                         string1=m.group(1)
                         string2=m.group(2)
                         url = string1.strip('\'')+string2.strip('\'')
-                        logging.debug(u"url = %s\n" % url)
+                        logger.debug(u"url = %s\n" % url)
                     data = {
                         "pageNo" : "2",
                         "entNo" : post_data["entNo"],
@@ -1107,15 +1473,19 @@ class Analyze(object):
 
                     elif table_name == u"分支机构信息":
                         #braToPage
-                        print u"分支机构"
                         d = json.loads(res['page'])
                         titles = [column[0] for column in columns]
                         for i, model in enumerate(d['list']):
                             data = [ i+1, model['regNO'], model['brName'].encode('utf8').decode('utf8'), model['regOrg'].encode('utf8')]
                             item_array.append(dict(zip(titles, data)))
 
-                    elif table_name == u"":
-                        pass
+                    elif table_name == u"股东信息":
+                        print "股东信息"
+                        d = json.loads(res['page'])
+                        titles = [column[0] for column in columns]
+                        for i, model in enumerate(d['list']):
+                            data = [ model['invType'], model['inv'], model['certName'], mode['certNo']]
+                            item_array.append(dict(zip(titles, data)))
 
                     table_dict = item_array
 
@@ -1130,24 +1500,16 @@ class Analyze(object):
                         if tr.find('td') and len(tr.find_all('td', recursive=False)) % column_size == 0:
                             col_count = 0
                             item = {}
-                            print "table_name=%s"%table_name
                             for td in tr.find_all('td',recursive=False):
                                 if td.find('a'):
                                     next_url = self.get_detail_link(td.find('a'), urls['prefix_url_0'])
                                     #has detail link
                                     if next_url:
-                                        detail_page = self.crawler.crawl_page_by_url(next_url)
-                                        html_to_file("next.html", detail_page['page'])
-                                        if table_name == u'企业年报':
-                                            #logging.debug(u"next_url = %s, table_name= %s\n", detail_page['url'], table_name)
-                                            page_data = self.parse_ent_pub_annual_report_page(detail_page['page'], table_name + '_detail')
-
-                                            #item[columns[col_count][0]] = page_data #this may be a detail page data
-                                        elif table_name == u'qiyenianbao':
-                                            print "in table_name"
-                                            page_data = self.parse_ent_pub_annual_report_page_2(detail_page['page'], table_name+ '_detail')
+                                        detail_page = self.crawler.crawl_page_by_url(next_url)['page']
+                                        if table_name == u'qiyenianbao':
+                                            page_data = self.parse_ent_pub_annual_report_page_2(detail_page, table_name+ '_detail')
                                         else:
-                                            page_data = self.parse_page_2(detail_page['page'], table_name + '_detail')
+                                            page_data = self.parse_page_2(detail_page, table_name + '_detail')
                                         item[columns[col_count][0]] = page_data #this may be a detail page data
                                     else:
                                         item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
@@ -1170,17 +1532,10 @@ class Analyze(object):
                                     #has detail link
                                     if next_url:
                                         detail_page = self.crawler.crawl_page_by_url(next_url)['page']
-                                        html_to_file("next.html", detail_page['page'])
-
-                                        if table_name == u'企业年报':
-                                            #logging.debug(u"2next_url = %s, table_name= %s\n", next_url, table_name)
-
-                                            page_data = self.parse_ent_pub_annual_report_page(detail_page['page'], table_name + '_detail')
-                                            item[columns[col_count][0]] = page_data #this may be a detail page data
-                                        elif table_name == 'qiyenianbao':
-                                            page_data = self.parse_ent_pub_annual_report_page_2(detail_page['page'], table_name+ '_detail')
+                                        if table_name == u'qiyenianbao':
+                                            page_data = self.parse_ent_pub_annual_report_page_2(detail_page, table_name+ '_detail')
                                         else:
-                                            page_data = self.parse_page_2(detail_page['page'], table_name + '_detail')
+                                            page_data = self.parse_page_2(detail_page, table_name + '_detail')
                                         item[columns[col_count][0]] = page_data #this may be a detail page data
                                     else:
                                         #item[columns[col_count]] = CrawlerUtils.get_raw_text_in_bstag(td)
@@ -1210,14 +1565,14 @@ class Analyze(object):
                         ths = tr.find_all('th')
                         tds = tr.find_all('td')
                         if len(ths) != len(tds):
-                            logging.error(u'th size not equals td size in table %s, what\'s up??' % table_name)
+                            logger.error(u'th size not equals td size in table %s, what\'s up??' % table_name)
                             return
                         else:
                             for i in range(len(ths)):
                                 if self.get_raw_text_by_tag(ths[i]):
                                     table_dict[self.get_raw_text_by_tag(ths[i])] = self.get_raw_text_by_tag(tds[i])
         except Exception as e:
-            logging.error(u'parse table %s failed with exception %s' % (table_name, type(e)))
+            logger.error(u'parse table %s failed with exception %s' % (table_name, type(e)))
             raise e
         finally:
             return table_dict
@@ -1240,7 +1595,7 @@ def json_dump_to_file(path, json_dict):
 def read_ent_from_file(path):
     read_type = 'r'
     if not os.path.exists(path):
-        logging.error(u"There is no path : %s"% path )
+        logger.error(u"There is no path : %s"% path )
     lines = []
     with codecs.open(path, read_type, 'utf-8') as f:
         lines = f.readlines()
