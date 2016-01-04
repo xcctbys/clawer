@@ -7,7 +7,14 @@ import re
 import random
 import threading
 import unittest
-import settings
+from datetime import datetime, timedelta
+
+ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
+if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
+    import settings_pro as settings
+else:
+    import settings
+
 from bs4 import BeautifulSoup
 from crawler import Crawler
 from crawler import Parser
@@ -43,6 +50,8 @@ class ZongjuCrawler(Crawler):
     def run(self, ent_number=0):
         """爬取的主函数
         """
+        Crawler.run(self, ent_number)
+        '''
         self.ent_number = str(ent_number)
         self.html_restore_path = ZongjuCrawler.html_restore_path + self.ent_number + '/'
 
@@ -61,16 +70,39 @@ class ZongjuCrawler(Crawler):
         if not self.crawl_check_page():
             settings.logger.error('crack check code failed, stop to crawl enterprise %s' % self.ent_number)
             return
+        
+        cur_time = datetime.now()
+        if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
+            settings.logger.info('crawl time over, exit!')
+            exit(1)
 
         self.crawl_ind_comm_pub_pages()
+
+        cur_time = datetime.now()
+        if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
+            settings.logger.info('crawl time over, exit!')
+            exit(1)
+
         self.crawl_ent_pub_pages()
+
+        cur_time = datetime.now()
+        if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
+            settings.logger.info('crawl time over, exit!')
+            exit(1)
         self.crawl_other_dept_pub_pages()
+
+        cur_time = datetime.now()
+        if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
+            settings.logger.info('crawl time over, exit!')
+            exit(1)
         self.crawl_judical_assist_pub_pages()
 
         #采用多线程，在写入文件时需要注意加锁
         self.write_file_mutex.acquire()
         CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.json_dict})
         self.write_file_mutex.release()
+        return True
+        '''
 
     def crawl_check_page(self):
         """爬取验证码页面，包括获取验证码url，下载验证码图片，破解验证码并提交
@@ -85,7 +117,12 @@ class ZongjuCrawler(Crawler):
             settings.logger.error('failed to parse pre check page')
             return False
 
-        while count < 100:
+        while count < 30:
+            cur_time = datetime.now()
+            if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
+                settings.logger.info('crawl time over, exit!')
+                return False
+
             count += 1
             ckcode = self.crack_checkcode()
             post_data = {'captcha': ckcode[1], 'session.token': self.session_token};

@@ -469,7 +469,10 @@ class CaptchaRecognition(object):
         elif results.__contains__(u"乘"):
             return first_num * second_num
         elif results.__contains__(u"除"):
+            if second_num == 0:
+                return 0
             return first_num / second_num
+
         elif first_num == 0 or second_num == 0:
             return 0
         else:
