@@ -10,7 +10,7 @@ function safe_run()
 
     (
         flock -xn -w 10 200 || exit 1
-        cd ${WORKDIR}; ${PYTHON} run.py $1
+        cd ${WORKDIR}; ${PYTHON} run.py $1 $2
     ) 200>${file}
 }
 
