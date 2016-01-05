@@ -24,6 +24,7 @@ from beijing_crawler import BeijingCrawler
 from jiangsu_crawler import JiangsuCrawler
 from zongju_crawler import ZongjuCrawler
 from shanghai_crawler import ShanghaiCrawler
+from guangdong_crawler import GuangdongClawer
 
 
 failed_ent = {}
@@ -32,6 +33,7 @@ province_crawler = {
     'jiangsu': JiangsuCrawler,
     'zongju': ZongjuCrawler,
     'shanghai': ShanghaiCrawler
+    'guangdong' : GuangdongClawer
 }
 
 max_crawl_time = 0
@@ -154,7 +156,7 @@ def crawl_province(province, cur_date):
         compressed_json_restore_path = json_restore_path + '.gz'
         with gzip.open(compressed_json_restore_path, 'wb') as cf:
             cf.write(data)
-       
+
     #删除json文件，只保留  .gz 文件
     os.remove(json_restore_path)
 
