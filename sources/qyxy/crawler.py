@@ -3,6 +3,8 @@
 import os
 import time
 import random
+import requests
+from datetime import datetime, timedelta
 import json
 import errno
 import urllib
@@ -13,8 +15,12 @@ import codecs
 import copy
 import bs4
 from bs4 import BeautifulSoup
-import settings
 
+ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
+if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
+    import settings_pro as settings
+else:
+    import settings
 
 class CrawlerUtils(object):
     """爬虫工具类，封装了一些常用函数
@@ -142,7 +148,55 @@ class Crawler(object):
         pass
 
     def run(self, ent_number=0):
-        pass
+        self.ent_number = str(ent_number)
+        self.html_restore_path = self.html_restore_path + self.ent_number + '/'
+
+        if settings.save_html and os.path.exists(self.html_restore_path):
+            CrawlerUtils.make_dir(self.html_restore_path)
+
+        self.json_dict = {}
+
+        self.reqst = requests.Session()
+        self.reqst.headers.update({
+                'Accept': 'text/html, application/xhtml+xml, */*',
+                'Accept-Encoding': 'gzip, deflate',
+                'Accept-Language': 'en-US, en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:39.0) Gecko/20100101 Firefox/39.0'})
+
+        if not self.crawl_check_page():
+            settings.logger.error('crack check code failed, stop to crawl enterprise %s' % self.ent_number)
+            return
+        
+        cur_time = datetime.now()
+        if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
+            settings.logger.info('crawl time over, exit!')
+            return False
+
+        self.crawl_ind_comm_pub_pages()
+
+        cur_time = datetime.now()
+        if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
+            settings.logger.info('crawl time over, exit!')
+            return False
+
+        self.crawl_ent_pub_pages()
+
+        cur_time = datetime.now()
+        if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
+            settings.logger.info('crawl time over, exit!')
+            return False
+        self.crawl_other_dept_pub_pages()
+
+        cur_time = datetime.now()
+        if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
+            settings.logger.info('crawl time over, exit!')
+            return False
+        self.crawl_judical_assist_pub_pages()
+
+        #采用多线程，在写入文件时需要注意加锁
+        self.write_file_mutex.acquire()
+        CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.json_dict})
+        self.write_file_mutex.release()
 
     def crack_checkcode(self):
         pass
