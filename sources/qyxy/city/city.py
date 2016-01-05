@@ -138,6 +138,25 @@ class  Spider(object):
             if c.isnumeric():
                 data += c
         return int(data)
+    
+    
+class No2City(object):
+    
+    def __init__(self, in_path, out_path):
+        self.in_path = in_path
+        self.out_path = out_path
+        self.city_path = "city_no.txt"
+        self.cities = {}
+    
+    def transform(self):
+        pass
+    
+    def _load_cities(self):
+        with open(self.city_path, "r") as f:
+            for line in f:
+                [no, city] = line.split(",")
+                self.cities[no] = city
+                
         
         
 class TestSpider(unittest.TestCase):
