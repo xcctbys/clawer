@@ -32,8 +32,8 @@ province_crawler = {
     'beijing': BeijingCrawler,
     'jiangsu': JiangsuCrawler,
     'zongju': ZongjuCrawler,
-    'shanghai': ShanghaiCrawler
-    'guangdong' : GuangdongClawer
+    'shanghai': ShanghaiCrawler,
+    'guangdong': GuangdongClawer
 }
 
 max_crawl_time = 0
