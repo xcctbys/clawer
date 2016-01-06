@@ -109,7 +109,7 @@ class ZongjuCrawler(Crawler):
         """
         count = 0
         next_url = self.urls['official_site']
-        resp = self.reqst.get(next_url)
+        resp = self.reqst.get(next_url, verify=False)
         if resp.status_code != 200:
             settings.logger.error('failed to get official site')
             return False
@@ -127,7 +127,7 @@ class ZongjuCrawler(Crawler):
             ckcode = self.crack_checkcode()
             post_data = {'captcha': ckcode[1], 'session.token': self.session_token};
             next_url = self.urls['post_checkcode']
-            resp = self.reqst.post(next_url, data=post_data)
+            resp = self.reqst.post(next_url, data=post_data, verify=False)
             if resp.status_code != 200:
                 settings.logger.warn('failed to get crackcode image by url %s, fail count = %d' % (next_url, count))
                 continue
@@ -144,7 +144,7 @@ class ZongjuCrawler(Crawler):
                 'session.token': self.session_token,
                 'condition.keyword': self.ent_number
              }
-            resp = self.reqst.post(next_url, data=post_data)
+            resp = self.reqst.post(next_url, data=post_data, verify=False)
             if resp.status_code != 200:
                 settings.logger.error('faild to crawl url %s'%next_url)
                 return False
@@ -162,7 +162,7 @@ class ZongjuCrawler(Crawler):
         """
         next_url = self.urls['open_info_entry'] + 'uuid=' + self.uuid + '&tab=01'
         settings.logger.info('crawl ind comm pub pages, url:\n%s'%next_url)
-        resp = self.reqst.get(next_url)
+        resp = self.reqst.get(next_url, verify=False)
         if resp.status_code != 200:
             settings.logger.warn('get ind comm pub info failed!')
             return False
@@ -173,7 +173,7 @@ class ZongjuCrawler(Crawler):
         """
         next_url = self.urls['open_info_entry'] + 'uuid=' + self.uuid + '&tab=02'
         settings.logger.info('crawl ent pub pages, url:\n%s'%next_url)
-        resp = self.reqst.get(next_url)
+        resp = self.reqst.get(next_url, verify=False)
         if resp.status_code != 200:
             settings.logger.warn('get ent pub info failed!')
             return False
@@ -184,7 +184,7 @@ class ZongjuCrawler(Crawler):
         """
         next_url = self.urls['open_info_entry'] + 'uuid=' + self.uuid + '&tab=03'
         settings.logger.info('crawl other dept pub pages, url:\n%s'%next_url)
-        resp = self.reqst.get(next_url)
+        resp = self.reqst.get(next_url, verify=False)
         if resp.status_code != 200:
             settings.logger.warn('get other dept pub info failed!')
             return False
@@ -195,7 +195,7 @@ class ZongjuCrawler(Crawler):
         """
         next_url = self.urls['open_info_entry'] + 'uuid=' + self.uuid + '&tab=06'
         settings.logger.info('crawl judical assist pub pages, url:\n%s' % next_url)
-        resp = self.reqst.get(next_url)
+        resp = self.reqst.get(next_url,verify=False)
         if resp.status_code != 200:
             settings.logger.warn('get judical assist info failed!')
             return False
@@ -229,7 +229,7 @@ class ZongjuCrawler(Crawler):
     def crawl_page_by_url(self, url):
         """通过url直接获取页面
         """
-        resp = self.reqst.get(url)
+        resp = self.reqst.get(url, verify=False)
         if resp.status_code != 200:
             settings.logger.error('failed to crawl page by url' % url)
             return
@@ -243,7 +243,7 @@ class ZongjuCrawler(Crawler):
         """破解验证码"""
         checkcode_url = self.urls['get_checkcode'] + '&ra=' + str(random.random())
 
-        resp = self.reqst.get(checkcode_url)
+        resp = self.reqst.get(checkcode_url, verify=False)
         if resp.status_code != 200:
             settings.logger.warn('failed to get checkcode img')
             return
