@@ -2,6 +2,7 @@
 
 WORKDIR="/home/webapps/nice-clawer/sources/qyxy"
 PYTHON="/home/virtualenvs/dj18/bin/python"
+MAX_TIME=72000
 
 
 function safe_run()
@@ -14,5 +15,6 @@ function safe_run()
     ) 200>${file}
 }
 
-time safe_run $*
+
+time safe_run 
 
