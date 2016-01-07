@@ -418,13 +418,13 @@ class AnhuiCrawler(object):
 		CrawlerUtils.json_dump_to_file(os.path.join('anhui', 'anhui_json_result.json'), {self.ent_number: self.result_json_dict})
 		#self.write_file_mutex.release()
 
-
-anhui = AnhuiCrawler()
-f = open('anhui/anhui.txt', 'r')
-for line in f.readlines():
-	print line.split(',')[2]
-	anhui.run(str(line.split(',')[2]).strip())
-f.close()
+if __name__ == '__main__':
+	anhui = AnhuiCrawler()
+	f = open('anhui/anhui.txt', 'r')
+	for line in f.readlines():
+		print line.split(',')[2]
+		anhui.run(str(line.split(',')[2]).strip())
+	f.close()
 # anhui.run('340000000006066')
 # anhui.run('340313000002482')
 # anhui.run('340000000018072')
