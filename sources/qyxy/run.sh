@@ -16,5 +16,5 @@ function safe_run()
 }
 
 
-time safe_run 
+time safe_run $*
 
