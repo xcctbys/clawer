@@ -10,11 +10,6 @@ import settings
 import json
 import urlparse
 import codecs
-import urllib
-import urllib2
-import cookielib
-import chardet
-
 #import traceback
 import unittest
 from bs4 import BeautifulSoup

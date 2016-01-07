@@ -55,7 +55,7 @@ headers = { 'Connetion': 'Keep-Alive',
 
 HOSTS =["www.szcredit.com.cn", "121.8.226.101:7001", "gsxt.gdgs.gov.cn/aiccips"]
 class GuangdongClawer(object):
-    def __init__(self):
+    def __init__(self, json_restore_path):
         self.html_search = None
         self.html_showInfo = None
         self.Captcha = None
@@ -66,8 +66,9 @@ class GuangdongClawer(object):
         self.ents = []
         self.main_host = ""
         self.json_dict={}
+        self.json_restore_path = json_restore_path
         self.html_restore_path = settings.html_restore_path + '/guangdong/'
-        self.json_restore_path = settings.json_restore_path + '/guangdong.json'
+        #self.json_restore_path = settings.json_restore_path + '/guangdong.json'
         #验证码图片的存储路径
         self.path_captcha = settings.json_restore_path + '/guangdong/ckcode.jpg'
 
@@ -186,7 +187,7 @@ class GuangdongClawer(object):
                 m = re.match('http', ent)
                 if m is None:
                     ent = urls['host']+ ent[3:]
-                settings.logger.debug(u"ent name:%s\n"% ent)
+                settings.logger.debug(u"ent url:%s\n"% ent)
                 for i, item in enumerate(HOSTS):
                     if ent.find(item) != -1:
 
@@ -282,7 +283,7 @@ if __name__ == "__main__":
     ents = read_ent_from_file("./enterprise_list/guangdong.txt")
     if not os.path.exists("./enterprise_crawler"):
         os.makedirs("./enterprise_crawler")
-    guangdong = GuangdongClawer()
+    guangdong = GuangdongClawer('./enterprise_crawler/Guangdong.json')
     for ent_str in ents:
         settings.logger.info(u'###################   Start to crawl enterprise with id %s   ###################\n' % ent_str[2])
         guangdong.run(ent_num = ent_str[2])
