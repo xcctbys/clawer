@@ -2,7 +2,7 @@ import logging
 
 #log
 log_level = logging.WARN
-log_file = '/home/web_log/crawler.log'
+log_file = '/data/clawer_result/enterprise/crawler.log'
 logger = None
 
 #whether to save html page
