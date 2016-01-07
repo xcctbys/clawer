@@ -86,6 +86,7 @@ class AnhuiCrawler(object):
 			f.write(resp.content)
 		from CaptchaRecognition import CaptchaRecognition
 		code_cracker = CaptchaRecognition('qinghai')
+		#code_cracker = CaptchaRecognition('guangdong')
 		ck_code = code_cracker.predict_result('s.jpg')
 		return ck_code[1]
 
@@ -420,9 +421,10 @@ class AnhuiCrawler(object):
 
 if __name__ == '__main__':
 	anhui = AnhuiCrawler()
+	# anhui.run('450100000128441')
 	f = open('enterprise_list/anhui.txt', 'r')
 	for line in f.readlines():
-		print line.split(',')[2].strip()
+		#print line.split(',')[2].strip()
 		anhui.run(str(line.split(',')[2]).strip())
 	f.close()
 # anhui.run('340000000006066')
