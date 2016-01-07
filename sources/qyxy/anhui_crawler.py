@@ -152,21 +152,21 @@ class AnhuiCrawler(object):
 		# print [td.get_text().strip() if td.get_text() else None for td in tds]
 		allths = [th.get_text().strip() for th in (ths[1:4]+ths[6:])]
 		alltds = [td.get_text().strip() if td.get_text() else None for td in tds]
-		self.test_print_all_ths_tds(allths, alltds)
+		#self.test_print_all_ths_tds(allths, alltds)
 		return self.get_one_to_one_dict(allths, alltds)
 
 	def do_with_hasnext(self, mydict, head, table_head, table_next):
-		print 'do_with_hasnext',head
+		#print 'do_with_hasnext',head
 		#if head == u'股东（发起人）信息' or head == u'股东信息':
 		if head in [u'股东（发起人）信息' , u'股东信息']:
-			print head
+			#print head
 			templist = []
 			ths = table_head.find_all('th')[1:]
 			#print [th.get_text() for th in ths]
 			allths = [th.get_text() for th in ths]
 			allths.append(u'详情')
 			a_count = len(table_next.find_all('a'))
-			print a_count
+			#print a_count
 			for i in range(1, a_count+1):
 				tempresp = self.reqst.get(self.mydict['QueryInvList']+'pno='+str(i)+'&mainId='+self.id)
 				if tempresp.status_code == 200:
@@ -176,7 +176,7 @@ class AnhuiCrawler(object):
 						details = []
 						for td in tr.find_all('td'):
 							if td.find('a'):
-								print self.mydict['eareName'] + td.a['onclick'][13:-2]
+								#print self.mydict['eareName'] + td.a['onclick'][13:-2]
 								temp = self.reqst.get( self.mydict['eareName'] + td.a['onclick'][13:-2])
 								if temp.status_code == 200:
 									detail_soup = BeautifulSoup(temp.content)
@@ -185,7 +185,7 @@ class AnhuiCrawler(object):
 									print 'error...temp'
 							else:
 								details.append(td.get_text().strip() if td.get_text() else None)
-						print len(details), details, specially_dict
+						#print len(details), details, specially_dict
 						details.append(specially_dict)
 						templist.append(self.get_one_to_one_dict(allths, details))
 			
@@ -200,7 +200,7 @@ class AnhuiCrawler(object):
 			templist = []
 			allths = [th.get_text() for th in ths]
 			a_count = len(table_next.find('a'))
-			print a_count
+			#print a_count
 			for i in range(1, a_count+1):
 				try:
 					tempresp = self.reqst.get(self.mydict['eareName'] + self.jsp_one_dict[head] + 'pno='+str(i) + '&mainId='+self.id)
@@ -213,29 +213,29 @@ class AnhuiCrawler(object):
 						alltds = [td.get_text().strip() if td.get_text() else None for td in tr.find_all('td')]
 						if head==u'主要人员信息':
 							alltds_two = alltds[int(len(alltds)/2):]+alltds[:int(len(alltds)/2)]
-							self.test_print_all_ths_tds(allths, alltds_two)
+							#self.test_print_all_ths_tds(allths, alltds_two)
 							templist.append(self.get_one_to_one_dict(allths, alltds_two))
-						self.test_print_all_ths_tds(allths, alltds)
+						#self.test_print_all_ths_tds(allths, alltds)
 						templist.append(self.get_one_to_one_dict(allths, alltds))
 			self.result_json_dict[mydict[head]] = templist
 
 	def do_with_nonext(self, mydict, head, table_head, table_content):
 
 		if head in [u'股东（发起人）信息' , u'股东信息']:
-			print head
+			#print head
 			templist = []
 			ths = table_head.find_all('th')[1:]
 			#print [th.get_text() for th in ths]
 			allths = [th.get_text() for th in ths]
 			allths.append(u'详情')
 			a_count = len(table_content.find_all('tr'))
-			print a_count
+			#print a_count
 			for tr in table_content.find_all('tr'):
 				#print [td.get_text().strip() if td.get_text()  else None for td in tr.find_all('td')]
 				details = []
 				for td in tr.find_all('td'):
 					if td.find('a'):
-						print self.mydict['eareName'] + td.a['onclick'][13:-2]
+						#print self.mydict['eareName'] + td.a['onclick'][13:-2]
 						temp = self.reqst.get( self.mydict['eareName'] + td.a['onclick'][13:-2])
 						if temp.status_code == 200:
 							detail_soup = BeautifulSoup(temp.content)
@@ -244,21 +244,21 @@ class AnhuiCrawler(object):
 							print 'error...temp'
 					else:
 						details.append(td.get_text().strip() if td.get_text() else None)
-				print len(details), details, specially_dict
+				#print len(details), details, specially_dict
 				details.append(specially_dict)
 				templist.append(self.get_one_to_one_dict(allths, details))
 			self.result_json_dict[mydict[head]] = templist
 		else:
-			print 'do_with_nonext', head
+			#print 'do_with_nonext', head
 			tds = table_head.find_all('td')
 			ths = table_head.find_all('th')[1:]
-			print len(tds), len(ths)
+			#print len(tds), len(ths)
 			if len(tds)>0:
 				# print [th.get_text().strip() for th in ths]
 				# print [td.get_text().strip()  if td.get_text() else None for td in tds]
 				allths = [th.get_text().strip() for th in ths]
 				alltds = [td.get_text().strip()  if td.get_text() else None for td in tds]
-				self.test_print_all_ths_tds(allths, alltds)
+				#self.test_print_all_ths_tds(allths, alltds)
 				self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
 			else:
 				#print [th.get_text().strip() for th in ths]
@@ -270,8 +270,8 @@ class AnhuiCrawler(object):
 				else:
 					#print [td.get_text().strip() if td.get_text() else None for td in table_content.find_all('td')]
 					alltds = [td.get_text().strip() if td.get_text() else None for td in table_content.find_all('td')]
-				self.test_print_all_ths_tds(allths, alltds)
-				print head
+				#self.test_print_all_ths_tds(allths, alltds)
+				#print head
 				#print mydict[head]
 				
 				self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
@@ -285,12 +285,12 @@ class AnhuiCrawler(object):
 									u'清算信息',u'动产抵押登记信息',u'股权出质登记信息',u'行政处罚信息',\
 									u'经营异常信息',u'严重违法信息',u'抽查检查信息',u'股东（发起人）信息', u'股东信息' ]:
 					if i !=0 and i+2 < count_table and len(tables[i+2].find_all('a'))>1:
-						print i,'have next',
+						#print i,'have next',
 						# print tables[i]
 						# print tables[i+2]
 						self.do_with_hasnext(mydict, table.tr.th.get_text().split('\n')[0].strip(), tables[i], tables[i+2])
 					elif  i+1<count_table:
-						print i,'no next'
+						#print i,'no next'
 						self.do_with_nonext(mydict, table.tr.th.get_text().split('\n')[0].strip(), tables[i], tables[i+1])
 
 			except AttributeError:
@@ -344,22 +344,22 @@ class AnhuiCrawler(object):
 	def get_json_two(self, mydict, tables):
 		tables = [table for table in tables if len(table.find_all('div'))==0 and len(table.find_all('script'))==0]
 		count_table = len(tables)
-		print count_table
+		#print count_table
 		# for table in tables:
 		# 	print table
 		for i, table in enumerate(tables):
 			ths = table.find_all('th')
-			print len(ths)
+			#print len(ths)
 			if len(ths) >0:
 				if ths[0].get_text().strip() == u'企业年报':
-					print 'one',ths[0].get_text().strip()
+					#print 'one',ths[0].get_text().strip()
 					self.do_with_enter(mydict, ths[0].get_text().strip(), table)
 				elif ths[0].get_text().strip() in  [u'行政许可信息', u'股权变更信息']:
-					print 'two',ths[0].get_text().strip()
+					#print 'two',ths[0].get_text().strip()
 					self.do_with_nonext(mydict, ths[0].get_text().strip(), table, tables[i+1])
 				elif ths[0].get_text().strip() in [ u'知识产权出质登记信息', \
 			 				u'股东（发起人）及出资信息', u'行政处罚信息']:
-					print 'three',ths[0].get_text().strip()
+					#print 'three',ths[0].get_text().strip()
 					self.do_with_nonext(mydict, ths[0].get_text().strip(), table, tables[i+1])
 			# if len(table.find_all('th'))>0 and table.find_all('th')[0] == u'企业年报':
 			# 	print 'one',table.find_all('th')[0]
@@ -380,10 +380,10 @@ class AnhuiCrawler(object):
 			try:
 				if table.tr.th.get_text().split('\n')[0].strip() in [u'行政许可信息', u'行政处罚信息' ]:
 					if i !=0 and i+2 < count_table and len(tables[i+2].find_all('a'))>1:
-						print i,'have next'
+						#print i,'have next'
 						self.do_with_hasnext(mydict, table.tr.th.get_text().split('\n')[0].strip(), tables[i], tables[i+2])
 					elif  i+1<count_table:
-						print i,'no next'
+						#print i,'no next'
 						self.do_with_nonext(mydict, table.tr.th.get_text().split('\n')[0].strip(), tables[i], tables[i+1])
 			except AttributeError:
 				pass
@@ -420,9 +420,9 @@ class AnhuiCrawler(object):
 
 if __name__ == '__main__':
 	anhui = AnhuiCrawler()
-	f = open('anhui/anhui.txt', 'r')
+	f = open('enterprise_list/anhui.txt', 'r')
 	for line in f.readlines():
-		print line.split(',')[2]
+		print line.split(',')[2].strip()
 		anhui.run(str(line.split(',')[2]).strip())
 	f.close()
 # anhui.run('340000000006066')
