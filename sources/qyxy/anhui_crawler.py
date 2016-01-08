@@ -86,7 +86,8 @@ class AnhuiCrawler(object):
 		with open('s.jpg', 'wb') as f:
 			f.write(resp.content)
 		from CaptchaRecognition import CaptchaRecognition
-		code_cracker = CaptchaRecognition('qinghai')
+		#code_cracker = CaptchaRecognition('qinghai')
+		code_cracker = CaptchaRecognition('anhui')
 		#code_cracker = CaptchaRecognition('guangdong')
 		ck_code = code_cracker.predict_result('s.jpg')
 		return ck_code[1]
@@ -416,7 +417,7 @@ class AnhuiCrawler(object):
 		self.get_json_four(self.four_dict, tablefour)
 
 		#self.write_file_mutex.acquire()
-		#print {self.ent_number: self.result_json_dict}
+		print {self.ent_number: self.result_json_dict}
 		CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.result_json_dict})
 		#self.write_file_mutex.release()
 
