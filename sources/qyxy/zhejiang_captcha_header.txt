@@ -1,0 +1,10 @@
+curl 'http://gsxt.zjaic.gov.cn/common/captcha/doReadKaptcha.do' -H 'Host: gsxt.zjaic.gov.cn' -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:43.0) Gecko/20100101 Firefox/43.0' -H 'Accept: image/png,image/*;q=0.8,*/*;q=0.5' -H 'Accept-Language: en-US,en;q=0.5' --compressed -H 'Referer: http://gsxt.zjaic.gov.cn/zhejiang.jsp' -H 'Connection: keep-alive' -H 'Cache-Control: max-age=0'
+
+
+说明：
+GET方法
+构造请求头的时候一定要加入 Referer这一项。
+
+
+
+
