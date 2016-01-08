@@ -27,6 +27,7 @@ from shanghai_crawler import ShanghaiCrawler
 from guangdong_crawler import GuangdongClawer
 from heilongjinag_crawler import HeilongjiangClawer
 from anhui_crawler import AnhuiCrawler
+from tianjin_crawler import TianjinCrawler
 
 failed_ent = {}
 province_crawler = {
@@ -37,6 +38,7 @@ province_crawler = {
     'guangdong': GuangdongClawer,
     'heilongjiang': HeilongjiangClawer,
     'anhui': AnhuiCrawler,
+    'tianjin' : TianjinCrawler,
 }
 
 max_crawl_time = 0

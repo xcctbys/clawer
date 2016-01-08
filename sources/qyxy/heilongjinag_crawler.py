@@ -7,7 +7,11 @@ import re
 import random
 import threading
 import unittest
-import settings
+ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
+if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
+    import settings_pro as settings
+else:
+    import settings
 from bs4 import BeautifulSoup
 from crawler import Crawler
 from crawler import Parser
@@ -18,7 +22,7 @@ import json
 
 
 class HeilongjiangClawer(Crawler):
-    """江苏工商公示信息网页爬虫
+    """黑龙江工商公示信息网页爬虫
     """
     # html数据的存储路径
     html_restore_path = settings.html_restore_path + '/heilongjiang/'
@@ -32,7 +36,6 @@ class HeilongjiangClawer(Crawler):
 
 
     urls = {'host': 'www.hljaic.gov.cn',
-            'official_site': 'http://gsxt.hljaic.gov.cn/search.jspx',
             'get_checkcode': 'http://gsxt.hljaic.gov.cn/validateCode.jspx?type=0',
             'post_checkCode': 'http://gsxt.hljaic.gov.cn/checkCheckNo.jspx',
             'post_checkCode2': 'http://gsxt.hljaic.gov.cn/searchList.jspx',
@@ -111,6 +114,7 @@ class HeilongjiangClawer(Crawler):
         count = 0
         while count < 10:
             ck_code = self.crack_check_code()
+
             data = {'checkNo': ck_code}
             resp = self.reqst.post(HeilongjiangClawer.urls['post_checkCode'], data=data)
 
@@ -118,9 +122,8 @@ class HeilongjiangClawer(Crawler):
                 settings.logger.error("crawl post check page failed!")
                 count += 1
                 continue
-
-            if resp.content.find("true") >= 0:
-                data = {'checkNo': ck_code, 'entName': ent_number}
+            if resp.content[10] == 't':
+                data = {'checkNo': ck_code, 'entName': self.ent_number}
                 resp = self.reqst.post(HeilongjiangClawer.urls['post_checkCode2'], data=data)
                 soup = BeautifulSoup(resp.text, "html5lib")
                 div = soup.find("div", {"style": "height:500px;"})
@@ -141,22 +144,29 @@ class HeilongjiangClawer(Crawler):
         """破解验证码
         :return 破解后的验证码
         """
-        resp = self.reqst.get(HeilongjiangClawer.urls['official_site'])
-        if resp.status_code != 200:
-            settings.logger.error('failed to get official site')
-            return None
-
         resp = self.reqst.get(HeilongjiangClawer.urls['get_checkcode'])
         if resp.status_code != 200:
             settings.logger.error('failed to get get_checkcode')
             return None
 
+
+
+
+        time.sleep(random.uniform(2, 4))
+
         self.write_file_mutex.acquire()
         with open(self.ckcode_image_path, 'wb') as f:
             f.write(resp.content)
-        ck_code = self.code_cracker.predict_result(self.ckcode_image_path)
+        try:
+            ckcode = self.code_cracker.predict_result(self.ckcode_image_path)
+        except Exception as e:
+            settings.logger.warn('exception occured when crack checkcode')
+            ckcode = ('', '')
+        finally:
+            pass
         self.write_file_mutex.release()
-        return ck_code[1]
+
+        return ckcode[1]
 
     def crawl_page_by_url(self, url):
         """根据url直接爬取页面
@@ -543,7 +553,11 @@ class HeilongjiangParser(Parser):
 
     def get_shareholder_detail(self, content_tr):
 
+        if not content_tr.find("a"):
+            return
+
         link = content_tr.find("a")
+
         re1 = '.*?'	 # Non-greedy match on filler
         re2 = '\\d+'  # Uninteresting: int
         re3 = '.*?' 	# Non-greedy match on filler
@@ -688,28 +702,28 @@ class TestParser(unittest.TestCase):
     def test_parse_ind_comm_pub_page(self):
         with open('./enterprise_crawler/heilongjiang/ind_comm_pub.html') as f:
             page = f.read()
-            self.parser.parse_ind_comm_pub_pages(page, 'F4E775F51C712F149018359D6D93D4F8')
+            self.parser.parse_ind_comm_pub_pages(page)
 
     def test_parse_ent_pub_skeleton(self):
         with open('./enterprise_crawler/heilongjiang/ent_pub.html') as f:
             page = f.read()
-            self.parser.parse_ent_pub_pages(page, 'F4E775F51C712F149018359D6D93D4F8')
+            self.parser.parse_ent_pub_pages(page)
 
     def test_parse_other_dept_pub_skeleton(self):
         with open('./enterprise_crawler/heilongjiang/other_dept_pub.html') as f:
             page = f.read()
-            self.parser.parse_other_dept_pub_pages(page, 'F4E775F51C712F149018359D6D93D4F8')
+            self.parser.parse_other_dept_pub_pages(page)
 
     def test_parse_judical_assist_pub_skeleton(self):
         with open('./enterprise_crawler/heilongjiang/judical_assist_pub.html') as f:
             page = f.read()
-            self.parser.parse_judical_assist_pub_pages(page, 'F4E775F51C712F149018359D6D93D4F8')
+            self.parser.parse_judical_assist_pub_pages(page)
 
 if __name__ == '__main__':
     from CaptchaRecognition import CaptchaRecognition
     import run
     run.config_logging()
-    HeilongjiangClawer.code_cracker = CaptchaRecognition('qinghai')
+    HeilongjiangClawer.code_cracker = CaptchaRecognition('heilongjiang')
     crawler = HeilongjiangClawer('./enterprise_crawler/heilongjiang.json')
     enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/heilongjiang.txt')
     # enterprise_list = ['230100100019556']
