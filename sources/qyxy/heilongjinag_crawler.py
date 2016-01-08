@@ -184,7 +184,6 @@ class HeilongjiangClawer(Crawler):
         """爬取工商公示信息
         """
         url = "%s%s" % (HeilongjiangClawer.urls['ind_comm_pub_skeleton'], self.company_id)
-        settings.logger.info('1111111111111111111111111111111111111111111111111111 %s' % self.company_id)
         resp = self.reqst.get(url)
         if resp.status_code != 200:
             settings.logger.error('failed to get ind_comm_pub_skeleton')
@@ -554,7 +553,11 @@ class HeilongjiangParser(Parser):
 
     def get_shareholder_detail(self, content_tr):
 
+        if not content_tr.find("a"):
+            return
+
         link = content_tr.find("a")
+
         re1 = '.*?'	 # Non-greedy match on filler
         re2 = '\\d+'  # Uninteresting: int
         re3 = '.*?' 	# Non-greedy match on filler

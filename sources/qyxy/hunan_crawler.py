@@ -119,12 +119,7 @@ class HunanCrawler(Crawler):
             settings.logger.error('failed to parse pre check page')
             return False
 
-        while count < 30:
-            # cur_time = datetime.now()
-            # # if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
-            # #     settings.logger.info('crawl time over, exit!')
-            # return False
-
+        while count < 10:
             count += 1
             ckcode = self.crack_checkcode()
             post_data = {'captcha': ckcode[1], 'session.token': self.session_token};
@@ -286,7 +281,7 @@ class HunanParser(Parser):
             'branchTable': 'ind_comm_pub_arch_branch',      # 分支机构信息
             'punishTable': 'ind_comm_pub_administration_sanction',      # 行政处罚信息
             'spotcheckTable': 'ind_comm_pub_spot_check',        # 抽查检查信息
-            'memberTable': 'ind_comm_pub_arch_key_persons',     # 备案信息-主要人员信息
+            # 'memberTable': 'ind_comm_pub_arch_key_persons',     # 备案信息-主要人员信息
             'pledgeTable': 'ind_comm_pub_equity_ownership_reg',     # 股权出质登记信息
             'mortageTable': 'ind_comm_pub_movable_property_reg',        # 动产抵押登记信息
             'exceptTable': 'ind_comm_pub_business_exception',       # 经营异常信息
@@ -309,6 +304,31 @@ class HunanParser(Parser):
             table_name = name_table_map.get(table_title, None)
             if table_name:
                 self.crawler.json_dict[table_name] = self.parse_table(table, table_name, page)
+
+        table = soup.find("table", {"id": "memberTable"})
+        if table:
+            trs = table.find_all("tr")
+            list_th = [th for th in trs[1].stripped_strings]
+            table_save = []
+            for tr in trs[2:]:
+                content1 = {}
+                content2 = {}
+                list_td = []
+                tds = tr.find_all("td")
+                if not tds:
+                    continue
+                for td in tds:
+                    list_td.append(td.text.strip())
+                for i in range(0, 3):
+                    content1[list_th[i]] = list_td[i]
+                for i in range(3, 6):
+                    content2[list_th[i]] = list_td[i]
+                table_save.append(content1)
+                table_save.append(content2)
+            self.crawler.json_dict['ind_comm_pub_arch_key_persons'] = table_save
+        else:
+            self.crawler.json_dict['ind_comm_pub_arch_key_persons'] = []
+
 
     def parse_ent_pub_pages(self, page):
         """解析企业公示信息页面
@@ -409,50 +429,12 @@ class HunanParser(Parser):
                             item[u'报送年度'] = CrawlerUtils.get_raw_text_in_bstag(td)
                             item[u'详情'] = page_data #this may be a detail page data
                         elif table_name == 'ind_comm_pub_reg_shareholder':
-                            page_data = {'1':'1'}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                            my_soup = BeautifulSoup(str(detail_page), "html.parser")
-                            table = my_soup.find('table')
-
-                            aaa = self.coarse_page_table(table)
-
-                            print '得到的放回二季表格', aaa
-
-
-
-
-
-
-
-
-
-
-                            # page_data = self.parse_ind_comm_pub_shareholder_detail_page(detail_page)
+                            page_data = self.parse_ind_comm_pub_shareholder_detail_page(detail_page)
                             item[u'详情'] = page_data
                         else:
                             page_data = self.parse_page(detail_page, table_name + '_detail')
                             item[columns[col_count][0]] = page_data #this may be a detail page data
                     else:
-                        #item[columns[col_count]] = CrawlerUtils.get_raw_text_in_bstag(td)
                         item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
                 else:
                     item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
@@ -465,8 +447,41 @@ class HunanParser(Parser):
     def parse_ind_comm_pub_shareholder_detail_page(self, page):
         """解析工商公示信息- 登记信息- 股东信息 中的详情链接页面
         """
-        print "page", page
+        detail_dict = {}
+        m = re.search(r'investor\.invName = \"(.+)\";', page)
+        if m:
+            detail_dict[u'股东'] = unicode(m.group(1), 'utf8')
 
+        subscribe_detail = {}
+        m = re.search(r'invt\.subConAm = \"([\d\.]+)\";', page)
+        if m:
+            subscribe_detail[u'认缴出资额（万元）'] = m.group(1)
+
+        m = re.search(r'invt\.conDate = \'([\w\-\.]*)\';', page)
+        if m:
+            subscribe_detail[u'认缴出资日期'] = m.group(1)
+
+        m = re.search(r'invt\.conForm = \"(.+)\";', page)
+        if m:
+            subscribe_detail[u'认缴出资方式'] = m.group(1)
+
+        paid_in_detail = {}
+        m = re.search(r'invtActl\.acConAm = \"([\d\.]+)\";', page)
+        if m:
+            paid_in_detail[u'实缴出资额（万元）'] = m.group(1)
+
+        m = re.search(r'invtActl\.conForm = \"(.+)\";', page)
+        if m:
+            paid_in_detail[u'实缴出资方式'] = m.group(1)
+
+        m = re.search(r'invtActl\.conDate = \'([\w\-\.]*)\';', page)
+        if m:
+            paid_in_detail[u'实缴出资日期'] = m.group(1)
+
+        detail_dict[u'认缴额（万元）'] = subscribe_detail.get(u'认缴出资额（万元）', '0')
+        detail_dict[u'实缴额（万元）'] = paid_in_detail.get(u'实缴出资额（万元）', '0')
+        detail_dict[u'认缴明细'] = subscribe_detail
+        detail_dict[u'实缴明细'] = paid_in_detail
         return detail_dict
 
     def parse_ent_pub_annual_report_page(self, page):
@@ -494,98 +509,46 @@ class HunanParser(Parser):
 
         return next_url
 
-    def coarse_page_table(self, table):
 
-        colspan_list = []  # 跨列的列数
-        colspan_th = []  # 跨列的列名
-        list_title_th = []  # 第一行不跨列的列名
-        list_th = []  # 第二行的列名
+class TestParser(unittest.TestCase):
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        self.crawler = HunnaCrawler('./enterprise_crawler/hunan.json')
+        self.parser = self.crawler.parser
+        self.crawler.json_dict = {}
+        self.crawler.ent_number = '00000'
 
-        table_trs = table.find_all("tr")
-        list_tr = [tr for tr in table_trs]
-        table_title_wraps = list_tr[1].find_all("th")
+    def test_parse_ind_comm_pub_page(self):
+        with open('./enterprise_crawler/hunan/ind_comm_pub.html') as f:
+            page = f.read()
+            self.parser.parse_ind_comm_pub_pages(page)
 
-        for title_wrap in table_title_wraps:
-            if 'colspan' in title_wrap.attrs:
-                for colspan in title_wrap['colspan']:
-                    colspan_list.append(int(colspan))
-                    colspan_th.append(title_wrap.text)
-            else:
-                list_title_th.append(title_wrap.text)
+    def test_parse_ent_pub_skeleton(self):
+        with open('./enterprise_crawler/hunan/ent_pub.html') as f:
+            page = f.read()
+            self.parser.parse_ent_pub_pages(page)
 
-        table_title = list_tr[2].find_all("th")
-        for title_wrap in table_title:
-            list_th.append(title_wrap.text)
+    def test_parse_other_dept_pub_skeleton(self):
+        with open('./enterprise_crawler/hunan/other_dept_pub.html') as f:
+            page = f.read()
+            self.parser.parse_other_dept_pub_pages(page)
 
-        total = []  # 若有多行td
+    def test_parse_judical_assist_pub_skeleton(self):
+        with open('./enterprise_crawler/hunan/judical_assist_pub.html') as f:
+            page = f.read()
+            self.parser.parse_judical_assist_pub_pages(page)
 
-        for tr in table_trs[3:]:
-            table_td = tr.find_all("td")
-            list_td = [td.text.strip() for td in table_td]  # 表格内容列表
-            table_save = {}  # 保存的表格
-            for i in range(0, len(list_title_th)):
-                table_save[list_title_th[i]] = list_td[i]
+    def test_parse_annual_report_page(self):
+        with open('./enterprise_crawler/hunan/annual_report.html') as f:
+            page = f.read()
+            result = self.parser.parse_ent_pub_annual_report_page(page)
+            CrawlerUtils.json_dump_to_file(self.crawler.json_restore_path, {self.crawler.ent_number: result})
 
-            del list_td[0:len(list_title_th)]
-            list_test = []
-
-            for i in colspan_list:
-                table_test = {}
-                for j in range(0, i):
-                    table_test[list_th[j]] = list_td[j]
-                list_test.append(table_test)
-                del list_td[0:i]
-                del list_th[0:i]
-            for i in range(0, len(colspan_th)):
-                 table_save[colspan_th[i]] = list_test[i]
-            print "table_save", table_save
-            total.append(table_save)
-
-            table_title = list_tr[2].find_all("th")
-            for title_wrap in table_title:
-                list_th.append(title_wrap.text)
-
-        return total
-
-# class TestParser(unittest.TestCase):
-#     def setUp(self):
-#         unittest.TestCase.setUp(self)
-#         self.crawler = HunnaCrawler('./enterprise_crawler/hunan.json')
-#         self.parser = self.crawler.parser
-#         self.crawler.json_dict = {}
-#         self.crawler.ent_number = '00000'
-#
-#     def test_parse_ind_comm_pub_page(self):
-#         with open('./enterprise_crawler/hunan/ind_comm_pub.html') as f:
-#             page = f.read()
-#             self.parser.parse_ind_comm_pub_pages(page)
-#
-#     def test_parse_ent_pub_skeleton(self):
-#         with open('./enterprise_crawler/hunan/ent_pub.html') as f:
-#             page = f.read()
-#             self.parser.parse_ent_pub_pages(page)
-#
-#     def test_parse_other_dept_pub_skeleton(self):
-#         with open('./enterprise_crawler/hunan/other_dept_pub.html') as f:
-#             page = f.read()
-#             self.parser.parse_other_dept_pub_pages(page)
-#
-#     def test_parse_judical_assist_pub_skeleton(self):
-#         with open('./enterprise_crawler/hunan/judical_assist_pub.html') as f:
-#             page = f.read()
-#             self.parser.parse_judical_assist_pub_pages(page)
-#
-#     def test_parse_annual_report_page(self):
-#         with open('./enterprise_crawler/hunan/annual_report.html') as f:
-#             page = f.read()
-#             result = self.parser.parse_ent_pub_annual_report_page(page)
-#             CrawlerUtils.json_dump_to_file(self.crawler.json_restore_path, {self.crawler.ent_number: result})
-#
-#     def test_parse_shareholder_detail_page(self):
-#         with open('./enterprise_crawler/hunan/shareholder_detail.html') as f:
-#             page = f.read()
-#             result = self.parser.parse_ind_comm_pub_shareholder_detail_page(page)
-#             CrawlerUtils.json_dump_to_file(self.crawler.json_restore_path, {self.crawler.ent_number: result})
+    def test_parse_shareholder_detail_page(self):
+        with open('./enterprise_crawler/hunan/shareholder_detail.html') as f:
+            page = f.read()
+            result = self.parser.parse_ind_comm_pub_shareholder_detail_page(page)
+            CrawlerUtils.json_dump_to_file(self.crawler.json_restore_path, {self.crawler.ent_number: result})
 
 
 if __name__ == '__main__':
@@ -595,8 +558,8 @@ if __name__ == '__main__':
     HunanCrawler.code_cracker = CaptchaRecognition('hunan')
 
     crawler = HunanCrawler('./enterprise_crawler/hunan.json')
-    # enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/hunan.txt')
-    enterprise_list = ['430000400000198']
+    enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/hunan.txt')
+    # enterprise_list = ['430600000016355']
     for ent_number in enterprise_list:
         ent_number = ent_number.rstrip('\n')
         settings.logger.info('###################   Start to crawl enterprise with id %s   ###################\n' % ent_number)
