@@ -275,6 +275,7 @@ class CaptchaRecognition(object):
             self.customized_width = 40
             self.double_denoise = False
             self.to_summarized = True
+            captcha_type = "qinghai"
         elif captcha_type == "liaoning":
             self.image_label_count = 4
             self.image_start = 11
