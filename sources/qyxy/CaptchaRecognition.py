@@ -165,6 +165,7 @@ class CaptchaRecognition(object):
             self.to_binarized = True
             self.customized_width = 20
             self.double_denoise = False
+            captcha_type = "sichuan"
         elif captcha_type in ["hunan","hebei"]:
             self.margin = 8
             self.image_label_count = 3
