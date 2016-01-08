@@ -21,8 +21,9 @@ class AnhuiCrawler(object):
 	#验证码图片的存储路径
     	ckcode_image_path = settings.json_restore_path + '/anhui/ckcode.jpg'
     	#write_file_mutex = threading.Lock()
-	def __init__(self):
+	def __init__(self, json_restore_path):
 		self.id = None
+		self.json_restore_path = json_restore_path
 		self.reqst = requests.Session()
 		self.reqst.headers.update(
 			{'Accept': 'text/html, application/xhtml+xml, */*',
@@ -415,12 +416,12 @@ class AnhuiCrawler(object):
 		self.get_json_four(self.four_dict, tablefour)
 
 		#self.write_file_mutex.acquire()
-		print {self.ent_number: self.result_json_dict}
-		CrawlerUtils.json_dump_to_file(os.path.join('anhui', 'anhui_json_result.json'), {self.ent_number: self.result_json_dict})
+		#print {self.ent_number: self.result_json_dict}
+		CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.result_json_dict})
 		#self.write_file_mutex.release()
 
 if __name__ == '__main__':
-	anhui = AnhuiCrawler()
+	anhui = AnhuiCrawler('./enterprise_crawler/anhui.json')
 	# anhui.run('450100000128441')
 	f = open('enterprise_list/anhui.txt', 'r')
 	for line in f.readlines():
