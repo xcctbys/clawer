@@ -6,10 +6,17 @@ import os
 import sys
 import time
 import re
-import settings
+#import settings
+ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
+if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
+    import settings_pro as settings
+else:
+    import settings
+
 import json
 import codecs
 import unittest
+import threading
 from bs4 import BeautifulSoup
 import CaptchaRecognition as CR
 from Guangdong0 import Guangdong0
@@ -55,6 +62,9 @@ headers = { 'Connetion': 'Keep-Alive',
 
 HOSTS =["www.szcredit.com.cn", "121.8.226.101:7001", "gsxt.gdgs.gov.cn/aiccips"]
 class GuangdongClawer(object):
+
+    #多线程爬取时往最后的json文件中写时的加锁保护
+    write_file_mutex = threading.Lock()
     def __init__(self, json_restore_path):
         self.html_search = None
         self.html_showInfo = None
@@ -153,7 +163,7 @@ class GuangdongClawer(object):
         if self.Captcha is None:
             settings.logger.error(u"Can not store Captcha: None\n")
             return False
-
+        self.write_file_mutex.acquire()
         f = open(url_Captcha, 'w')
         try:
             f.write(self.Captcha)
@@ -161,6 +171,7 @@ class GuangdongClawer(object):
             settings.logger.debug("%s can not be written", url_Captcha)
         finally:
             f.close
+        self.write_file_mutex.release()
         return True
     """
     The following functions are for main page

@@ -6,7 +6,12 @@ import os
 import sys
 import time
 import re
-import settings
+#import settings
+ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
+if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
+    import settings_pro as settings
+else:
+    import settings
 import json
 import urlparse
 import codecs
@@ -26,22 +31,12 @@ urls = {
     'ind_comm_pub_reg_basic': 'http://gsxt.gdgs.gov.cn/aiccips/GSpublicity/GSpublicityList.html?service=entInfo',
     'prefix_GSpublicity':'http://gsxt.gdgs.gov.cn/aiccips/GSpublicity/GSpublicityList.html?service=',
 }
-#debug control parameter
-DEBUG = True
-if DEBUG:
-    level = logging.DEBUG
-else:
-    level = logging.ERROR
 
-logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: %(message)s")
-
-##
 
 headers = { 'Connetion': 'Keep-Alive',
             'Accept': 'text/html, application/xhtml+xml, */*',
             'Accept-Language': 'en-US, en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"}
-HOSTS =["www.szcredit.com.cn", "121.8.226.101:7001", "gsxt.gdgs.gov.cn/aiccips"]
 class Crawler(object):
     def __init__(self, analysis):
         self.analysis = analysis
@@ -49,8 +44,6 @@ class Crawler(object):
         self.html_showInfo = None
         self.Captcha = None
         #self.opener = self.make_opener()
-        self.path_captcha = './Captcha.png'
-        self.CR = CR.CaptchaRecognition("guangdong")
         self.requests = requests.Session()
         self.requests.headers.update(headers)
         self.ents = []
@@ -58,7 +51,7 @@ class Crawler(object):
         self.json_dict={}
 
     # 爬取 工商公示信息 页面
-    def crawl_ind_comm_pub_pages(self, url, types, post_data= {}):
+    def crawl_ind_comm_pub_pages(self, url, post_data= {}):
         sub_json_dict={}
         try:
 
@@ -75,7 +68,7 @@ class Crawler(object):
             sub_json_dict['ind_comm_pub_administration_sanction'] = self.analysis.parse_page_1(page, 'xingzhengchufa', post_data)
 
         except Exception as e:
-            logging.debug(u"An error ocurred in crawl_ind_comm_pub_pages: %s, type is %d"% (type(e), types))
+            settings.logger.debug(u"An error ocurred in crawl_ind_comm_pub_pages: %s, type is %d"% (type(e), types))
             raise e
         finally:
             return sub_json_dict
@@ -83,7 +76,7 @@ class Crawler(object):
 
 
     #爬取 企业公示信息 页面
-    def crawl_ent_pub_pages(self, url, types, post_data={}):
+    def crawl_ent_pub_pages(self, url, post_data={}):
         sub_json_dict = {}
         titles = (  'ent_pub_ent_annual_report',     # 企业年报
             'ent_pub_shareholder_capital_contribution', # 企业投资人出资比例
@@ -108,14 +101,14 @@ class Crawler(object):
             pass
 
         except Exception as e:
-            logging.debug(u"An error ocurred in crawl_ent_pub_pages: %s, types = %d"% (type(e), types))
+            settings.logger.debug(u"An error ocurred in crawl_ent_pub_pages: %s, types = %d"% (type(e), types))
             raise e
         finally:
             return sub_json_dict
         #json_dump_to_file("json_dict.json", self.json_dict)
 
     #爬取 其他部门公示信息 页面
-    def crawl_other_dept_pub_pages(self, url, types):
+    def crawl_other_dept_pub_pages(self, url):
         sub_json_dict={}
         titles =(   'other_dept_pub_administration_license',#行政许可信息
                     'other_dept_pub_administration_sanction',#行政处罚信息
@@ -131,14 +124,14 @@ class Crawler(object):
                 sub_json_dict[title] = self.analysis.parse_page_1(page, item)
 
         except Exception as e:
-            logging.debug(u"An error ocurred in crawl_other_dept_pub_pages: %s, types = %d"% (type(e), types))
+            settings.logger.debug(u"An error ocurred in crawl_other_dept_pub_pages: %s, types = %d"% (type(e), types))
             raise e
         finally:
             return sub_json_dict
         #json_dump_to_file("json_dict.json", self.json_dict)
 
     #judical assist pub informations
-    def crawl_judical_assist_pub_pages(self, url, types):
+    def crawl_judical_assist_pub_pages(self, url):
         sub_json_dict={}
         titles = (  'judical_assist_pub_equity_freeze', # 股权冻结信息
                     'judical_assist_pub_shareholder_modify', #股东变更信息
@@ -153,7 +146,7 @@ class Crawler(object):
             for title, item in zip(titles, tables):
                 sub_json_dict[title] = self.analysis.parse_page_1(page, item)
         except Exception as e:
-            logging.debug(u"An error ocurred in crawl_other_dept_pub_pages: %s, types = %d"% (type(e), types))
+            settings.logger.debug(u"An error ocurred in crawl_other_dept_pub_pages: %s, types = %d"% (type(e), types))
             raise e
         finally:
             return sub_json_dict
@@ -162,7 +155,7 @@ class Crawler(object):
     def crawl_page_by_url(self, url):
         r = self.requests.get( url)
         if r.status_code != 200:
-            logging.error(u"Getting page by url:%s\n, return status %s\n"% (url, r.status_code))
+            settings.logger.error(u"Getting page by url:%s\n, return status %s\n"% (url, r.status_code))
             return False
         # 为了防止页面间接跳转，获取最终目标url
         return {'page' : r.text, 'url': r.url}
@@ -173,7 +166,7 @@ class Crawler(object):
         else :
             r = self.requests.post(url, data)
         if r.status_code != 200:
-            logging.error(u"Getting page by url with post:%s\n, return status %s\n"% (url, r.status_code))
+            settings.logger.error(u"Getting page by url with post:%s\n, return status %s\n"% (url, r.status_code))
             return False
         return {'page': r.text, 'url': r.url}
 
@@ -189,7 +182,7 @@ class Crawler(object):
             data = self.crawl_page_main()
             self.json_dict[ent[0]] = data
             json_dump_to_file("./guangdong/final_json_%s.json" % ent[0], self.json_dict)
-            logging.debug(u"Now %s was finished\n"% ent[0])
+            settings.logger.debug(u"Now %s was finished\n"% ent[0])
         """
         #url = "http://gsxt.gdgs.gov.cn/aiccips/GSpublicity/GSpublicityList.html?service=entInfo_06CAc+ibgylJZ6y3lp3JBNsJrQ1qA5gDU7qYIU/VOow9Am1tz4CcjiZg6BZzhZQU-QuOaBlqqlUykdKokb5yijg=="
         #东莞证券
@@ -223,13 +216,13 @@ class Crawler(object):
 
         pripid = ent[ent.index("pripid")+7: len(ent)]
         url = "http://121.8.226.101:7001/search/search!entityShow?entityVo.pripid=" + pripid
-        sub_json_dict.update(self.crawl_ind_comm_pub_pages(url, 1, {'pripid': pripid}))
+        sub_json_dict.update(self.crawl_ind_comm_pub_pages(url, {'pripid': pripid}))
         url = "http://121.8.226.101:7001/search/search!enterpriseShow?entityVo.pripid="+ pripid
-        sub_json_dict.update(self.crawl_ent_pub_pages(url, 1))
+        sub_json_dict.update(self.crawl_ent_pub_pages(url))
         url = "http://121.8.226.101:7001/search/search!otherDepartShow?entityVo.pripid=" + pripid
-        sub_json_dict.update(self.crawl_other_dept_pub_pages(url, 1))
+        sub_json_dict.update(self.crawl_other_dept_pub_pages(url))
         url = "http://121.8.226.101:7001/search/search!judicialShow?entityVo.pripid=" + pripid
-        sub_json_dict.update(self.crawl_judical_assist_pub_pages(url, 1))
+        sub_json_dict.update(self.crawl_judical_assist_pub_pages(url))
         return sub_json_dict
 
 class Analyze(object):
@@ -282,11 +275,11 @@ class Analyze(object):
             if td_tag.find('table'):
                 multi_col_tag = td_tag.find('table').find('tr')
             if not multi_col_tag:
-                logging.error('invalid multi_col_tag, multi_col_tag = %s', multi_col_tag)
+                settings.logger.error('invalid multi_col_tag, multi_col_tag = %s', multi_col_tag)
                 return data
 
             if len(columns) != len(multi_col_tag.find_all('td', recursive=False)):
-                logging.error('column head size != column data size, columns head = %s, columns data = %s' % (columns, multi_col_tag.contents))
+                settings.logger.error('column head size != column data size, columns head = %s, columns data = %s' % (columns, multi_col_tag.contents))
                 return data
 
             for id, col in enumerate(columns):
@@ -347,10 +340,10 @@ class Analyze(object):
                 tr = bs_table.find_all('tr')[0]
             elif bs_table.find_all('tr')[1].find('th') and not bs_table.find_all('tr')[1].find('td') and len(bs_table.find_all('tr')[1].find_all('th')) > 1:
                 tr = bs_table.find_all('tr')[1]
-        #logging.debug(u"get_columns_of_record_table->tr:%s\n", tr)
+        #settings.logger.debug(u"get_columns_of_record_table->tr:%s\n", tr)
         ret_val=  self.get_record_table_columns_by_tr(tr, table_name)
-        #logging.debug(u"table columns:%s\n"% table_name)
-        #logging.debug(u"ret_val->%s\n", ret_val)
+        #settings.logger.debug(u"table columns:%s\n"% table_name)
+        #settings.logger.debug(u"ret_val->%s\n", ret_val)
         return  ret_val
 
     def get_record_table_columns_by_tr(self, tr_tag, table_name):
@@ -360,7 +353,7 @@ class Analyze(object):
         try:
             sub_col_index = 0
             if len(tr_tag.find_all('th'))==0:
-                logging.error(u"The table %s has no columns"% table_name)
+                settings.logger.error(u"The table %s has no columns"% table_name)
                 return columns
             #排除仅仅出现一列重复的名字
             count = 0
@@ -381,7 +374,7 @@ class Analyze(object):
                 columns= columns[: len(columns)/2]
 
         except Exception as e:
-            logging.error(u'exception occured in get_table_columns_by_tr, except_type = %s, table_name = %s' % (type(e), table_name))
+            settings.logger.error(u'exception occured in get_table_columns_by_tr, except_type = %s, table_name = %s' % (type(e), table_name))
         finally:
             return columns
 
@@ -401,7 +394,7 @@ class Analyze(object):
                         ths = tr.find_all('th')
                         tds = tr.find_all('td')
                         if len(ths) != len(tds):
-                            logging.error(u'th size not equals td size in table %s, what\'s up??' % table_name)
+                            settings.logger.error(u'th size not equals td size in table %s, what\'s up??' % table_name)
                             return
                         else:
                             for i in range(len(ths)):
@@ -410,7 +403,7 @@ class Analyze(object):
 
                 page_data[table_name] = sub_dict
             except Exception as e:
-                logging.error(u"fail to get table name with exception %s" % (type(e)))
+                settings.logger.error(u"fail to get table name with exception %s" % (type(e)))
             try:
                 tables = soup.body.find_all('table')[1:]
                 for table in tables:
@@ -419,7 +412,7 @@ class Analyze(object):
                         columns = self.get_columns_of_record_table(table, base_page, table_name)
                         page_data[table_name] =self.parse_table_1(table, columns, {}, table_name)
             except Exception as e:
-                logging.error(u"fail to parse the rest tables with exception %s" %(type(e)))
+                settings.logger.error(u"fail to parse the rest tables with exception %s" %(type(e)))
         else:
             pass
         return page_data
@@ -462,7 +455,7 @@ class Analyze(object):
                         table = table.nextSibling
 
                 except Exception as e:
-                    logging.error(u'parse failed, with exception %s' % e)
+                    settings.logger.error(u'parse failed, with exception %s' % e)
                     raise e
 
                 finally:
@@ -579,7 +572,7 @@ class Analyze(object):
                                     #has detail link
                                     if next_url:
                                         detail_page = self.crawler.crawl_page_by_url(next_url)['page']
-                                        html_to_file("next.html", detail_page['page'])
+                                        #html_to_file("next.html", detail_page['page'])
 
                                         if table_name == u'基本信息':
                                             page_data = self.parse_ent_pub_annual_report_page_1(detail_page['page'], table_name+ '_detail')
@@ -614,14 +607,14 @@ class Analyze(object):
                         ths = tr.find_all('th')
                         tds = tr.find_all('td')
                         if len(ths) != len(tds):
-                            logging.error(u'th size not equals td size in table %s, what\'s up??' % table_name)
+                            settings.logger.error(u'th size not equals td size in table %s, what\'s up??' % table_name)
                             return
                         else:
                             for i in range(len(ths)):
                                 if self.get_raw_text_by_tag(ths[i]):
                                     table_dict[self.get_raw_text_by_tag(ths[i])] = self.get_raw_text_by_tag(tds[i])
         except Exception as e:
-            logging.error(u'parse table %s failed with exception %s' % (table_name, type(e)))
+            settings.logger.error(u'parse table %s failed with exception %s' % (table_name, type(e)))
             raise e
         finally:
             return table_dict
@@ -643,7 +636,7 @@ def json_dump_to_file(path, json_dict):
 def read_ent_from_file(path):
     read_type = 'r'
     if not os.path.exists(path):
-        logging.error(u"There is no path : %s"% path )
+        settings.logger.error(u"There is no path : %s"% path )
     lines = []
     with codecs.open(path, read_type, 'utf-8') as f:
         lines = f.readlines()
@@ -672,10 +665,10 @@ class Guangdong1(object):
     def work(self):
         self.crawler.work()
 
-
+"""
 if __name__ == "__main__":
     reload (sys)
     sys.setdefaultencoding('utf8')
     guangdong = Guangdong1()
     guangdong.work()
-
+"""
