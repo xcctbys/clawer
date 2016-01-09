@@ -137,9 +137,13 @@ class YunnanCrawler(object):
 			for td in table.find_all('td'):
 				if td.find_all('a'):
 					tddict = {}
-					for table in self.get_tables(td.a['href']):
+					for i, table in enumerate(self.get_tables(td.a['href'])):
 						enter_head, enter_allths, enter_alltds = self.get_head_ths_tds(table)
-						print enter_head
+						#print enter_head
+						if i==0:
+							enter_head = enter_allths[0]
+							enter_allths = enter_allths[1:]
+						self.test_print_all_ths_tds(enter_head, enter_allths, enter_alltds)
 						tddict[enter_head] = self.get_one_to_one_dict(enter_allths, enter_alltds)
 					tdlist.append(tddict)
 				elif td.get_text():
