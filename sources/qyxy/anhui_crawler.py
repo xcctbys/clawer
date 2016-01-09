@@ -24,6 +24,7 @@ class AnhuiCrawler(object):
 	def __init__(self, json_restore_path):
 		self.id = None
 		self.json_restore_path = json_restore_path
+		self.ckcode_image_path = self.json_restore_path + '/anhui/ckcode.jpg'
 		self.reqst = requests.Session()
 		self.reqst.headers.update(
 			{'Accept': 'text/html, application/xhtml+xml, */*',
@@ -83,13 +84,13 @@ class AnhuiCrawler(object):
 		resp = self.reqst.get(self.mydict['validateCode'])
 		if resp.status_code != 200:
 			return None
-		with open('s.jpg', 'wb') as f:
+		with open(self.ckcode_image_path, 'wb') as f:
 			f.write(resp.content)
 		from CaptchaRecognition import CaptchaRecognition
 		#code_cracker = CaptchaRecognition('qinghai')
-		code_cracker = CaptchaRecognition('anhui')
+		code_cracker = CaptchaRecognition('qinghai')
 		#code_cracker = CaptchaRecognition('guangdong')
-		ck_code = code_cracker.predict_result('s.jpg')
+		ck_code = code_cracker.predict_result(self.ckcode_image_path)
 		return ck_code[1]
 
 	def get_id_num(self, findCode):
@@ -426,7 +427,7 @@ if __name__ == '__main__':
 	# anhui.run('450100000128441')
 	f = open('enterprise_list/anhui.txt', 'r')
 	for line in f.readlines():
-		#print line.split(',')[2].strip()
+		print line.split(',')[2].strip()
 		anhui.run(str(line.split(',')[2]).strip())
 	f.close()
 # anhui.run('340000000006066')
