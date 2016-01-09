@@ -118,10 +118,10 @@ class ZongjuCrawler(Crawler):
             return False
 
         while count < 30:
-            cur_time = datetime.now()
-            if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
-                settings.logger.info('crawl time over, exit!')
-                return False
+            # cur_time = datetime.now()
+            # if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
+            #     settings.logger.info('crawl time over, exit!')
+            #     return False
 
             count += 1
             ckcode = self.crack_checkcode()
@@ -284,7 +284,7 @@ class ZongjuParser(Parser):
             'branchTable': 'ind_comm_pub_arch_branch',      # 分支机构信息
             'punishTable': 'ind_comm_pub_administration_sanction',      # 行政处罚信息
             'spotcheckTable': 'ind_comm_pub_spot_check',        # 抽查检查信息
-            'memberTable': 'ind_comm_pub_arch_key_persons',     # 备案信息-主要人员信息
+            # 'memberTable': 'ind_comm_pub_arch_key_persons',     # 备案信息-主要人员信息
             'pledgeTable': 'ind_comm_pub_equity_ownership_reg',     # 股权出质登记信息
             'mortageTable': 'ind_comm_pub_movable_property_reg',        # 动产抵押登记信息
             'exceptTable': 'ind_comm_pub_business_exception',       # 经营异常信息
@@ -307,6 +307,31 @@ class ZongjuParser(Parser):
             table_name = name_table_map.get(table_title, None)
             if table_name:
                 self.crawler.json_dict[table_name] = self.parse_table(table, table_name, page)
+
+        # 备案信息-主要人员信息
+        table = soup.find("table", {"id": "memberTable"})
+        if table:
+            trs = table.find_all("tr")
+            list_th = [th for th in trs[1].stripped_strings]
+            table_save = []
+            for tr in trs[2:]:
+                content1 = {}
+                content2 = {}
+                list_td = []
+                tds = tr.find_all("td")
+                if not tds:
+                    continue
+                for td in tds:
+                    list_td.append(td.text.strip())
+                for i in range(0, 3):
+                    content1[list_th[i]] = list_td[i]
+                for i in range(3, 6):
+                    content2[list_th[i]] = list_td[i]
+                table_save.append(content1)
+                table_save.append(content2)
+            self.crawler.json_dict['ind_comm_pub_arch_key_persons'] = table_save
+        else:
+            self.crawler.json_dict['ind_comm_pub_arch_key_persons'] = []
 
     def parse_ent_pub_pages(self, page):
         """解析企业公示信息页面
@@ -435,26 +460,30 @@ class ZongjuParser(Parser):
         m = re.search(r'invt\.subConAm = \"([\d\.]+)\";', page)
         if m:
             subscribe_detail[u'认缴出资额（万元）'] = m.group(1)
-        m = re.search(r'invt\.conForm = \"()\";', page)
-        if m:
-            subscribe_detail[u'认缴出资方式'] = m.group(1)
+
         m = re.search(r'invt\.conDate = \'([\w\-\.]*)\';', page)
         if m:
             subscribe_detail[u'认缴出资日期'] = m.group(1)
 
-        paid_in_detail = {}
-        m = re.search(r'entInvtActlSet\.subConAm = \"([\d\.]+)\";', page)
-        if m:
-            subscribe_detail[u'认缴出资额（万元）'] = m.group(1)
-        m = re.search(r'entInvtActlSet\.conForm = \"()\";', page)
+        m = re.search(r'invt\.conForm = \"(.+)\";', page)
         if m:
             subscribe_detail[u'认缴出资方式'] = m.group(1)
-        m = re.search(r'entInvtActlSet\.conDate = \'([\w\-\.]*)\';', page)
-        if m:
-            subscribe_detail[u'认缴出资日期'] = m.group(1)
 
-        detail_dict[u'认缴额（万元）'] = subscribe_detail.get(u'认缴出资额', 0)
-        detail_dict[u'实缴额（万元）'] = paid_in_detail.get(u'实缴出资额', 0)
+        paid_in_detail = {}
+        m = re.search(r'invtActl\.acConAm = \"([\d\.]+)\";', page)
+        if m:
+            paid_in_detail[u'实缴出资额（万元）'] = m.group(1)
+
+        m = re.search(r'invtActl\.conForm = \"(.+)\";', page)
+        if m:
+            paid_in_detail[u'实缴出资方式'] = m.group(1)
+
+        m = re.search(r'invtActl\.conDate = \'([\w\-\.]*)\';', page)
+        if m:
+            paid_in_detail[u'实缴出资日期'] = m.group(1)
+
+        detail_dict[u'认缴额（万元）'] = subscribe_detail.get(u'认缴出资额（万元）', '0')
+        detail_dict[u'实缴额（万元）'] = paid_in_detail.get(u'实缴出资额（万元）', '0')
         detail_dict[u'认缴明细'] = subscribe_detail
         detail_dict[u'实缴明细'] = paid_in_detail
         return detail_dict
@@ -485,45 +514,45 @@ class ZongjuParser(Parser):
         return next_url
 
 
-# class TestParser(unittest.TestCase):
-#     def setUp(self):
-#         unittest.TestCase.setUp(self)
-#         self.crawler = ZongjuCrawler('./enterprise_crawler/zongju.json')
-#         self.parser = self.crawler.parser
-#         self.crawler.json_dict = {}
-#         self.crawler.ent_number = '00000'
-#
-#     def test_parse_ind_comm_pub_page(self):
-#         with open('./enterprise_crawler/zongju/ind_comm_pub.html') as f:
-#             page = f.read()
-#             self.parser.parse_ind_comm_pub_pages(page)
-#
-#     def test_parse_ent_pub_skeleton(self):
-#         with open('./enterprise_crawler/zongju/ent_pub.html') as f:
-#             page = f.read()
-#             self.parser.parse_ent_pub_pages(page)
-#
-#     def test_parse_other_dept_pub_skeleton(self):
-#         with open('./enterprise_crawler/zongju/other_dept_pub.html') as f:
-#             page = f.read()
-#             self.parser.parse_other_dept_pub_pages(page)
-#
-#     def test_parse_judical_assist_pub_skeleton(self):
-#         with open('./enterprise_crawler/zongju/judical_assist_pub.html') as f:
-#             page = f.read()
-#             self.parser.parse_judical_assist_pub_pages(page)
-#
-#     def test_parse_annual_report_page(self):
-#         with open('./enterprise_crawler/zongju/annual_report.html') as f:
-#             page = f.read()
-#             result = self.parser.parse_ent_pub_annual_report_page(page)
-#             CrawlerUtils.json_dump_to_file(self.crawler.json_restore_path, {self.crawler.ent_number: result})
-#
-#     def test_parse_shareholder_detail_page(self):
-#         with open('./enterprise_crawler/zongju/shareholder_detail.html') as f:
-#             page = f.read()
-#             result = self.parser.parse_ind_comm_pub_shareholder_detail_page(page)
-#             CrawlerUtils.json_dump_to_file(self.crawler.json_restore_path, {self.crawler.ent_number: result})
+class TestParser(unittest.TestCase):
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        self.crawler = ZongjuCrawler('./enterprise_crawler/zongju.json')
+        self.parser = self.crawler.parser
+        self.crawler.json_dict = {}
+        self.crawler.ent_number = '00000'
+
+    def test_parse_ind_comm_pub_page(self):
+        with open('./enterprise_crawler/zongju/ind_comm_pub.html') as f:
+            page = f.read()
+            self.parser.parse_ind_comm_pub_pages(page)
+
+    def test_parse_ent_pub_skeleton(self):
+        with open('./enterprise_crawler/zongju/ent_pub.html') as f:
+            page = f.read()
+            self.parser.parse_ent_pub_pages(page)
+
+    def test_parse_other_dept_pub_skeleton(self):
+        with open('./enterprise_crawler/zongju/other_dept_pub.html') as f:
+            page = f.read()
+            self.parser.parse_other_dept_pub_pages(page)
+
+    def test_parse_judical_assist_pub_skeleton(self):
+        with open('./enterprise_crawler/zongju/judical_assist_pub.html') as f:
+            page = f.read()
+            self.parser.parse_judical_assist_pub_pages(page)
+
+    def test_parse_annual_report_page(self):
+        with open('./enterprise_crawler/zongju/annual_report.html') as f:
+            page = f.read()
+            result = self.parser.parse_ent_pub_annual_report_page(page)
+            CrawlerUtils.json_dump_to_file(self.crawler.json_restore_path, {self.crawler.ent_number: result})
+
+    def test_parse_shareholder_detail_page(self):
+        with open('./enterprise_crawler/zongju/shareholder_detail.html') as f:
+            page = f.read()
+            result = self.parser.parse_ind_comm_pub_shareholder_detail_page(page)
+            CrawlerUtils.json_dump_to_file(self.crawler.json_restore_path, {self.crawler.ent_number: result})
 
 
 if __name__ == '__main__':
@@ -534,7 +563,7 @@ if __name__ == '__main__':
 
     crawler = ZongjuCrawler('./enterprise_crawler/zongju.json')
     enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/zongju.txt')
-    #enterprise_list = ['100000000018305']
+    # enterprise_list = ['100000000018305']
     for ent_number in enterprise_list:
         ent_number = ent_number.rstrip('\n')
         settings.logger.info('###################   Start to crawl enterprise with id %s   ###################\n' % ent_number)

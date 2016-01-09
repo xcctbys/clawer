@@ -254,7 +254,7 @@ class HeilongjiangParser(Parser):
         # 二类表
         id_table_map = {
             'altDiv': 'ind_comm_pub_reg_modify',  # 登记信息-变更信息
-            'memDiv': 'ind_comm_pub_arch_key_persons',  # 备案信息-主要人员信息
+            # 'memDiv': 'ind_comm_pub_arch_key_persons',  # 备案信息-主要人员信息
             "childDiv": 'ind_comm_pub_arch_branch',  # 备案信息-分支机构信息
             "pledgeDiv": 'ind_comm_pub_equity_ownership_reg',  # 股权出置登记信息
             "punDiv": 'ind_comm_pub_administration_sanction',  # 行政处罚信息
@@ -301,6 +301,38 @@ class HeilongjiangParser(Parser):
         else:
             self.crawler.json_dict['ind_comm_pub_movable_property_reg'] = []
 
+         # 备案信息-主要人员信息
+        div = soup.find("div", {"id": "memDiv"})
+        if div:
+            table_th = div.previous_sibling.previous_sibling
+            th_trs = table_th.find_all("tr")
+
+            list_th = [th for th in th_trs[1].stripped_strings]
+            table = div.find("table")
+            if table:
+                trs = table.find_all("tr")
+                table_save = []
+                for tr in trs:
+                    content1 = {}
+                    content2 = {}
+                    list_td = []
+                    tds = tr.find_all("td")
+                    if not tds:
+                        continue
+                    for td in tds:
+                        list_td.append(td.text.strip())
+                    for i in range(0, 3):
+                        content1[list_th[i]] = list_td[i]
+                    for i in range(3, 6):
+                        content2[list_th[i]] = list_td[i]
+                    table_save.append(content1)
+                    table_save.append(content2)
+                self.crawler.json_dict['ind_comm_pub_arch_key_persons'] = table_save
+            else:
+                self.crawler.json_dict['ind_comm_pub_arch_key_persons'] = []
+        else:
+            self.crawler.json_dict['ind_comm_pub_arch_key_persons'] = []
+
     def parse_ent_pub_pages(self, page):
         soup = BeautifulSoup(page, "html5lib")
 
@@ -345,7 +377,7 @@ class HeilongjiangParser(Parser):
             content_tds = tr.find_all("td")
             for table_td_text in content_tds:
                 table_td1.append(table_td_text.text.strip())
-            for i in range(0, len(table_th1)-1):
+            for i in range(0, len(table_th1)):
                 table_ts[table_th1[i]] = table_td1[i]
             table_detail = []
             a = qiyenianbao.find_all("a")
@@ -403,8 +435,8 @@ class HeilongjiangParser(Parser):
                             wrap[list_table_title.text] = table_c
                             table_detail.append(wrap)
 
-                cont = table_ts[u'报送年度']
-                table_ts[u'报送年度'] = [cont, table_detail]
+                # cont = table_ts[u'报送年度']
+                table_ts[u'详情'] = table_detail
 
             table_save_all.append(table_ts)
 
