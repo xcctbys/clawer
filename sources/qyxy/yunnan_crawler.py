@@ -109,6 +109,24 @@ class YunnanCrawler(object):
 					count += 1
 					continue
 
+	def get_re_list_from_content(self, content):
+		m = re.search(r'investor\.invName = \"(.+)\"', content)
+		one = unicode(m.group(1), 'utf8') if m else None
+		m = re.search(r'invt\.subConAm = \"(.+)\"', content)
+		five = unicode(m.group(1), 'utf8') if m else None
+		m = re.search(r'invt\.conDate = [\"|\'](.+)[\"|\']', content)
+		six = unicode(m.group(1), 'utf8') if m else None
+		m = re.search(r'invt\.conForm = [\"|\'](.+)[\"|\']', content)
+		four = unicode(m.group(1), 'utf8') if m else None
+		m = re.search(r'invtActl\.acConAm = [\"|\'](.+)[\"|\']', content)
+		eight = unicode(m.group(1), 'utf8') if m else None
+		m = re.search(r'invtActl\.conDate = [\"|\'](.+)[\"|\']', content)
+		nigh = unicode(m.group(1), 'utf8') if m else None
+		m = re.search(r'invtActl\.conForm = [\"|\'](.+)[\"|\']', content)
+		seven = unicode(m.group(1), 'utf8') if m else None
+		return [one, five, eight, four, five, six, seven, eight, nigh]
+		pass
+
 	def get_tables(self, url):
 		resp = self.reqst.get(url)
 		if resp.status_code == 200:
@@ -117,13 +135,16 @@ class YunnanCrawler(object):
 	def get_head_ths_tds(self, table):
 		head = table.find_all('th')[0].get_text().strip().split('\n')[0].strip()
 		allths = [th.get_text().strip() for th in table.find_all('th')[1:] if th.get_text()]
-		if head == u'股东信息' or head == u'发起人信息' or head == u'股东（发起人）信息':
+		if head == u'股东信息' or head == u'发起人信息' or head == u'股东（发起人）信息' or head == u'行政许可信息':
 			tdlist = []
 			for td in table.find_all('td'):
 				if td.find_all('a'):
 					tddict = {}
 					detail_head, detail_allths, detail_alltds = self.get_head_ths_tds(self.get_tables(td.a['href'])[0])
-					print '---------------------------', len(detail_allths[:3]+detail_allths[5:]), len(detail_alltds)
+					if detail_head == u'股东及出资信息':
+						detail_content = self.reqst.get(td.a['href']).content
+						detail_alltds = self.get_re_list_from_content(detail_content)
+					#print '---------------------------', len(detail_allths[:3]+detail_allths[5:]), len(detail_alltds)
 					tddict = self.get_one_to_one_dict(detail_allths[:3]+detail_allths[5:], detail_alltds)
 					tdlist.append(tddict)
 				elif td.get_text():
@@ -132,6 +153,8 @@ class YunnanCrawler(object):
 					tdlist.append(None)
 			return head, allths, tdlist
 			pass
+		# elif head == u'股东及出资信息（币种与注册资本一致）' or head == u'股东及出资信息':
+		# 	pass
 		elif head == u'企业年报':
 			tdlist = []
 			for td in table.find_all('td'):
@@ -143,7 +166,7 @@ class YunnanCrawler(object):
 						if i==0:
 							enter_head = enter_allths[0]
 							enter_allths = enter_allths[1:]
-						self.test_print_all_ths_tds(enter_head, enter_allths, enter_alltds)
+						#self.test_print_all_ths_tds(enter_head, enter_allths, enter_alltds)
 						tddict[enter_head] = self.get_one_to_one_dict(enter_allths, enter_alltds)
 					tdlist.append(tddict)
 				elif td.get_text():
@@ -199,7 +222,7 @@ class YunnanCrawler(object):
 		#self.test_print_table(tables)
 		for table in tables:
 			head, allths, alltds = self.get_head_ths_tds(table)
-			print head
+			#print head
 			self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
 			#self.test_print_all_ths_tds(head, allths, alltds)
 		pass			
@@ -207,14 +230,14 @@ class YunnanCrawler(object):
 		#self.test_print_table(tables)
 		for table in tables:
 			head, allths, alltds = self.get_head_ths_tds(table)
-			print head
+			#print head
 			self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
 		pass
 	def get_json_three(self, mydict, tables):
 		#self.test_print_table(tables)
 		for table in tables:
 			head, allths, alltds = self.get_head_ths_tds(table)
-			print head
+			#print head
 			self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
 		
 		pass
@@ -222,7 +245,7 @@ class YunnanCrawler(object):
 		#self.test_print_table(tables)
 		for table in tables:
 			head, allths, alltds = self.get_head_ths_tds(table)
-			print head
+			#print head
 			self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
 		pass
 
@@ -251,9 +274,9 @@ class YunnanCrawler(object):
 
 if __name__ == '__main__':
 	yunnan = YunnanCrawler('./enterprise_crawler/yunnan.json')
-	yunnan.run('530000000002692')
-	# f = open('enterprise_list/yunnan.txt', 'r')
-	# for line in f.readlines():
-	# 	print line.split(',')[2].strip()
-	# 	yunnan.run(str(line.split(',')[2]).strip())
-	# f.close()
+	#yunnan.run('530111000002966')
+	f = open('enterprise_list/yunnan.txt', 'r')
+	for line in f.readlines():
+		print line.split(',')[2].strip()
+		yunnan.run(str(line.split(',')[2]).strip())
+	f.close()
