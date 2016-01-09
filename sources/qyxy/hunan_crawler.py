@@ -559,7 +559,7 @@ if __name__ == '__main__':
 
     crawler = HunanCrawler('./enterprise_crawler/hunan.json')
     enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/hunan.txt')
-    # enterprise_list = ['430600000016355']
+    # enterprise_list = ['430000000011972']
     for ent_number in enterprise_list:
         ent_number = ent_number.rstrip('\n')
         settings.logger.info('###################   Start to crawl enterprise with id %s   ###################\n' % ent_number)
