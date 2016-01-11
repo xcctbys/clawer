@@ -24,7 +24,7 @@ class AnhuiCrawler(object):
 	def __init__(self, json_restore_path):
 		self.id = None
 		self.json_restore_path = json_restore_path
-		self.ckcode_image_path = self.json_restore_path + '/anhui/ckcode.jpg'
+		self.ckcode_image_path = settings.json_restore_path + '/anhui/ckcode.jpg'
 		self.reqst = requests.Session()
 		self.reqst.headers.update(
 			{'Accept': 'text/html, application/xhtml+xml, */*',
