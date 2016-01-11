@@ -460,6 +460,9 @@ class HunanParser(Parser):
         m = re.search(r'invt\.conDate = \'([\w\-\.]*)\';', page)
         if m:
             subscribe_detail[u'认缴出资日期'] = m.group(1)
+        m = re.search(r'invt\.conDate = \'(\d+年\d+月\d+日)\';', page)
+        if m:
+            subscribe_detail[u'认缴出资日期'] = m.group(1)
 
         m = re.search(r'invt\.conForm = \"(.+)\";', page)
         if m:
@@ -475,6 +478,9 @@ class HunanParser(Parser):
             paid_in_detail[u'实缴出资方式'] = m.group(1)
 
         m = re.search(r'invtActl\.conDate = \'([\w\-\.]*)\';', page)
+        if m:
+            paid_in_detail[u'实缴出资日期'] = m.group(1)
+        m = re.search(r'invtActl\.conDate = \'(\d+年\d+月\d+日)\';', page)
         if m:
             paid_in_detail[u'实缴出资日期'] = m.group(1)
 
