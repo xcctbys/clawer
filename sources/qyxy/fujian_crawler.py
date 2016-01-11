@@ -37,7 +37,6 @@ class FujianCrawler(Crawler):
             'official_site': 'http://wsgs.fjaic.gov.cn/creditpub/home',
             'get_checkcode': 'http://wsgs.fjaic.gov.cn/creditpub/captcha?preset=math-01',
             'post_checkcode': 'http://wsgs.fjaic.gov.cn/creditpub/security/verify_captcha',  # 返回0，1
-            'post_checkcode2': 'http://wsgs.fjaic.gov.cn/creditpub/search/ent_info_list',  # post{searchType: "1", captcha: captcha, session.token: session.token, condition.keyword:111}
 
             'get_info_entry': 'http://wsgs.fjaic.gov.cn/creditpub/search/ent_info_list', #获得企业入口
             'open_info_entry': 'http://wsgs.fjaic.gov.cn/creditpub/notice/view?', #获得企业信息页面的url，通过指定不同的tab=1-4来选择不同的内容（工商公示，企业公示...）
@@ -461,6 +460,9 @@ class FujianParser(Parser):
         m = re.search(r'invt\.conDate = \'([\w\-\.]*)\';', page)
         if m:
             subscribe_detail[u'认缴出资日期'] = m.group(1)
+        m = re.search(r'invt\.conDate = \'(\d+年\d+月\d+日)\';', page)
+        if m:
+            subscribe_detail[u'认缴出资日期'] = m.group(1)
 
         m = re.search(r'invt\.conForm = \"(.+)\";', page)
         if m:
@@ -476,6 +478,9 @@ class FujianParser(Parser):
             paid_in_detail[u'实缴出资方式'] = m.group(1)
 
         m = re.search(r'invtActl\.conDate = \'([\w\-\.]*)\';', page)
+        if m:
+            paid_in_detail[u'实缴出资日期'] = m.group(1)
+        m = re.search(r'invtActl\.conDate = \'(\d+年\d+月\d+日)\';', page)
         if m:
             paid_in_detail[u'实缴出资日期'] = m.group(1)
 
@@ -559,8 +564,8 @@ if __name__ == '__main__':
     FujianCrawler.code_cracker = CaptchaRecognition('fujian')
 
     crawler = FujianCrawler('./enterprise_crawler/fujian.json')
-    enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/fujian.txt')
-    # enterprise_list = ['350000100010589']
+    # enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/fujian.txt')
+    enterprise_list = ['350000100028716']
     for ent_number in enterprise_list:
         ent_number = ent_number.rstrip('\n')
         settings.logger.info('###################   Start to crawl enterprise with id %s   ###################\n' % ent_number)
