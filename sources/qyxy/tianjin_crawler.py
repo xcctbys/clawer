@@ -809,7 +809,7 @@ def read_ent_from_file(path):
         lines = f.readlines()
     lines = [ line.split(',') for line in lines ]
     return lines
-
+"""
 if __name__ == "__main__":
     reload (sys)
     sys.setdefaultencoding('utf8')
@@ -836,5 +836,4 @@ if __name__ == "__main__":
         settings.logger.info(u'###################   Start to crawl enterprise with id %s   ###################\n' % ent_str[2])
         tianjin.run(ent_num = ent_str[2])
         settings.logger.info(u'###################   Enterprise with id  %s Finished!  ###################\n' % ent_str[2])
-"""
 
