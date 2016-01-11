@@ -436,10 +436,10 @@ class TianjinCrawler(object):
                 if not tr.find('th'):
                     if not tr.find('td', {'class': 'bg title'}) and not tr.find('td', {'class': 'bg'}):
                         tr = tbody.find_all('tr')[0]
-                    elif len(tr.find_all('td')) == len(tr.find_all('td', attrs={'class':'bg title'})):
+                    elif len(tr.find_all('td')) == len(tr.find_all('td', attrs={'class':'bg title', 'class': 'bg'})):
                         pass
-                    elif len(tr.find_all('td')) == len(tr.find_all('td', attrs={'class':'bg'})):
-                        pass
+                    #elif len(tr.find_all('td')) == len(tr.find_all('td', attrs={'class':'bg'})):
+                    #    pass
                     else:
                         tr = None
 
@@ -580,7 +580,7 @@ class TianjinCrawler(object):
             #in case of that, we use the whole html page to locate the tbody
             print table_name
             columns = self.get_columns_of_record_table(bs_table, page, table_name)
-
+            #print columns
             #print columns
             tbody = None
             if len(bs_table.find_all('tbody'))>1:
@@ -606,7 +606,7 @@ class TianjinCrawler(object):
                 sub_list = None
                 item = None
                 for tr in records_tag.find_all('tr'):
-                    if tr.find_all('td', attrs={'class':None}) and len(tr.find_all('td', recursive=False)) % column_size == 0:
+                    if tr.find_all('td', attrs={'class':None,  'class': ""}) and len(tr.find_all('td', recursive=False)) % column_size == 0:
                         col_count = 0
                         item = {}
                         for td in tr.find_all('td',recursive=False):
@@ -637,7 +637,7 @@ class TianjinCrawler(object):
                                 col_count = 0
                     #this case is for the ind-comm-pub-reg-shareholders----details'table
                     #a fucking dog case!!!!!!
-                    elif tr.find_all('td', attrs={'class':None}) and len(tr.find_all('td', recursive=False)) == col_span and col_span != column_size:
+                    elif tr.find_all('td', attrs={'class':None, 'class': ""}) and len(tr.find_all('td', recursive=False)) == col_span and col_span != column_size:
                         col_count = 0
                         sub_col_index = 0
                         item = {}
@@ -659,7 +659,7 @@ class TianjinCrawler(object):
                                 item_array.append(item.copy())
                                 col_count = 0
                     # 在股东及出资情况当中出现的多行数据, mother-fucker
-                    elif tr.find_all('td', attrs={'class':None}):
+                    elif tr.find_all('td', attrs={'class':None, 'class': ""}):
                         if len(tr.find_all('td', recursive=False)) == single_col:
                             col_count = 0
                             item = {}
@@ -768,11 +768,11 @@ class TianjinCrawler(object):
         # data = self.crawl_page_main()
 
         self.ents= ['/platform/saic/viewBase.ftl?entId=349DDA405D520231E04400306EF52828']
-        self.crawl_page_main()
+        data = self.crawl_page_main()
 
         #txt = html_from_file('tianjin_dj.html')
-        txt = html_from_file('next.html')
-        data = self.parse_page(txt)
+        #txt = html_from_file('next.html')
+        #data = self.parse_page(txt)
         #data = self.parse_ent_pub_annual_report_page(txt)
         #data = self.parse_page(txt)
         json_dump_to_file('tianjin_json.json', data)
@@ -809,7 +809,7 @@ def read_ent_from_file(path):
         lines = f.readlines()
     lines = [ line.split(',') for line in lines ]
     return lines
-"""
+
 if __name__ == "__main__":
     reload (sys)
     sys.setdefaultencoding('utf8')
@@ -836,5 +836,5 @@ if __name__ == "__main__":
         settings.logger.info(u'###################   Start to crawl enterprise with id %s   ###################\n' % ent_str[2])
         tianjin.run(ent_num = ent_str[2])
         settings.logger.info(u'###################   Enterprise with id  %s Finished!  ###################\n' % ent_str[2])
-
+"""
 
