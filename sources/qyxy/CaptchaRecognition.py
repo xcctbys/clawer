@@ -140,7 +140,7 @@ class CaptchaRecognition(object):
             self.customized_width = 30
             self.anti_noise = True
         elif captcha_type == "chongqing":
-            self.image_label_count = 6
+            self.image_label_count = 4
             self.masker = 40
             self.customized_postisions = True
             self.position_left = [0, 23, 40, 65, 85, 105]
