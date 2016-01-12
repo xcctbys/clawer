@@ -116,6 +116,16 @@ class SichuanCrawler(object):
 	def get_re_list_from_content(self, content):
 		
 		pass
+
+	def help_dcdy_get_dict(self, method, maent_pripid, maent_xh, random):
+		data = {'method':method, 'maent.pripid':maent_pripid, 'maent.xh':maent_xh, 'random':random}
+		resp = self.reqst.post('http://gsxt.scaic.gov.cn/ztxy.do', data = data)
+		needdict = {}
+		for table in BeautifulSoup(resp.content).find_all('table'):
+			dcdy_head, dcdy_allths, dcdy_alltds = self.get_head_ths_tds(table)
+			needdict[dcdy_head] = self.get_one_to_one_dict(dcdy_allths, dcdy_alltds)
+		return needdict
+
 	def help_enter_get_dict(self, method, maent_pripid, year, random):
 		data = {'method':method, 'maent.pripid':maent_pripid, 'maent.nd':year, 'random':random}
 		resp = self.reqst.post('http://gsxt.scaic.gov.cn/ztxy.do', data=data)
@@ -154,6 +164,7 @@ class SichuanCrawler(object):
 			print 'i'*100
 		
 	def get_head_ths_tds(self, table):
+		print table
 		head = table.find_all('th')[0].get_text().strip().split('\n')[0].strip()
 		allths = [th.get_text().strip() for th in table.find_all('th')[1:] if th.get_text()]
 		for i, th in enumerate(allths):
@@ -200,6 +211,18 @@ class SichuanCrawler(object):
 					m = re.search(r'doNdbg\(\'(\w+)\'\)',onclick)
 					if m:
 						alltds.append(self.help_enter_get_dict('ndbgDetail', self.pripid, m.group(1), self.cur_time))
+				elif td.get_text():
+					alltds.append(td.get_text().strip())
+				else:
+					alltds.append(None)
+		if head == u'动产抵押登记信息':
+			alltds = []
+			for td in table.find_all('td'):
+				if td.find('a'):
+					onclick = td.a['onclick']
+					m = re.search(r'doDcdyDetail\(\'(\w+?)\'\)', onclick)
+					if m:
+						alltds.append(self.help_dcdy_get_dict('dcdyDetail', self.pripid, m.group(1), self.cur_time))
 				elif td.get_text():
 					alltds.append(td.get_text().strip())
 				else:
@@ -393,7 +416,7 @@ class SichuanCrawler(object):
 
 if __name__ == '__main__':
 	sichuan = SichuanCrawler('./enterprise_crawler/sichuan.json')
-	# sichuan.run('510181000037975')
+	# sichuan.run('510122000094217')
 	# sichuan.run('511000000000753')
 	# sichuan.run('510300000004462')
 	f = open('enterprise_list/sichuan.txt', 'r')
