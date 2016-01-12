@@ -167,19 +167,21 @@ class ShandongCrawler(object):
                 entpripid = ent[ent.rfind('/')+1:]
                 temp = ent[:ent.rfind('/')]
                 enttype =  temp[temp.rfind('/')+1 :]
-                sub_json_dict.update(self.crawl_ind_comm_pub_pages(url))
+
+                #sub_json_dict.update(self.crawl_ind_comm_pub_pages(url))
                 # 企业公示信息 http://218.57.139.24/pub/qygsdetail/
                 #url = url.replace('gsgsdetail', 'qygsdetail')
                 #url = urls['host'] + 'qygsdetail/'+ enttype+'/'+entpripid
-                # sub_json_dict.update(self.crawl_ent_pub_pages(url))
+                #sub_json_dict.update(self.crawl_ent_pub_pages(url))
                 # #其他部门http://218.57.139.24/pub/qtgsdetail/
                 # url = url.replace('qygsdetail', 'qtgsdetail')
-                #url = urls['host']+'qtgsdetail/' + enttype+'/' + entpripid
-                # sub_json_dict.update(self.crawl_other_dept_pub_pages(url))
+                url = urls['host']+'qtgsdetail/' + enttype+'/' + entpripid
+                sub_json_dict.update(self.crawl_other_dept_pub_pages(url))
                 # # 司法协助公示信息 sfgsdetail
                 #url = url.replace('qtgsdetail', 'sfgsdetail')
                 #url = urls['host']+ 'sfgsdetail/' + enttype +'/' + entpripid
                 # sub_json_dict.update(self.crawl_judical_assist_pub_pages(url))
+                json_dump_to_file('shandong_json.json', sub_json_dict)
 
         except Exception as e:
             settings.logger.error(u"An error ocurred when getting the main page, error: %s"% type(e))
@@ -195,40 +197,32 @@ class ShandongCrawler(object):
             page = self.crawl_page_by_url(url)['page']
             entpripid = url[url.rfind('/')+1:]
             post_data = {'encrpripid' : entpripid}
-
-            """
             dj = self.parse_page(page, 'jibenxinxi') # class= result-table
-            json_dump_to_file('shandong_json.json', dj)
-
             sub_json_dict['ind_comm_pub_reg_basic'] = {u'基本信息' : dj[u'基本信息'] if dj.has_key(u'基本信息') else []}        # 登记信息-基本信息
             sub_json_dict['ind_comm_pub_reg_shareholder'] = {u'股东信息': dj[u'股东信息'] if dj.has_key(u'股东信息') else [] }  # 股东信息
             sub_json_dict['ind_comm_pub_reg_modify'] = { u'变更信息' : dj[u'变更信息'] if dj.has_key(u'变更信息') else [] }      # 变更信息
 
             ba = self.parse_page(page, 'beian', post_data)
-            json_dump_to_file('shandong_json.json', beian)
-
             sub_json_dict['ind_comm_pub_arch_key_persons'] = { u'主要人员信息' : ba[u'主要人员信息'] if ba.has_key(u'主要人员信息') else [] }  # 备案信息-主要人员信息
             sub_json_dict['ind_comm_pub_arch_branch'] = { u'分支机构信息' : ba[u'分支机构信息'] if ba.has_key(u'分支机构信息') else [] }      # 备案信息-分支机构信息
             sub_json_dict['ind_comm_pub_arch_liquidation'] = { u'清算信息': ba[u'清算信息'] if ba.has_key(u'清算信息') else [] }  # 备案信息-清算信息
-            """
             titles = ('ind_comm_pub_movable_property_reg',  # 动产抵押登记信息
                      'ind_comm_pub_equity_ownership_reg',  # 股权出置登记信息
-                     # 'ind_comm_pub_administration_sanction',  # 行政处罚信息
-                     # 'ind_comm_pub_business_exception',  # 经营异常信息
-                     # 'ind_comm_pub_serious_violate_law',  # 严重违法信息
-                     # 'ind_comm_pub_spot_check'        # 抽查检查信息
+                     'ind_comm_pub_administration_sanction',  # 行政处罚信息
+                     'ind_comm_pub_business_exception',  # 经营异常信息
+                     'ind_comm_pub_serious_violate_law',  # 严重违法信息
+                     'ind_comm_pub_spot_check'        # 抽查检查信息
                      )
             tabs = (
                         'dongchandiya',#动产抵押
                         'guquanchuzhi'  ,# 股权出质登记信息
-                        # 'xingzhengchufa' ,#行政处罚
-                        # 'jingyingyichangminglu' , # 企业经营异常
-                        # 'yanzhongweifaqiye' , # 严重违法
-                        # 'chouchaxinxi' ,#抽样检查
+                        'xingzhengchufa' ,#行政处罚
+                        'jingyingyichangminglu' , # 企业经营异常
+                        'yanzhongweifaqiye' , # 严重违法
+                        'chouchaxinxi' ,#抽样检查
                     )
             for title, tab in zip(titles, tabs):
                 sub_json_dict[title] = self.parse_page(page, tab, post_data)
-            json_dump_to_file('shandong_json.json', sub_json_dict)
         except Exception as e:
             logging.debug(u"An error ocurred in crawl_ind_comm_pub_pages: %s"% type(e))
             raise e
@@ -238,23 +232,29 @@ class ShandongCrawler(object):
     def crawl_ent_pub_pages(self, url):
         sub_json_dict = {}
         try:
-            sub_json_dict['ent_pub_administration_license'] = []    #行政许可信息
-            sub_json_dict['ent_pub_administration_sanction'] = []   #行政许可信息
-            titles= (   'ent_pub_ent_annual_report',
+            page = self.crawl_page_by_url(url)['page']
+            #html_to_file('next.html', page)
+            entpripid = url[url.rfind('/')+1:]
+            post_data = {'encrpripid' : entpripid}
+            #page = html_from_file('next.html')
+            titles= (   'ent_pub_ent_annual_report',      #企业年报
+                        'ent_pub_administration_license', #行政许可信息
+                        'ent_pub_administration_sanction', #行政处罚信息
                         'ent_pub_shareholder_capital_contribution', #企业投资人出资比例
                         'ent_pub_equity_change', #股权变更信息
                         'ent_pub_knowledge_property', #知识产权出资登记
                     )
             items = (
-                        'nblist', #企业年报
-                        'gdcz', #股东及出资
-                        'gqbg', #股权变更信息
-                        'zscq', #知识产权出质登记信息
+                        'qiyenianbao', #企业年报
+                        'xingzhengxuke', #行政许可信息
+                        'xingzhengchufa', # 行政处罚信息
+                        'touziren', #股东及出资信息
+                        'gudongguquan', #股权变更信息
+                        'zhishichanquan', #知识产权出质登记信息
                     )
             for title, item in zip(titles, items):
-                page = self.crawl_page_by_url(url%item)['page']
-                #html_to_file('shandong_dj.html', page)
-                sub_json_dict[title] = self.parse_page(page)
+                sub_json_dict[title] = self.parse_page_qygs(page, item, post_data)
+
         except Exception as e:
             logging.debug(u"An error ocurred in crawl_ent_pub_pages: %s"% type(e))
             raise e
@@ -264,26 +264,46 @@ class ShandongCrawler(object):
     def crawl_other_dept_pub_pages(self, url):
         sub_json_dict = {}
         try:
+            page = self.crawl_page_by_url(url)['page']
+            #html_to_file('next.html', page)
+            entpripid = url[url.rfind('/')+1:]
+            post_data = {'encrpripid' : entpripid}
             titles =(   'other_dept_pub_administration_license',#行政许可信息
                         'other_dept_pub_administration_sanction'#行政处罚信息
                     )
-            tabs=(  "gddjlist", # 股权冻结信息
-                    "gdbglist", # 股东变更信息
+            tabs=(  "xingzhengxuke", #行政许可信息
+                    "xingzhengchufa", # 行政处罚信息
                 )
             for title, tab in zip(titles, tabs):
-                page = self.crawl_page_by_url(url%tab)['page']
-                sub_json_dict[title] = self.parse_page(page)
+                sub_json_dict[title] = self.parse_page_qtbm(page, tab)
         except Exception as e:
             settings.logger.debug(u"An error ocurred in crawl_other_dept_pub_pages: %s"% (type(e)))
             raise e
         finally:
             return sub_json_dict
-        pass
 
     def crawl_judical_assist_pub_pages(self, url):
         """爬取司法协助信息页面
         """
-        pass
+        sub_json_dict = {}
+        try:
+            page = self.crawl_page_by_url(url)['page']
+            #html_to_file('next.html', page)
+            entpripid = url[url.rfind('/')+1:]
+            post_data = {'encrpripid' : entpripid}
+            titles =(   'other_dept_pub_administration_license',#行政许可信息
+                        'other_dept_pub_administration_sanction'#行政处罚信息
+                    )
+            tabs=(  "xingzhengxuke", #行政许可信息
+                    "xingzhengchufa", # 行政处罚信息
+                )
+            for title, tab in zip(titles, tabs):
+                sub_json_dict[title] = self.parse_page_qtbm(page, tab)
+        except Exception as e:
+            settings.logger.debug(u"An error ocurred in crawl_other_dept_pub_pages: %s"% (type(e)))
+            raise e
+        finally:
+            return sub_json_dict
 
 
     def get_raw_text_by_tag(self, tag):
@@ -343,63 +363,13 @@ class ShandongCrawler(object):
 
     def get_detail_link(self, bs4_tag):
         if bs4_tag.has_attr('href') and (bs4_tag['href'] != '#' and bs4_tag['href'] != 'javascript:void(0);'):
-            #print 'href'
-            pattern = re.compile(r'http'| r'javascript:void(0);')
+            pattern = re.compile(r'http')
             if pattern.search(bs4_tag['href']):
                 return bs4_tag['href']
-            return urls['prefix_url'] + bs4_tag['href']
+            return urls['webroot'] + bs4_tag['href']
         elif bs4_tag.has_attr('onclick'):
             #print 'onclick'
-            txt= bs4_tag['onclick']
-            if re.compile('CheckDetail').search(txt):
-
-                re1='.*?'   # Non-greedy match on filler
-                re2='(?:[a-z][a-z]+)'   # Uninteresting: word
-                re3='.*?'   # Non-greedy match on filler
-                re4='((?:[a-z][a-z]+))' # Word 1
-
-                rg = re.compile(re1+re2+re3+re4,re.IGNORECASE|re.DOTALL)
-                m = rg.search(txt)
-                if m:
-                    key=m.group(1)
-                    re1='.*?'   # Non-greedy match on filler
-                    re2='(\\\'.*?\\\')' # Single Quote String 1
-                    re3='.*?'   # Non-greedy match on filler
-                    re4='(\\\'.*?\\\')' # Single Quote String 2
-
-                    rg = re.compile(re1+re2+re3+re4,re.IGNORECASE|re.DOTALL)
-                    m = rg.search(txt)
-                    if m:
-                        # strip extra \'\' for each side
-                        id_str=m.group(1)[1:-1]
-                        entid_str=m.group(2)[1:-1]
-                    url = urls['host'] + CheckDetail[key]%(id_str, entid_str)
-
-            elif re.compile('nbdetail').search(txt):
-                re1='.*?'   # Non-greedy match on filler
-                re2='(\\\'.*?\\\')' # Single Quote String 1
-                re3='.*?'   # Non-greedy match on filler
-                re4='(\\\'.*?\\\')' # Single Quote String 2
-
-                rg = re.compile(re1+re2+re3+re4,re.IGNORECASE|re.DOTALL)
-                m = rg.search(txt)
-                if m:
-                    entid_str=m.group(1)[1:-1]
-                    year_str=m.group(2)[1:-1]
-                url = urls['host'] + "/report/annals?entid=%s&year=%s&hasInfo=0"%(entid_str, year_str)
-            elif re.compile('sfGddjDetail').search(txt):
-                re1='.*?'   # Non-greedy match on filler
-                re2='(\\\'.*?\\\')' # Single Quote String 1
-                re3='.*?'   # Non-greedy match on filler
-                re4='(\\\'.*?\\\')' # Single Quote String 2
-
-                rg = re.compile(re1+re2+re3+re4,re.IGNORECASE|re.DOTALL)
-                m = rg.search(txt)
-                if m:
-                    id_str=m.group(1)[1:-1]
-                    entid_str=m.group(2)[1:-1]
-                url = urls['host'] + "/report/gddjdetail?id=%s&entid=%s&hasInfo=0"%(id_str, entid_str)
-            return url
+            settings.logger.error(u"onclick attr was found in detail link")
         return None
 
 
@@ -411,7 +381,6 @@ class ShandongCrawler(object):
             tbody = bs_table.find('tbody') or BeautifulSoup(page, 'html5lib').find('tbody')
 
         tr = None
-        print tbody
         if tbody:
             if len(tbody.find_all('tr')) <= 1:
                 tr = tbody.find('tr')
@@ -462,6 +431,78 @@ class ShandongCrawler(object):
         finally:
             return columns
 
+    # 其他部门信息页面
+    def parse_page_qtbm(self, page, div_id='sifapanding', post_data= {}):
+        soup = BeautifulSoup(page, 'html5lib')
+        page_data = {}
+
+        try:
+            div = soup.find('div', attrs = {'id':div_id})
+            if div:
+                table = div.find('table')
+            else:
+                table = soup.find('table')
+            #print table
+            while table:
+                if table.name == 'table':
+                    table_name = self.get_table_title(table)
+                    if table_name:
+                        page_data[table_name] = self.parse_table(table, table_name, page)
+                table = table.nextSibling
+        except Exception as e:
+            logging.error(u'parse failed, with exception %s' % e)
+            raise e
+        finally:
+            return page_data
+
+    def currency(self, cur):
+        strcur=u"元"
+        if cur == "156":
+            strcur=u"元"
+        elif cur=="840":
+            strcur=u"美元"
+        elif cur=="392":
+            strcur=u"日元"
+        elif cur=="954":
+            strcur=u"欧元"
+        elif cur=="344":
+            strcur=u"港元"
+        elif cur=="826":
+            strcur=u"英镑"
+        elif cur=="280":
+            strcur=u"德国马克"
+        elif cur=="124":
+            strcur=u"加拿大元"
+        elif cur=="250":
+            strcur=u"法国法郎"
+        elif cur=="528":
+            strcur=u"荷兰"
+        elif cur=="756":
+            strcur=u"瑞士法郎"
+        elif cur=="702":
+            strcur=u"新加坡元"
+        elif cur=="036":
+            strcur=u"澳大利亚元"
+        elif cur=="208":
+            strcur=u"丹麦克郎"
+        return strcur
+    def getRange(self, ranges):
+        rtn=""
+        ras=ranges.split(",");
+        for l in ras:
+            if l ==  "1":
+                rtn+="主债权 "
+            elif l ==  "2":
+                rtn+="利息 "
+            elif l ==  "3":
+                rtn+="违约金 "
+            elif l ==  "4":
+                rtn+="损害赔偿金 "
+            elif l ==  "5":
+                rtn+="实现债权的费用 "
+            elif l ==  "6":
+                rtn+="其他约定 "
+        return rtn
     # 分析企业年报详细页面
     def parse_ent_pub_annual_report_page(self, page):
         sub_dict = {}
@@ -484,28 +525,332 @@ class ShandongCrawler(object):
                             if self.get_raw_text_by_tag(ths[i]):
                                 table_dict[self.get_raw_text_by_tag(ths[i])] = self.get_raw_text_by_tag(tds[i])
             sub_dict[title] = table_dict
+
+            #网站或网店信息
+            titles = [u'类型', u'名称', u'网址']
+            m = re.compile(r"wdxxliststr\s*=.*?;").search(page)
+
+            if m:
+                wdxxliststr = m.group()
+                wdxxlist = eval(re.compile(r"(\'.*?\')").search(wdxxliststr).group()[1:-1])  # 将字符串转换成list
+                sub_item = []
+                for item in wdxxlist:
+                    datas = [ u'网站' if str(item['webtype'])== '1' else u'网店', item['websitname'], item['domain'] ]
+                    sub_item.append(dict(zip(titles, datas)))
+                sub_dict[u"网站或网店信息"] = sub_item
+
+            #股东及出资信息
+            titles = [u'股东（发起人）', u'认缴出资额（万元）', u'认缴出资时间', u'认缴出资方式', u'实缴出资额（万元）', u'出资时间', u'出资方式']
+            m = re.compile(r"czxxliststr\s*=(\'.*?\')").search(page)
+            if m:
+                czxxliststr = m.group()
+                czxxlist = eval(re.compile(r"(\'.*?\')").search(czxxliststr).group()[1:-1])  # 将字符串转换成list
+                sub_item = []
+                for item in czxxlist:
+                    date_sub = item['subcondate']
+                    date_acc = item['accondate']
+                    datas = [ item['inv'], str(item['lisubconam'])+"万"+ self.currency(item['subconcurrency']), str(date_sub['year']+1900)+'年'+ str(date_sub['month']%12+1)+'月'+ str(date_sub['date'])+'日', item['subconform'].split('|')[1], \
+                                 str(item['liacconam'])+"万" +self.currency(item['acconcurrency']),str(date_acc['year']+1900)+'年'+ str(date_acc['month']%12+1)+'月'+ str(date_acc['date'])+'日', item['acconform'].split('|')[1] ]
+                    sub_item.append(dict(zip(titles, datas)))
+                sub_dict[u"股东及出资信息"] = sub_item
+            #对外投资信息
+            titles = [u'投资设立企业或购买股权企业名称', u'注册号']
+            m = re.compile(r"dwtzliststr\s*=(\'.*?\');").search(page)
+            if m:
+                dwtzliststr = m.group()
+                dwtzlist = eval(re.compile(r"(\'.*?\')").search(dwtzliststr).group()[1:-1])  # 将字符串转换成list
+                sub_item = []
+                for item in dwtzlist:
+                    datas = [ item['entname'], item['regno']]
+                    sub_item.append(dict(zip(titles, datas)))
+                sub_dict[u"对外投资信息"] = sub_item
+
+            #对外提供保证担保信息
+            titles = [u'债权人', u'债务人' ,u'主债权种类', u'主债权数额', u'履行债务的期限', u'保证的期间', u'保证的方式', u'保证担保的范围']
+            m = re.compile(r"nbdwdbstr\s*=(\'.*?\');").search(page)
+            if m:
+                nbdwdbstr = m.group()
+                m1 = re.compile(r"(\'.*?\')").search(nbdwdbstr)
+                if m1:
+                    dwdblist = eval(m1.group()[1:-1])  # 将字符串转换成list
+                    sub_item = []
+                    for item in dwdblist:
+                        datas = [ item['more'], item['mortgagor'],'合同' if int(item['priclaseckind'])==1 else '其他', item['priclasecam']+"万元", self.SetJsonTime(item['pefperfrom']) +" - "+ self.SetJsonTime(item['pefperto']),\
+                                 "期限" if int(item['guaranperiod'])==1 else "未约定", "一般保证" if int(item['gatype'])==1 else "连带保证" if int(item['gatype'])==2 else "未约定", self.getRange(item['rage'])]
+                        sub_item.append(dict(zip(titles, datas)))
+                    sub_dict[u"对外提供保证担保信息"] = sub_item
+
+            #股权变更信息
+            titles = [u'股东（发起人）', u'变更前股权比例' ,u'变更后股权比例', u'股权变更日期']
+            m = re.compile(r"nbgqbgsstr\s*=(\'.*?\');").search(page)
+            if m:
+                nbgqbgsstr = m.group()
+                m1 = re.compile(r"(\'.*?\')").search(nbgqbgsstr)
+                if m1:
+                    gqbglist = eval(m1.group()[1:-1])  # 将字符串转换成list
+                    sub_item = []
+                    for item in gqbglist:
+                        datas = [ item['inv'], item['transamprpre'], item['transampraf'] ,self.SetJsonTime(item['altdate'])]
+                        sub_item.append(dict(zip(titles, datas)))
+                    sub_dict[u"股权变更信息"] = sub_item
+            #修改记录
+            titles = [u'序号', u'修改事项' ,u'修改前', u'修改后', u'修改日期']
+            m = re.compile(r"nbalthisstr\s*=(\'.*?\');").search(page)
+            if m:
+                nbalthisstr = m.group()
+                m1 = re.compile(r"(\'.*?\')").search(nbalthisstr)
+                if m1:
+                    althistlist = eval(m1.group()[1:-1])  # 将字符串转换成list
+                    sub_item = []
+                    for item in althistlist:
+                        datas = [i+1,  item['altfield'], item['altbefore'], item['altafter'], self.SetJsonTime(item['altdate']) ]
+                        sub_item.append(dict(zip(titles, datas)))
+                    sub_dict[u"修改记录"] = sub_item
+
+
             content_table = soup.find_all('table')[1:]
             for table in content_table:
                 table_name = self.get_table_title(table)
-                table_data = self.parse_table(table, table_name, page)
-                sub_dict[table_name] = table_data
+                if table_name:
+                    if table_name == u"企业资产状况信息":
+                        table_data = self.parse_table(table, table_name, page)
+                        sub_dict[table_name] = table_data
         except Exception as e:
             settings.logger.error(u'annual page: fail to get table data with exception %s' % e)
             raise e
         finally:
             return sub_dict
 
-    # parse main page
-    # return params are dicts
+    def SetJsonTime(self, item):
+        if type(item)== dict:
+            return str(item['year']+1900)+'年'+ str(item['month']%12+1)+'月'+ str(item['date'])+'日'
+        return ""
+    #企业公示页面分析
+    dicts_qygs={
+        u"股东及出资信息":"http://218.57.139.24/pub/qygsjsxxxzczxx",
+        u"变更信息":"http://218.57.139.24/pub/qygsjsxxczxxbgsx",
+        u"股权变更信息":"http://218.57.139.24/pub/qygsJsxxgqbg",
+        u"行政许可信息":"http://218.57.139.24/pub/qygsjsxxxzxk",
+        u"知识产权出质登记信息":"http://218.57.139.24/pub/qygsjsxxzscqcz",
+        u"行政处罚信息":"http://218.57.139.24/pub/qygsjsxxxzcfxx",
+    }
+    # 企业公示信息页面
+    def parse_page_qygs(self, page, div_id='sifapanding', post_data= {}):
+        soup = BeautifulSoup(page, 'html5lib')
+        page_data = {}
+        try:
+            div = soup.find('div', attrs = {'id':div_id})
+            if div:
+                table = div.find('table')
+            else:
+                table = soup.find('table')
+            #print table
+            while table:
+                if table.name == 'table':
+                    table_name = self.get_table_title(table)
+                    if table_name:
+                        if table_name == u"股东及出资信息":
+                            page_data[table_name] = self.parse_table_qygs_gudongchuzi(table, table_name, page, post_data)
+                        elif table_name == u"变更信息":
+                            page_data[table_name] = self.parse_table_qygs_biangengxinxi(table, table_name, page, post_data)
+                        elif table_name == u"股权变更信息":
+                            page_data[table_name] = self.parse_table_qygs_guquan(table, table_name, page, post_data)
+                        elif table_name == u"行政许可信息":
+                            page_data[table_name] = self.parse_table_qygs_xinzhengxuke(table, table_name, page, post_data)
+                        elif table_name == u"知识产权出质登记信息":
+                            page_data[table_name] = self.parse_table_qygs_zhishichanquan(table, table_name, page, post_data)
+                        elif table_name == u"行政处罚信息":
+                            page_data[table_name] = self.parse_table_qygs_xinzhengchufa(table, table_name, page, post_data)
+                        else:
+                            page_data[table_name] = self.parse_table(table, table_name, page)
+                table = table.nextSibling
 
+        except Exception as e:
+            logging.error(u'parse qygs page failed, with exception %s' % e)
+            raise e
+        finally:
+            return page_data
+    # 股东及出资信息
+    def parse_table_qygs_gudongchuzi(self, bs_table, table_name, page, post_data):
+        sub_json_list=[]
+        try:
+            #columns = self.get_columns_of_record_table(bs_table, page, table_name)
+            #titles = [column[0] for column in columns]
+            url = self.dicts_qygs[table_name]
+            #print post_data
+            res = self.crawl_page_by_url_post(url, post_data, {'X-CSRF-TOKEN': self.csrf})['page']
+            #print type(res)
+            ls = json.loads(res)
+            for i, l in enumerate(ls):
+                #settings.logger.info( u"crawl the link %s, table_name is %s"%(link, table_name))
+                czxx = l['czxx']
+                rjxxs= l['rjxx']
+                sjxxs= l['sjxx']
+                item = {}
+                sub_item = {}
+                item[u'股东'] = czxx['inv']
+                item[u'认缴额（万元）'] = czxx['lisubconam']
+                item[u'实缴额（万元）'] = czxx['liacconam']
+                if len(rjxxs) >0 :
+                    sub_item[u'认缴出资方式'] =  rjxxs[0]['conform']
+                    sub_item[u'认缴出资额（万元）'] =rjxxs[0]['subconam']
+                    date_dict = rjxxs[0]['condate']
+                    #print type(date_dict['date'])   全是int型
+                    sub_item[u'认缴出资日期'] =str(date_dict['year']+1900)+'年'+ str(date_dict['month']%12+1)+'月'+ str(date_dict['date'])+'日'
+                else:
+                    sub_item[u'认缴出资方式'] =""
+                    sub_item[u'认缴出资额（万元）'] =""
+                    sub_item[u'认缴出资日期'] = ""
+                item[u'认缴明细'] = sub_item
+
+                if len(sjxxs) > 0 :
+                    sub_item = {}
+                    sub_item[u'实缴出资方式'] =sjxxs[0]['conform']
+                    sub_item[u'实缴出资额（万元）'] =sjxxs[0]['acconam']
+                    date_dict = sjxxs[0]['condate']
+                    sub_item[u'实缴出资日期'] = str(date_dict['year']+1900)+'年'+ str(date_dict['month']%12+1)+'月'+ str(date_dict['date'])+'日'
+                else:
+                    sub_item[u'实缴出资方式'] =""
+                    sub_item[u'实缴出资额（万元'] =""
+                    sub_item[u'实缴出资日期'] = ""
+                item[u'实缴明细'] = sub_item
+                sub_json_dict.append(item.copy())
+        except Exception as e:
+            settings.logger.error(u"parse qygs table 股东及出资信息 failed with exception:%s" % (type(e)))
+        finally:
+            return sub_json_list
+
+    # 股东及出资 - 变更信息
+    def parse_table_qygs_biangengxinxi(self, bs_table, table_name, page, post_data):
+        sub_json_list=[]
+        try:
+            columns = self.get_columns_of_record_table(bs_table, page, table_name)
+            titles = [column[0] for column in columns]
+            url = self.dicts_qygs[table_name]
+            #print post_data
+            res = self.crawl_page_by_url_post(url, post_data, {'X-CSRF-TOKEN': self.csrf})['page']
+            #print type(res)
+            ls = json.loads(res)
+            for i, l in enumerate(ls):
+                date_from = l['altdate']
+                #settings.logger.info( u"crawl the link %s, table_name is %s"%(link, table_name))
+                # 这里注意type
+                datas = [i+1, l['altitem'], str(date_from['year']+1900)+'年'+ str(date_from['month']%12+1)+'月'+ str(date_from['date'])+'日', l['altbe'], l['altaf'] ]
+                sub_json_list.append(dict(zip(titles, datas)))
+        except Exception as e:
+            settings.logger.error(u"parse qygs table 股东及出资- 变更信息 failed with exception:%s" % (type(e)))
+        finally:
+            return sub_json_list
+
+    # 知识产权出质登记信息
+    def parse_table_qygs_zhishichanquan(self, bs_table, table_name, page, post_data):
+        sub_json_list=[]
+        try:
+            columns = self.get_columns_of_record_table(bs_table, page, table_name)
+            titles = [column[0] for column in columns]
+            url = self.dicts_qygs[table_name]
+            res = self.crawl_page_by_url_post(url, post_data, {'X-CSRF-TOKEN': self.csrf})['page']
+            #print type(res)
+            ls = json.loads(res)
+            for i, l in enumerate(ls):
+                date_from = l['pleregperfrom']
+                date_to = l['pleregperto']
+                link = urls['webroot']+"pub/jszscqdetail/"+post_data['encrpripid']+"/"+l['pid']+"/"+l['type']
+                link_page = self.crawl_page_by_url(link)['page']
+                settings.logger.info( u"crawl the link %s, table_name is %s"%(link, table_name))
+                link_data = self.parse_page_qygs(link_page)
+                # 这里注意type
+                datas = [i+1, l['tmregno'], l['tmname'], l['kinds'], l['pledgor'], l['imporg'],  str(date_from['year']+1900)+'年'+ str(date_from['month']%12+1)+'月'+ str(date_from['date'])+'日' +" - " + \
+                            str(date_to['year']+1900)+'年'+ str(date_to['month']%12+1)+'月'+ str(date_to['date'])+'日', '有效' if int(l['type'])==1 else '无效', link_data]
+                sub_json_list.append(dict(zip(titles, datas)))
+        except Exception as e:
+            settings.logger.error(u"parse qygs table 知识产权出质登记信息 failed with exception:%s" % (type(e)))
+        finally:
+            return sub_json_list
+
+    # 股权变更信息
+    def parse_table_qygs_guquan(self, bs_table, table_name, page, post_data):
+        sub_json_list=[]
+        try:
+            columns = self.get_columns_of_record_table(bs_table, page, table_name)
+            titles = [column[0] for column in columns]
+            url = self.dicts_qygs[table_name]
+            #print post_data
+            res = self.crawl_page_by_url_post(url, post_data, {'X-CSRF-TOKEN': self.csrf})['page']
+            #print type(res)
+            ls = json.loads(res)
+            for i, l in enumerate(ls):
+                date_from = l['altdate']
+                #settings.logger.info( u"crawl the link %s, table_name is %s"%(link, table_name))
+                # 这里注意type
+                datas = [i+1, l['inv'], l['transamprpre'], l['transampraft'] , str(date_from['year']+1900)+'年'+ str(date_from['month']%12+1)+'月'+ str(date_from['date'])+'日']
+                sub_json_list.append(dict(zip(titles, datas)))
+        except Exception as e:
+            settings.logger.error(u"parse qygs table 股权变更信息 failed with exception:%s" % (type(e)))
+        finally:
+            return sub_json_list
+
+    # 行政处罚信息
+    def parse_table_qygs_xinzhengchufa(self, bs_table, table_name, page, post_data):
+        sub_json_list=[]
+        try:
+            columns = self.get_columns_of_record_table(bs_table, page, table_name)
+            titles = [column[0] for column in columns]
+            url = self.dicts_qygs[table_name]
+            #print post_data
+            res = self.crawl_page_by_url_post(url, post_data, {'X-CSRF-TOKEN': self.csrf})['page']
+            #print type(res)
+            ls = json.loads(res)
+            for i, l in enumerate(ls):
+                date_from = l['pendecissdate']
+                #settings.logger.info( u"crawl the link %s, table_name is %s"%(link, table_name))
+                # 这里注意type
+                datas = [i+1, l['pendecno'], self.getCfType(l['pentype']),l['penauth'] , str(date_from['year']+1900)+'年'+ str(date_from['month']%12+1)+'月'+ str(date_from['date'])+'日', l['remark']]
+                sub_json_list.append(dict(zip(titles, datas)))
+        except Exception as e:
+            settings.logger.error(u"parse qygs table 行政处罚信息 failed with exception:%s" % (type(e)))
+        finally:
+            return sub_json_list
+
+    # 行政许可信息
+    def parse_table_qygs_xinzhengxuke(self, bs_table, table_name, page, post_data):
+        sub_json_list=[]
+        try:
+            columns = self.get_columns_of_record_table(bs_table, page, table_name)
+            titles = [column[0] for column in columns]
+            url = self.dicts_qygs[table_name]
+            #print post_data
+            res = self.crawl_page_by_url_post(url, post_data, {'X-CSRF-TOKEN': self.csrf})['page']
+            #print type(res)
+            ls = json.loads(res)
+            for i, l in enumerate(ls):
+                date_from = l['valfrom']
+                date_to   = l['valto']
+                link = urls['webroot']+"pub/jsxzxkdetail/"+post_data['encrpripid']+"/"+l['pid']+"/"+l['type']
+                link_page = self.crawl_page_by_url(link)['page']
+                settings.logger.info( u"crawl the link %s, table_name is %s"%(link, table_name))
+                link_data = self.parse_page_qygs(link_page)
+                # 这里注意type
+                datas = [i+1, l['licno'], l['licname'], str(date_from['year']+1900)+'年'+ str(date_from['month']%12+1)+'月'+ str(date_from['date'])+'日', str(date_to['year']+1900)+'年'+ str(date_to['month']%12+1)+'月'+ str(date_to['date'])+'日' ,\
+                            l['licanth'], l['licitem'], '有效' if int(l['type'])==1 else '无效', link_data]
+                sub_json_list.append(dict(zip(titles, datas)))
+        except Exception as e:
+            settings.logger.error(u"parse qygs table 行政许可信息 failed with exception:%s" % (type(e)))
+        finally:
+            return sub_json_list
+    #工商公示信息表连接
     dicts={
         u"主要人员信息" : "http://218.57.139.24/pub/gsryxx/1223",
         u"分支机构信息" : "http://218.57.139.24/pub/gsfzjg/1223",
         u"动产抵押登记信息": "http://218.57.139.24/pub/gsdcdy",
         u"股权出质登记信息":"http://218.57.139.24/pub/gsgqcz",
+        u"严重违法信息":"http://218.57.139.24/pub/yzwfqy",
+        u"抽查检查信息":"http://218.57.139.24/pub/ccjcxx",
+        u"经营异常信息":"http://218.57.139.24/pub/jyyc/1223",
+        u"行政处罚信息":"http://218.57.139.24/pub/gsxzcfxx",
     }
-
-    def parse_page(self, page, div_id, post_data= {}):
+    # 工商公式信息页面
+    def parse_page(self, page, div_id='sifapanding', post_data= {}):
         soup = BeautifulSoup(page, 'html5lib')
         page_data = {}
 
@@ -534,8 +879,16 @@ class ShandongCrawler(object):
                             page_data[table_name] = self.parse_table_dongchandiya(table, table_name, page, post_data)
                         elif table_name == u"股权出质登记信息":
                             page_data[table_name] = self.parse_table_guquanchuzhi(table, table_name, page, post_data)
-
-
+                        elif table_name == u"严重违法信息":
+                            page_data[table_name] = self.parse_table_yanzhongweifa(table, table_name, page, post_data)
+                        elif table_name == u"抽查检查信息":
+                            page_data[table_name] = self.parse_table_chouyangjiancha(table, table_name, page, post_data)
+                        elif table_name == u"行政处罚信息":
+                            page_data[table_name] = self.parse_table_xingzhengchufa(table, table_name, page, post_data)
+                        elif table_name == u"经营异常信息":
+                            page_data[table_name] = self.parse_table_jingyingyichang(table, table_name, page, post_data)
+                        elif table_name == u"变更":
+                            page_data[table_name] = self.parse_table_guquanchuzhi_biangeng(table, table_name, page, post_data)
                         else:
                             page_data[table_name] = self.parse_table(table, table_name, page)
                 table = table.nextSibling
@@ -545,6 +898,138 @@ class ShandongCrawler(object):
             raise e
         finally:
             return page_data
+    #经营异常信息
+    def parse_table_jingyingyichang(self, bs_table, table_name, page, post_data):
+        sub_json_list=[]
+        try:
+            columns = self.get_columns_of_record_table(bs_table, page, table_name)
+            titles = [column[0] for column in columns]
+            url = self.dicts[table_name]
+            #print post_data
+            res = self.crawl_page_by_url_post(url, post_data, {'X-CSRF-TOKEN': self.csrf})['page']
+            #print type(res)
+            ls = json.loads(res)
+            for i, l in enumerate(ls):
+                date_abn = l['abntime']
+                date_rem = l['remdate']
+                # 这里注意type
+                datas = [i+1, l['specause'], str(date_abn['year']+1900)+'年'+ str(date_abn['month']%12+1)+'月'+ str(date_abn['date'])+'日', l['remexcpres'], str(date_rem['year']+1900)+'年'+ str(date_rem['month']%12+1)+'月'+ str(date_rem['date'])+'日',l['decorg']]
+                sub_json_list.append(dict(zip(titles, datas)))
+        except Exception as e:
+            settings.logger.error(u"parse table 经营异常信息 failed with exception:%s" % (type(e)))
+        finally:
+            return sub_json_list
+    # 行政处罚信息
+    def parse_table_xingzhengchufa(self, bs_table, table_name, page, post_data):
+        sub_json_list=[]
+        try:
+            columns = self.get_columns_of_record_table(bs_table, page, table_name)
+            titles = [column[0] for column in columns]
+            url = self.dicts[table_name]
+            #print post_data
+            res = self.crawl_page_by_url_post(url, post_data, {'X-CSRF-TOKEN': self.csrf})['page']
+            #print type(res)
+            ls = json.loads(res)
+            for i, l in enumerate(ls):
+                date_abn = l['pendecissdate']
+                #settings.logger.info( u"crawl the link %s, table_name is %s"%(link, table_name))
+                link = urls['webroot']+"pub/gsxzcfdetail/"+post_data['encrpripid']+"/"+l['caseno']
+                settings.logger.info( u"crawl the link %s, table_name is %s"%(link, table_name))
+                link_page = self.crawl_page_by_url(link)['page']
+                ########!!!!!!!!!!!!!!这里的link_page没有做
+                link_data = self.parse_page(link_page)
+                # 这里注意type
+                datas = [i+1, l['pendecno'], l['illegacttype'], self.getCfType(l['pentype'])+" 罚款金额:"+str(l['penam'])+"万元 没收金额:"+ str(l['forfam'])+"万元", l['penauth'], str(date_abn['year']+1900)+'年'+ str(date_abn['month']%12+1)+'月'+ str(date_abn['date'])+'日', l['insres']]
+                sub_json_list.append(dict(zip(titles, datas)))
+        except Exception as e:
+            settings.logger.error(u"parse table 行政处罚信息 failed with exception:%s" % (type(e)))
+        finally:
+            return sub_json_list
+
+    #行政处罚信息初始化展示
+    def getCfType(cftype):
+        if(cftype =='01'): return '警告'
+        if(cftype =='02'): return '罚款'
+        if(cftype =='03'): return '没收违法所得和非法财物'
+        if(cftype =='04'): return '责令停产停业'
+        if(cftype =='05'): return '暂扣许可证'
+        if(cftype =='06'): return '暂扣执照(登记证)'
+        if(cftype =='07'): return '吊销许可证'
+        if(cftype =='08'): return '吊销执照(登记证)'
+        if(cftype =='09'): return '法律、法规规定的其他行政处罚方式'
+        if(cftype =='1') :return '警告'
+        if(cftype =='2') :return '罚款'
+        if(cftype =='3') :return '没收违法所得和非法财物'
+        if(cftype =='4') :return '责令停产停业'
+        if(cftype =='5') :return '暂扣许可证'
+        if(cftype =='6') :return '暂扣执照(登记证)'
+        if(cftype =='7') :return '吊销许可证'
+        if(cftype =='8') :return '吊销执照(登记证)'
+        if(cftype =='9') :return '法律、法规规定的其他行政处罚方式'
+    # 抽样检查信息
+    def parse_table_chouyangjiancha(self, bs_table, table_name, page, post_data):
+        sub_json_list=[]
+        try:
+            columns = self.get_columns_of_record_table(bs_table, page, table_name)
+            titles = [column[0] for column in columns]
+            url = self.dicts[table_name]
+            #print post_data
+            res = self.crawl_page_by_url_post(url, post_data, {'X-CSRF-TOKEN': self.csrf})['page']
+            #print type(res)
+            ls = json.loads(res)
+            for i, l in enumerate(ls):
+                date_abn = l['insdate']
+                #settings.logger.info( u"crawl the link %s, table_name is %s"%(link, table_name))
+
+                # 这里注意type
+                datas = [i+1, l['insauth'], l['instype'],str(date_abn['year']+1900)+'年'+ str(date_abn['month']%12+1)+'月'+ str(date_abn['date'])+'日', l['insres']]
+                sub_json_list.append(dict(zip(titles, datas)))
+        except Exception as e:
+            settings.logger.error(u"parse table 抽样检查信息 failed with exception:%s" % (type(e)))
+        finally:
+            return sub_json_list
+    # 严重违法信息
+    def parse_table_yanzhongweifa(self, bs_table, table_name, page, post_data):
+        sub_json_list=[]
+        try:
+            columns = self.get_columns_of_record_table(bs_table, page, table_name)
+            titles = [column[0] for column in columns]
+            url = self.dicts[table_name]
+            #print post_data
+            res = self.crawl_page_by_url_post(url, post_data, {'X-CSRF-TOKEN': self.csrf})['page']
+            #print type(res)
+            ls = json.loads(res)
+            for i, l in enumerate(ls):
+                date_abn = l['abntime']
+                date_rem = l['remdate']
+                #settings.logger.info( u"crawl the link %s, table_name is %s"%(link, table_name))
+                # 这里注意type
+                datas = [i+1, l['serillrea'],str(date_abn['year']+1900)+'年'+ str(date_abn['month']%12+1)+'月'+ str(date_abn['date'])+'日', l['remexcpres'], str(date_rem['year']+1900)+'年'+ str(date_rem['month']%12+1)+'月'+ str(date_rem['date'])+'日' ,l['decorg']]
+                sub_json_list.append(dict(zip(titles, datas)))
+        except Exception as e:
+            settings.logger.error(u"parse table 严重违法信息 failed with exception:%s" % (type(e)))
+        finally:
+            return sub_json_list
+    # 股权出质---变更
+    def parse_table_guquanchuzhi_biangeng(self, bs_table, table_name, page, post_data={}):
+        sub_json_list=[]
+        try:
+            columns = self.get_columns_of_record_table(bs_table, page, table_name)
+            titles = [column[0] for column in columns]
+            m1  = re.compile(r"_gqczBgxxlist=eval\((\'.*?\')\)").search(page)
+            if m1:
+                pripidstr = m1.group()
+                # turn into list
+                bglist = eval(re.compile(r"(\'.*?\')").search(pripidstr).group()[1:-1])
+
+                for i, item in enumerate(bglist):
+                    altdate = item['altdate']
+                    datas= [i+1, str(altdate['year']+1900)+'年'+ str(altdate['month']%12+1)+'月'+ str(altdate['date'])+'日', item['alt']]
+                    sub_json_list.append(dict(zip(titles, datas)))
+        except Exception as e:
+            settings.logger.error(u"parse table 股权出质--变更 failed with exception:%s" % (type(e)))
+        finally:
+            return sub_json_list
     # 股权出质
     def parse_table_guquanchuzhi(self, bs_table, table_name, page, post_data):
         sub_json_list=[]
@@ -559,18 +1044,18 @@ class ShandongCrawler(object):
             for i, l in enumerate(ls):
                 date_dict = l['equpledate']
                 link = urls['webroot']+"pub/gsgqczdetail/"+post_data['encrpripid']+"/"+str(l['equityno'])+"/"+str(l['type'])
-                print link
+                settings.logger.info( u"crawl the link %s, table_name is %s"%(link, table_name))
                 link_page = self.crawl_page_by_url(link)['page']
-                print link_page
+                #print link_page
+                ########!!!!!!!!!!!!!!这里的link_page没有做
                 link_data = self.parse_page(link_page)
-                print link_data
-                datas = [i+1, l['equityno'], l['pledgor'], l['blicno'], l['impam']+l['pledamunit'], l['imporg'], l['impmorblicno'], str(date_dict['year']+1900)+'年'+ str(date_dict['month']%12+1)+'月'+ str(date_dict['date'])+'日' ,'有效' if l['type']==1 else '无效', link_data]
+                # 这里注意type
+                datas = [i+1, l['equityno'], l['pledgor'], l['blicno'], str(l['impam'])+l['pledamunit'], l['imporg'], l['impmorblicno'], str(date_dict['year']+1900)+'年'+ str(date_dict['month']%12+1)+'月'+ str(date_dict['date'])+'日' ,'有效' if int(l['type'])==1 else '无效', link_data]
                 sub_json_list.append(dict(zip(titles, datas)))
         except Exception as e:
             settings.logger.error(u"parse table 股权出质 failed with exception:%s" % (type(e)))
         finally:
             return sub_json_list
-
     # 动产抵押登记信息
     def parse_table_dongchandiya(self, bs_table, table_name, page, post_data):
         sub_json_list=[]
@@ -588,10 +1073,9 @@ class ShandongCrawler(object):
                 datas = [i+1, l['morregcno'], str(date_dict['year']+1900)+'年'+ str(date_dict['month']%12+1)+'月'+ str(date_dict['date'])+'日' ,l['regorg'], str(l['priclasecam'])+"万元", '有效' if l['type']==1 else '无效', '详情']
                 sub_json_list.append(dict(zip(titles, datas)))
         except Exception as e:
-            settings.logger.error(u"parse table dongchandiya failed with exception:%s" % (type(e)))
+            settings.logger.error(u"parse table 动产抵押登记信息 failed with exception:%s" % (type(e)))
         finally:
             return sub_json_list
-
     # 分支机构信息
     def parse_table_branch(self, bs_table, table_name, page, post_data):
         sub_json_list=[]
@@ -607,10 +1091,9 @@ class ShandongCrawler(object):
                 datas = [i+1, l['name'], l['position']]
                 sub_json_list.append(dict(zip(titles, datas)))
         except Exception as e:
-            settings.logger.error(u"parse table branch failed with exception:%s" % (type(e)))
+            settings.logger.error(u"parse table 分支机构信息 failed with exception:%s" % (type(e)))
         finally:
             return sub_json_list
-
     # 主要人员信息
     def parse_table_people(self, bs_table, table_name, page, post_data):
         sub_json_list=[]
@@ -626,10 +1109,9 @@ class ShandongCrawler(object):
                 datas = [i+1, l['regno'], l['brname'], l['regorg']]
                 sub_json_list.append(dict(zip(titles, datas)))
         except Exception as e:
-            settings.logger.error(u"parse table main people failed with exception:%s" % (type(e)))
+            settings.logger.error(u"parse table 主要人员信息 failed with exception:%s" % (type(e)))
         finally:
             return sub_json_list
-
     # 股东信息表
     def parse_table_gudong(self, bs_table, table_name, page):
         sub_json_list = []
@@ -639,15 +1121,15 @@ class ShandongCrawler(object):
             #czxxlist
             m = re.compile(r"czxxliststr =(\'.*?\')").search(page)
             if m:
-                czxxliststr = m.group(1)
-                czxxlist = eval(re.compile(r"(\'.*?\')").search(czxxliststr).group(1)[1:-1])  # 将字符串转换成list
+                czxxliststr = m.group()
+                czxxlist = eval(re.compile(r"(\'.*?\')").search(czxxliststr).group()[1:-1])  # 将字符串转换成list
                 #print type(czxxlist)
                 #var encrpripid = '6e0948678bfeed4ac8115d5cafef819ad6951a24f0c0188cd6c047570329c9b6';
                 m1  = re.compile(r"encrpripid = (\'.*?\')").search(page)
                 if m1:
-                    pripidstr = m1.group(1)
+                    pripidstr = m1.group()
 
-                    encrpripid = re.compile(r"(\'.*?\')").search(pripidstr).group(1)[1:-1]
+                    encrpripid = re.compile(r"(\'.*?\')").search(pripidstr).group()[1:-1]
 
                     for item in czxxlist:
                         if item['xzqh'] == "1":
@@ -659,7 +1141,7 @@ class ShandongCrawler(object):
                             datas = [ item['invtype'], item['inv'], item['blictype'], item['blicno'], '']
                         sub_json_list.append(dict(zip(titles, datas)))
         except Exception as e:
-            settings.logger.error(u"parse table gudong failed with exception:%s" % (type(e)))
+            settings.logger.error(u"parse table 股东信息表 failed with exception:%s" % (type(e)))
         finally:
             return sub_json_list
     # 股东及出资信息
@@ -670,16 +1152,16 @@ class ShandongCrawler(object):
             #czxxlist
             m = re.compile(r"czxxstr =(\'.*?\')").search(page)
             if m:
-                czxxliststr = m.group(1)
-                czxxlist = eval(re.compile(r"(\'.*?\')").search(czxxliststr).group(1)[1:-1])  # 将字符串转换成list
+                czxxliststr = m.group()
+                czxxlist = eval(re.compile(r"(\'.*?\')").search(czxxliststr).group()[1:-1])  # 将字符串转换成list
                 m1  = re.compile(r"czxxrjstr =(\'.*?\')").search(page)      # 认缴
                 if m1:
-                    czxxrjstr = m1.group(1)
-                    czxxrjlist = eval(re.compile(r"(\'.*?\')").search(czxxrjstr).group(1)[1:-1])
+                    czxxrjstr = m1.group()
+                    czxxrjlist = eval(re.compile(r"(\'.*?\')").search(czxxrjstr).group()[1:-1])
                     m2  = re.compile(r"czxxsjstr =(\'.*?\')").search(page)      # 实缴
                     if m2:
-                        czxxsjstr = m2.group(1)
-                        czxxsjlist = eval(re.compile(r"(\'.*?\')").search(czxxsjstr).group(1)[1:-1])
+                        czxxsjstr = m2.group()
+                        czxxsjlist = eval(re.compile(r"(\'.*?\')").search(czxxsjstr).group()[1:-1])
 
                         ######################
                         item = {}
@@ -690,7 +1172,7 @@ class ShandongCrawler(object):
                         if len(czxxrjlist) >0 :
                             sub_item[u'认缴出资方式'] =  czxxrjlist[0]['conform']
                             sub_item[u'认缴出资额（万元）'] =czxxrjlist[0]['subconam']
-                            date_dict = czxxsjlist[0]['condate']
+                            date_dict = czxxrjlist[0]['condate']
                             #print type(date_dict['date'])   全是int型
                             sub_item[u'认缴出资日期'] =str(date_dict['year']+1900)+'年'+ str(date_dict['month']%12+1)+'月'+ str(date_dict['date'])+'日'
                             item[u'认缴明细'] = sub_item
@@ -704,7 +1186,7 @@ class ShandongCrawler(object):
                             item[u'实缴明细'] = sub_item
                         sub_json_dict = (item.copy())
         except Exception as e:
-            settings.logger.error(u"parse table gudongczxx failed with exception:%s" % (type(e)))
+            settings.logger.error(u"parse table 股东及出资信息 failed with exception:%s" % (type(e)))
         finally:
             return sub_json_dict
         pass
@@ -717,18 +1199,17 @@ class ShandongCrawler(object):
 
             m = re.compile(r"bgsxliststr =(\'.*?\')").search(page)
             if m:
-                bgsxliststr = m.group(1)
-                bgsxlist = eval(re.compile(r"(\'.*?\')").search(bgsxliststr).group(1)[1:-1])  # 将字符串转换成list
+                bgsxliststr = m.group()
+                bgsxlist = eval(re.compile(r"(\'.*?\')").search(bgsxliststr).group()[1:-1])  # 将字符串转换成list
                 #print type(bgsxlist)
                 for item in bgsxlist:
                     date_dict = item['altdate']
                     datas = [ item['altitem'], item['altbe'], item['altaf'], str(date_dict['year']+1900)+'年'+ str(date_dict['month']%12+1)+'月'+ str(date_dict['date'])+'日']
                     sub_json_list.append(dict(zip(titles, datas)))
         except Exception as e:
-            settings.logger.error(u"parse table gudong failed with exception:%s" % (type(e)))
+            settings.logger.error(u"parse table 变更信息表 failed with exception:%s" % (type(e)))
         finally:
             return sub_json_list
-
     def parse_table(self, bs_table, table_name, page):
         table_dict = None
         try:
@@ -760,7 +1241,6 @@ class ShandongCrawler(object):
                 else:
                     records_tag = tbody
                 item = None
-
                 for tr in records_tag.find_all('tr'):
                     if tr.find_all('td') and len(tr.find_all('td', recursive=False)) % column_size == 0:
                         col_count = 0
@@ -769,12 +1249,12 @@ class ShandongCrawler(object):
                             if td.find('a'):
                                 #try to retrieve detail link from page
                                 next_url = self.get_detail_link(td.find('a'))
-                                #print 'next_url: ' + next_url
+                                settings.logger.info(u'crawl detail url: %s'% next_url)
                                 if next_url:
                                     detail_page = self.crawl_page_by_url(next_url)
-                                    #html_to_file("next.html", detail_page['page'])
+                                    #html_to_file("test.html", detail_page['page'])
                                     #print "table_name : "+ table_name
-                                    if table_name == u'年报信息':
+                                    if table_name == u'企业年报':
                                         #logging.debug(u"next_url = %s, table_name= %s\n", detail_page['url'], table_name)
                                         page_data = self.parse_ent_pub_annual_report_page(detail_page['page'])
 
@@ -874,14 +1354,17 @@ class ShandongCrawler(object):
         self.crawl_page_search(urls['page_search'])
         self.crawl_page_captcha(urls['page_Captcha'], urls['checkcode'], urls['page_showinfo'], ent_num)
         data = self.crawl_page_main()
+
         #url = "http://218.57.139.24/pub/gsgsdetail/1223/6e0948678bfeed4ac8115d5cafef819ad6951a24f0c0188cd6c047570329c9b6"
         #data = self.crawl_ind_comm_pub_pages(url)
         #self.ents= ['/platform/saic/viewBase.ftl?entId=349DDA405D520231E04400306EF52828']
         #data = self.crawl_page_main()
 
-        #txt = html_from_file('shandong_dj.html')
+        # txt = html_from_file('test.html')
+        # data = self.parse_page(txt)
+        # print data
         #txt = html_from_file('next.html')
-        #data = self.parse_page(txt)
+
         #data = self.parse_ent_pub_annual_report_page(txt)
         #data = self.parse_page(txt)
         #json_dump_to_file('shandong_json.json', data)
