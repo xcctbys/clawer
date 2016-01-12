@@ -13,7 +13,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.externals import joblib
 
 class CaptchaRecognition(object):
-  
+
     '''
 
       Should you find any problems or any models with extremely low accuracy in predict results,
