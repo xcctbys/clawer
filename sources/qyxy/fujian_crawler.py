@@ -564,8 +564,8 @@ if __name__ == '__main__':
     FujianCrawler.code_cracker = CaptchaRecognition('fujian')
 
     crawler = FujianCrawler('./enterprise_crawler/fujian.json')
-    # enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/fujian.txt')
-    enterprise_list = ['350000100028716']
+    enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/fujian.txt')
+    # enterprise_list = ['350000100028716']
     for ent_number in enterprise_list:
         ent_number = ent_number.rstrip('\n')
         settings.logger.info('###################   Start to crawl enterprise with id %s   ###################\n' % ent_number)

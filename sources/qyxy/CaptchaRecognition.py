@@ -140,18 +140,20 @@ class CaptchaRecognition(object):
             self.customized_width = 30
             self.anti_noise = True
         elif captcha_type == "chongqing":
-            self.image_label_count = 6
-            self.masker = 40
+            self.image_label_count = 3
+            self.margin = 3
             self.customized_postisions = True
-            self.position_left = [0, 23, 40, 65, 85, 105]
-            self.position_right = [15, 45, 60, 90, 110, 120]
+            self.position_left = [0, 23, 40]
+            self.position_right = [15, 45, 60]
             self.image_top = 8
             self.image_height = 40
+            self.image_width = 120
             self.to_denoise = False
-            self.to_calculate = True
-            self.to_binarized = True
             self.customized_width = 25
-            self.double_denoise = False
+            self.to_calculate = True
+            self.to_binarized = False
+            self.masker = 250
+            self.to_summarized = True
         elif captcha_type in ["sichuan","xinjiang"]:
             self.image_label_count = 5
             self.masker = 110
