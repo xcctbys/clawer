@@ -76,7 +76,7 @@ VALUES
 
 # mysql fields
 fields = {}
-basic_data= {
+fields['basic_data'] = {
     'credit_code': 1000,
     'enter_name': u"普林科技",
     'enter_type': "",
