@@ -150,7 +150,7 @@ class CaptchaRecognition(object):
             self.image_width = 120
             self.to_denoise = False
             self.customized_width = 25
-            self.to_calculate = False
+            self.to_calculate = True
             self.to_binarized = False
             self.masker = 250
             self.to_summarized = True
