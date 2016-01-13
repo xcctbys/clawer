@@ -315,13 +315,12 @@ class HeilongjiangParser(Parser):
 
                 for i in range(1, len(table_page_tol)+1):
                     url = '%s%s%s%s%s' % (self.crawler.urls['ind_comm_pub_arch_key_persons'], "pno=", i, '&mainId=', company_id1)
-                    print "url", url
+                    # print "url", url
                     rep = requests.get(url)
                     soup = BeautifulSoup(rep.text, "html5lib")
 
-                    print "sopu", soup
                     table = soup.find("table")
-                    print "主要人员", table
+                    # print "主要人员", table
 
                     trs = table.find_all("tr")
 
@@ -436,7 +435,7 @@ class HeilongjiangParser(Parser):
                             table_th = [th for th in table_trs[1].stripped_strings]
 
                             table_c = []
-                            for table_tr in table_trs[2:]:
+                            for table_tr in table_trs[2:-1]:
                                 tds = table_tr.find_all("td")
                                 table_td = [td.text for td in tds]
 
@@ -449,7 +448,7 @@ class HeilongjiangParser(Parser):
                             table_detail.append(wrap)
 
                 # cont = table_ts[u'报送年度']
-                table_ts[u'详情'] = table_detail
+                table_ts[u'报送年度'] = table_detail
 
             table_save_all.append(table_ts)
 
