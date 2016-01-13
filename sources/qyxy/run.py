@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 import logging
 import Queue
 import threading
+import multiprocessing
 
 ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
 if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
@@ -50,7 +51,6 @@ province_crawler = {
 }
 
 max_crawl_time = 0
-ent_queue = Queue.Queue()
 
 
 def set_codecracker():
@@ -139,7 +139,7 @@ def crawl_province(province, cur_date):
     json_restore_path = '%s/%s.json' % (json_restore_dir, cur_date[2])
 
     #将企业名单放入队列
-    #ent_queue = Queue.Queue()
+    ent_queue = Queue.Queue()
     for x in enterprise_list:
         ent_queue.put(x)
 
@@ -214,12 +214,16 @@ if __name__ == '__main__':
 
     if sys.argv[2] == 'all':
         for p in province_crawler.keys():
-            crawl_province(p, cur_date)
+            process = multiprocessing.Process(target=crawl_province, args=(p, cur_date))
+            process.start()
+            process.join(max_crawl_time/6)
     else:
         provinces = sys.argv[2:]
         for p in provinces:
             if not p in province_crawler.keys():
                 settings.logger.warn('province %s is not supported currently' % p)
             else:
-                crawl_province(p, cur_date)
-
+                process = multiprocessing.Process(target=crawl_province, args=(p, cur_date))
+                process.start()
+                process.join(max_crawl_time/6)
+                
