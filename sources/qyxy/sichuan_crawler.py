@@ -95,22 +95,26 @@ class SichuanCrawler(object):
 		
 
 	def get_id_num(self, findCode):
-		yzm = self.get_check_num()
-		print self.cur_time
-		data = {'currentPageNo':'1', 'yzm':yzm, 'cxym':"cxlist", 'maent.entname':findCode}
-		resp = self.reqst.post(self.mydict['searchList']+self.cur_time, data=data)
-		print resp.status_code
-		divs = BeautifulSoup(resp.content).find_all('div', attrs={"style":"width:950px; padding:25px 20px 0px; overflow: hidden;float: left;"})
-		#print divs[0]
-		try:
-			onclick = divs[0].ul.li.a['onclick']
-			print onclick
-			m = re.search(r"openView\(\'(\w+?)\'", onclick)
-			if m:
-				return m.group(1) 
-		except:
-			print '*'*100
-			pass
+		count = 0
+		while count < 5:
+			yzm = self.get_check_num()
+			print self.cur_time
+			data = {'currentPageNo':'1', 'yzm':yzm, 'cxym':"cxlist", 'maent.entname':findCode}
+			resp = self.reqst.post(self.mydict['searchList']+self.cur_time, data=data)
+			print resp.status_code
+			divs = BeautifulSoup(resp.content).find_all('div', attrs={"style":"width:950px; padding:25px 20px 0px; overflow: hidden;float: left;"})
+			#print divs[0]
+			try:
+				onclick = divs[0].ul.li.a['onclick']
+				print onclick
+				m = re.search(r"openView\(\'(\w+?)\'", onclick)
+				if m:
+					return m.group(1) 
+			except:
+				print count
+				print '*'*100
+				pass
+			count += 1
 
 		pass
 	def get_re_list_from_content(self, content):
@@ -160,11 +164,11 @@ class SichuanCrawler(object):
 					tempdict[key] = value
 				return tempdict
 				break
-		else:
-			print 'i'*100
+		# else:
+		# 	print 'i'*100
 		
 	def get_head_ths_tds(self, table):
-		print table
+		#print table
 		head = table.find_all('th')[0].get_text().strip().split('\n')[0].strip()
 		allths = [th.get_text().strip() for th in table.find_all('th')[1:] if th.get_text()]
 		for i, th in enumerate(allths):
@@ -196,8 +200,8 @@ class SichuanCrawler(object):
 					if m:
 						maent_xh = m.group(1)
 						maent_pripid = m.group(2)
-						print 'maent_xh',':', maent_xh,'maent_pripid',':',maent_pripid
-						print self.help_detail_get_dict('tzrCzxxDetial',maent_xh, maent_pripid, self.cur_time)
+						#print 'maent_xh',':', maent_xh,'maent_pripid',':',maent_pripid
+						#print self.help_detail_get_dict('tzrCzxxDetial',maent_xh, maent_pripid, self.cur_time)
 						alltds.append(self.help_detail_get_dict('tzrCzxxDetial',maent_xh, maent_pripid, self.cur_time))
 				elif td.get_text():
 					alltds.append(td.get_text().strip())
@@ -271,8 +275,8 @@ class SichuanCrawler(object):
 				#print 'temp_head', temp_head, 'head_item', head_item
 				if temp_head == head_item:
 					return table
-		else:
-			print 'no'*10
+		# else:
+		# 	print 'no'*10
 		pass
 
 	def get_json_one(self, mydict, tables, *param):
@@ -282,7 +286,7 @@ class SichuanCrawler(object):
 			table = self.get_table_by_head(tables, head_item)
 			if table:
 				head, allths, alltds = self.get_head_ths_tds(table)
-				self.test_print_all_ths_tds(head, allths, alltds)
+				#self.test_print_all_ths_tds(head, allths, alltds)
 				self.result_json_dict [mydict[head]] = self.get_one_to_one_dict(allths, alltds)
 		pass			
 	def get_json_two(self, mydict, tables):
@@ -292,7 +296,7 @@ class SichuanCrawler(object):
 			table = self.get_table_by_head(tables, head_item)
 			if table:
 				head, allths, alltds = self.get_head_ths_tds(table)
-				self.test_print_all_ths_tds(head, allths, alltds)
+				#self.test_print_all_ths_tds(head, allths, alltds)
 				self.result_json_dict [mydict[head]] = self.get_one_to_one_dict(allths, alltds)
 		
 		pass
@@ -303,7 +307,7 @@ class SichuanCrawler(object):
 			table = self.get_table_by_head(tables, head_item)
 			if table:
 				head, allths, alltds = self.get_head_ths_tds(table)
-				self.test_print_all_ths_tds(head, allths, alltds)
+				#self.test_print_all_ths_tds(head, allths, alltds)
 				self.result_json_dict [mydict[head]] = self.get_one_to_one_dict(allths, alltds)
 		
 		pass
@@ -314,7 +318,7 @@ class SichuanCrawler(object):
 			table = self.get_table_by_head(tables, head_item)
 			if table:
 				head, allths, alltds = self.get_head_ths_tds(table)
-				self.test_print_all_ths_tds(head, allths, alltds)
+				#self.test_print_all_ths_tds(head, allths, alltds)
 				self.result_json_dict [mydict[head]] = self.get_one_to_one_dict(allths, alltds)
 		pass
 
@@ -416,7 +420,7 @@ class SichuanCrawler(object):
 
 if __name__ == '__main__':
 	sichuan = SichuanCrawler('./enterprise_crawler/sichuan.json')
-	# sichuan.run('510122000094217')
+	# sichuan.run('510181000035008')
 	# sichuan.run('511000000000753')
 	# sichuan.run('510300000004462')
 	f = open('enterprise_list/sichuan.txt', 'r')
