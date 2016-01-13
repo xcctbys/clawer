@@ -63,6 +63,7 @@
     (4) 'ent_pub_administration_license': 行政许可信息
     (5) 'ent_pub_knowledge_property': 知识产权出资登记
     (6) 'ent_pub_administration_sanction': 行政许可信息
+    (7) 'ent_pub_reg_modify': 变更信息
     
     (三) 其他部门公示信息
     (1) 'other_dept_pub_administration_license': 行政许可信息
