@@ -19,6 +19,7 @@ import threading
 from bs4 import BeautifulSoup
 import CaptchaRecognition as CR
 import hashlib #验证码是MD5加密的，调用此包
+#import simplejson
 
 urls = {
     'host': 'http://218.57.139.24/pub/',
@@ -168,20 +169,15 @@ class ShandongCrawler(object):
                 temp = ent[:ent.rfind('/')]
                 enttype =  temp[temp.rfind('/')+1 :]
 
-                #sub_json_dict.update(self.crawl_ind_comm_pub_pages(url))
-                # 企业公示信息 http://218.57.139.24/pub/qygsdetail/
-                #url = url.replace('gsgsdetail', 'qygsdetail')
-                #url = urls['host'] + 'qygsdetail/'+ enttype+'/'+entpripid
-                #sub_json_dict.update(self.crawl_ent_pub_pages(url))
+                sub_json_dict.update(self.crawl_ind_comm_pub_pages(url))
+                # url = urls['host'] + 'qygsdetail/'+ enttype+'/'+entpripid
+                # sub_json_dict.update(self.crawl_ent_pub_pages(url))
                 # #其他部门http://218.57.139.24/pub/qtgsdetail/
-                # url = url.replace('qygsdetail', 'qtgsdetail')
-                url = urls['host']+'qtgsdetail/' + enttype+'/' + entpripid
-                sub_json_dict.update(self.crawl_other_dept_pub_pages(url))
+                # url = urls['host']+'qtgsdetail/' + enttype+'/' + entpripid
+                # sub_json_dict.update(self.crawl_other_dept_pub_pages(url))
                 # # 司法协助公示信息 sfgsdetail
-                #url = url.replace('qtgsdetail', 'sfgsdetail')
-                #url = urls['host']+ 'sfgsdetail/' + enttype +'/' + entpripid
+                # url = urls['host']+ 'sfgsdetail/' + enttype +'/' + entpripid
                 # sub_json_dict.update(self.crawl_judical_assist_pub_pages(url))
-                json_dump_to_file('shandong_json.json', sub_json_dict)
 
         except Exception as e:
             settings.logger.error(u"An error ocurred when getting the main page, error: %s"% type(e))
@@ -198,31 +194,43 @@ class ShandongCrawler(object):
             entpripid = url[url.rfind('/')+1:]
             post_data = {'encrpripid' : entpripid}
             dj = self.parse_page(page, 'jibenxinxi') # class= result-table
-            sub_json_dict['ind_comm_pub_reg_basic'] = {u'基本信息' : dj[u'基本信息'] if dj.has_key(u'基本信息') else []}        # 登记信息-基本信息
-            sub_json_dict['ind_comm_pub_reg_shareholder'] = {u'股东信息': dj[u'股东信息'] if dj.has_key(u'股东信息') else [] }  # 股东信息
-            sub_json_dict['ind_comm_pub_reg_modify'] = { u'变更信息' : dj[u'变更信息'] if dj.has_key(u'变更信息') else [] }      # 变更信息
+            sub_json_dict['ind_comm_pub_reg_basic'] = dj[u'基本信息'] if dj.has_key(u'基本信息') else []        # 登记信息-基本信息
+            sub_json_dict['ind_comm_pub_reg_shareholder'] =dj[u'股东信息'] if dj.has_key(u'股东信息') else []   # 股东信息
+            sub_json_dict['ind_comm_pub_reg_modify'] =  dj[u'变更信息'] if dj.has_key(u'变更信息') else []      # 变更信息
 
             ba = self.parse_page(page, 'beian', post_data)
-            sub_json_dict['ind_comm_pub_arch_key_persons'] = { u'主要人员信息' : ba[u'主要人员信息'] if ba.has_key(u'主要人员信息') else [] }  # 备案信息-主要人员信息
-            sub_json_dict['ind_comm_pub_arch_branch'] = { u'分支机构信息' : ba[u'分支机构信息'] if ba.has_key(u'分支机构信息') else [] }      # 备案信息-分支机构信息
-            sub_json_dict['ind_comm_pub_arch_liquidation'] = { u'清算信息': ba[u'清算信息'] if ba.has_key(u'清算信息') else [] }  # 备案信息-清算信息
-            titles = ('ind_comm_pub_movable_property_reg',  # 动产抵押登记信息
-                     'ind_comm_pub_equity_ownership_reg',  # 股权出置登记信息
-                     'ind_comm_pub_administration_sanction',  # 行政处罚信息
-                     'ind_comm_pub_business_exception',  # 经营异常信息
-                     'ind_comm_pub_serious_violate_law',  # 严重违法信息
-                     'ind_comm_pub_spot_check'        # 抽查检查信息
-                     )
-            tabs = (
-                        'dongchandiya',#动产抵押
-                        'guquanchuzhi'  ,# 股权出质登记信息
-                        'xingzhengchufa' ,#行政处罚
-                        'jingyingyichangminglu' , # 企业经营异常
-                        'yanzhongweifaqiye' , # 严重违法
-                        'chouchaxinxi' ,#抽样检查
-                    )
-            for title, tab in zip(titles, tabs):
-                sub_json_dict[title] = self.parse_page(page, tab, post_data)
+            sub_json_dict['ind_comm_pub_arch_key_persons'] = ba[u'主要人员信息'] if ba.has_key(u'主要人员信息') else []   # 备案信息-主要人员信息
+            sub_json_dict['ind_comm_pub_arch_branch'] = ba[u'分支机构信息'] if ba.has_key(u'分支机构信息') else []       # 备案信息-分支机构信息
+            sub_json_dict['ind_comm_pub_arch_liquidation'] = ba[u'清算信息'] if ba.has_key(u'清算信息') else []   # 备案信息-清算信息
+            # titles = ('ind_comm_pub_movable_property_reg',  # 动产抵押登记信息
+            #          'ind_comm_pub_equity_ownership_reg',  # 股权出置登记信息
+            #          'ind_comm_pub_administration_sanction',  # 行政处罚信息
+            #          'ind_comm_pub_business_exception',  # 经营异常信息
+            #          'ind_comm_pub_serious_violate_law',  # 严重违法信息
+            #          'ind_comm_pub_spot_check'        # 抽查检查信息
+            #          )
+            # tabs = (
+            #             'dongchandiya',#动产抵押登记信息
+            #             'guquanchuzhi'  ,# 股权出质登记信息
+            #             'xingzhengchufa' ,#行政处罚信息
+            #             'jingyingyichangminglu' , # 经营异常信息
+            #             'yanzhongweifaqiye' , # 严重违法信息
+            #             'chouchaxinxi' ,#抽查检查信息
+            #         )
+            # for title, tab in zip(titles, tabs):
+            #     sub_json_dict[title] = self.parse_page(page, tab, post_data)
+            dcdy = self.parse_page(page, 'dongchandiya', post_data)
+            sub_json_dict['ind_comm_pub_movable_property_reg'] = dcdy[u'动产抵押登记信息'] if dcdy.has_key(u'动产抵押登记信息') else []
+            gqcz = self.parse_page(page, 'guquanchuzhi', post_data)
+            sub_json_dict['ind_comm_pub_equity_ownership_reg'] = gqcz[u'股权出质登记信息'] if gqcz.has_key(u'股权出质登记信息') else []
+            xzcf = self.parse_page(page, 'xingzhengchufa', post_data)
+            sub_json_dict['ind_comm_pub_administration_sanction'] = xzcf[u'行政处罚信息'] if xzcf.has_key(u'行政处罚信息') else []
+            jyyc= self.parse_page(page, 'jingyingyichangminglu', post_data)
+            sub_json_dict['ind_comm_pub_business_exception'] = jyyc[u'经营异常信息'] if jyyc.has_key(u'经营异常信息') else []
+            yzwf = self.parse_page(page, 'yanzhongweifaqiye', post_data)
+            sub_json_dict['ind_comm_pub_serious_violate_law'] = yzwf[u'严重违法信息'] if yzwf.has_key(u'严重违法信息') else []
+            cyjc= self.parse_page(page, 'chouchaxinxi', post_data)
+            sub_json_dict['ind_comm_pub_spot_check'] = cyjc[u'抽查检查信息'] if cyjc.has_key(u'抽查检查信息') else []
         except Exception as e:
             logging.debug(u"An error ocurred in crawl_ind_comm_pub_pages: %s"% type(e))
             raise e
@@ -237,24 +245,39 @@ class ShandongCrawler(object):
             entpripid = url[url.rfind('/')+1:]
             post_data = {'encrpripid' : entpripid}
             #page = html_from_file('next.html')
-            titles= (   'ent_pub_ent_annual_report',      #企业年报
-                        'ent_pub_administration_license', #行政许可信息
-                        'ent_pub_administration_sanction', #行政处罚信息
-                        'ent_pub_shareholder_capital_contribution', #企业投资人出资比例
-                        'ent_pub_equity_change', #股权变更信息
-                        'ent_pub_knowledge_property', #知识产权出资登记
-                    )
-            items = (
-                        'qiyenianbao', #企业年报
-                        'xingzhengxuke', #行政许可信息
-                        'xingzhengchufa', # 行政处罚信息
-                        'touziren', #股东及出资信息
-                        'gudongguquan', #股权变更信息
-                        'zhishichanquan', #知识产权出质登记信息
-                    )
-            for title, item in zip(titles, items):
-                sub_json_dict[title] = self.parse_page_qygs(page, item, post_data)
+            # titles= (   'ent_pub_ent_annual_report',      #企业年报
+            #             'ent_pub_administration_license', #行政许可信息
+            #             'ent_pub_administration_sanction', #行政处罚信息
+            #             'ent_pub_shareholder_capital_contribution', #企业投资人出资比例
+            #             'ent_pub_equity_change', #股权变更信息
+            #             'ent_pub_knowledge_property', #知识产权出资登记
+            #             'ent_pub_reg_modify', # 变更信息
+            #         )
+            # items = (
+            #             'qiyenianbao', #企业年报
+            #             'xingzhengxuke', #行政许可信息
+            #             'xingzhengchufa', # 行政处罚信息
+            #             'touziren', #股东及出资信息, 变更信息
+            #             'gudongguquan', #股权变更信息
+            #             'zhishichanquan', #知识产权出质登记信息
+            #         )
+            # for title, item in zip(titles, items):
+            #     sub_json_dict[title] = self.parse_page_qygs(page, item, post_data)
 
+            nb = self.parse_page_qygs(page, 'qiyenianbao', post_data)
+            sub_json_dict['ent_pub_ent_annual_report'] = nb[u'企业年报'] if nb.has_key(u'企业年报') else []
+            xk = self.parse_page_qygs(page, 'xingzhengxuke', post_data)
+            sub_json_dict['ent_pub_administration_license'] = xk[u'行政许可信息'] if xk.has_key(u'行政许可信息') else []
+            cf = self.parse_page_qygs(page, 'xingzhengchufa', post_data)
+            sub_json_dict['ent_pub_administration_sanction'] = cf[u'行政处罚信息'] if cf.has_key(u'行政处罚信息') else []
+            tzr= self.parse_page_qygs(page, 'touziren', post_data)
+            sub_json_dict['ent_pub_shareholder_capital_contribution'] = tzr[u'股东及出资信息'] if tzr.has_key(u'股东及出资信息') else []
+
+            sub_json_dict['ent_pub_reg_modify'] = tzr[u'变更信息'] if tzr.has_key(u'变更信息') else []
+            gq = self.parse_page_qygs(page, 'gudongguquan', post_data)
+            sub_json_dict['ent_pub_equity_change'] = gq[u'股权变更信息'] if gq.has_key(u'股权变更信息') else []
+            zscq = self.parse_page_qygs(page, 'zhishichanquan', post_data)
+            sub_json_dict['ent_pub_knowledge_property'] = zscq[u'知识产权出质登记信息'] if zscq.has_key(u'知识产权出质登记信息') else []
         except Exception as e:
             logging.debug(u"An error ocurred in crawl_ent_pub_pages: %s"% type(e))
             raise e
@@ -266,16 +289,12 @@ class ShandongCrawler(object):
         try:
             page = self.crawl_page_by_url(url)['page']
             #html_to_file('next.html', page)
-            entpripid = url[url.rfind('/')+1:]
-            post_data = {'encrpripid' : entpripid}
-            titles =(   'other_dept_pub_administration_license',#行政许可信息
-                        'other_dept_pub_administration_sanction'#行政处罚信息
-                    )
-            tabs=(  "xingzhengxuke", #行政许可信息
-                    "xingzhengchufa", # 行政处罚信息
-                )
-            for title, tab in zip(titles, tabs):
-                sub_json_dict[title] = self.parse_page_qtbm(page, tab)
+            # entpripid = url[url.rfind('/')+1:]
+            # post_data = {'encrpripid' : entpripid}
+            xk = self.parse_page_qtbm(page, "xingzhengxuke")#行政许可信息
+            sub_json_dict["other_dept_pub_administration_license"] =  xk[u'行政许可信息'] if xk.has_key(u'行政许可信息') else []
+            cf = self.parse_page_qtbm(page, "xingzhengchufa")  # 行政处罚信息
+            sub_json_dict["other_dept_pub_administration_sanction"] = cf[u'行政处罚信息'] if cf.has_key(u'行政处罚信息') else []
         except Exception as e:
             settings.logger.debug(u"An error ocurred in crawl_other_dept_pub_pages: %s"% (type(e)))
             raise e
@@ -288,19 +307,15 @@ class ShandongCrawler(object):
         sub_json_dict = {}
         try:
             page = self.crawl_page_by_url(url)['page']
+            settings.logger.info( u"crawl the new page %s."%(url))
             #html_to_file('next.html', page)
-            entpripid = url[url.rfind('/')+1:]
-            post_data = {'encrpripid' : entpripid}
-            titles =(   'other_dept_pub_administration_license',#行政许可信息
-                        'other_dept_pub_administration_sanction'#行政处罚信息
-                    )
-            tabs=(  "xingzhengxuke", #行政许可信息
-                    "xingzhengchufa", # 行政处罚信息
-                )
-            for title, tab in zip(titles, tabs):
-                sub_json_dict[title] = self.parse_page_qtbm(page, tab)
+            xz = self.parse_page_sfxz(page, 'sifaxiezhu')
+            sub_json_dict['judical_assist_pub_equity_freeze'] = xz[u'司法股权冻结信息'] if xz.has_key(u'司法股权冻结信息') else []
+            gd = self.parse_page_sfxz(page, 'sifagudong')
+            sub_json_dict['judical_assist_pub_shareholder_modify'] = gd[u'司法股东变更登记信息'] if gd.has_key(u'司法股东变更登记信息') else []
+
         except Exception as e:
-            settings.logger.debug(u"An error ocurred in crawl_other_dept_pub_pages: %s"% (type(e)))
+            settings.logger.debug(u"An error ocurred in crawl_judical_assist_pub_pages: %s"% (type(e)))
             raise e
         finally:
             return sub_json_dict
@@ -431,6 +446,79 @@ class ShandongCrawler(object):
         finally:
             return columns
 
+    # 司法协助信息页面
+    def parse_page_sfxz(self, page, div_id='sifapanding', post_data= {}):
+        soup = BeautifulSoup(page, 'html5lib')
+        page_data = {}
+
+        try:
+            div = soup.find('div', attrs = {'id':div_id})
+            if div:
+                tables = div.find_all('table')
+            else:
+                tables = soup.find_all('table')
+            #print table
+            for table in tables:
+                table_name = self.get_table_title(table)
+                if table_name:
+                    if table_name== u"司法股权冻结信息":
+                        page_data[table_name] = (self.parse_table_sfxz_sfgq(table, table_name, page))
+                    else:
+                        page_data[table_name] = (self.parse_table(table, table_name, page))
+        except Exception as e:
+            logging.error(u'parse sifaxiezhu pagefailed, with exception %s' % e)
+            raise e
+        finally:
+            return page_data
+
+    # 司法协助 - 股权冻结信息
+    def parse_table_sfxz_sfgq(self, bs_table, table_name, page, post_data={}):
+        sub_json_list=[]
+        try:
+            columns = self.get_columns_of_record_table(bs_table, page, table_name)
+            titles = [column[0] for column in columns]
+            m_enttype = re.compile(r'enttype.*?;').search(page)
+            if m_enttype:
+                enttypestr = m_enttype.group()
+                enttype = str(re.compile(r"\d+").search(enttypestr).group())
+                m_encrpripidstr = re.compile(r'encrpripid.*?;').search(page)
+                if m_encrpripidstr:
+                    encrpripidstr = m_encrpripidstr.group()
+                    encrpripid = str(re.compile(r"(\'.*?\')").search(encrpripidstr).group()[1:-1]) # convert to list
+                    m = re.compile(r"gqxxliststr.*?;").search(page)
+                    if m:
+                        gqxxliststr = m.group()
+                        #print gqxxliststr
+                        try:
+                            strs = re.compile(r"(\'.*?\')").search(gqxxliststr).group()
+                            strs =strs.encode('utf8')
+                            # 不知道啥情况，strs自动添加了连个引号
+                            strs = strs[1:-1]
+                            gqxxlist = json.JSONDecoder().decode(strs)
+                        except Exception as e:
+                            raise e
+                        sub_item = []
+                        for i, item in enumerate(gqxxlist):
+                            link = urls['webroot']+'pub/sfgsgqxxdetail/'+encrpripid+'/'+enttype+'/'+str(item['pid'])+'/'+ str(item['frozstate'])
+                            settings.logger.info( u"crawl the link %s, table_name is %s"%(link, table_name))
+                            link_page = self.crawl_page_by_url(link)['page']
+                            link_data = self.parse_page_sfxz(link_page)
+                            datas = [i+1, item['inv'], str(item['froam'])+ (u"万股" if enttype.find('12') != -1 and enttype.find('52')!=-1 and enttype.find('62')!= -1 else u"万元"), \
+                                    item['froauth'], item['executeno'],  u'冻结' if int(item['frozstate'])== 1 else u'解除冻结' if int(item['frozstate'])==2 else u'失效' , link_data ]
+                            sub_item.append(dict(zip(titles, datas)))
+                        #sub_json_list[u"司法股权冻结信息"] = sub_item
+                        sub_json_list = sub_item
+                else:
+                    settings.logger.error(u"Can not find encrpripid in html")
+                    return sub_json_list
+            else:
+                settings.logger.error(u"Can not find enttype in html")
+                return sub_json_list
+        except Exception as e:
+            settings.logger.error(u"parse 司法协助 table 司法协助- 司法股权冻结信息 failed with exception:%s" % (type(e)))
+        finally:
+            return sub_json_list
+
     # 其他部门信息页面
     def parse_page_qtbm(self, page, div_id='sifapanding', post_data= {}):
         soup = BeautifulSoup(page, 'html5lib')
@@ -450,7 +538,7 @@ class ShandongCrawler(object):
                         page_data[table_name] = self.parse_table(table, table_name, page)
                 table = table.nextSibling
         except Exception as e:
-            logging.error(u'parse failed, with exception %s' % e)
+            logging.error(u'parse qitabumen failed, with exception %s' % e)
             raise e
         finally:
             return page_data
@@ -1088,7 +1176,7 @@ class ShandongCrawler(object):
             #print type(res)
             ls = json.loads(res)
             for i, l in enumerate(ls):
-                datas = [i+1, l['name'], l['position']]
+                datas = [i+1, l['regno'], l['brname'], l['regorg']]
                 sub_json_list.append(dict(zip(titles, datas)))
         except Exception as e:
             settings.logger.error(u"parse table 分支机构信息 failed with exception:%s" % (type(e)))
@@ -1103,10 +1191,9 @@ class ShandongCrawler(object):
             url = self.dicts[table_name] #"http://218.57.139.24/pub/gsryxx/1223"
             #print post_data
             res = self.crawl_page_by_url_post(url, post_data, {'X-CSRF-TOKEN': self.csrf})['page']
-            print type(res)
             ls = json.loads(res)
             for i, l in enumerate(ls):
-                datas = [i+1, l['regno'], l['brname'], l['regorg']]
+                datas = [i+1, l['name'], l['position']]
                 sub_json_list.append(dict(zip(titles, datas)))
         except Exception as e:
             settings.logger.error(u"parse table 主要人员信息 failed with exception:%s" % (type(e)))
@@ -1354,6 +1441,7 @@ class ShandongCrawler(object):
         self.crawl_page_search(urls['page_search'])
         self.crawl_page_captcha(urls['page_Captcha'], urls['checkcode'], urls['page_showinfo'], ent_num)
         data = self.crawl_page_main()
+        json_dump_to_file('shandong_json.json', data)
 
         #url = "http://218.57.139.24/pub/gsgsdetail/1223/6e0948678bfeed4ac8115d5cafef819ad6951a24f0c0188cd6c047570329c9b6"
         #data = self.crawl_ind_comm_pub_pages(url)
@@ -1364,11 +1452,6 @@ class ShandongCrawler(object):
         # data = self.parse_page(txt)
         # print data
         #txt = html_from_file('next.html')
-
-        #data = self.parse_ent_pub_annual_report_page(txt)
-        #data = self.parse_page(txt)
-        #json_dump_to_file('shandong_json.json', data)
-
 
 def html_to_file(path, html):
     write_type = 'w'
@@ -1401,7 +1484,7 @@ def read_ent_from_file(path):
         lines = f.readlines()
     lines = [ line.split(',') for line in lines ]
     return lines
-
+"""
 if __name__ == "__main__":
     reload (sys)
     sys.setdefaultencoding('utf8')
@@ -1428,5 +1511,4 @@ if __name__ == "__main__":
         settings.logger.info(u'###################   Start to crawl enterprise with id %s   ###################\n' % ent_str[2])
         shandong.run(ent_num = ent_str[2])
         settings.logger.info(u'###################   Enterprise with id  %s Finished!  ###################\n' % ent_str[2])
-"""
 
