@@ -169,6 +169,11 @@ def crawl_province(province, cur_date):
 
     #删除json文件，只保留  .gz 文件
     os.remove(json_restore_path)
+    
+
+def force_exit():
+    settings.logger.error("run timeout")
+    sys.exit(0)
 
 
 if __name__ == '__main__':
@@ -186,7 +191,7 @@ if __name__ == '__main__':
     cur_date = CrawlerUtils.get_cur_y_m_d()
 
     if len(sys.argv) < 3:
-        settings.logger.warn('usage: run.py max_crawl_time(minutes) province... (max_crawl_time 是最大爬取时间，以分钟计;province 是所要爬取的省份列表 用空格分开, all表示爬取全部)')
+        print 'usage: run.py max_crawl_time(minutes) province... \n\tmax_crawl_time 最大爬取时间，以秒计;\n\tprovince 是所要爬取的省份列表 用空格分开, all表示爬取全部)'
         exit(1)
 
     try:
@@ -195,25 +200,19 @@ if __name__ == '__main__':
     except ValueError as e:
         settings.logger.error('invalid max_crawl_time, should be a integer')
         exit(1)
+        
+    timer = threading.Timer(max_crawl_time, force_exit)
+    timer.start()
 
-    settings.logger.info('即将开始爬取，最长爬取时间为 %s' % settings.max_crawl_time)
+    settings.logger.info(u'即将开始爬取，最长爬取时间为 %s 秒' % settings.max_crawl_time)
     settings.start_crawl_time = datetime.now()
 
     if sys.argv[2] == 'all':
         for p in province_crawler.keys():
-            cur_time = datetime.now()
-            if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
-                settings.logger.info('crawl time over, exit!')
-                break
             crawl_province(p, cur_date)
     else:
         provinces = sys.argv[2:]
         for p in provinces:
-            cur_time = datetime.now()
-            if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
-                settings.logger.info('crawl time over, exit!')
-                break
-
             if not p in province_crawler.keys():
                 settings.logger.warn('province %s is not supported currently' % p)
             else:

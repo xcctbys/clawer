@@ -5408,3 +5408,687 @@ http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_ccjcxx.dhtml?credit_ticket=98772E
 2016-01-04 15:44:58,514 - enterprise-crawler - INFO - crawl time over, exit!
 2016-01-04 15:44:58,514 - enterprise-crawler - INFO - All beijing crawlers work over
 2016-01-04 15:44:58,551 - enterprise-crawler - INFO - crawl time over, exit!
+2016-01-13 15:32:53,220 - enterprise-crawler - WARNING - usage: run.py max_crawl_time(minutes) province... (max_crawl_time 是最大爬取时间，以分钟计;province 是所要爬取的省份列表 用空格分开, all表示爬取全部)
+2016-01-13 15:33:17,733 - enterprise-crawler - WARNING - usage: run.py max_crawl_time(minutes) province... 
+(max_crawl_time 是最大爬取时间，以分钟计;
+province 是所要爬取的省份列表 用空格分开, all表示爬取全部)
+2016-01-13 15:37:42,002 - enterprise-crawler - INFO - 即将开始爬取，最长爬取时间为 1:00:00
+2016-01-13 15:37:42,488 - enterprise-crawler - INFO - crawler 0 start to crawler enterprise(ent_id = 110000007552812)
+2016-01-13 15:37:43,546 - enterprise-crawler - DEBUG - get crackable checkcode img failed
+2016-01-13 15:37:44,281 - enterprise-crawler - DEBUG - get crackable checkcode img failed
+2016-01-13 15:37:44,692 - enterprise-crawler - INFO - crawler 1 start to crawler enterprise(ent_id = 110000002106422)
+2016-01-13 15:37:45,355 - enterprise-crawler - INFO - crawler 2 start to crawler enterprise(ent_id = 110000005791844)
+2016-01-13 15:37:48,029 - enterprise-crawler - INFO - crack code = ndsy, ndsy, response =  fail
+2016-01-13 15:37:48,030 - enterprise-crawler - DEBUG - crack checkcode failed, total fail count = 1
+2016-01-13 15:37:48,087 - enterprise-crawler - INFO - crack code = qa6w, qa6w, response =  success
+2016-01-13 15:37:48,166 - enterprise-crawler - INFO - get ind_comm_pub_reg_basic, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!openEntInfo.dhtml?credit_ticket=A046B773C248443DE1C36DDA86ABF01D&entId=4905E74D1D6746F6AB385AE7919F5E88&str=1&ent_id=4905E74D1D6746F6AB385AE7919F5E88&entName=&timeStamp=1452670668&clear=true&entNo=110000007552812&entid=4905E74D1D6746F6AB385AE7919F5E88
+
+2016-01-13 15:37:48,832 - enterprise-crawler - INFO - get ind_comm_pub_reg_shareholder, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!tzrFrame.dhtml?credit_ticket=A046B773C248443DE1C36DDA86ABF01D&entId=4905E74D1D6746F6AB385AE7919F5E88&str=1&ent_id=4905E74D1D6746F6AB385AE7919F5E88&entName=&timeStamp=1452670668&clear=true&entNo=110000007552812&entid=4905E74D1D6746F6AB385AE7919F5E88
+
+2016-01-13 15:37:49,551 - enterprise-crawler - INFO - get ind_comm_pub_reg_modify, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!biangengFrame.dhtml?credit_ticket=A046B773C248443DE1C36DDA86ABF01D&entId=4905E74D1D6746F6AB385AE7919F5E88&str=1&ent_id=4905E74D1D6746F6AB385AE7919F5E88&entName=&timeStamp=1452670669&clear=true&entNo=110000007552812&entid=4905E74D1D6746F6AB385AE7919F5E88
+
+2016-01-13 15:37:50,285 - enterprise-crawler - DEBUG - get crackable checkcode img failed
+2016-01-13 15:37:51,014 - enterprise-crawler - INFO - get ind_comm_pub_arch_key_persons, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!zyryFrame.dhtml?credit_ticket=A046B773C248443DE1C36DDA86ABF01D&entId=4905E74D1D6746F6AB385AE7919F5E88&str=1&ent_id=4905E74D1D6746F6AB385AE7919F5E88&entName=&timeStamp=1452670671&clear=true&entNo=110000007552812&entid=4905E74D1D6746F6AB385AE7919F5E88
+
+2016-01-13 15:37:51,023 - enterprise-crawler - INFO - crack code = vzex, vzex, response =  success
+2016-01-13 15:37:51,164 - enterprise-crawler - DEBUG - get crackable checkcode img failed
+2016-01-13 15:37:51,205 - enterprise-crawler - INFO - get ind_comm_pub_reg_basic, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!openEntInfo.dhtml?credit_ticket=FD0653BD1DC962767716225A7E026540&entId=BA0C90CC1C75431FAC99FAAED3C094D9&str=1&ent_id=BA0C90CC1C75431FAC99FAAED3C094D9&entName=&timeStamp=1452670671&clear=true&entNo=110000005791844&entid=BA0C90CC1C75431FAC99FAAED3C094D9
+
+2016-01-13 15:37:51,937 - enterprise-crawler - INFO - get ind_comm_pub_reg_shareholder, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!tzrFrame.dhtml?credit_ticket=FD0653BD1DC962767716225A7E026540&entId=BA0C90CC1C75431FAC99FAAED3C094D9&str=1&ent_id=BA0C90CC1C75431FAC99FAAED3C094D9&entName=&timeStamp=1452670671&clear=true&entNo=110000005791844&entid=BA0C90CC1C75431FAC99FAAED3C094D9
+
+2016-01-13 15:37:52,277 - enterprise-crawler - INFO - get ind_comm_pub_arch_branch, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!fzjgFrame.dhtml?credit_ticket=A046B773C248443DE1C36DDA86ABF01D&entId=4905E74D1D6746F6AB385AE7919F5E88&str=1&ent_id=4905E74D1D6746F6AB385AE7919F5E88&entName=&timeStamp=1452670672&clear=true&entNo=110000007552812&entid=4905E74D1D6746F6AB385AE7919F5E88
+
+2016-01-13 15:37:52,787 - enterprise-crawler - INFO - get ind_comm_pub_arch_liquidation, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!qsxxFrame.dhtml?credit_ticket=A046B773C248443DE1C36DDA86ABF01D&entId=4905E74D1D6746F6AB385AE7919F5E88&str=1&ent_id=4905E74D1D6746F6AB385AE7919F5E88&entName=&timeStamp=1452670672&clear=true&entNo=110000007552812&entid=4905E74D1D6746F6AB385AE7919F5E88
+
+2016-01-13 15:37:53,104 - enterprise-crawler - INFO - get ind_comm_pub_movable_property_reg, url:
+http://qyxy.baic.gov.cn/gjjbjTab/gjjTabQueryCreditAction!dcdyFrame.dhtml?credit_ticket=A046B773C248443DE1C36DDA86ABF01D&entId=4905E74D1D6746F6AB385AE7919F5E88&str=1&ent_id=4905E74D1D6746F6AB385AE7919F5E88&entName=&timeStamp=1452670673&clear=true&entNo=110000007552812&entid=4905E74D1D6746F6AB385AE7919F5E88
+
+2016-01-13 15:37:53,427 - enterprise-crawler - INFO - get ind_comm_pub_reg_modify, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!biangengFrame.dhtml?credit_ticket=FD0653BD1DC962767716225A7E026540&entId=BA0C90CC1C75431FAC99FAAED3C094D9&str=1&ent_id=BA0C90CC1C75431FAC99FAAED3C094D9&entName=&timeStamp=1452670673&clear=true&entNo=110000005791844&entid=BA0C90CC1C75431FAC99FAAED3C094D9
+
+2016-01-13 15:37:53,561 - enterprise-crawler - INFO - get ind_comm_pub_equity_ownership_reg, url:
+http://qyxy.baic.gov.cn/gdczdj/gdczdjAction!gdczdjFrame.dhtml?credit_ticket=A046B773C248443DE1C36DDA86ABF01D&entId=4905E74D1D6746F6AB385AE7919F5E88&str=1&ent_id=4905E74D1D6746F6AB385AE7919F5E88&entName=&timeStamp=1452670673&clear=true&entNo=110000007552812&entid=4905E74D1D6746F6AB385AE7919F5E88
+
+2016-01-13 15:37:54,412 - enterprise-crawler - INFO - get ind_comm_pub_administration_sanction, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list.dhtml?credit_ticket=A046B773C248443DE1C36DDA86ABF01D&entId=4905E74D1D6746F6AB385AE7919F5E88&str=1&ent_id=4905E74D1D6746F6AB385AE7919F5E88&entName=&timeStamp=1452670674&clear=true&entNo=110000007552812&entid=4905E74D1D6746F6AB385AE7919F5E88
+
+2016-01-13 15:37:55,627 - enterprise-crawler - INFO - crack code = ucpg, ucpg, response =  fail
+2016-01-13 15:37:55,627 - enterprise-crawler - DEBUG - crack checkcode failed, total fail count = 2
+2016-01-13 15:37:56,012 - enterprise-crawler - DEBUG - get crackable checkcode img failed
+2016-01-13 15:37:56,250 - enterprise-crawler - INFO - get ind_comm_pub_business_exception, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_jyycxx.dhtml?credit_ticket=A046B773C248443DE1C36DDA86ABF01D&entId=4905E74D1D6746F6AB385AE7919F5E88&str=1&ent_id=4905E74D1D6746F6AB385AE7919F5E88&entName=&timeStamp=1452670676&clear=true&entNo=110000007552812&entid=4905E74D1D6746F6AB385AE7919F5E88
+
+2016-01-13 15:37:56,613 - enterprise-crawler - INFO - get ind_comm_pub_serious_violate_law, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_yzwfxx.dhtml?credit_ticket=A046B773C248443DE1C36DDA86ABF01D&entId=4905E74D1D6746F6AB385AE7919F5E88&str=1&ent_id=4905E74D1D6746F6AB385AE7919F5E88&entName=&timeStamp=1452670676&clear=true&entNo=110000007552812&entid=4905E74D1D6746F6AB385AE7919F5E88
+
+2016-01-13 15:37:57,234 - enterprise-crawler - INFO - get ind_comm_pub_spot_check, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_ccjcxx.dhtml?credit_ticket=A046B773C248443DE1C36DDA86ABF01D&entId=4905E74D1D6746F6AB385AE7919F5E88&str=1&ent_id=4905E74D1D6746F6AB385AE7919F5E88&entName=&timeStamp=1452670677&clear=true&entNo=110000007552812&entid=4905E74D1D6746F6AB385AE7919F5E88
+
+2016-01-13 15:37:58,160 - enterprise-crawler - INFO - get ent_pub_ent_annual_report, url:
+http://qyxy.baic.gov.cn/qynb/entinfoAction!qyxx.dhtml?credit_ticket=A046B773C248443DE1C36DDA86ABF01D&entId=4905E74D1D6746F6AB385AE7919F5E88&str=2&ent_id=4905E74D1D6746F6AB385AE7919F5E88&entName=&timeStamp=1452670678&clear=true&entNo=110000007552812&entid=4905E74D1D6746F6AB385AE7919F5E88
+
+2016-01-13 15:37:59,422 - enterprise-crawler - INFO - get ind_comm_pub_arch_key_persons, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!zyryFrame.dhtml?credit_ticket=FD0653BD1DC962767716225A7E026540&entId=BA0C90CC1C75431FAC99FAAED3C094D9&str=1&ent_id=BA0C90CC1C75431FAC99FAAED3C094D9&entName=&timeStamp=1452670679&clear=true&entNo=110000005791844&entid=BA0C90CC1C75431FAC99FAAED3C094D9
+
+2016-01-13 15:37:59,537 - enterprise-crawler - INFO - crack code = b4hx, b4hx, response =  success
+2016-01-13 15:37:59,682 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!gdcz_bj.dhtml?clear=true&cid=3c647d37fea546fbaa57829ba7142444&entnature=
+
+2016-01-13 15:37:59,690 - enterprise-crawler - INFO - get ind_comm_pub_reg_basic, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!openEntInfo.dhtml?credit_ticket=0BEDA39A95B0F7D91695A3BD89520DF0&entId=FE7F9EB669FA496791373A7161648385&str=1&ent_id=FE7F9EB669FA496791373A7161648385&entName=&timeStamp=1452670679&clear=true&entNo=110000002106422&entid=FE7F9EB669FA496791373A7161648385
+
+2016-01-13 15:38:00,458 - enterprise-crawler - INFO - get ind_comm_pub_reg_shareholder, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!tzrFrame.dhtml?credit_ticket=0BEDA39A95B0F7D91695A3BD89520DF0&entId=FE7F9EB669FA496791373A7161648385&str=1&ent_id=FE7F9EB669FA496791373A7161648385&entName=&timeStamp=1452670680&clear=true&entNo=110000002106422&entid=FE7F9EB669FA496791373A7161648385
+
+2016-01-13 15:38:00,552 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!wz_bj.dhtml?clear=true&cid=3c647d37fea546fbaa57829ba7142444
+
+2016-01-13 15:38:01,488 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qybg_bj.dhtml?clear=true&cid=3c647d37fea546fbaa57829ba7142444&year=2013
+
+2016-01-13 15:38:01,544 - enterprise-crawler - INFO - get ind_comm_pub_arch_branch, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!fzjgFrame.dhtml?credit_ticket=FD0653BD1DC962767716225A7E026540&entId=BA0C90CC1C75431FAC99FAAED3C094D9&str=1&ent_id=BA0C90CC1C75431FAC99FAAED3C094D9&entName=&timeStamp=1452670681&clear=true&entNo=110000005791844&entid=BA0C90CC1C75431FAC99FAAED3C094D9
+
+2016-01-13 15:38:01,568 - enterprise-crawler - INFO - get ind_comm_pub_reg_modify, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!biangengFrame.dhtml?credit_ticket=0BEDA39A95B0F7D91695A3BD89520DF0&entId=FE7F9EB669FA496791373A7161648385&str=1&ent_id=FE7F9EB669FA496791373A7161648385&entName=&timeStamp=1452670681&clear=true&entNo=110000002106422&entid=FE7F9EB669FA496791373A7161648385
+
+2016-01-13 15:38:02,753 - enterprise-crawler - INFO - get ind_comm_pub_arch_liquidation, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!qsxxFrame.dhtml?credit_ticket=FD0653BD1DC962767716225A7E026540&entId=BA0C90CC1C75431FAC99FAAED3C094D9&str=1&ent_id=BA0C90CC1C75431FAC99FAAED3C094D9&entName=&timeStamp=1452670682&clear=true&entNo=110000005791844&entid=BA0C90CC1C75431FAC99FAAED3C094D9
+
+2016-01-13 15:38:03,069 - enterprise-crawler - INFO - get ind_comm_pub_arch_key_persons, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!zyryFrame.dhtml?credit_ticket=0BEDA39A95B0F7D91695A3BD89520DF0&entId=FE7F9EB669FA496791373A7161648385&str=1&ent_id=FE7F9EB669FA496791373A7161648385&entName=&timeStamp=1452670683&clear=true&entNo=110000002106422&entid=FE7F9EB669FA496791373A7161648385
+
+2016-01-13 15:38:03,225 - enterprise-crawler - INFO - get ind_comm_pub_movable_property_reg, url:
+http://qyxy.baic.gov.cn/gjjbjTab/gjjTabQueryCreditAction!dcdyFrame.dhtml?credit_ticket=FD0653BD1DC962767716225A7E026540&entId=BA0C90CC1C75431FAC99FAAED3C094D9&str=1&ent_id=BA0C90CC1C75431FAC99FAAED3C094D9&entName=&timeStamp=1452670683&clear=true&entNo=110000005791844&entid=BA0C90CC1C75431FAC99FAAED3C094D9
+
+2016-01-13 15:38:03,913 - enterprise-crawler - INFO - get ind_comm_pub_arch_branch, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!fzjgFrame.dhtml?credit_ticket=0BEDA39A95B0F7D91695A3BD89520DF0&entId=FE7F9EB669FA496791373A7161648385&str=1&ent_id=FE7F9EB669FA496791373A7161648385&entName=&timeStamp=1452670683&clear=true&entNo=110000002106422&entid=FE7F9EB669FA496791373A7161648385
+
+2016-01-13 15:38:04,027 - enterprise-crawler - INFO - get ind_comm_pub_equity_ownership_reg, url:
+http://qyxy.baic.gov.cn/gdczdj/gdczdjAction!gdczdjFrame.dhtml?credit_ticket=FD0653BD1DC962767716225A7E026540&entId=BA0C90CC1C75431FAC99FAAED3C094D9&str=1&ent_id=BA0C90CC1C75431FAC99FAAED3C094D9&entName=&timeStamp=1452670684&clear=true&entNo=110000005791844&entid=BA0C90CC1C75431FAC99FAAED3C094D9
+
+2016-01-13 15:38:04,597 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qydwdb_bj.dhtml?clear=true&cid=3c647d37fea546fbaa57829ba7142444
+
+2016-01-13 15:38:04,881 - enterprise-crawler - INFO - get ind_comm_pub_arch_liquidation, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!qsxxFrame.dhtml?credit_ticket=0BEDA39A95B0F7D91695A3BD89520DF0&entId=FE7F9EB669FA496791373A7161648385&str=1&ent_id=FE7F9EB669FA496791373A7161648385&entName=&timeStamp=1452670684&clear=true&entNo=110000002106422&entid=FE7F9EB669FA496791373A7161648385
+
+2016-01-13 15:38:05,754 - enterprise-crawler - INFO - get ind_comm_pub_movable_property_reg, url:
+http://qyxy.baic.gov.cn/gjjbjTab/gjjTabQueryCreditAction!dcdyFrame.dhtml?credit_ticket=0BEDA39A95B0F7D91695A3BD89520DF0&entId=FE7F9EB669FA496791373A7161648385&str=1&ent_id=FE7F9EB669FA496791373A7161648385&entName=&timeStamp=1452670685&clear=true&entNo=110000002106422&entid=FE7F9EB669FA496791373A7161648385
+
+2016-01-13 15:38:06,212 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!gdcz_bj.dhtml?clear=true&cid=6db8d6143f64467380cfd1271b08c335&entnature=
+
+2016-01-13 15:38:06,236 - enterprise-crawler - INFO - get ind_comm_pub_equity_ownership_reg, url:
+http://qyxy.baic.gov.cn/gdczdj/gdczdjAction!gdczdjFrame.dhtml?credit_ticket=0BEDA39A95B0F7D91695A3BD89520DF0&entId=FE7F9EB669FA496791373A7161648385&str=1&ent_id=FE7F9EB669FA496791373A7161648385&entName=&timeStamp=1452670686&clear=true&entNo=110000002106422&entid=FE7F9EB669FA496791373A7161648385
+
+2016-01-13 15:38:06,651 - enterprise-crawler - INFO - get ind_comm_pub_administration_sanction, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list.dhtml?credit_ticket=0BEDA39A95B0F7D91695A3BD89520DF0&entId=FE7F9EB669FA496791373A7161648385&str=1&ent_id=FE7F9EB669FA496791373A7161648385&entName=&timeStamp=1452670686&clear=true&entNo=110000002106422&entid=FE7F9EB669FA496791373A7161648385
+
+2016-01-13 15:38:07,067 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!wz_bj.dhtml?clear=true&cid=6db8d6143f64467380cfd1271b08c335
+
+2016-01-13 15:38:07,448 - enterprise-crawler - INFO - get ind_comm_pub_business_exception, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_jyycxx.dhtml?credit_ticket=0BEDA39A95B0F7D91695A3BD89520DF0&entId=FE7F9EB669FA496791373A7161648385&str=1&ent_id=FE7F9EB669FA496791373A7161648385&entName=&timeStamp=1452670687&clear=true&entNo=110000002106422&entid=FE7F9EB669FA496791373A7161648385
+
+2016-01-13 15:38:07,718 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qybg_bj.dhtml?clear=true&cid=6db8d6143f64467380cfd1271b08c335&year=2014
+
+2016-01-13 15:38:08,306 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qydwdb_bj.dhtml?clear=true&cid=6db8d6143f64467380cfd1271b08c335
+
+2016-01-13 15:38:08,406 - enterprise-crawler - INFO - get ind_comm_pub_serious_violate_law, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_yzwfxx.dhtml?credit_ticket=0BEDA39A95B0F7D91695A3BD89520DF0&entId=FE7F9EB669FA496791373A7161648385&str=1&ent_id=FE7F9EB669FA496791373A7161648385&entName=&timeStamp=1452670688&clear=true&entNo=110000002106422&entid=FE7F9EB669FA496791373A7161648385
+
+2016-01-13 15:38:08,731 - enterprise-crawler - INFO - get ind_comm_pub_spot_check, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_ccjcxx.dhtml?credit_ticket=0BEDA39A95B0F7D91695A3BD89520DF0&entId=FE7F9EB669FA496791373A7161648385&str=1&ent_id=FE7F9EB669FA496791373A7161648385&entName=&timeStamp=1452670688&clear=true&entNo=110000002106422&entid=FE7F9EB669FA496791373A7161648385
+
+2016-01-13 15:38:08,846 - enterprise-crawler - INFO - get ent_pub_shareholder_capital_contribution, url:
+http://qyxy.baic.gov.cn/gdcz/gdczAction!list_index.dhtml?credit_ticket=A046B773C248443DE1C36DDA86ABF01D&entId=4905E74D1D6746F6AB385AE7919F5E88&str=2&ent_id=4905E74D1D6746F6AB385AE7919F5E88&entName=&timeStamp=1452670688&clear=true&entNo=110000007552812&entid=4905E74D1D6746F6AB385AE7919F5E88
+
+2016-01-13 15:38:09,322 - enterprise-crawler - INFO - get ent_pub_equity_change, url:
+http://qyxy.baic.gov.cn/gdgq/gdgqAction!gdgqzrxxFrame.dhtml?credit_ticket=A046B773C248443DE1C36DDA86ABF01D&entId=4905E74D1D6746F6AB385AE7919F5E88&str=2&ent_id=4905E74D1D6746F6AB385AE7919F5E88&entName=&timeStamp=1452670689&clear=true&entNo=110000007552812&entid=4905E74D1D6746F6AB385AE7919F5E88
+
+2016-01-13 15:38:09,710 - enterprise-crawler - INFO - get ent_pub_ent_annual_report, url:
+http://qyxy.baic.gov.cn/qynb/entinfoAction!qyxx.dhtml?credit_ticket=0BEDA39A95B0F7D91695A3BD89520DF0&entId=FE7F9EB669FA496791373A7161648385&str=2&ent_id=FE7F9EB669FA496791373A7161648385&entName=&timeStamp=1452670689&clear=true&entNo=110000002106422&entid=FE7F9EB669FA496791373A7161648385
+
+2016-01-13 15:38:10,210 - enterprise-crawler - INFO - get ent_pub_administration_license, url:
+http://qyxy.baic.gov.cn/xzxk/xzxkAction!list_index.dhtml?credit_ticket=A046B773C248443DE1C36DDA86ABF01D&entId=4905E74D1D6746F6AB385AE7919F5E88&str=2&ent_id=4905E74D1D6746F6AB385AE7919F5E88&entName=&timeStamp=1452670690&clear=true&entNo=110000007552812&entid=4905E74D1D6746F6AB385AE7919F5E88
+
+2016-01-13 15:38:10,808 - enterprise-crawler - INFO - get ent_pub_knowledge_property, url:
+http://qyxy.baic.gov.cn/zscqczdj/zscqczdjAction!list_index.dhtml?credit_ticket=A046B773C248443DE1C36DDA86ABF01D&entId=4905E74D1D6746F6AB385AE7919F5E88&str=2&ent_id=4905E74D1D6746F6AB385AE7919F5E88&entName=&timeStamp=1452670690&clear=true&entNo=110000007552812&entid=4905E74D1D6746F6AB385AE7919F5E88
+
+2016-01-13 15:38:11,163 - enterprise-crawler - INFO - get ind_comm_pub_administration_sanction, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list.dhtml?credit_ticket=FD0653BD1DC962767716225A7E026540&entId=BA0C90CC1C75431FAC99FAAED3C094D9&str=1&ent_id=BA0C90CC1C75431FAC99FAAED3C094D9&entName=&timeStamp=1452670691&clear=true&entNo=110000005791844&entid=BA0C90CC1C75431FAC99FAAED3C094D9
+
+2016-01-13 15:38:11,316 - enterprise-crawler - INFO - get ent_pub_administration_sanction, url:
+http://qyxy.baic.gov.cn/gdgq/gdgqAction!qyxzcfFrame.dhtml?credit_ticket=A046B773C248443DE1C36DDA86ABF01D&entId=4905E74D1D6746F6AB385AE7919F5E88&str=2&ent_id=4905E74D1D6746F6AB385AE7919F5E88&entName=&timeStamp=1452670691&clear=true&entNo=110000007552812&entid=4905E74D1D6746F6AB385AE7919F5E88
+
+2016-01-13 15:38:11,700 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!gdcz_bj.dhtml?clear=true&cid=cb173479a35c4dba904adb1ae034d0d0&entnature=
+
+2016-01-13 15:38:11,797 - enterprise-crawler - INFO - get other_dept_pub_administration_license, url:
+http://qyxy.baic.gov.cn/qtbm/qtbmAction!list_xzxk.dhtml?credit_ticket=A046B773C248443DE1C36DDA86ABF01D&entId=4905E74D1D6746F6AB385AE7919F5E88&str=3&ent_id=4905E74D1D6746F6AB385AE7919F5E88&entName=&timeStamp=1452670691&clear=true&entNo=110000007552812&entid=4905E74D1D6746F6AB385AE7919F5E88
+
+2016-01-13 15:38:12,216 - enterprise-crawler - INFO - get ind_comm_pub_business_exception, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_jyycxx.dhtml?credit_ticket=FD0653BD1DC962767716225A7E026540&entId=BA0C90CC1C75431FAC99FAAED3C094D9&str=1&ent_id=BA0C90CC1C75431FAC99FAAED3C094D9&entName=&timeStamp=1452670692&clear=true&entNo=110000005791844&entid=BA0C90CC1C75431FAC99FAAED3C094D9
+
+2016-01-13 15:38:12,620 - enterprise-crawler - INFO - get ind_comm_pub_serious_violate_law, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_yzwfxx.dhtml?credit_ticket=FD0653BD1DC962767716225A7E026540&entId=BA0C90CC1C75431FAC99FAAED3C094D9&str=1&ent_id=BA0C90CC1C75431FAC99FAAED3C094D9&entName=&timeStamp=1452670692&clear=true&entNo=110000005791844&entid=BA0C90CC1C75431FAC99FAAED3C094D9
+
+2016-01-13 15:38:12,792 - enterprise-crawler - INFO - get other_dept_pub_administration_sanction, url:
+http://qyxy.baic.gov.cn/qtbm/qtbmAction!list_xzcf.dhtml?credit_ticket=A046B773C248443DE1C36DDA86ABF01D&entId=4905E74D1D6746F6AB385AE7919F5E88&str=3&ent_id=4905E74D1D6746F6AB385AE7919F5E88&entName=&timeStamp=1452670692&clear=true&entNo=110000007552812&entid=4905E74D1D6746F6AB385AE7919F5E88
+
+2016-01-13 15:38:13,040 - enterprise-crawler - INFO - get ind_comm_pub_spot_check, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_ccjcxx.dhtml?credit_ticket=FD0653BD1DC962767716225A7E026540&entId=BA0C90CC1C75431FAC99FAAED3C094D9&str=1&ent_id=BA0C90CC1C75431FAC99FAAED3C094D9&entName=&timeStamp=1452670693&clear=true&entNo=110000005791844&entid=BA0C90CC1C75431FAC99FAAED3C094D9
+
+2016-01-13 15:38:13,680 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!wz_bj.dhtml?clear=true&cid=cb173479a35c4dba904adb1ae034d0d0
+
+2016-01-13 15:38:13,885 - enterprise-crawler - INFO - get ent_pub_ent_annual_report, url:
+http://qyxy.baic.gov.cn/qynb/entinfoAction!qyxx.dhtml?credit_ticket=FD0653BD1DC962767716225A7E026540&entId=BA0C90CC1C75431FAC99FAAED3C094D9&str=2&ent_id=BA0C90CC1C75431FAC99FAAED3C094D9&entName=&timeStamp=1452670693&clear=true&entNo=110000005791844&entid=BA0C90CC1C75431FAC99FAAED3C094D9
+
+2016-01-13 15:38:13,988 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qybg_bj.dhtml?clear=true&cid=cb173479a35c4dba904adb1ae034d0d0&year=2014
+
+2016-01-13 15:38:14,307 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qydwdb_bj.dhtml?clear=true&cid=cb173479a35c4dba904adb1ae034d0d0
+
+2016-01-13 15:38:14,453 - enterprise-crawler - INFO - crawler 0 start to crawler enterprise(ent_id = 110000006370338)
+2016-01-13 15:38:16,004 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!gdcz_bj.dhtml?clear=true&cid=316a6fbe78ef49c192c96537693c87b2&entnature=
+
+2016-01-13 15:38:16,297 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!gdcz_bj.dhtml?clear=true&cid=54f2e9cc6f584f1ba7d40338f6e8d0a2&entnature=
+
+2016-01-13 15:38:17,571 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!wz_bj.dhtml?clear=true&cid=54f2e9cc6f584f1ba7d40338f6e8d0a2
+
+2016-01-13 15:38:17,804 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!wz_bj.dhtml?clear=true&cid=316a6fbe78ef49c192c96537693c87b2
+
+2016-01-13 15:38:18,257 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qybg_bj.dhtml?clear=true&cid=54f2e9cc6f584f1ba7d40338f6e8d0a2&year=2013
+
+2016-01-13 15:38:18,408 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qybg_bj.dhtml?clear=true&cid=316a6fbe78ef49c192c96537693c87b2&year=2014
+
+2016-01-13 15:38:18,828 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qydwdb_bj.dhtml?clear=true&cid=316a6fbe78ef49c192c96537693c87b2
+
+2016-01-13 15:38:18,856 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qydwdb_bj.dhtml?clear=true&cid=54f2e9cc6f584f1ba7d40338f6e8d0a2
+
+2016-01-13 15:38:18,925 - enterprise-crawler - INFO - crack code = 66pb, 66pb, response =  success
+2016-01-13 15:38:19,031 - enterprise-crawler - INFO - get ind_comm_pub_reg_basic, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!openEntInfo.dhtml?credit_ticket=2A6BBC9448449F2C7C5A922BFAAD6356&entId=EABFD2351FF64BD8899CA8FFB84804DE&str=1&ent_id=EABFD2351FF64BD8899CA8FFB84804DE&entName=&timeStamp=1452670699&clear=true&entNo=110000006370338&entid=EABFD2351FF64BD8899CA8FFB84804DE
+
+2016-01-13 15:38:19,850 - enterprise-crawler - INFO - get ent_pub_shareholder_capital_contribution, url:
+http://qyxy.baic.gov.cn/gdcz/gdczAction!list_index.dhtml?credit_ticket=0BEDA39A95B0F7D91695A3BD89520DF0&entId=FE7F9EB669FA496791373A7161648385&str=2&ent_id=FE7F9EB669FA496791373A7161648385&entName=&timeStamp=1452670699&clear=true&entNo=110000002106422&entid=FE7F9EB669FA496791373A7161648385
+
+2016-01-13 15:38:19,952 - enterprise-crawler - INFO - get ind_comm_pub_reg_shareholder, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!tzrFrame.dhtml?credit_ticket=2A6BBC9448449F2C7C5A922BFAAD6356&entId=EABFD2351FF64BD8899CA8FFB84804DE&str=1&ent_id=EABFD2351FF64BD8899CA8FFB84804DE&entName=&timeStamp=1452670699&clear=true&entNo=110000006370338&entid=EABFD2351FF64BD8899CA8FFB84804DE
+
+2016-01-13 15:38:20,262 - enterprise-crawler - INFO - get ent_pub_equity_change, url:
+http://qyxy.baic.gov.cn/gdgq/gdgqAction!gdgqzrxxFrame.dhtml?credit_ticket=0BEDA39A95B0F7D91695A3BD89520DF0&entId=FE7F9EB669FA496791373A7161648385&str=2&ent_id=FE7F9EB669FA496791373A7161648385&entName=&timeStamp=1452670700&clear=true&entNo=110000002106422&entid=FE7F9EB669FA496791373A7161648385
+
+2016-01-13 15:38:20,445 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!gdcz_bj.dhtml?clear=true&cid=79da382318554c42a36e76e5200b0ebf&entnature=
+
+2016-01-13 15:38:20,645 - enterprise-crawler - INFO - get ent_pub_administration_license, url:
+http://qyxy.baic.gov.cn/xzxk/xzxkAction!list_index.dhtml?credit_ticket=0BEDA39A95B0F7D91695A3BD89520DF0&entId=FE7F9EB669FA496791373A7161648385&str=2&ent_id=FE7F9EB669FA496791373A7161648385&entName=&timeStamp=1452670700&clear=true&entNo=110000002106422&entid=FE7F9EB669FA496791373A7161648385
+
+2016-01-13 15:38:20,877 - enterprise-crawler - INFO - get ind_comm_pub_reg_modify, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!biangengFrame.dhtml?credit_ticket=2A6BBC9448449F2C7C5A922BFAAD6356&entId=EABFD2351FF64BD8899CA8FFB84804DE&str=1&ent_id=EABFD2351FF64BD8899CA8FFB84804DE&entName=&timeStamp=1452670700&clear=true&entNo=110000006370338&entid=EABFD2351FF64BD8899CA8FFB84804DE
+
+2016-01-13 15:38:21,062 - enterprise-crawler - INFO - get ent_pub_knowledge_property, url:
+http://qyxy.baic.gov.cn/zscqczdj/zscqczdjAction!list_index.dhtml?credit_ticket=0BEDA39A95B0F7D91695A3BD89520DF0&entId=FE7F9EB669FA496791373A7161648385&str=2&ent_id=FE7F9EB669FA496791373A7161648385&entName=&timeStamp=1452670701&clear=true&entNo=110000002106422&entid=FE7F9EB669FA496791373A7161648385
+
+2016-01-13 15:38:22,045 - enterprise-crawler - INFO - get ent_pub_administration_sanction, url:
+http://qyxy.baic.gov.cn/gdgq/gdgqAction!qyxzcfFrame.dhtml?credit_ticket=0BEDA39A95B0F7D91695A3BD89520DF0&entId=FE7F9EB669FA496791373A7161648385&str=2&ent_id=FE7F9EB669FA496791373A7161648385&entName=&timeStamp=1452670702&clear=true&entNo=110000002106422&entid=FE7F9EB669FA496791373A7161648385
+
+2016-01-13 15:38:22,567 - enterprise-crawler - INFO - get ind_comm_pub_arch_key_persons, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!zyryFrame.dhtml?credit_ticket=2A6BBC9448449F2C7C5A922BFAAD6356&entId=EABFD2351FF64BD8899CA8FFB84804DE&str=1&ent_id=EABFD2351FF64BD8899CA8FFB84804DE&entName=&timeStamp=1452670702&clear=true&entNo=110000006370338&entid=EABFD2351FF64BD8899CA8FFB84804DE
+
+2016-01-13 15:38:22,783 - enterprise-crawler - INFO - get other_dept_pub_administration_license, url:
+http://qyxy.baic.gov.cn/qtbm/qtbmAction!list_xzxk.dhtml?credit_ticket=0BEDA39A95B0F7D91695A3BD89520DF0&entId=FE7F9EB669FA496791373A7161648385&str=3&ent_id=FE7F9EB669FA496791373A7161648385&entName=&timeStamp=1452670702&clear=true&entNo=110000002106422&entid=FE7F9EB669FA496791373A7161648385
+
+2016-01-13 15:38:22,986 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!wz_bj.dhtml?clear=true&cid=79da382318554c42a36e76e5200b0ebf
+
+2016-01-13 15:38:23,335 - enterprise-crawler - INFO - get ind_comm_pub_arch_branch, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!fzjgFrame.dhtml?credit_ticket=2A6BBC9448449F2C7C5A922BFAAD6356&entId=EABFD2351FF64BD8899CA8FFB84804DE&str=1&ent_id=EABFD2351FF64BD8899CA8FFB84804DE&entName=&timeStamp=1452670703&clear=true&entNo=110000006370338&entid=EABFD2351FF64BD8899CA8FFB84804DE
+
+2016-01-13 15:38:23,770 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qybg_bj.dhtml?clear=true&cid=79da382318554c42a36e76e5200b0ebf&year=2013
+
+2016-01-13 15:38:23,831 - enterprise-crawler - INFO - get ind_comm_pub_arch_liquidation, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!qsxxFrame.dhtml?credit_ticket=2A6BBC9448449F2C7C5A922BFAAD6356&entId=EABFD2351FF64BD8899CA8FFB84804DE&str=1&ent_id=EABFD2351FF64BD8899CA8FFB84804DE&entName=&timeStamp=1452670703&clear=true&entNo=110000006370338&entid=EABFD2351FF64BD8899CA8FFB84804DE
+
+2016-01-13 15:38:23,966 - enterprise-crawler - INFO - get other_dept_pub_administration_sanction, url:
+http://qyxy.baic.gov.cn/qtbm/qtbmAction!list_xzcf.dhtml?credit_ticket=0BEDA39A95B0F7D91695A3BD89520DF0&entId=FE7F9EB669FA496791373A7161648385&str=3&ent_id=FE7F9EB669FA496791373A7161648385&entName=&timeStamp=1452670703&clear=true&entNo=110000002106422&entid=FE7F9EB669FA496791373A7161648385
+
+2016-01-13 15:38:24,428 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qydwdb_bj.dhtml?clear=true&cid=79da382318554c42a36e76e5200b0ebf
+
+2016-01-13 15:38:24,557 - enterprise-crawler - INFO - get ind_comm_pub_movable_property_reg, url:
+http://qyxy.baic.gov.cn/gjjbjTab/gjjTabQueryCreditAction!dcdyFrame.dhtml?credit_ticket=2A6BBC9448449F2C7C5A922BFAAD6356&entId=EABFD2351FF64BD8899CA8FFB84804DE&str=1&ent_id=EABFD2351FF64BD8899CA8FFB84804DE&entName=&timeStamp=1452670704&clear=true&entNo=110000006370338&entid=EABFD2351FF64BD8899CA8FFB84804DE
+
+2016-01-13 15:38:25,312 - enterprise-crawler - INFO - get ent_pub_shareholder_capital_contribution, url:
+http://qyxy.baic.gov.cn/gdcz/gdczAction!list_index.dhtml?credit_ticket=FD0653BD1DC962767716225A7E026540&entId=BA0C90CC1C75431FAC99FAAED3C094D9&str=2&ent_id=BA0C90CC1C75431FAC99FAAED3C094D9&entName=&timeStamp=1452670705&clear=true&entNo=110000005791844&entid=BA0C90CC1C75431FAC99FAAED3C094D9
+
+2016-01-13 15:38:25,389 - enterprise-crawler - INFO - get ind_comm_pub_equity_ownership_reg, url:
+http://qyxy.baic.gov.cn/gdczdj/gdczdjAction!gdczdjFrame.dhtml?credit_ticket=2A6BBC9448449F2C7C5A922BFAAD6356&entId=EABFD2351FF64BD8899CA8FFB84804DE&str=1&ent_id=EABFD2351FF64BD8899CA8FFB84804DE&entName=&timeStamp=1452670705&clear=true&entNo=110000006370338&entid=EABFD2351FF64BD8899CA8FFB84804DE
+
+2016-01-13 15:38:25,699 - enterprise-crawler - INFO - crawler 1 start to crawler enterprise(ent_id = 110000007977503)
+2016-01-13 15:38:26,069 - enterprise-crawler - INFO - get ind_comm_pub_administration_sanction, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list.dhtml?credit_ticket=2A6BBC9448449F2C7C5A922BFAAD6356&entId=EABFD2351FF64BD8899CA8FFB84804DE&str=1&ent_id=EABFD2351FF64BD8899CA8FFB84804DE&entName=&timeStamp=1452670706&clear=true&entNo=110000006370338&entid=EABFD2351FF64BD8899CA8FFB84804DE
+
+2016-01-13 15:38:26,353 - enterprise-crawler - INFO - get ind_comm_pub_business_exception, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_jyycxx.dhtml?credit_ticket=2A6BBC9448449F2C7C5A922BFAAD6356&entId=EABFD2351FF64BD8899CA8FFB84804DE&str=1&ent_id=EABFD2351FF64BD8899CA8FFB84804DE&entName=&timeStamp=1452670706&clear=true&entNo=110000006370338&entid=EABFD2351FF64BD8899CA8FFB84804DE
+
+2016-01-13 15:38:26,985 - enterprise-crawler - INFO - get ind_comm_pub_serious_violate_law, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_yzwfxx.dhtml?credit_ticket=2A6BBC9448449F2C7C5A922BFAAD6356&entId=EABFD2351FF64BD8899CA8FFB84804DE&str=1&ent_id=EABFD2351FF64BD8899CA8FFB84804DE&entName=&timeStamp=1452670706&clear=true&entNo=110000006370338&entid=EABFD2351FF64BD8899CA8FFB84804DE
+
+2016-01-13 15:38:27,266 - enterprise-crawler - INFO - get ent_pub_equity_change, url:
+http://qyxy.baic.gov.cn/gdgq/gdgqAction!gdgqzrxxFrame.dhtml?credit_ticket=FD0653BD1DC962767716225A7E026540&entId=BA0C90CC1C75431FAC99FAAED3C094D9&str=2&ent_id=BA0C90CC1C75431FAC99FAAED3C094D9&entName=&timeStamp=1452670707&clear=true&entNo=110000005791844&entid=BA0C90CC1C75431FAC99FAAED3C094D9
+
+2016-01-13 15:38:27,915 - enterprise-crawler - INFO - get ind_comm_pub_spot_check, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_ccjcxx.dhtml?credit_ticket=2A6BBC9448449F2C7C5A922BFAAD6356&entId=EABFD2351FF64BD8899CA8FFB84804DE&str=1&ent_id=EABFD2351FF64BD8899CA8FFB84804DE&entName=&timeStamp=1452670707&clear=true&entNo=110000006370338&entid=EABFD2351FF64BD8899CA8FFB84804DE
+
+2016-01-13 15:38:28,656 - enterprise-crawler - INFO - get ent_pub_ent_annual_report, url:
+http://qyxy.baic.gov.cn/qynb/entinfoAction!qyxx.dhtml?credit_ticket=2A6BBC9448449F2C7C5A922BFAAD6356&entId=EABFD2351FF64BD8899CA8FFB84804DE&str=2&ent_id=EABFD2351FF64BD8899CA8FFB84804DE&entName=&timeStamp=1452670708&clear=true&entNo=110000006370338&entid=EABFD2351FF64BD8899CA8FFB84804DE
+
+2016-01-13 15:38:28,896 - enterprise-crawler - INFO - get ent_pub_administration_license, url:
+http://qyxy.baic.gov.cn/xzxk/xzxkAction!list_index.dhtml?credit_ticket=FD0653BD1DC962767716225A7E026540&entId=BA0C90CC1C75431FAC99FAAED3C094D9&str=2&ent_id=BA0C90CC1C75431FAC99FAAED3C094D9&entName=&timeStamp=1452670708&clear=true&entNo=110000005791844&entid=BA0C90CC1C75431FAC99FAAED3C094D9
+
+2016-01-13 15:38:29,585 - enterprise-crawler - INFO - get ent_pub_knowledge_property, url:
+http://qyxy.baic.gov.cn/zscqczdj/zscqczdjAction!list_index.dhtml?credit_ticket=FD0653BD1DC962767716225A7E026540&entId=BA0C90CC1C75431FAC99FAAED3C094D9&str=2&ent_id=BA0C90CC1C75431FAC99FAAED3C094D9&entName=&timeStamp=1452670709&clear=true&entNo=110000005791844&entid=BA0C90CC1C75431FAC99FAAED3C094D9
+
+2016-01-13 15:38:29,858 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!gdcz_bj.dhtml?clear=true&cid=160f991344a24d8087e45b3b3229f6b8&entnature=
+
+2016-01-13 15:38:30,187 - enterprise-crawler - INFO - get ent_pub_administration_sanction, url:
+http://qyxy.baic.gov.cn/gdgq/gdgqAction!qyxzcfFrame.dhtml?credit_ticket=FD0653BD1DC962767716225A7E026540&entId=BA0C90CC1C75431FAC99FAAED3C094D9&str=2&ent_id=BA0C90CC1C75431FAC99FAAED3C094D9&entName=&timeStamp=1452670710&clear=true&entNo=110000005791844&entid=BA0C90CC1C75431FAC99FAAED3C094D9
+
+2016-01-13 15:38:31,063 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!wz_bj.dhtml?clear=true&cid=160f991344a24d8087e45b3b3229f6b8
+
+2016-01-13 15:38:31,608 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qybg_bj.dhtml?clear=true&cid=160f991344a24d8087e45b3b3229f6b8&year=2014
+
+2016-01-13 15:38:31,742 - enterprise-crawler - INFO - crack code = ls2e, ls2e, response =  success
+2016-01-13 15:38:32,103 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qydwdb_bj.dhtml?clear=true&cid=160f991344a24d8087e45b3b3229f6b8
+
+2016-01-13 15:38:32,379 - enterprise-crawler - INFO - get other_dept_pub_administration_license, url:
+http://qyxy.baic.gov.cn/qtbm/qtbmAction!list_xzxk.dhtml?credit_ticket=FD0653BD1DC962767716225A7E026540&entId=BA0C90CC1C75431FAC99FAAED3C094D9&str=3&ent_id=BA0C90CC1C75431FAC99FAAED3C094D9&entName=&timeStamp=1452670712&clear=true&entNo=110000005791844&entid=BA0C90CC1C75431FAC99FAAED3C094D9
+
+2016-01-13 15:38:32,714 - enterprise-crawler - INFO - get other_dept_pub_administration_sanction, url:
+http://qyxy.baic.gov.cn/qtbm/qtbmAction!list_xzcf.dhtml?credit_ticket=FD0653BD1DC962767716225A7E026540&entId=BA0C90CC1C75431FAC99FAAED3C094D9&str=3&ent_id=BA0C90CC1C75431FAC99FAAED3C094D9&entName=&timeStamp=1452670712&clear=true&entNo=110000005791844&entid=BA0C90CC1C75431FAC99FAAED3C094D9
+
+2016-01-13 15:38:33,081 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!gdcz_bj.dhtml?clear=true&cid=22a90526fc6e48f8a2acdcb2b2ddbc40&entnature=
+
+2016-01-13 15:38:33,145 - enterprise-crawler - INFO - get ind_comm_pub_reg_basic, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!openEntInfo.dhtml?credit_ticket=A2780FD4BEEC9E8FB756C2EDBC1EB29C&entId=FEB2C1A031D141ADA7441D621F4E5BD8&str=1&ent_id=FEB2C1A031D141ADA7441D621F4E5BD8&entName=&timeStamp=1452670713&clear=true&entNo=110000007977503&entid=FEB2C1A031D141ADA7441D621F4E5BD8
+
+2016-01-13 15:38:33,937 - enterprise-crawler - INFO - get ind_comm_pub_reg_shareholder, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!tzrFrame.dhtml?credit_ticket=A2780FD4BEEC9E8FB756C2EDBC1EB29C&entId=FEB2C1A031D141ADA7441D621F4E5BD8&str=1&ent_id=FEB2C1A031D141ADA7441D621F4E5BD8&entName=&timeStamp=1452670713&clear=true&entNo=110000007977503&entid=FEB2C1A031D141ADA7441D621F4E5BD8
+
+2016-01-13 15:38:34,013 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!wz_bj.dhtml?clear=true&cid=22a90526fc6e48f8a2acdcb2b2ddbc40
+
+2016-01-13 15:38:34,322 - enterprise-crawler - INFO - crawler 2 start to crawler enterprise(ent_id = 110000009017684)
+2016-01-13 15:38:34,941 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qybg_bj.dhtml?clear=true&cid=22a90526fc6e48f8a2acdcb2b2ddbc40&year=2013
+
+2016-01-13 15:38:35,301 - enterprise-crawler - INFO - get ind_comm_pub_reg_modify, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!biangengFrame.dhtml?credit_ticket=A2780FD4BEEC9E8FB756C2EDBC1EB29C&entId=FEB2C1A031D141ADA7441D621F4E5BD8&str=1&ent_id=FEB2C1A031D141ADA7441D621F4E5BD8&entName=&timeStamp=1452670715&clear=true&entNo=110000007977503&entid=FEB2C1A031D141ADA7441D621F4E5BD8
+
+2016-01-13 15:38:35,378 - enterprise-crawler - DEBUG - get crackable checkcode img failed
+2016-01-13 15:38:38,481 - enterprise-crawler - INFO - get ind_comm_pub_arch_key_persons, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!zyryFrame.dhtml?credit_ticket=A2780FD4BEEC9E8FB756C2EDBC1EB29C&entId=FEB2C1A031D141ADA7441D621F4E5BD8&str=1&ent_id=FEB2C1A031D141ADA7441D621F4E5BD8&entName=&timeStamp=1452670718&clear=true&entNo=110000007977503&entid=FEB2C1A031D141ADA7441D621F4E5BD8
+
+2016-01-13 15:38:38,833 - enterprise-crawler - INFO - crack code = 7gqc, 7gqc, response =  success
+2016-01-13 15:38:38,979 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qydwdb_bj.dhtml?clear=true&cid=22a90526fc6e48f8a2acdcb2b2ddbc40
+
+2016-01-13 15:38:39,904 - enterprise-crawler - INFO - get ind_comm_pub_arch_branch, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!fzjgFrame.dhtml?credit_ticket=A2780FD4BEEC9E8FB756C2EDBC1EB29C&entId=FEB2C1A031D141ADA7441D621F4E5BD8&str=1&ent_id=FEB2C1A031D141ADA7441D621F4E5BD8&entName=&timeStamp=1452670719&clear=true&entNo=110000007977503&entid=FEB2C1A031D141ADA7441D621F4E5BD8
+
+2016-01-13 15:38:40,143 - enterprise-crawler - INFO - get ent_pub_shareholder_capital_contribution, url:
+http://qyxy.baic.gov.cn/gdcz/gdczAction!list_index.dhtml?credit_ticket=2A6BBC9448449F2C7C5A922BFAAD6356&entId=EABFD2351FF64BD8899CA8FFB84804DE&str=2&ent_id=EABFD2351FF64BD8899CA8FFB84804DE&entName=&timeStamp=1452670720&clear=true&entNo=110000006370338&entid=EABFD2351FF64BD8899CA8FFB84804DE
+
+2016-01-13 15:38:40,170 - enterprise-crawler - INFO - get ind_comm_pub_reg_basic, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!openEntInfo.dhtml?credit_ticket=702C78220C6DD2F91482ECBDF75F8994&entId=FB43363F6351417E980D8EE1B581EF6D&str=1&ent_id=FB43363F6351417E980D8EE1B581EF6D&entName=&timeStamp=1452670720&clear=true&entNo=110000009017684&entid=FB43363F6351417E980D8EE1B581EF6D
+
+2016-01-13 15:38:40,875 - enterprise-crawler - INFO - get ent_pub_equity_change, url:
+http://qyxy.baic.gov.cn/gdgq/gdgqAction!gdgqzrxxFrame.dhtml?credit_ticket=2A6BBC9448449F2C7C5A922BFAAD6356&entId=EABFD2351FF64BD8899CA8FFB84804DE&str=2&ent_id=EABFD2351FF64BD8899CA8FFB84804DE&entName=&timeStamp=1452670720&clear=true&entNo=110000006370338&entid=EABFD2351FF64BD8899CA8FFB84804DE
+
+2016-01-13 15:38:40,991 - enterprise-crawler - INFO - get ind_comm_pub_arch_liquidation, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!qsxxFrame.dhtml?credit_ticket=A2780FD4BEEC9E8FB756C2EDBC1EB29C&entId=FEB2C1A031D141ADA7441D621F4E5BD8&str=1&ent_id=FEB2C1A031D141ADA7441D621F4E5BD8&entName=&timeStamp=1452670720&clear=true&entNo=110000007977503&entid=FEB2C1A031D141ADA7441D621F4E5BD8
+
+2016-01-13 15:38:41,476 - enterprise-crawler - INFO - get ind_comm_pub_reg_shareholder, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!tzrFrame.dhtml?credit_ticket=702C78220C6DD2F91482ECBDF75F8994&entId=FB43363F6351417E980D8EE1B581EF6D&str=1&ent_id=FB43363F6351417E980D8EE1B581EF6D&entName=&timeStamp=1452670721&clear=true&entNo=110000009017684&entid=FB43363F6351417E980D8EE1B581EF6D
+
+2016-01-13 15:38:41,731 - enterprise-crawler - INFO - get ent_pub_administration_license, url:
+http://qyxy.baic.gov.cn/xzxk/xzxkAction!list_index.dhtml?credit_ticket=2A6BBC9448449F2C7C5A922BFAAD6356&entId=EABFD2351FF64BD8899CA8FFB84804DE&str=2&ent_id=EABFD2351FF64BD8899CA8FFB84804DE&entName=&timeStamp=1452670721&clear=true&entNo=110000006370338&entid=EABFD2351FF64BD8899CA8FFB84804DE
+
+2016-01-13 15:38:41,930 - enterprise-crawler - INFO - get ind_comm_pub_movable_property_reg, url:
+http://qyxy.baic.gov.cn/gjjbjTab/gjjTabQueryCreditAction!dcdyFrame.dhtml?credit_ticket=A2780FD4BEEC9E8FB756C2EDBC1EB29C&entId=FEB2C1A031D141ADA7441D621F4E5BD8&str=1&ent_id=FEB2C1A031D141ADA7441D621F4E5BD8&entName=&timeStamp=1452670721&clear=true&entNo=110000007977503&entid=FEB2C1A031D141ADA7441D621F4E5BD8
+
+2016-01-13 15:38:41,952 - enterprise-crawler - INFO - get ind_comm_pub_reg_modify, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!biangengFrame.dhtml?credit_ticket=702C78220C6DD2F91482ECBDF75F8994&entId=FB43363F6351417E980D8EE1B581EF6D&str=1&ent_id=FB43363F6351417E980D8EE1B581EF6D&entName=&timeStamp=1452670721&clear=true&entNo=110000009017684&entid=FB43363F6351417E980D8EE1B581EF6D
+
+2016-01-13 15:38:42,250 - enterprise-crawler - INFO - get ind_comm_pub_arch_key_persons, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!zyryFrame.dhtml?credit_ticket=702C78220C6DD2F91482ECBDF75F8994&entId=FB43363F6351417E980D8EE1B581EF6D&str=1&ent_id=FB43363F6351417E980D8EE1B581EF6D&entName=&timeStamp=1452670722&clear=true&entNo=110000009017684&entid=FB43363F6351417E980D8EE1B581EF6D
+
+2016-01-13 15:38:42,298 - enterprise-crawler - INFO - get ind_comm_pub_equity_ownership_reg, url:
+http://qyxy.baic.gov.cn/gdczdj/gdczdjAction!gdczdjFrame.dhtml?credit_ticket=A2780FD4BEEC9E8FB756C2EDBC1EB29C&entId=FEB2C1A031D141ADA7441D621F4E5BD8&str=1&ent_id=FEB2C1A031D141ADA7441D621F4E5BD8&entName=&timeStamp=1452670722&clear=true&entNo=110000007977503&entid=FEB2C1A031D141ADA7441D621F4E5BD8
+
+2016-01-13 15:38:42,745 - enterprise-crawler - INFO - get ent_pub_knowledge_property, url:
+http://qyxy.baic.gov.cn/zscqczdj/zscqczdjAction!list_index.dhtml?credit_ticket=2A6BBC9448449F2C7C5A922BFAAD6356&entId=EABFD2351FF64BD8899CA8FFB84804DE&str=2&ent_id=EABFD2351FF64BD8899CA8FFB84804DE&entName=&timeStamp=1452670722&clear=true&entNo=110000006370338&entid=EABFD2351FF64BD8899CA8FFB84804DE
+
+2016-01-13 15:38:43,080 - enterprise-crawler - INFO - get ind_comm_pub_administration_sanction, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list.dhtml?credit_ticket=A2780FD4BEEC9E8FB756C2EDBC1EB29C&entId=FEB2C1A031D141ADA7441D621F4E5BD8&str=1&ent_id=FEB2C1A031D141ADA7441D621F4E5BD8&entName=&timeStamp=1452670723&clear=true&entNo=110000007977503&entid=FEB2C1A031D141ADA7441D621F4E5BD8
+
+2016-01-13 15:38:43,409 - enterprise-crawler - INFO - get ind_comm_pub_arch_branch, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!fzjgFrame.dhtml?credit_ticket=702C78220C6DD2F91482ECBDF75F8994&entId=FB43363F6351417E980D8EE1B581EF6D&str=1&ent_id=FB43363F6351417E980D8EE1B581EF6D&entName=&timeStamp=1452670723&clear=true&entNo=110000009017684&entid=FB43363F6351417E980D8EE1B581EF6D
+
+2016-01-13 15:38:43,555 - enterprise-crawler - INFO - get ent_pub_administration_sanction, url:
+http://qyxy.baic.gov.cn/gdgq/gdgqAction!qyxzcfFrame.dhtml?credit_ticket=2A6BBC9448449F2C7C5A922BFAAD6356&entId=EABFD2351FF64BD8899CA8FFB84804DE&str=2&ent_id=EABFD2351FF64BD8899CA8FFB84804DE&entName=&timeStamp=1452670723&clear=true&entNo=110000006370338&entid=EABFD2351FF64BD8899CA8FFB84804DE
+
+2016-01-13 15:38:43,681 - enterprise-crawler - INFO - get ind_comm_pub_business_exception, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_jyycxx.dhtml?credit_ticket=A2780FD4BEEC9E8FB756C2EDBC1EB29C&entId=FEB2C1A031D141ADA7441D621F4E5BD8&str=1&ent_id=FEB2C1A031D141ADA7441D621F4E5BD8&entName=&timeStamp=1452670723&clear=true&entNo=110000007977503&entid=FEB2C1A031D141ADA7441D621F4E5BD8
+
+2016-01-13 15:38:43,832 - enterprise-crawler - INFO - get other_dept_pub_administration_license, url:
+http://qyxy.baic.gov.cn/qtbm/qtbmAction!list_xzxk.dhtml?credit_ticket=2A6BBC9448449F2C7C5A922BFAAD6356&entId=EABFD2351FF64BD8899CA8FFB84804DE&str=3&ent_id=EABFD2351FF64BD8899CA8FFB84804DE&entName=&timeStamp=1452670723&clear=true&entNo=110000006370338&entid=EABFD2351FF64BD8899CA8FFB84804DE
+
+2016-01-13 15:38:44,305 - enterprise-crawler - INFO - get other_dept_pub_administration_sanction, url:
+http://qyxy.baic.gov.cn/qtbm/qtbmAction!list_xzcf.dhtml?credit_ticket=2A6BBC9448449F2C7C5A922BFAAD6356&entId=EABFD2351FF64BD8899CA8FFB84804DE&str=3&ent_id=EABFD2351FF64BD8899CA8FFB84804DE&entName=&timeStamp=1452670724&clear=true&entNo=110000006370338&entid=EABFD2351FF64BD8899CA8FFB84804DE
+
+2016-01-13 15:38:44,818 - enterprise-crawler - INFO - get ind_comm_pub_serious_violate_law, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_yzwfxx.dhtml?credit_ticket=A2780FD4BEEC9E8FB756C2EDBC1EB29C&entId=FEB2C1A031D141ADA7441D621F4E5BD8&str=1&ent_id=FEB2C1A031D141ADA7441D621F4E5BD8&entName=&timeStamp=1452670724&clear=true&entNo=110000007977503&entid=FEB2C1A031D141ADA7441D621F4E5BD8
+
+2016-01-13 15:38:45,541 - enterprise-crawler - INFO - get ind_comm_pub_spot_check, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_ccjcxx.dhtml?credit_ticket=A2780FD4BEEC9E8FB756C2EDBC1EB29C&entId=FEB2C1A031D141ADA7441D621F4E5BD8&str=1&ent_id=FEB2C1A031D141ADA7441D621F4E5BD8&entName=&timeStamp=1452670725&clear=true&entNo=110000007977503&entid=FEB2C1A031D141ADA7441D621F4E5BD8
+
+2016-01-13 15:38:45,914 - enterprise-crawler - INFO - crawler 0 start to crawler enterprise(ent_id = 110000410227029)
+2016-01-13 15:38:46,385 - enterprise-crawler - INFO - get ent_pub_ent_annual_report, url:
+http://qyxy.baic.gov.cn/qynb/entinfoAction!qyxx.dhtml?credit_ticket=A2780FD4BEEC9E8FB756C2EDBC1EB29C&entId=FEB2C1A031D141ADA7441D621F4E5BD8&str=2&ent_id=FEB2C1A031D141ADA7441D621F4E5BD8&entName=&timeStamp=1452670726&clear=true&entNo=110000007977503&entid=FEB2C1A031D141ADA7441D621F4E5BD8
+
+2016-01-13 15:38:48,404 - enterprise-crawler - DEBUG - get crackable checkcode img failed
+2016-01-13 15:38:48,695 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!gdcz_bj.dhtml?clear=true&cid=498601092b3742d0941e1991c49d8ac7&entnature=
+
+2016-01-13 15:38:49,659 - enterprise-crawler - DEBUG - get crackable checkcode img failed
+2016-01-13 15:38:50,012 - enterprise-crawler - INFO - get ind_comm_pub_arch_liquidation, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!qsxxFrame.dhtml?credit_ticket=702C78220C6DD2F91482ECBDF75F8994&entId=FB43363F6351417E980D8EE1B581EF6D&str=1&ent_id=FB43363F6351417E980D8EE1B581EF6D&entName=&timeStamp=1452670730&clear=true&entNo=110000009017684&entid=FB43363F6351417E980D8EE1B581EF6D
+
+2016-01-13 15:38:50,287 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!wz_bj.dhtml?clear=true&cid=498601092b3742d0941e1991c49d8ac7
+
+2016-01-13 15:38:50,988 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qybg_bj.dhtml?clear=true&cid=498601092b3742d0941e1991c49d8ac7&year=2014
+
+2016-01-13 15:38:51,013 - enterprise-crawler - INFO - get ind_comm_pub_movable_property_reg, url:
+http://qyxy.baic.gov.cn/gjjbjTab/gjjTabQueryCreditAction!dcdyFrame.dhtml?credit_ticket=702C78220C6DD2F91482ECBDF75F8994&entId=FB43363F6351417E980D8EE1B581EF6D&str=1&ent_id=FB43363F6351417E980D8EE1B581EF6D&entName=&timeStamp=1452670731&clear=true&entNo=110000009017684&entid=FB43363F6351417E980D8EE1B581EF6D
+
+2016-01-13 15:38:51,135 - enterprise-crawler - DEBUG - get crackable checkcode img failed
+2016-01-13 15:38:51,616 - enterprise-crawler - DEBUG - get crackable checkcode img failed
+2016-01-13 15:38:51,715 - enterprise-crawler - INFO - get ind_comm_pub_equity_ownership_reg, url:
+http://qyxy.baic.gov.cn/gdczdj/gdczdjAction!gdczdjFrame.dhtml?credit_ticket=702C78220C6DD2F91482ECBDF75F8994&entId=FB43363F6351417E980D8EE1B581EF6D&str=1&ent_id=FB43363F6351417E980D8EE1B581EF6D&entName=&timeStamp=1452670731&clear=true&entNo=110000009017684&entid=FB43363F6351417E980D8EE1B581EF6D
+
+2016-01-13 15:38:51,819 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qydwdb_bj.dhtml?clear=true&cid=498601092b3742d0941e1991c49d8ac7
+
+2016-01-13 15:38:53,011 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!gdcz_bj.dhtml?clear=true&cid=e2a73a80e72b4699b5768ee232aa9a2a&entnature=
+
+2016-01-13 15:38:53,858 - enterprise-crawler - INFO - get ind_comm_pub_administration_sanction, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list.dhtml?credit_ticket=702C78220C6DD2F91482ECBDF75F8994&entId=FB43363F6351417E980D8EE1B581EF6D&str=1&ent_id=FB43363F6351417E980D8EE1B581EF6D&entName=&timeStamp=1452670733&clear=true&entNo=110000009017684&entid=FB43363F6351417E980D8EE1B581EF6D
+
+2016-01-13 15:38:55,825 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!wz_bj.dhtml?clear=true&cid=e2a73a80e72b4699b5768ee232aa9a2a
+
+2016-01-13 15:38:55,935 - enterprise-crawler - INFO - get ind_comm_pub_business_exception, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_jyycxx.dhtml?credit_ticket=702C78220C6DD2F91482ECBDF75F8994&entId=FB43363F6351417E980D8EE1B581EF6D&str=1&ent_id=FB43363F6351417E980D8EE1B581EF6D&entName=&timeStamp=1452670735&clear=true&entNo=110000009017684&entid=FB43363F6351417E980D8EE1B581EF6D
+
+2016-01-13 15:38:56,772 - enterprise-crawler - INFO - crack code = 8gfb, 8gfb, response =  success
+2016-01-13 15:38:56,904 - enterprise-crawler - INFO - get ind_comm_pub_serious_violate_law, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_yzwfxx.dhtml?credit_ticket=702C78220C6DD2F91482ECBDF75F8994&entId=FB43363F6351417E980D8EE1B581EF6D&str=1&ent_id=FB43363F6351417E980D8EE1B581EF6D&entName=&timeStamp=1452670736&clear=true&entNo=110000009017684&entid=FB43363F6351417E980D8EE1B581EF6D
+
+2016-01-13 15:38:57,117 - enterprise-crawler - INFO - get ind_comm_pub_reg_basic, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!openEntInfo.dhtml?credit_ticket=0F907D3E618751DAC59A90C188096A15&entId=39D2F502491847C5BED07F3FBCB0F14C&str=1&ent_id=39D2F502491847C5BED07F3FBCB0F14C&entName=&timeStamp=1452670737&clear=true&entNo=110000410227029&entid=39D2F502491847C5BED07F3FBCB0F14C
+
+2016-01-13 15:38:57,355 - enterprise-crawler - INFO - get ind_comm_pub_spot_check, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_ccjcxx.dhtml?credit_ticket=702C78220C6DD2F91482ECBDF75F8994&entId=FB43363F6351417E980D8EE1B581EF6D&str=1&ent_id=FB43363F6351417E980D8EE1B581EF6D&entName=&timeStamp=1452670737&clear=true&entNo=110000009017684&entid=FB43363F6351417E980D8EE1B581EF6D
+
+2016-01-13 15:38:57,950 - enterprise-crawler - INFO - get ind_comm_pub_reg_shareholder, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!tzrFrame.dhtml?credit_ticket=0F907D3E618751DAC59A90C188096A15&entId=39D2F502491847C5BED07F3FBCB0F14C&str=1&ent_id=39D2F502491847C5BED07F3FBCB0F14C&entName=&timeStamp=1452670737&clear=true&entNo=110000410227029&entid=39D2F502491847C5BED07F3FBCB0F14C
+
+2016-01-13 15:38:58,105 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qybg_bj.dhtml?clear=true&cid=e2a73a80e72b4699b5768ee232aa9a2a&year=2013
+
+2016-01-13 15:38:58,584 - enterprise-crawler - INFO - get ind_comm_pub_reg_modify, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!biangengFrame.dhtml?credit_ticket=0F907D3E618751DAC59A90C188096A15&entId=39D2F502491847C5BED07F3FBCB0F14C&str=1&ent_id=39D2F502491847C5BED07F3FBCB0F14C&entName=&timeStamp=1452670738&clear=true&entNo=110000410227029&entid=39D2F502491847C5BED07F3FBCB0F14C
+
+2016-01-13 15:38:59,095 - enterprise-crawler - INFO - get ind_comm_pub_arch_key_persons, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!zyryFrame.dhtml?credit_ticket=0F907D3E618751DAC59A90C188096A15&entId=39D2F502491847C5BED07F3FBCB0F14C&str=1&ent_id=39D2F502491847C5BED07F3FBCB0F14C&entName=&timeStamp=1452670739&clear=true&entNo=110000410227029&entid=39D2F502491847C5BED07F3FBCB0F14C
+
+2016-01-13 15:38:59,165 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qydwdb_bj.dhtml?clear=true&cid=e2a73a80e72b4699b5768ee232aa9a2a
+
+2016-01-13 15:38:59,468 - enterprise-crawler - INFO - get ent_pub_ent_annual_report, url:
+http://qyxy.baic.gov.cn/qynb/entinfoAction!qyxx.dhtml?credit_ticket=702C78220C6DD2F91482ECBDF75F8994&entId=FB43363F6351417E980D8EE1B581EF6D&str=2&ent_id=FB43363F6351417E980D8EE1B581EF6D&entName=&timeStamp=1452670739&clear=true&entNo=110000009017684&entid=FB43363F6351417E980D8EE1B581EF6D
+
+2016-01-13 15:38:59,777 - enterprise-crawler - INFO - get ind_comm_pub_arch_branch, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!fzjgFrame.dhtml?credit_ticket=0F907D3E618751DAC59A90C188096A15&entId=39D2F502491847C5BED07F3FBCB0F14C&str=1&ent_id=39D2F502491847C5BED07F3FBCB0F14C&entName=&timeStamp=1452670739&clear=true&entNo=110000410227029&entid=39D2F502491847C5BED07F3FBCB0F14C
+
+2016-01-13 15:38:59,852 - enterprise-crawler - INFO - get ent_pub_shareholder_capital_contribution, url:
+http://qyxy.baic.gov.cn/gdcz/gdczAction!list_index.dhtml?credit_ticket=A2780FD4BEEC9E8FB756C2EDBC1EB29C&entId=FEB2C1A031D141ADA7441D621F4E5BD8&str=2&ent_id=FEB2C1A031D141ADA7441D621F4E5BD8&entName=&timeStamp=1452670739&clear=true&entNo=110000007977503&entid=FEB2C1A031D141ADA7441D621F4E5BD8
+
+2016-01-13 15:39:01,022 - enterprise-crawler - INFO - get ind_comm_pub_arch_liquidation, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!qsxxFrame.dhtml?credit_ticket=0F907D3E618751DAC59A90C188096A15&entId=39D2F502491847C5BED07F3FBCB0F14C&str=1&ent_id=39D2F502491847C5BED07F3FBCB0F14C&entName=&timeStamp=1452670741&clear=true&entNo=110000410227029&entid=39D2F502491847C5BED07F3FBCB0F14C
+
+2016-01-13 15:39:01,456 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!gdcz_bj.dhtml?clear=true&cid=87323897e4f14aad8c6bb5cfaf008dcc&entnature=
+
+2016-01-13 15:39:01,994 - enterprise-crawler - INFO - get ind_comm_pub_movable_property_reg, url:
+http://qyxy.baic.gov.cn/gjjbjTab/gjjTabQueryCreditAction!dcdyFrame.dhtml?credit_ticket=0F907D3E618751DAC59A90C188096A15&entId=39D2F502491847C5BED07F3FBCB0F14C&str=1&ent_id=39D2F502491847C5BED07F3FBCB0F14C&entName=&timeStamp=1452670741&clear=true&entNo=110000410227029&entid=39D2F502491847C5BED07F3FBCB0F14C
+
+2016-01-13 15:39:02,227 - enterprise-crawler - INFO - get ent_pub_equity_change, url:
+http://qyxy.baic.gov.cn/gdgq/gdgqAction!gdgqzrxxFrame.dhtml?credit_ticket=A2780FD4BEEC9E8FB756C2EDBC1EB29C&entId=FEB2C1A031D141ADA7441D621F4E5BD8&str=2&ent_id=FEB2C1A031D141ADA7441D621F4E5BD8&entName=&timeStamp=1452670742&clear=true&entNo=110000007977503&entid=FEB2C1A031D141ADA7441D621F4E5BD8
+
+2016-01-13 15:39:03,273 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!wz_bj.dhtml?clear=true&cid=87323897e4f14aad8c6bb5cfaf008dcc
+
+2016-01-13 15:39:03,379 - enterprise-crawler - INFO - get ind_comm_pub_equity_ownership_reg, url:
+http://qyxy.baic.gov.cn/gdczdj/gdczdjAction!gdczdjFrame.dhtml?credit_ticket=0F907D3E618751DAC59A90C188096A15&entId=39D2F502491847C5BED07F3FBCB0F14C&str=1&ent_id=39D2F502491847C5BED07F3FBCB0F14C&entName=&timeStamp=1452670743&clear=true&entNo=110000410227029&entid=39D2F502491847C5BED07F3FBCB0F14C
+
+2016-01-13 15:39:03,964 - enterprise-crawler - INFO - get ent_pub_administration_license, url:
+http://qyxy.baic.gov.cn/xzxk/xzxkAction!list_index.dhtml?credit_ticket=A2780FD4BEEC9E8FB756C2EDBC1EB29C&entId=FEB2C1A031D141ADA7441D621F4E5BD8&str=2&ent_id=FEB2C1A031D141ADA7441D621F4E5BD8&entName=&timeStamp=1452670743&clear=true&entNo=110000007977503&entid=FEB2C1A031D141ADA7441D621F4E5BD8
+
+2016-01-13 15:39:04,492 - enterprise-crawler - INFO - get ind_comm_pub_administration_sanction, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list.dhtml?credit_ticket=0F907D3E618751DAC59A90C188096A15&entId=39D2F502491847C5BED07F3FBCB0F14C&str=1&ent_id=39D2F502491847C5BED07F3FBCB0F14C&entName=&timeStamp=1452670744&clear=true&entNo=110000410227029&entid=39D2F502491847C5BED07F3FBCB0F14C
+
+2016-01-13 15:39:05,217 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qybg_bj.dhtml?clear=true&cid=87323897e4f14aad8c6bb5cfaf008dcc&year=2014
+
+2016-01-13 15:39:06,014 - enterprise-crawler - INFO - get ind_comm_pub_business_exception, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_jyycxx.dhtml?credit_ticket=0F907D3E618751DAC59A90C188096A15&entId=39D2F502491847C5BED07F3FBCB0F14C&str=1&ent_id=39D2F502491847C5BED07F3FBCB0F14C&entName=&timeStamp=1452670746&clear=true&entNo=110000410227029&entid=39D2F502491847C5BED07F3FBCB0F14C
+
+2016-01-13 15:39:06,141 - enterprise-crawler - INFO - get ent_pub_knowledge_property, url:
+http://qyxy.baic.gov.cn/zscqczdj/zscqczdjAction!list_index.dhtml?credit_ticket=A2780FD4BEEC9E8FB756C2EDBC1EB29C&entId=FEB2C1A031D141ADA7441D621F4E5BD8&str=2&ent_id=FEB2C1A031D141ADA7441D621F4E5BD8&entName=&timeStamp=1452670746&clear=true&entNo=110000007977503&entid=FEB2C1A031D141ADA7441D621F4E5BD8
+
+2016-01-13 15:39:06,235 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qydwdb_bj.dhtml?clear=true&cid=87323897e4f14aad8c6bb5cfaf008dcc
+
+2016-01-13 15:39:07,013 - enterprise-crawler - INFO - get ent_pub_administration_sanction, url:
+http://qyxy.baic.gov.cn/gdgq/gdgqAction!qyxzcfFrame.dhtml?credit_ticket=A2780FD4BEEC9E8FB756C2EDBC1EB29C&entId=FEB2C1A031D141ADA7441D621F4E5BD8&str=2&ent_id=FEB2C1A031D141ADA7441D621F4E5BD8&entName=&timeStamp=1452670747&clear=true&entNo=110000007977503&entid=FEB2C1A031D141ADA7441D621F4E5BD8
+
+2016-01-13 15:39:07,083 - enterprise-crawler - INFO - get ind_comm_pub_serious_violate_law, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_yzwfxx.dhtml?credit_ticket=0F907D3E618751DAC59A90C188096A15&entId=39D2F502491847C5BED07F3FBCB0F14C&str=1&ent_id=39D2F502491847C5BED07F3FBCB0F14C&entName=&timeStamp=1452670747&clear=true&entNo=110000410227029&entid=39D2F502491847C5BED07F3FBCB0F14C
+
+2016-01-13 15:39:07,958 - enterprise-crawler - INFO - get other_dept_pub_administration_license, url:
+http://qyxy.baic.gov.cn/qtbm/qtbmAction!list_xzxk.dhtml?credit_ticket=A2780FD4BEEC9E8FB756C2EDBC1EB29C&entId=FEB2C1A031D141ADA7441D621F4E5BD8&str=3&ent_id=FEB2C1A031D141ADA7441D621F4E5BD8&entName=&timeStamp=1452670747&clear=true&entNo=110000007977503&entid=FEB2C1A031D141ADA7441D621F4E5BD8
+
+2016-01-13 15:39:08,454 - enterprise-crawler - INFO - get ind_comm_pub_spot_check, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_ccjcxx.dhtml?credit_ticket=0F907D3E618751DAC59A90C188096A15&entId=39D2F502491847C5BED07F3FBCB0F14C&str=1&ent_id=39D2F502491847C5BED07F3FBCB0F14C&entName=&timeStamp=1452670748&clear=true&entNo=110000410227029&entid=39D2F502491847C5BED07F3FBCB0F14C
+
+2016-01-13 15:39:08,968 - enterprise-crawler - INFO - get other_dept_pub_administration_sanction, url:
+http://qyxy.baic.gov.cn/qtbm/qtbmAction!list_xzcf.dhtml?credit_ticket=A2780FD4BEEC9E8FB756C2EDBC1EB29C&entId=FEB2C1A031D141ADA7441D621F4E5BD8&str=3&ent_id=FEB2C1A031D141ADA7441D621F4E5BD8&entName=&timeStamp=1452670748&clear=true&entNo=110000007977503&entid=FEB2C1A031D141ADA7441D621F4E5BD8
+
+2016-01-13 15:39:09,147 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!gdcz_bj.dhtml?clear=true&cid=b8aa7317e89c447ca5566e267d5c70d1&entnature=
+
+2016-01-13 15:39:10,180 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!wz_bj.dhtml?clear=true&cid=b8aa7317e89c447ca5566e267d5c70d1
+
+2016-01-13 15:39:10,845 - enterprise-crawler - INFO - crawler 1 start to crawler enterprise(ent_id = 110000450069531)
+2016-01-13 15:39:11,398 - enterprise-crawler - INFO - get ent_pub_ent_annual_report, url:
+http://qyxy.baic.gov.cn/qynb/entinfoAction!qyxx.dhtml?credit_ticket=0F907D3E618751DAC59A90C188096A15&entId=39D2F502491847C5BED07F3FBCB0F14C&str=2&ent_id=39D2F502491847C5BED07F3FBCB0F14C&entName=&timeStamp=1452670751&clear=true&entNo=110000410227029&entid=39D2F502491847C5BED07F3FBCB0F14C
+
+2016-01-13 15:39:11,451 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qybg_bj.dhtml?clear=true&cid=b8aa7317e89c447ca5566e267d5c70d1&year=2013
+
+2016-01-13 15:39:12,825 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qydwdb_bj.dhtml?clear=true&cid=b8aa7317e89c447ca5566e267d5c70d1
+
+2016-01-13 15:39:14,411 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!gdcz_bj.dhtml?clear=true&cid=85111b5cc64f41a487d24879a358c92e&entnature=
+
+2016-01-13 15:39:14,572 - enterprise-crawler - INFO - get ent_pub_shareholder_capital_contribution, url:
+http://qyxy.baic.gov.cn/gdcz/gdczAction!list_index.dhtml?credit_ticket=702C78220C6DD2F91482ECBDF75F8994&entId=FB43363F6351417E980D8EE1B581EF6D&str=2&ent_id=FB43363F6351417E980D8EE1B581EF6D&entName=&timeStamp=1452670754&clear=true&entNo=110000009017684&entid=FB43363F6351417E980D8EE1B581EF6D
+
+2016-01-13 15:39:15,051 - enterprise-crawler - INFO - get ent_pub_equity_change, url:
+http://qyxy.baic.gov.cn/gdgq/gdgqAction!gdgqzrxxFrame.dhtml?credit_ticket=702C78220C6DD2F91482ECBDF75F8994&entId=FB43363F6351417E980D8EE1B581EF6D&str=2&ent_id=FB43363F6351417E980D8EE1B581EF6D&entName=&timeStamp=1452670755&clear=true&entNo=110000009017684&entid=FB43363F6351417E980D8EE1B581EF6D
+
+2016-01-13 15:39:15,534 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!wz_bj.dhtml?clear=true&cid=85111b5cc64f41a487d24879a358c92e
+
+2016-01-13 15:39:16,282 - enterprise-crawler - INFO - get ent_pub_administration_license, url:
+http://qyxy.baic.gov.cn/xzxk/xzxkAction!list_index.dhtml?credit_ticket=702C78220C6DD2F91482ECBDF75F8994&entId=FB43363F6351417E980D8EE1B581EF6D&str=2&ent_id=FB43363F6351417E980D8EE1B581EF6D&entName=&timeStamp=1452670756&clear=true&entNo=110000009017684&entid=FB43363F6351417E980D8EE1B581EF6D
+
+2016-01-13 15:39:16,703 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qybg_bj.dhtml?clear=true&cid=85111b5cc64f41a487d24879a358c92e&year=2014
+
+2016-01-13 15:39:17,123 - enterprise-crawler - INFO - get ent_pub_knowledge_property, url:
+http://qyxy.baic.gov.cn/zscqczdj/zscqczdjAction!list_index.dhtml?credit_ticket=702C78220C6DD2F91482ECBDF75F8994&entId=FB43363F6351417E980D8EE1B581EF6D&str=2&ent_id=FB43363F6351417E980D8EE1B581EF6D&entName=&timeStamp=1452670757&clear=true&entNo=110000009017684&entid=FB43363F6351417E980D8EE1B581EF6D
+
+2016-01-13 15:39:17,144 - enterprise-crawler - INFO - crack code = rprv, rprv, response =  success
+2016-01-13 15:39:17,633 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qydwdb_bj.dhtml?clear=true&cid=85111b5cc64f41a487d24879a358c92e
+
+2016-01-13 15:39:17,778 - enterprise-crawler - INFO - get ind_comm_pub_reg_basic, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!openEntInfo.dhtml?credit_ticket=659BA05AE755CFFCEC3C9DF471120881&entId=529662E29FC648739266240408BB159A&str=1&ent_id=529662E29FC648739266240408BB159A&entName=&timeStamp=1452670757&clear=true&entNo=110000450069531&entid=529662E29FC648739266240408BB159A
+
+2016-01-13 15:39:18,448 - enterprise-crawler - INFO - get ent_pub_administration_sanction, url:
+http://qyxy.baic.gov.cn/gdgq/gdgqAction!qyxzcfFrame.dhtml?credit_ticket=702C78220C6DD2F91482ECBDF75F8994&entId=FB43363F6351417E980D8EE1B581EF6D&str=2&ent_id=FB43363F6351417E980D8EE1B581EF6D&entName=&timeStamp=1452670758&clear=true&entNo=110000009017684&entid=FB43363F6351417E980D8EE1B581EF6D
+
+2016-01-13 15:39:19,113 - enterprise-crawler - INFO - get ind_comm_pub_reg_shareholder, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!tzrFrame.dhtml?credit_ticket=659BA05AE755CFFCEC3C9DF471120881&entId=529662E29FC648739266240408BB159A&str=1&ent_id=529662E29FC648739266240408BB159A&entName=&timeStamp=1452670759&clear=true&entNo=110000450069531&entid=529662E29FC648739266240408BB159A
+
+2016-01-13 15:39:19,983 - enterprise-crawler - INFO - get other_dept_pub_administration_license, url:
+http://qyxy.baic.gov.cn/qtbm/qtbmAction!list_xzxk.dhtml?credit_ticket=702C78220C6DD2F91482ECBDF75F8994&entId=FB43363F6351417E980D8EE1B581EF6D&str=3&ent_id=FB43363F6351417E980D8EE1B581EF6D&entName=&timeStamp=1452670759&clear=true&entNo=110000009017684&entid=FB43363F6351417E980D8EE1B581EF6D
+
+2016-01-13 15:39:20,512 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!gdcz_bj.dhtml?clear=true&cid=55c7ccf527e34bc18d18abbe95dd3bfb&entnature=
+
+2016-01-13 15:39:21,342 - enterprise-crawler - INFO - get ind_comm_pub_reg_modify, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!biangengFrame.dhtml?credit_ticket=659BA05AE755CFFCEC3C9DF471120881&entId=529662E29FC648739266240408BB159A&str=1&ent_id=529662E29FC648739266240408BB159A&entName=&timeStamp=1452670761&clear=true&entNo=110000450069531&entid=529662E29FC648739266240408BB159A
+
+2016-01-13 15:39:21,622 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!wz_bj.dhtml?clear=true&cid=55c7ccf527e34bc18d18abbe95dd3bfb
+
+2016-01-13 15:39:22,167 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qybg_bj.dhtml?clear=true&cid=55c7ccf527e34bc18d18abbe95dd3bfb&year=2013
+
+2016-01-13 15:39:22,186 - enterprise-crawler - INFO - get other_dept_pub_administration_sanction, url:
+http://qyxy.baic.gov.cn/qtbm/qtbmAction!list_xzcf.dhtml?credit_ticket=702C78220C6DD2F91482ECBDF75F8994&entId=FB43363F6351417E980D8EE1B581EF6D&str=3&ent_id=FB43363F6351417E980D8EE1B581EF6D&entName=&timeStamp=1452670762&clear=true&entNo=110000009017684&entid=FB43363F6351417E980D8EE1B581EF6D
+
+2016-01-13 15:39:23,488 - enterprise-crawler - INFO - get annual report, url:
+http://qyxy.baic.gov.cn/entPub/entPubAction!qydwdb_bj.dhtml?clear=true&cid=55c7ccf527e34bc18d18abbe95dd3bfb
+
+2016-01-13 15:39:23,715 - enterprise-crawler - INFO - crawler 2 start to crawler enterprise(ent_id = 110000450096015)
+2016-01-13 15:39:24,064 - enterprise-crawler - INFO - get ent_pub_shareholder_capital_contribution, url:
+http://qyxy.baic.gov.cn/gdcz/gdczAction!list_index.dhtml?credit_ticket=0F907D3E618751DAC59A90C188096A15&entId=39D2F502491847C5BED07F3FBCB0F14C&str=2&ent_id=39D2F502491847C5BED07F3FBCB0F14C&entName=&timeStamp=1452670764&clear=true&entNo=110000410227029&entid=39D2F502491847C5BED07F3FBCB0F14C
+
+2016-01-13 15:39:25,605 - enterprise-crawler - INFO - get ent_pub_equity_change, url:
+http://qyxy.baic.gov.cn/gdgq/gdgqAction!gdgqzrxxFrame.dhtml?credit_ticket=0F907D3E618751DAC59A90C188096A15&entId=39D2F502491847C5BED07F3FBCB0F14C&str=2&ent_id=39D2F502491847C5BED07F3FBCB0F14C&entName=&timeStamp=1452670765&clear=true&entNo=110000410227029&entid=39D2F502491847C5BED07F3FBCB0F14C
+
+2016-01-13 15:39:26,761 - enterprise-crawler - INFO - get ent_pub_administration_license, url:
+http://qyxy.baic.gov.cn/xzxk/xzxkAction!list_index.dhtml?credit_ticket=0F907D3E618751DAC59A90C188096A15&entId=39D2F502491847C5BED07F3FBCB0F14C&str=2&ent_id=39D2F502491847C5BED07F3FBCB0F14C&entName=&timeStamp=1452670766&clear=true&entNo=110000410227029&entid=39D2F502491847C5BED07F3FBCB0F14C
+
+2016-01-13 15:39:27,889 - enterprise-crawler - INFO - get ent_pub_knowledge_property, url:
+http://qyxy.baic.gov.cn/zscqczdj/zscqczdjAction!list_index.dhtml?credit_ticket=0F907D3E618751DAC59A90C188096A15&entId=39D2F502491847C5BED07F3FBCB0F14C&str=2&ent_id=39D2F502491847C5BED07F3FBCB0F14C&entName=&timeStamp=1452670767&clear=true&entNo=110000410227029&entid=39D2F502491847C5BED07F3FBCB0F14C
+
+2016-01-13 15:39:28,132 - enterprise-crawler - INFO - get ind_comm_pub_arch_key_persons, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!zyryFrame.dhtml?credit_ticket=659BA05AE755CFFCEC3C9DF471120881&entId=529662E29FC648739266240408BB159A&str=1&ent_id=529662E29FC648739266240408BB159A&entName=&timeStamp=1452670768&clear=true&entNo=110000450069531&entid=529662E29FC648739266240408BB159A
+
+2016-01-13 15:39:28,809 - enterprise-crawler - INFO - crack code = b2ja, b2ja, response =  success
+2016-01-13 15:39:28,865 - enterprise-crawler - INFO - get ind_comm_pub_arch_branch, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!fzjgFrame.dhtml?credit_ticket=659BA05AE755CFFCEC3C9DF471120881&entId=529662E29FC648739266240408BB159A&str=1&ent_id=529662E29FC648739266240408BB159A&entName=&timeStamp=1452670768&clear=true&entNo=110000450069531&entid=529662E29FC648739266240408BB159A
+
+2016-01-13 15:39:28,965 - enterprise-crawler - INFO - get ent_pub_administration_sanction, url:
+http://qyxy.baic.gov.cn/gdgq/gdgqAction!qyxzcfFrame.dhtml?credit_ticket=0F907D3E618751DAC59A90C188096A15&entId=39D2F502491847C5BED07F3FBCB0F14C&str=2&ent_id=39D2F502491847C5BED07F3FBCB0F14C&entName=&timeStamp=1452670768&clear=true&entNo=110000410227029&entid=39D2F502491847C5BED07F3FBCB0F14C
+
+2016-01-13 15:39:29,005 - enterprise-crawler - INFO - get ind_comm_pub_reg_basic, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!openEntInfo.dhtml?credit_ticket=E0CD91890A2C504F4F415E188B2C55CC&entId=a1a1a1a020a53f5d0120a753fe2749f8&str=1&ent_id=a1a1a1a020a53f5d0120a753fe2749f8&entName=&timeStamp=1452670769&clear=true&entNo=110000450096015&entid=a1a1a1a020a53f5d0120a753fe2749f8
+
+2016-01-13 15:39:29,406 - enterprise-crawler - INFO - get other_dept_pub_administration_license, url:
+http://qyxy.baic.gov.cn/qtbm/qtbmAction!list_xzxk.dhtml?credit_ticket=0F907D3E618751DAC59A90C188096A15&entId=39D2F502491847C5BED07F3FBCB0F14C&str=3&ent_id=39D2F502491847C5BED07F3FBCB0F14C&entName=&timeStamp=1452670769&clear=true&entNo=110000410227029&entid=39D2F502491847C5BED07F3FBCB0F14C
+
+2016-01-13 15:39:29,903 - enterprise-crawler - INFO - get ind_comm_pub_arch_liquidation, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!qsxxFrame.dhtml?credit_ticket=659BA05AE755CFFCEC3C9DF471120881&entId=529662E29FC648739266240408BB159A&str=1&ent_id=529662E29FC648739266240408BB159A&entName=&timeStamp=1452670769&clear=true&entNo=110000450069531&entid=529662E29FC648739266240408BB159A
+
+2016-01-13 15:39:30,334 - enterprise-crawler - INFO - get other_dept_pub_administration_sanction, url:
+http://qyxy.baic.gov.cn/qtbm/qtbmAction!list_xzcf.dhtml?credit_ticket=0F907D3E618751DAC59A90C188096A15&entId=39D2F502491847C5BED07F3FBCB0F14C&str=3&ent_id=39D2F502491847C5BED07F3FBCB0F14C&entName=&timeStamp=1452670770&clear=true&entNo=110000410227029&entid=39D2F502491847C5BED07F3FBCB0F14C
+
+2016-01-13 15:39:30,368 - enterprise-crawler - INFO - get ind_comm_pub_reg_shareholder, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!tzrFrame.dhtml?credit_ticket=E0CD91890A2C504F4F415E188B2C55CC&entId=a1a1a1a020a53f5d0120a753fe2749f8&str=1&ent_id=a1a1a1a020a53f5d0120a753fe2749f8&entName=&timeStamp=1452670770&clear=true&entNo=110000450096015&entid=a1a1a1a020a53f5d0120a753fe2749f8
+
+2016-01-13 15:39:30,687 - enterprise-crawler - INFO - get ind_comm_pub_movable_property_reg, url:
+http://qyxy.baic.gov.cn/gjjbjTab/gjjTabQueryCreditAction!dcdyFrame.dhtml?credit_ticket=659BA05AE755CFFCEC3C9DF471120881&entId=529662E29FC648739266240408BB159A&str=1&ent_id=529662E29FC648739266240408BB159A&entName=&timeStamp=1452670770&clear=true&entNo=110000450069531&entid=529662E29FC648739266240408BB159A
+
+2016-01-13 15:39:31,623 - enterprise-crawler - INFO - crawler 0 start to crawler enterprise(ent_id = 110000450173902)
+2016-01-13 15:39:31,671 - enterprise-crawler - INFO - get ind_comm_pub_equity_ownership_reg, url:
+http://qyxy.baic.gov.cn/gdczdj/gdczdjAction!gdczdjFrame.dhtml?credit_ticket=659BA05AE755CFFCEC3C9DF471120881&entId=529662E29FC648739266240408BB159A&str=1&ent_id=529662E29FC648739266240408BB159A&entName=&timeStamp=1452670771&clear=true&entNo=110000450069531&entid=529662E29FC648739266240408BB159A
+
+2016-01-13 15:39:32,902 - enterprise-crawler - INFO - get ind_comm_pub_administration_sanction, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list.dhtml?credit_ticket=659BA05AE755CFFCEC3C9DF471120881&entId=529662E29FC648739266240408BB159A&str=1&ent_id=529662E29FC648739266240408BB159A&entName=&timeStamp=1452670772&clear=true&entNo=110000450069531&entid=529662E29FC648739266240408BB159A
+
+2016-01-13 15:39:33,796 - enterprise-crawler - INFO - get ind_comm_pub_business_exception, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_jyycxx.dhtml?credit_ticket=659BA05AE755CFFCEC3C9DF471120881&entId=529662E29FC648739266240408BB159A&str=1&ent_id=529662E29FC648739266240408BB159A&entName=&timeStamp=1452670773&clear=true&entNo=110000450069531&entid=529662E29FC648739266240408BB159A
+
+2016-01-13 15:39:36,071 - enterprise-crawler - INFO - get ind_comm_pub_serious_violate_law, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_yzwfxx.dhtml?credit_ticket=659BA05AE755CFFCEC3C9DF471120881&entId=529662E29FC648739266240408BB159A&str=1&ent_id=529662E29FC648739266240408BB159A&entName=&timeStamp=1452670776&clear=true&entNo=110000450069531&entid=529662E29FC648739266240408BB159A
+
+2016-01-13 15:39:36,325 - enterprise-crawler - INFO - get ind_comm_pub_reg_modify, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!biangengFrame.dhtml?credit_ticket=E0CD91890A2C504F4F415E188B2C55CC&entId=a1a1a1a020a53f5d0120a753fe2749f8&str=1&ent_id=a1a1a1a020a53f5d0120a753fe2749f8&entName=&timeStamp=1452670776&clear=true&entNo=110000450096015&entid=a1a1a1a020a53f5d0120a753fe2749f8
+
+2016-01-13 15:39:37,426 - enterprise-crawler - INFO - get ind_comm_pub_spot_check, url:
+http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_ccjcxx.dhtml?credit_ticket=659BA05AE755CFFCEC3C9DF471120881&entId=529662E29FC648739266240408BB159A&str=1&ent_id=529662E29FC648739266240408BB159A&entName=&timeStamp=1452670777&clear=true&entNo=110000450069531&entid=529662E29FC648739266240408BB159A
+
+2016-01-13 15:39:39,064 - enterprise-crawler - INFO - crack code = jgvh, jgvh, response =  success
+2016-01-13 15:39:39,250 - enterprise-crawler - INFO - get ent_pub_ent_annual_report, url:
+http://qyxy.baic.gov.cn/qynb/entinfoAction!qyxx.dhtml?credit_ticket=659BA05AE755CFFCEC3C9DF471120881&entId=529662E29FC648739266240408BB159A&str=2&ent_id=529662E29FC648739266240408BB159A&entName=&timeStamp=1452670779&clear=true&entNo=110000450069531&entid=529662E29FC648739266240408BB159A
+
+2016-01-13 15:39:41,066 - enterprise-crawler - INFO - get ind_comm_pub_reg_basic, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!openEntInfo.dhtml?credit_ticket=CD43C91F451CED687327008393B87390&entId=a1a1a1a0302a909101302f18708e44a2&str=1&ent_id=a1a1a1a0302a909101302f18708e44a2&entName=&timeStamp=1452670781&clear=true&entNo=110000450173902&entid=a1a1a1a0302a909101302f18708e44a2
+
+2016-01-13 15:39:42,152 - enterprise-crawler - INFO - get ind_comm_pub_arch_key_persons, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!zyryFrame.dhtml?credit_ticket=E0CD91890A2C504F4F415E188B2C55CC&entId=a1a1a1a020a53f5d0120a753fe2749f8&str=1&ent_id=a1a1a1a020a53f5d0120a753fe2749f8&entName=&timeStamp=1452670782&clear=true&entNo=110000450096015&entid=a1a1a1a020a53f5d0120a753fe2749f8
+
+2016-01-13 15:39:42,932 - enterprise-crawler - INFO - get ind_comm_pub_reg_shareholder, url:
+http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!tzrFrame.dhtml?credit_ticket=CD43C91F451CED687327008393B87390&entId=a1a1a1a0302a909101302f18708e44a2&str=1&ent_id=a1a1a1a0302a909101302f18708e44a2&entName=&timeStamp=1452670782&clear=true&entNo=110000450173902&entid=a1a1a1a0302a909101302f18708e44a2
+
