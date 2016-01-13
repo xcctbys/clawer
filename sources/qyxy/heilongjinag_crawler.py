@@ -183,7 +183,7 @@ class HeilongjiangClawer(Crawler):
     def crawl_ind_comm_pub_pages(self):
         """爬取工商公示信息
         """
-        url = "%s%s" % (HeilongjiangClawer.urls['ind_comm_pub_skeleton'], self.company_id)
+        url = "%s%s" % (self.urls['ind_comm_pub_skeleton'], self.company_id)
         resp = self.reqst.get(url)
         if resp.status_code != 200:
             settings.logger.error('failed to get ind_comm_pub_skeleton')
@@ -194,7 +194,7 @@ class HeilongjiangClawer(Crawler):
     def crawl_ent_pub_pages(self):
         """爬取企业公示信息
         """
-        url ="%s%s" % (HeilongjiangClawer.urls['ent_pub_skeleton'], self.company_id)
+        url ="%s%s" % (self.urls['ent_pub_skeleton'], self.company_id)
         resp = self.reqst.get(url)
         if resp.status_code != 200:
             settings.logger.error('failed to get ent_pub_skeleton')
@@ -205,7 +205,7 @@ class HeilongjiangClawer(Crawler):
     def crawl_other_dept_pub_pages(self):
         """爬取其他部门公示信息
         """
-        url = "%s%s" % (HeilongjiangClawer.urls['other_dept_pub_skeleton'], self.company_id)
+        url = "%s%s" % (self.urls['other_dept_pub_skeleton'], self.company_id)
         resp = self.reqst.get(url)
         if resp.status_code != 200:
             settings.logger.error('failed to get other_dept_pub_skeleton')
@@ -216,7 +216,7 @@ class HeilongjiangClawer(Crawler):
     def crawl_judical_assist_pub_pages(self):
         """爬取司法协助信息
         """
-        url = "%s%s" % (HeilongjiangClawer.urls['judical_assist_skeleton'], self.company_id)
+        url = "%s%s" % (self.urls['judical_assist_skeleton'], self.company_id)
         resp = self.reqst.get(url)
         if resp.status_code != 200:
             settings.logger.error('failed to get judical_assist_skeleton')
@@ -304,30 +304,43 @@ class HeilongjiangParser(Parser):
          # 备案信息-主要人员信息
         div = soup.find("div", {"id": "memDiv"})
         if div:
-            table_th = div.previous_sibling.previous_sibling
-            th_trs = table_th.find_all("tr")
-
-            list_th = [th for th in th_trs[1].stripped_strings]
-            table = div.find("table")
-            if table:
-                trs = table.find_all("tr")
+            table_th1 = div.previous_sibling.previous_sibling
+            company_id1 = self.crawler.company_id.split("=")[1]
+            table_th_trs = table_th1.find_all("tr")
+            list_th = [th for th in table_th_trs[1].stripped_strings]
+            if div.next_sibling.next_sibling and str(div.next_sibling.next_sibling.name) == 'table':
+                table_page = div.next_sibling.next_sibling
+                table_page_tol = table_page.find_all("a")
                 table_save = []
-                for tr in trs:
-                    content1 = {}
-                    content2 = {}
-                    list_td = []
-                    tds = tr.find_all("td")
-                    if not tds:
-                        continue
-                    for td in tds:
-                        list_td.append(td.text.strip())
-                    for i in range(0, 3):
-                        content1[list_th[i]] = list_td[i]
-                    for i in range(3, 6):
-                        content2[list_th[i]] = list_td[i]
-                    table_save.append(content1)
-                    table_save.append(content2)
-                self.crawler.json_dict['ind_comm_pub_arch_key_persons'] = table_save
+
+                for i in range(1, len(table_page_tol)+1):
+                    url = '%s%s%s%s%s' % (self.crawler.urls['ind_comm_pub_arch_key_persons'], "pno=", i, '&mainId=', company_id1)
+                    print "url", url
+                    rep = requests.get(url)
+                    soup = BeautifulSoup(rep.text, "html5lib")
+
+                    print "sopu", soup
+                    table = soup.find("table")
+                    print "主要人员", table
+
+                    trs = table.find_all("tr")
+
+                    for tr in trs:
+                        content1 = {}
+                        content2 = {}
+                        list_td = []
+                        tds = tr.find_all("td")
+                        if not tds:
+                            continue
+                        for td in tds:
+                            list_td.append(td.text.strip())
+                        for i in range(0, 3):
+                            content1[list_th[i]] = list_td[i]
+                        for i in range(3, 6):
+                            content2[list_th[i]] = list_td[i]
+                        table_save.append(content1)
+                        table_save.append(content2)
+                    self.crawler.json_dict['ind_comm_pub_arch_key_persons'] = table_save
             else:
                 self.crawler.json_dict['ind_comm_pub_arch_key_persons'] = []
         else:
@@ -385,7 +398,7 @@ class HeilongjiangParser(Parser):
 
                 for a1 in a:
                     table_detail = []
-                    re1 = '.*?'	 # Non-greedy match on filler
+                    re1 = '.*?'  # Non-greedy match on filler
                     re2 = '(\\d+)'  # Integer Number 1
                     re3 = '((?:[a-z][a-z]*[0-9]+[a-z0-9]*))'  # Alphanum 1
 
@@ -493,13 +506,15 @@ class HeilongjiangParser(Parser):
         for th in table_ths:
             if 'colspan' in th.attrs:
                 continue
+            if th.text.strip() == "":
+                continue
             table_th.append(th.text.strip())
 
         table_tds = table.find_all("td")
         table_td = [td.text.strip() for td in table_tds]
 
         table_save = {}
-        for i in range(0, len(table_td)):
+        for i in range(0, len(table_th)):
             table_save[table_th[i]] = table_td[i]
         return table_save
 
@@ -546,11 +561,12 @@ class HeilongjiangParser(Parser):
                 return [table_save, 'True']
 
             else:
-                if HeilongjiangClawer.urls.has_key(table_name):
+                if self.crawler.urls.has_key(table_name):
+                    table_ts = []
+                    content_tr = []
                     for j in range(1, len(table_page_tol)+1):
-                        table_ts = []
-                        content_tr = []
-                        url = '%s%s%s%s%s' % (HeilongjiangClawer.urls[table_name], "pno=", j, '&mainId=', company_id)
+
+                        url = '%s%s%s%s%s' % (self.crawler.urls[table_name], "pno=", j, '&mainId=', company_id)
                         rep = requests.get(url)
                         soup = BeautifulSoup(rep.text, "html5lib")
                         table = soup.find("table")
@@ -590,10 +606,10 @@ class HeilongjiangParser(Parser):
 
         link = content_tr.find("a")
 
-        re1 = '.*?'	 # Non-greedy match on filler
+        re1 = '.*?'  # Non-greedy match on filler
         re2 = '\\d+'  # Uninteresting: int
-        re3 = '.*?' 	# Non-greedy match on filler
-        re4 = '(\\d+)'	 # Integer Number 1
+        re3 = '.*?'     # Non-greedy match on filler
+        re4 = '(\\d+)'   # Integer Number 1
 
         rg = re.compile(re1+re2+re3+re4,re.IGNORECASE|re.DOTALL)
         m = rg.search(str(link))
@@ -612,10 +628,10 @@ class HeilongjiangParser(Parser):
     def get_movable_property_reg_detail(self, content_tr):
 
         link = content_tr.find("a")
-        re1 = '.*?'	 # Non-greedy match on filler
+        re1 = '.*?'  # Non-greedy match on filler
         re2 = '\\d+'  # Uninteresting: int
-        re3 = '.*?' 	# Non-greedy match on filler
-        re4 = '(\\d+)'	 # Integer Number 1
+        re3 = '.*?'     # Non-greedy match on filler
+        re4 = '(\\d+)'   # Integer Number 1
 
         rg = re.compile(re1+re2+re3+re4,re.IGNORECASE|re.DOTALL)
         m = rg.search(str(link))
@@ -757,8 +773,8 @@ if __name__ == '__main__':
     run.config_logging()
     HeilongjiangClawer.code_cracker = CaptchaRecognition('heilongjiang')
     crawler = HeilongjiangClawer('./enterprise_crawler/heilongjiang.json')
-    enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/heilongjiang.txt')
-    # enterprise_list = ['230100100019556']
+    # enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/heilongjiang.txt')
+    enterprise_list = ['231000100085734']
 
     for ent_number in enterprise_list:
         ent_number = ent_number.rstrip('\n')
