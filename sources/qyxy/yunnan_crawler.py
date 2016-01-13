@@ -18,13 +18,13 @@ else:
 class YunnanCrawler(object):
 	#html数据的存储路径
 	html_restore_path = settings.html_restore_path + '/yunnan/'
-	#验证码图片的存储路径
     	ckcode_image_path = settings.json_restore_path + '/yunnan/ckcode.jpg'
     	#write_file_mutex = threading.Lock()
 	def __init__(self, json_restore_path):
 		self.id = None
 		self.reqst = requests.Session()
 		self.json_restore_path = json_restore_path
+		self.ckcode_image_path = settings.json_restore_path + '/yunnan/ckcode.jpg'
 		self.result_json_dict = {}
 		self.reqst.headers.update(
 			{'Accept': 'text/html, application/xhtml+xml, */*',
@@ -81,11 +81,11 @@ class YunnanCrawler(object):
 		if resp.status_code != 200:
 			print 'no validateCode'
 			return None
-		with open('s.jpg', 'wb') as f:
+		with open(self.ckcode_image_path, 'wb') as f:
 			f.write(resp.content)
 		from CaptchaRecognition import CaptchaRecognition
 		code_cracker = CaptchaRecognition('yunnan')
-		ck_code = code_cracker.predict_result('s.jpg')
+		ck_code = code_cracker.predict_result(self.ckcode_image_path)
 		return ck_code[1],session_token
 
 	def get_id_num(self, findCode):
