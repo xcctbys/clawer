@@ -50,7 +50,8 @@ province_crawler = {
 }
 
 max_crawl_time = 0
-start_crawl_time = None
+ent_queue = Queue.Queue()
+
 
 def set_codecracker():
     for province in province_crawler.keys():
@@ -110,6 +111,7 @@ def crawl_work(n, province, json_restore_path, ent_queue):
             ent_queue.task_done()
 
 
+"""
 def run(province, enterprise_list, json_restore_path):
     ent_queue = Queue.Queue()
     for x in enterprise_list:
@@ -122,7 +124,7 @@ def run(province, enterprise_list, json_restore_path):
 
     ent_queue.join()
     settings.logger.info('All crawlers work over')
-
+"""
 
 def crawl_province(province, cur_date):
     #创建存储路径
@@ -137,7 +139,7 @@ def crawl_province(province, cur_date):
     json_restore_path = '%s/%s.json' % (json_restore_dir, cur_date[2])
 
     #将企业名单放入队列
-    ent_queue = Queue.Queue()
+    #ent_queue = Queue.Queue()
     for x in enterprise_list:
         ent_queue.put(x)
 
@@ -176,8 +178,8 @@ def crawl_province(province, cur_date):
 
 def force_exit():
     settings.logger.error("run timeout")
-    sys.exit(0)
-
+    os._exit(1)
+    
 
 if __name__ == '__main__':
     config_logging()
