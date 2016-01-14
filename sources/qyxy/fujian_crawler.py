@@ -303,7 +303,7 @@ class FujianParser(Parser):
             table_title = self.get_table_title(table)
             table_name = name_table_map.get(table_title, None)
             if table_name:
-                self.crawler.json_dict[table_name] = self.parse_table(table, table_name, page)
+                self.crawler.json_dict[table_name] = self.parse_table1(table)
 
         table = soup.find("table", {"id": "memberTable"})
         if table:
@@ -503,6 +503,23 @@ class FujianParser(Parser):
 
         return annual_report_dict
 
+    def parse_table1(self, table):
+        table_ths = table.find_all("th")
+        table_th = []
+        for th in table_ths:
+            if 'colspan' in th.attrs:
+                continue
+            if th.text.strip() == "":
+                continue
+            table_th.append(th.text.strip())
+
+        table_tds = table.find_all("td")
+        table_td = [td.text.strip() for td in table_tds]
+
+        table_save = {}
+        for i in range(0, len(table_th)):
+            table_save[table_th[i]] = table_td[i]
+        return table_save
     def get_detail_link(self, bs4_tag, page):
         """获取详情链接 url，在bs tag中或者page中提取详情页面
         Args:
