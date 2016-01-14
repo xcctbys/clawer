@@ -22,6 +22,8 @@ class Basic(models.Model):
     register_status = models.CharField(max_length=20)
     register_num = models.CharField(max_length=20)
 
+class Meta:
+    db_table = "basic"
 
 class IndustrycommerceAdministrativePenalty(models.Model):
     """工商-行政处罚
@@ -41,6 +43,8 @@ class IndustrycommerceAdministrativePenalty(models.Model):
     enter_id = models.CharField(max_length=30)
     bas_id = models.IntegerField()
 
+class Meta:
+    db_table = "industrycommerce_administrative_penalty"
 
 class IndustryCommerceBranch(models.Model):
     """工商-分支机构
@@ -52,6 +56,8 @@ class IndustryCommerceBranch(models.Model):
     enter_id = models.CharField(max_length=20)
     bas_id = models.IntegerField()
 
+class Meta:
+    db_table = "industry_commerce_branch"
 
 class IndustryCommerceChange(models.Model):
     """工商-变更
@@ -64,6 +70,8 @@ class IndustryCommerceChange(models.Model):
     enter_id = models.CharField(max_length=20)
     bas_id = models.IntegerField()
 
+class Meta:
+    db_table = "industry_commerce_change"
 
 class IndustryCommerceCheck(models.Model):
     """工商-抽查检查
@@ -77,6 +85,8 @@ class IndustryCommerceCheck(models.Model):
     enter_id = models.CharField(max_length=20)
     bas_id = models.IntegerField()
 
+class Meta:
+    db_table = "industry_commerce_check"
 
 class IndustryCommerceClear(models.Model):
     """工商-清算
@@ -87,6 +97,8 @@ class IndustryCommerceClear(models.Model):
     enter_id = models.CharField(max_length=20)
     bas_id = models.IntegerField()
 
+class Meta:
+    db_table = "industry_commerce_clear"
 
 class IndustryCommerceDetailGuarantee(models.Model):
     """工商-动产抵押-详情-动产抵押
@@ -98,6 +110,8 @@ class IndustryCommerceDetailGuarantee(models.Model):
     register_id = models.CharField(max_length=20)
     ind_id = models.IntegerField()
 
+class Meta:
+    db_table = "industry_commerce_detail_guarantee"
 
 class IndustryCommerceException(models.Model):
     """工商-经营异常
@@ -113,6 +127,8 @@ class IndustryCommerceException(models.Model):
     enter_id = models.CharField(max_length=20)
     bas_id = models.IntegerField()
 
+class Meta:
+    db_table = "industry_commerce_exception"
 
 class IndustryCommerceIllegal(models.Model):
     """工商-严重违法
@@ -126,6 +142,8 @@ class IndustryCommerceIllegal(models.Model):
     enter_id = models.CharField(max_length=20)
     bas_id = models.IntegerField()
 
+class Meta:
+    db_table = "industry_commerce_illegal"
 
 class IndustryCommerceMainperson(models.Model):
     """工商-主要人员
