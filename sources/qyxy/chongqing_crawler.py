@@ -7,6 +7,13 @@ import re
 import random
 import threading
 import unittest
+import datetime
+
+ENT_CRAWLER_SETTINGS = os.getenv('ENT_CRAWLER_SETTINGS')
+if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
+    import settings_pro as settings
+else:
+    import settings
 from bs4 import BeautifulSoup
 from crawler import Crawler
 from crawler import Parser
@@ -14,41 +21,92 @@ from crawler import CrawlerUtils
 import types
 import urlparse
 import json
-ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
-if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
-    import settings_pro as settings
-else:
-    import settings
 
 
-class HeilongjiangClawer(Crawler):
-    """黑龙江工商公示信息网页爬虫
+class ChongqingClawer(Crawler):
+    """重庆工商公示信息网页爬虫
     """
     # html数据的存储路径
-    html_restore_path = settings.html_restore_path + '/heilongjiang/'
+    html_restore_path = settings.html_restore_path + '/chongqing/'
 
     # 验证码图片的存储路径
-    ckcode_image_path = settings.json_restore_path + '/heilongjiang/ckcode.jpg'
+    ckcode_image_path = settings.json_restore_path + '/chongqing/ckcode.jpg'
+
+    # 查询结果页面存储路径
+    html_search_results_restore_path = html_restore_path + 'search_results.html'
+
+    # 公司基本信息页面存储路径
+    html_base_info_restore_path = html_restore_path + 'base_info.html'
+
+    # 公司备案信息页面存储路径
+    html_record_restore_path = html_restore_path + 'record_info.html'
+
+    # 公司动产抵押页面存储路径
+    html_dcdy_restore_path = html_restore_path + 'dcdy_info.html'
+
+    # 公司股权出质页面存储
+    html_gqcz_restore_path = html_restore_path + 'gqcz_info.html'
+
+    # 行政处罚页面存储
+    html_xzcf_restore_path = html_restore_path + 'xzcf_info.html'
+
+    # 经营异常页面存储
+    html_jyyc_restore_path = html_restore_path + 'jyyc_info.html'
+
+    # 严重违法页面存储
+    html_yzwf_restore_path = html_restore_path + 'yzwf_info.html'
+
+    # 抽查检查信息
+    html_ccjc_restore_path = html_restore_path + 'ccjc_info.html'
+
+    # 公司基本信息json
+    json_base_info = str()
 
     # 多线程爬取时往最后的json文件中写时的加锁保护
     write_file_mutex = threading.Lock()
 
-    urls = {'host': 'www.hljaic.gov.cn',
-            'get_checkcode': 'http://gsxt.hljaic.gov.cn/validateCode.jspx?type=0',
-            'post_checkCode': 'http://gsxt.hljaic.gov.cn/checkCheckNo.jspx',
-            'post_checkCode2': 'http://gsxt.hljaic.gov.cn/searchList.jspx',
-            'ind_comm_pub_skeleton': 'http://gsxt.hljaic.gov.cn/businessPublicity.jspx?',
-            'ent_pub_skeleton': 'http://gsxt.hljaic.gov.cn/enterprisePublicity.jspx?',
-            'other_dept_pub_skeleton': 'http://gsxt.hljaic.gov.cn/otherDepartment.jspx?',
-            'judical_assist_skeleton': 'http://gsxt.hljaic.gov.cn/justiceAssistance.jspx?',
+    urls = {'host': 'http://gsxt.cqgs.gov.cn',
+            'get_checkcode': 'http://gsxt.cqgs.gov.cn/sc.action?width=130&height=40',
+            'repost_checkcode': 'http://gsxt.cqgs.gov.cn/search_research.action',
+            'post_checkcode': 'http://gsxt.cqgs.gov.cn/search.action',
+            'search_ent': 'http://gsxt.cqgs.gov.cn/search_ent',
+            'base_json': 'http://gsxt.cqgs.gov.cn/search_getEnt.action',
+            'gqcz_page': 'http://gsxt.cqgs.gov.cn/G/SAIC/gqczInfo.jsp',
+            'dcdy_page': 'http://gsxt.cqgs.gov.cn/G/SAIC/dcdyInfo.jsp',
+            'xzcf_page': 'http://gsxt.cqgs.gov.cn/G/SAIC/xzcfInfo.jsp',
+            'jyyc_page': 'http://gsxt.cqgs.gov.cn/G/SAIC/jyyc/qyjyycmlInfo.jsp',
+            'yzwf_page': 'http://gsxt.cqgs.gov.cn/G/SAIC/yzwfInfo.jsp',
+            'ccjc_page': 'http://gsxt.cqgs.gov.cn/G/SAIC/ccjcinfo.jsp',
+            'year_report_detail': 'http://gsxt.cqgs.gov.cn/search_getYearReportDetail.action',
+            # 工商公示信息
 
-            'ind_comm_pub_reg_shareholder': 'http://gsxt.hljaic.gov.cn/QueryInvList.jspx?',# 股东信息
-            'ind_comm_pub_reg_modify': 'http://gsxt.hljaic.gov.cn/QueryAltList.jspx?',  # 变更信息翻页
-            'ind_comm_pub_arch_key_persons': 'http://gsxt.hljaic.gov.cn/QueryMemList.jspx?',  # 主要人员信息翻页
-            'ind_comm_pub_spot_check': 'http://gsxt.hljaic.gov.cn/QuerySpotCheckList.jspx?',  # 抽样检查信息翻页
-            'ind_comm_pub_movable_property_reg': 'http://gsxt.hljaic.gov.cn/QueryMortList.jspx?',  # 动产抵押登记信息翻页
-            'ind_comm_pub_business_exception': 'http://gsxt.hljaic.gov.cn/QueryExcList.jspx?',  # 经营异常信息
+            'ind_comm_pub_reg_basic': '',
+            'ind_comm_pub_reg_shareholder': '',  # 股东信息
+            'ind_comm_pub_reg_modify': '',  # 变更信息翻页
+            'ind_comm_pub_arch_key_persons': '',  # 主要人员信息翻页
+            'ind_comm_pub_arch_branch': '',
+            'ind_comm_pub_arch_liquidation': '',
+            'ind_comm_pub_movable_property_reg': 'http://gsxt.cqgs.gov.cn/G/SAIC/dcdyInfo.jsp',  # 动产抵押登记信息翻页
+            'ind_comm_pub_administration_sanction': '',
+            'ind_comm_pub_business_exception': '',  # 经营异常信息
+            'ind_comm_pub_serious_violate_law': '',
+            'ind_comm_pub_spot_check': '',  # 抽样检查信息翻页
 
+            # 企业公示信息
+
+            'ent_pub_ent_annual_report': '',  # 股东信息
+            'ent_pub_shareholder_capital_contribution': '',  # 变更信息翻页
+            'ent_pub_equity_change': '',  # 主要人员信息翻页
+            'ent_pub_knowledge_property': '',  # 抽样检查信息翻页
+            'ent_pub_administration_sanction': '',  # 动产抵押登记信息翻页
+
+            # 其他部门公示信息
+            'other_dept_pub_administration_license': '',  # 经营异常信息
+            'other_dept_pub_administration_sanction': '',  # 经营异常信息
+
+            # 司法协助信息
+            'judical_assist_pub_equity_freeze': '',
+            'judical_assist_pub_shareholder_modify': ''
             }
 
     def __init__(self, json_restore_path):
@@ -56,25 +114,21 @@ class HeilongjiangClawer(Crawler):
         初始化函数
         Args:
             json_restore_path: json文件的存储路径，所有江苏的企业，应该写入同一个文件，因此在多线程爬取时设置相同的路径。同时，
-             需要在写入文件的时候加锁
+            需要在写入文件的时候加锁
         Returns:
         """
+        self.json_base_info = str()
+        self.json_ent_info = str()
+
         self.json_restore_path = json_restore_path
-        self.parser = HeilongjiangParser(self)
+        self.parser = ChongqingParser(self)
 
         self.reqst = requests.Session()
         self.reqst.headers.update({
-                'Accept': 'text/html, application/xhtml+xml, */*',
-                'Accept-Encoding': 'gzip, deflate',
-                'Accept-Language': 'en-US, en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:39.0) Gecko/20100101 Firefox/39.0'})
-        self.corp_org = ''
-        self.corp_id = ''
-        self.corp_seq_id = ''
-        self.common_enter_post_data = {}
-        self.ci_enter_post_data = {}
-        self.nb_enter_post_data = {}
-        self.company_id = ''
+            'Accept': 'text/html, application/xhtml+xml, */*',
+            'Accept-Encoding': 'gzip, deflate',
+            'Accept-Language': 'en-US, en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:39.0) Gecko/20100101 Firefox/39.0'})
 
     def run(self, ent_number=0):
         self.ent_number = str(ent_number)
@@ -91,7 +145,8 @@ class HeilongjiangClawer(Crawler):
             settings.logger.error('crack check code failed, stop to crawl enterprise %s' % self.ent_number)
             return False
         if result_ID == "None":
-            settings.logger.error('According to the registration number does not search to the company %s' % self.ent_number)
+            settings.logger.error(
+                    'According to the registration number does not search to the company %s' % self.ent_number)
             return False
 
         self.crawl_ind_comm_pub_pages()
@@ -109,239 +164,148 @@ class HeilongjiangClawer(Crawler):
         """爬取验证码页面，包括下载验证码图片以及破解验证码
         :return true or false
         """
-        count = 0
-        while count < 10:
-            ck_code = self.crack_check_code()
+        # 获得验证码图片
+        self.ent_number = '500232000003942'
+        if self._get_checkcode(ChongqingClawer.urls['get_checkcode']) is True:
+            ckcode = self.crack_checkcode()
+            if len(str(ckcode)) >= 1:
+                data = {'code': ckcode, 'key': self.ent_number}
+                self._get_search_page(data)
 
-            data = {'checkNo': ck_code}
-            resp = self.reqst.post(HeilongjiangClawer.urls['post_checkCode'], data=data)
+    def _get_search_page(self, data):
+        resp = self.reqst.post(ChongqingClawer.urls['post_checkcode'], data)
+        if resp.status_code == 200:
+            pass
+        else:
+            while True:
+                data.append({'stype': ""})
+                resp = self.reqst.post(ChongqingClawer.urls['repost_checkcode', data])
+                if resp.status_code == 200:
+                    break
+        self.write_file_mutex.acquire()
+        try:
+            with open(self.html_search_results_restore_path, 'wb') as f:
+                f.write(resp.content)
+                f.close()
+        except Exception as e:
+            settings.logger.error('write results page file wrong ')
+        self.write_file_mutex.release()  # 获得验证码图片,并存储
 
-            if resp.status_code != 200:
-                settings.logger.error("crawl post check page failed!")
-                count += 1
-                continue
-            if resp.content[10] == 't':
-                data = {'checkNo': ck_code, 'entName': self.ent_number}
-                resp = self.reqst.post(HeilongjiangClawer.urls['post_checkCode2'], data=data)
-                soup = BeautifulSoup(resp.text, "html5lib")
-                div = soup.find("div", {"style": "height:500px;"})
-                a = div.find("a")
-                if a:
-                    self.company_id = a["href"].split('?')[1]
-                    return True
-                else:
-                    return None
+    # return
 
-            else:
-                settings.logger.error("crawl post check page failed!")
-                count += 1
-                continue
-        return False
+    def _get_checkcode(self, url):
+        resp = self.reqst.get(url)
+        if resp.status_code != 200:
+            resp = self.reqst.get(url)
+        self.write_file_mutex.acquire()
+        try:
+            with open(self.ckcode_image_path, 'wb') as f:
+                f.write(resp.content)
+                f.close()
+        except Exception as e:
+            settings.logger.error('write down file wrong ')
+            return False
+        self.write_file_mutex.release()
+        return True
 
-    def crack_check_code(self):
+    def crack_checkcode(self):
         """破解验证码
         :return 破解后的验证码
         """
-        resp = self.reqst.get(HeilongjiangClawer.urls['get_checkcode'])
+        resp = self.reqst.get(ChongqingClawer.urls['get_checkcode'])
         if resp.status_code != 200:
             settings.logger.error('failed to get get_checkcode')
+            print 'error'
             return None
-
-
-
 
         time.sleep(random.uniform(2, 4))
 
         self.write_file_mutex.acquire()
+        self.ckcode_image_path = settings.json_restore_path + '/chongqing/ckcode.jpg'
         with open(self.ckcode_image_path, 'wb') as f:
             f.write(resp.content)
+        self.write_file_mutex.release()
+
         try:
             ckcode = self.code_cracker.predict_result(self.ckcode_image_path)
+            print("try:", str(ckcode), self.ckcode_image_path)
         except Exception as e:
             settings.logger.warn('exception occured when crack checkcode')
             ckcode = ('', '')
+            print("except", str(ckcode), self.ckcode_image_path)
         finally:
             pass
-        self.write_file_mutex.release()
 
         return ckcode[1]
 
-    def crawl_page_by_url(self, url):
-        """根据url直接爬取页面
-        """
-        resp = self.reqst.get(url)
-        if self.reqst.status_code != 200:
-            settings.logger.error('crawl page by url failed! url = %s' % url)
-        page = resp.content
-        time.sleep(random.uniform(0.2, 1))
-        if settings.save_html:
-            CrawlerUtils.save_page_to_file(self.html_restore_path + 'detail.html', page)
-        return page
+    def crawl_page_jsons(self):
+        data = self.parser.parse_search_results_pages(self.html_search_results_restore_path)
+        if data is not None:
+            resp = self.reqst.post(ChongqingClawer.urls['search_ent'], data=data)
+            print(resp.status_code)
+            if resp.status_code == 200:
+                with open(self.html_base_info_restore_path, 'wb') as f:
+                    f.write(resp.content)
+                    f.close()
+            params = {'entId': data.get('entId'), 'id': data.get('id'), 'type': 1}
+            json = self.reqst.get(ChongqingClawer.urls['base_json'], params=params)
+            if json.status_code == 200:
+                json = json.content
+                json = str(json)
+                self.json_base_info = json[6:]  # 去掉数据中的前六个字符保证数据为完整json格式数据
+                self.json_ent_info = self.json_ent_info
+                print(self.json_base_info)
 
-    def crawl_ind_comm_pub_pages(self):
-        """爬取工商公示信息
-        """
-        url = "%s%s" % (self.urls['ind_comm_pub_skeleton'], self.company_id)
-        resp = self.reqst.get(url)
-        if resp.status_code != 200:
-            settings.logger.error('failed to get ind_comm_pub_skeleton')
-        self.parser.parse_ind_comm_pub_pages(resp.content)
-
-        return resp.content
-
-    def crawl_ent_pub_pages(self):
-        """爬取企业公示信息
-        """
-        url ="%s%s" % (self.urls['ent_pub_skeleton'], self.company_id)
-        resp = self.reqst.get(url)
-        if resp.status_code != 200:
-            settings.logger.error('failed to get ent_pub_skeleton')
-        self.parser.parse_ent_pub_pages(resp.content)
-
-        return resp.content
-
-    def crawl_other_dept_pub_pages(self):
-        """爬取其他部门公示信息
-        """
-        url = "%s%s" % (self.urls['other_dept_pub_skeleton'], self.company_id)
-        resp = self.reqst.get(url)
-        if resp.status_code != 200:
-            settings.logger.error('failed to get other_dept_pub_skeleton')
-        self.parser.crawl_other_dept_pub_pages(resp.content)
-
-        return resp.content
-
-    def crawl_judical_assist_pub_pages(self):
-        """爬取司法协助信息
-        """
-        url = "%s%s" % (self.urls['judical_assist_skeleton'], self.company_id)
-        resp = self.reqst.get(url)
-        if resp.status_code != 200:
-            settings.logger.error('failed to get judical_assist_skeleton')
-        self.parser.parse_judical_assist_pub_pages(resp.content)
-
-        return resp.content
+        else:
+            print('error')
 
 
-class HeilongjiangParser(Parser):
-    """黑龙江工商页面的解析类
+
+
+class ChongqingParser(Parser):
+    """重庆工商页面的解析类
     """
+
     def __init__(self, crawler):
         self.crawler = crawler
+        self.json_dict = {}
 
-    def parse_ind_comm_pub_pages(self, page):
-        """解析工商公示信息-页面，在黑龙江的页面中，工商公示信息所有信息都通过一个http get返回
+    def parse_search_results_pages(self, page):
+        # 解析供查询页面, 获得工商信息页面POST值
+        page_content = open(page)
+        content = page_content.read()
+        soup = BeautifulSoup(content, "html5lib")
+        result = soup.find('div', {'id': 'result'})
+        key_map = {}
+        item = result.find('div', {'class': 'item'})
+        link = item.find('a')
+        entId = link.get('data-entid')
+        type = link.get('data-type')
+        id = link.get('data-id')
+        name = link.get_text()
+        key_map['entId'] = entId
+        key_map['type'] = type
+        key_map['id'] = id
+        key_map['name'] = name
+        if key_map is not None:
+            return key_map
+        else:
+            return None
+
+    def parse_ind_comm_pub_pages(self, json):
+        """解析工商公示信息-页面
         """
-        soup = BeautifulSoup(page, "html5lib")
-        # 一类表
-        name_table_map = {
-            u'基本信息': 'ind_comm_pub_reg_basic',  # 登记信息-基本信息
-            u'清算信息': 'ind_comm_pub_arch_liquidation',  # 备案信息-清算信息
-        }
+        # (1) 'ind_comm_pub_reg_basic': 登记信息-基本信息
+        ind_comm_pub_reg_basic = {}
+        self.json_dict = {}
 
-        for table in soup.find_all('table'):
-            list_table_title = table.find("th")
-            if not list_table_title:
-                continue
+    # (2) 'ind_comm_pub_reg_shareholder': 登记信息-股东信息
+    # (3) 'ind_comm_pub_reg_modify': 登记信息-变更信息
+    # (4) 'ind_comm_pub_arch_key_persons': 备案信息-主要人员信息
+    # (5) 'ind_comm_pub_arch_branch': 备案信息-分支机构信息
+    # (6) 'ind_comm_pub_arch_liquidation': 备案信息-清算信息
 
-            if name_table_map.has_key(list_table_title.text):
-                table_name = name_table_map[list_table_title.text]
 
-                self.crawler.json_dict[table_name] = self.parse_table1(table)
-
-        # 二类表
-        id_table_map = {
-            'altDiv': 'ind_comm_pub_reg_modify',  # 登记信息-变更信息
-            # 'memDiv': 'ind_comm_pub_arch_key_persons',  # 备案信息-主要人员信息
-            "childDiv": 'ind_comm_pub_arch_branch',  # 备案信息-分支机构信息
-            "pledgeDiv": 'ind_comm_pub_equity_ownership_reg',  # 股权出置登记信息
-            "punDiv": 'ind_comm_pub_administration_sanction',  # 行政处罚信息
-            "excDiv": 'ind_comm_pub_business_exception',  # 经营异常信息
-            "serillDiv": 'ind_comm_pub_serious_violate_law',  # 严重违法信息
-            "spotCheckDiv": 'ind_comm_pub_spot_check',  # 抽查检查信息
-        }
-        table_ids = id_table_map.keys()
-        for table_id in table_ids:
-            table_name = id_table_map[table_id]
-
-            table = soup.find("div", {"id": table_id})
-            if not table:
-                continue
-            td = table.find_all("td")
-            if td:
-                id = self.crawler.company_id.split("=")[1]
-                self.crawler.json_dict[table_name] = self.parse_table2(table, table_name, id, 0)[0]
-            else:
-                self.crawler.json_dict[table_name] = []  # 若表格内没有td则视为空
-                continue
-
-        # 股东信息
-        div = soup.find("div", {"id": "invDiv"})
-        if div:
-            id = self.crawler.company_id.split("=")[1]
-            return_table = self.parse_table2(div, 'ind_comm_pub_reg_shareholder', id, 1)
-            if return_table[1] != "True":
-                for i in range(0, len(return_table[1])):
-                    return_table[0][i][u'详情'] = self.get_shareholder_detail(return_table[1][i])
-            self.crawler.json_dict['ind_comm_pub_reg_shareholder'] = return_table[0]
-        else:
-            self.crawler.json_dict['ind_comm_pub_reg_shareholder'] = []
-
-        # 动产抵押登记信息
-        div = soup.find("div", {"id": "mortDiv"})
-        if div:
-            id = self.crawler.company_id.split("=")[1]
-            return_table = self.parse_table2(div, 'ind_comm_pub_movable_property_reg', id, 1)
-            if return_table[1] != "True":
-                for i in range(0, len(return_table[1])):
-                    return_table[0][i][u'详情'] = self.get_movable_property_reg_detail(return_table[1][i])
-            self.crawler.json_dict['ind_comm_pub_movable_property_reg'] = return_table[0]
-        else:
-            self.crawler.json_dict['ind_comm_pub_movable_property_reg'] = []
-
-         # 备案信息-主要人员信息
-        div = soup.find("div", {"id": "memDiv"})
-        if div:
-            table_th1 = div.previous_sibling.previous_sibling
-            company_id1 = self.crawler.company_id.split("=")[1]
-            table_th_trs = table_th1.find_all("tr")
-            list_th = [th for th in table_th_trs[1].stripped_strings]
-            if div.next_sibling.next_sibling and str(div.next_sibling.next_sibling.name) == 'table':
-                table_page = div.next_sibling.next_sibling
-                table_page_tol = table_page.find_all("a")
-                table_save = []
-
-                for i in range(1, len(table_page_tol)+1):
-                    url = '%s%s%s%s%s' % (self.crawler.urls['ind_comm_pub_arch_key_persons'], "pno=", i, '&mainId=', company_id1)
-                    # print "url", url
-                    rep = requests.get(url)
-                    soup = BeautifulSoup(rep.text, "html5lib")
-
-                    table = soup.find("table")
-                    # print "主要人员", table
-
-                    trs = table.find_all("tr")
-
-                    for tr in trs:
-                        content1 = {}
-                        content2 = {}
-                        list_td = []
-                        tds = tr.find_all("td")
-                        if not tds:
-                            continue
-                        for td in tds:
-                            list_td.append(td.text.strip())
-                        for i in range(0, 3):
-                            content1[list_th[i]] = list_td[i]
-                        for i in range(3, 6):
-                            content2[list_th[i]] = list_td[i]
-                        table_save.append(content1)
-                        table_save.append(content2)
-                    self.crawler.json_dict['ind_comm_pub_arch_key_persons'] = table_save
-            else:
-                self.crawler.json_dict['ind_comm_pub_arch_key_persons'] = []
-        else:
-            self.crawler.json_dict['ind_comm_pub_arch_key_persons'] = []
 
     def parse_ent_pub_pages(self, page):
         soup = BeautifulSoup(page, "html5lib")
@@ -369,7 +333,7 @@ class HeilongjiangParser(Parser):
             table = gdDiv.find("table")
             self.crawler.json_dict['ent_pub_shareholder_and_investment'] = self.coarse_page_table(table)
 
-        #企业年报
+        # 企业年报
         qiyenianbao = soup.find("div", {"id": "qiyenianbao"})
         table_th1 = []
         table_save_all = []
@@ -399,12 +363,12 @@ class HeilongjiangParser(Parser):
                     re2 = '(\\d+)'  # Integer Number 1
                     re3 = '((?:[a-z][a-z]*[0-9]+[a-z0-9]*))'  # Alphanum 1
 
-                    rg = re.compile(re1+re2+re3,re.IGNORECASE|re.DOTALL)
+                    rg = re.compile(re1 + re2 + re3, re.IGNORECASE | re.DOTALL)
                     m = rg.search(str(a1))
                     int1 = m.group(1)
                     alphanum1 = m.group(2)
                     host = 'http://gsxt.hljaic.gov.cn/QueryYearExamineDetail.jspx?id='
-                    url = '%s%s' % (host, int1+alphanum1)
+                    url = '%s%s' % (host, int1 + alphanum1)
                     rep = requests.get(url)
                     soup = BeautifulSoup(rep.content, 'html5lib')
 
@@ -421,7 +385,6 @@ class HeilongjiangParser(Parser):
                             wrap[table_tiiles.text] = self.parse_table1(table)
                     table_detail.append(wrap)
 
-
                     # 四类表
                     name_table_map = [u'网站或网店信息', u'股东及出资信息', u'行政许可情况', u'对外投资信息',
                                       u'对外提供保证担保信息', u'股权变更信息', u'修改记录']
@@ -433,9 +396,9 @@ class HeilongjiangParser(Parser):
                             table_th = [th for th in table_trs[1].stripped_strings]
 
                             table_c = []
-                            for table_tr in table_trs[2:-1]:
+                            for table_tr in table_trs[2:]:
                                 tds = table_tr.find_all("td")
-                                table_td = [td.text.strip() for td in tds]
+                                table_td = [td.text for td in tds]
 
                                 table_save = {}
                                 wrap = {}
@@ -446,14 +409,13 @@ class HeilongjiangParser(Parser):
                             table_detail.append(wrap)
 
                 # cont = table_ts[u'报送年度']
-                table_ts[u'报送年度'] = table_detail
+                table_ts[u'详情'] = table_detail
 
             table_save_all.append(table_ts)
 
         self.crawler.json_dict['ent_pub_ent_annual_report'] = table_save_all
 
     def crawl_other_dept_pub_pages(self, page):
-
         soup = BeautifulSoup(page, "html5lib")
         company_id = self.crawler.company_id.split("=")[1]
         id_table_map = {
@@ -473,10 +435,9 @@ class HeilongjiangParser(Parser):
                 table = table.next_sibling.next_sibling
                 self.crawler.json_dict[table_name] = self.parse_table2(table, table_name, company_id, 0)[0]
             else:
-                 self.crawler.json_dict[table_name] = self.parse_table2(table, table_name, company_id, 0)[0]
+                self.crawler.json_dict[table_name] = self.parse_table2(table, table_name, company_id, 0)[0]
 
     def parse_judical_assist_pub_pages(self, page):
-
         soup = BeautifulSoup(page, "html5lib")
         company_id = self.crawler.company_id.split("=")[1]
         id_table_map = {
@@ -503,20 +464,17 @@ class HeilongjiangParser(Parser):
         for th in table_ths:
             if 'colspan' in th.attrs:
                 continue
-            if th.text.strip() == "":
-                continue
             table_th.append(th.text.strip())
 
         table_tds = table.find_all("td")
         table_td = [td.text.strip() for td in table_tds]
 
         table_save = {}
-        for i in range(0, len(table_th)):
+        for i in range(0, len(table_td)):
             table_save[table_th[i]] = table_td[i]
         return table_save
 
     def parse_table2(self, table, table_name, company_id, status):
-
         # 获得表头
         previous_table = table.previous_sibling.previous_sibling
         table_title = previous_table.find("tr")
@@ -533,21 +491,21 @@ class HeilongjiangParser(Parser):
             table_page_tol = table_page.find_all("a")
             if 'id' in table.next_sibling.next_sibling.attrs:
                 if table.next_sibling.next_sibling.attrs['id'] == 'invPagination':
-                   if HeilongjiangClawer.urls.has_key(table_name):
+                    if ChongqingClawer.urls.has_key(table_name):
 
-                    for j in range(1, len(table_page_tol)+1):
-                        table_ts = []
-                        content_tr = []
-                        url = '%s%s%s%s%s' % (HeilongjiangClawer.urls[table_name], "pno=", j, '&mainId=', company_id)
-                        rep = requests.get(url)
-                        soup = BeautifulSoup(rep.text, "html5lib")
-                        table = soup.find("table")
-                        table_save = self.get_td(table, table_columns)
-                        tr = table.find_all("tr")
-                        content_tr.extend(tr)
-                        table_ts.extend(table_save)
+                        for j in range(1, len(table_page_tol) + 1):
+                            table_ts = []
+                            content_tr = []
+                            url = '%s%s%s%s%s' % (ChongqingClawer.urls[table_name], "pno=", j, '&mainId=', company_id)
+                            rep = requests.get(url)
+                            soup = BeautifulSoup(rep.text, "html5lib")
+                            table = soup.find("table")
+                            table_save = self.get_td(table, table_columns)
+                            tr = table.find_all("tr")
+                            content_tr.extend(tr)
+                            table_ts.extend(table_save)
 
-                    return [table_ts, content_tr]
+                        return [table_ts, content_tr]
 
         if table.next_sibling.next_sibling and str(table.next_sibling.next_sibling.name) == 'table':
             table_page = table.next_sibling.next_sibling
@@ -558,12 +516,11 @@ class HeilongjiangParser(Parser):
                 return [table_save, 'True']
 
             else:
-                if self.crawler.urls.has_key(table_name):
-                    table_ts = []
-                    content_tr = []
-                    for j in range(1, len(table_page_tol)+1):
-
-                        url = '%s%s%s%s%s' % (self.crawler.urls[table_name], "pno=", j, '&mainId=', company_id)
+                if ChongqingClawer.urls.has_key(table_name):
+                    for j in range(1, len(table_page_tol) + 1):
+                        table_ts = []
+                        content_tr = []
+                        url = '%s%s%s%s%s' % (ChongqingClawer.urls[table_name], "pno=", j, '&mainId=', company_id)
                         rep = requests.get(url)
                         soup = BeautifulSoup(rep.text, "html5lib")
                         table = soup.find("table")
@@ -597,7 +554,6 @@ class HeilongjiangParser(Parser):
             return []
 
     def get_shareholder_detail(self, content_tr):
-
         if not content_tr.find("a"):
             return
 
@@ -605,14 +561,14 @@ class HeilongjiangParser(Parser):
 
         re1 = '.*?'  # Non-greedy match on filler
         re2 = '\\d+'  # Uninteresting: int
-        re3 = '.*?'     # Non-greedy match on filler
-        re4 = '(\\d+)'   # Integer Number 1
+        re3 = '.*?'  # Non-greedy match on filler
+        re4 = '(\\d+)'  # Integer Number 1
 
-        rg = re.compile(re1+re2+re3+re4,re.IGNORECASE|re.DOTALL)
+        rg = re.compile(re1 + re2 + re3 + re4, re.IGNORECASE | re.DOTALL)
         m = rg.search(str(link))
 
         int1 = m.group(1)
-        url1 = '%s%s' %('http://gsxt.hljaic.gov.cn/queryInvDetailAction.jspx?id=', int1)
+        url1 = '%s%s' % ('http://gsxt.hljaic.gov.cn/queryInvDetailAction.jspx?id=', int1)
         rep1 = requests.get(url1)
         soupn = BeautifulSoup(rep1.text, "html5lib")
 
@@ -623,18 +579,17 @@ class HeilongjiangParser(Parser):
         return detail
 
     def get_movable_property_reg_detail(self, content_tr):
-
         link = content_tr.find("a")
         re1 = '.*?'  # Non-greedy match on filler
         re2 = '\\d+'  # Uninteresting: int
-        re3 = '.*?'     # Non-greedy match on filler
-        re4 = '(\\d+)'   # Integer Number 1
+        re3 = '.*?'  # Non-greedy match on filler
+        re4 = '(\\d+)'  # Integer Number 1
 
-        rg = re.compile(re1+re2+re3+re4,re.IGNORECASE|re.DOTALL)
+        rg = re.compile(re1 + re2 + re3 + re4, re.IGNORECASE | re.DOTALL)
         m = rg.search(str(link))
 
         int1 = m.group(1)
-        url1 = '%s%s' %('http://gsxt.hljaic.gov.cn/mortInfoDetail.jspx?id=', int1)
+        url1 = '%s%s' % ('http://gsxt.hljaic.gov.cn/mortInfoDetail.jspx?id=', int1)
         rep1 = requests.get(url1)
         soupn = BeautifulSoup(rep1.text, "html5lib")
 
@@ -684,7 +639,6 @@ class HeilongjiangParser(Parser):
         return table_all
 
     def coarse_page_table(self, table):
-
         colspan_list = []  # 跨列的列数
         colspan_th = []  # 跨列的列名
         list_title_th = []  # 第一行不跨列的列名
@@ -726,7 +680,7 @@ class HeilongjiangParser(Parser):
                 del list_td[0:i]
                 del list_th[0:i]
             for i in range(0, len(colspan_th)):
-                 table_save[colspan_th[i]] = list_test[i]
+                table_save[colspan_th[i]] = list_test[i]
             total.append(table_save)
 
             table_title = list_tr[2].find_all("th")
@@ -739,41 +693,88 @@ class HeilongjiangParser(Parser):
 class TestParser(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
-        self.crawler = HeilongjiangClawer('./enterprise_crawler/heilongjiang.json')
+        from CaptchaRecognition import CaptchaRecognition
+        self.crawler = ChongqingClawer('./enterprise_crawler/chongqing.json')
         self.parser = self.crawler.parser
+        ChongqingClawer.code_cracker = CaptchaRecognition('chongqing')
         self.crawler.json_dict = {}
-        self.crawler.ent_number = '00000'
+        self.crawler.ent_number = '500232000003942'
 
-    def test_parse_ind_comm_pub_page(self):
-        with open('./enterprise_crawler/heilongjiang/ind_comm_pub.html') as f:
-            page = f.read()
-            self.parser.parse_ind_comm_pub_pages(page)
+    def test_crawl_dcdy_page(self):
+        self.crawler.crawl_check_page()
+        status_code = self.crawler.crawl_dcdy_page()
+        self.assertEqual(status_code, 200)
 
-    def test_parse_ent_pub_skeleton(self):
-        with open('./enterprise_crawler/heilongjiang/ent_pub.html') as f:
-            page = f.read()
-            self.parser.parse_ent_pub_pages(page)
+    def test_crawl_gqcz_page(self):
+        self.crawler.crawl_check_page()
+        status_code = self.crawler.crawl_gqcz_page()
+        self.assertEqual(status_code, 200)
 
-    def test_parse_other_dept_pub_skeleton(self):
-        with open('./enterprise_crawler/heilongjiang/other_dept_pub.html') as f:
-            page = f.read()
-            self.parser.parse_other_dept_pub_pages(page)
+    def test_crawl_xzcf_page(self):
+        self.crawler.crawl_check_page()
+        status_code = self.crawler.crawl_xzcf_page()
+        self.assertEqual(status_code, 200)
 
-    def test_parse_judical_assist_pub_skeleton(self):
-        with open('./enterprise_crawler/heilongjiang/judical_assist_pub.html') as f:
-            page = f.read()
-            self.parser.parse_judical_assist_pub_pages(page)
+    def test_crawl_jyyc_page(self):
+        self.crawler.crawl_check_page()
+        status_code = self.crawler.crawl_jyyc_page()
+        self.assertEqual(status_code, 200)
+
+    def test_crawl_ccjc_page(self):
+        self.crawler.crawl_check_page()
+        status_code = self.crawler.crawl_ccjc_page()
+        self.assertEqual(status_code, 200)
+
+    def test_crawl_yzwf_page(self):
+        self.crawler.crawl_check_page()
+        status_code = self.crawler.crawl_yzwf_page()
+        self.assertEqual(status_code, 200)
+
+    def test_crawl_page_jsones(self):
+        self.crawler.crawl_check_page()
+
+
+
+        # def test_parse_ind_comm_pub_page(self):
+        #     with open('./enterprise_crawler/chongqing/ind_comm_pub.html') as f:
+        #         page = f.read()
+        #         self.parser.parse_ind_comm_pub_pages(page)
+        #
+        # def test_parse_ent_pub_skeleton(self):
+        #     with open('./enterprise_crawler/chongqing/ent_pub.html') as f:
+        #         page = f.read()
+        #         self.parser.parse_ent_pub_pages(page)
+        #
+        # def test_parse_other_dept_pub_skeleton(self):
+        #     with open('./enterprise_crawler/chongqing/other_dept_pub.html') as f:
+        #         page = f.read()
+        #         self.parser.parse_other_dept_pub_pages(page)
+        #
+        # def test_parse_judical_assist_pub_skeleton(self):
+        #     with open('./enterprise_crawler/chongqing/judical_assist_pub.html') as f:
+        #         page = f.read()
+        #         self.parser.parse_judical_assist_pub_pages(page)
+
 
 if __name__ == '__main__':
     from CaptchaRecognition import CaptchaRecognition
-    import run
-    run.config_logging()
-    HeilongjiangClawer.code_cracker = CaptchaRecognition('heilongjiang')
-    crawler = HeilongjiangClawer('./enterprise_crawler/heilongjiang.json')
-    enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/heilongjiang.txt')
-    # enterprise_list = ['230199100039345']
 
-    for ent_number in enterprise_list:
-        ent_number = ent_number.rstrip('\n')
-        settings.logger.info('############   Start to crawl enterprise with id %s   ################\n' % ent_number)
-        crawler.run(ent_number=ent_number)
+    ChongqingClawer.code_cracker = CaptchaRecognition('chongqing')
+    crawler = ChongqingClawer('./enterprise_crawler/chongqing.json')
+    crawler.crawl_check_page()
+    # data = crawler.parser.parse_search_results_pages(crawler.html_search_results_restore_path)
+    crawler.crawl_page_jsons()
+
+    # i += 1
+    # import run
+    #
+    # run.config_logging()
+    # ChongqingClawer.code_cracker = CaptchaRecognition('chongqing')
+    # crawler = ChongqingClawer('./enterprise_crawler/chongqing.json')
+    # enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/chongqing.txt')
+    # # enterprise_list = ['230100100019556']
+    #
+    # for ent_number in enterprise_list:
+    #     ent_number = ent_number.rstrip('\n')
+    #     settings.logger.info('############   Start to crawl enterprise with id %s   ################\n' % ent_number)
+    #     crawler.run(ent_number=ent_number)
