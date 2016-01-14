@@ -7,20 +7,20 @@ class Basic(models.Model):
     """公司基本类
     """
 
-    credit_code = models.CharField(max_length=20)
-    enter_name = models.CharField(max_length=50)
-    enter_type = models.CharField(max_length=20)
-    corporation = models.CharField(max_length=30)
-    register_capital = models.FloatField()
-    establish_date = models.DateTimeField()
-    place = models.CharField(max_length=100)
-    time_start = models.DateTimeField()
-    time_end = models.DateTimeField()
-    business_scope = models.TextField()
-    register_gov = models.CharField(max_length=50)
-    check_date = models.DateTimeField()
-    register_status = models.CharField(max_length=20)
-    register_num = models.CharField(max_length=20)
+    credit_code = models.CharField(max_length=20, null=True, blank=True)
+    enter_name = models.CharField(max_length=50, null=True, blank=True)
+    enter_type = models.CharField(max_length=20, null=True, blank=True)
+    corporation = models.CharField(max_length=30, null=True, blank=True)
+    register_capital = models.FloatField(null=True)
+    establish_date = models.DateTimeField(null=True)
+    place = models.CharField(max_length=100, null=True, blank=True)
+    time_start = models.DateTimeField(null=True)
+    time_end = models.DateTimeField(null=True)
+    business_scope = models.TextField(null=True)
+    register_gov = models.CharField(max_length=50, null=True, blank=True)
+    check_date = models.DateTimeField(null=True)
+    register_status = models.CharField(max_length=20, null=True, blank=True)
+    register_num = models.CharField(max_length=20, null=True, blank=True)
 
     class Meta:
         db_table = "basic"
@@ -44,6 +44,9 @@ class IndustrycommerceAdministrativePenalty(models.Model):
     enter_id = models.CharField(max_length=30)
     bas_id = models.IntegerField()
 
+    class Meta:
+        db_table = "industrycommerce_administrative_penalty"
+
 
 class IndustryCommerceBranch(models.Model):
     """工商-分支机构
@@ -54,6 +57,9 @@ class IndustryCommerceBranch(models.Model):
     register_gov = models.CharField(max_length=50)
     enter_id = models.CharField(max_length=20)
     bas_id = models.IntegerField()
+
+    class Meta:
+        db_table = "industry_commerce_branch"
 
 
 class IndustryCommerceChange(models.Model):
@@ -66,6 +72,9 @@ class IndustryCommerceChange(models.Model):
     modify_date = models.DateTimeField()
     enter_id = models.CharField(max_length=20)
     bas_id = models.IntegerField()
+
+    class Meta:
+        db_table = "industry_commerce_change"
 
 
 class IndustryCommerceCheck(models.Model):
@@ -80,6 +89,9 @@ class IndustryCommerceCheck(models.Model):
     enter_id = models.CharField(max_length=20)
     bas_id = models.IntegerField()
 
+    class Meta:
+        db_table = "industry_commerce_check"
+
 
 class IndustryCommerceClear(models.Model):
     """工商-清算
@@ -89,6 +101,9 @@ class IndustryCommerceClear(models.Model):
     persons = models.CharField(max_length=100)
     enter_id = models.CharField(max_length=20)
     bas_id = models.IntegerField()
+
+    class Meta:
+        db_table = "industry_commerce_clear"
 
 
 class IndustryCommerceDetailGuarantee(models.Model):
@@ -100,6 +115,9 @@ class IndustryCommerceDetailGuarantee(models.Model):
     register_gov = models.CharField(max_length=50)
     register_id = models.CharField(max_length=20)
     ind_id = models.IntegerField()
+
+    class Meta:
+        db_table = "industry_commerce_detail_guarantee"
 
 
 class IndustryCommerceException(models.Model):
@@ -116,6 +134,9 @@ class IndustryCommerceException(models.Model):
     enter_id = models.CharField(max_length=20)
     bas_id = models.IntegerField()
 
+    class Meta:
+        db_table = "industry_commerce_exception"
+
 
 class IndustryCommerceIllegal(models.Model):
     """工商-严重违法
@@ -129,6 +150,9 @@ class IndustryCommerceIllegal(models.Model):
     enter_id = models.CharField(max_length=20)
     bas_id = models.IntegerField()
 
+    class Meta:
+        db_table = "industry_commerce_illegal"
+
 
 class IndustryCommerceMainperson(models.Model):
     """工商-主要人员
@@ -138,6 +162,9 @@ class IndustryCommerceMainperson(models.Model):
     position = models.CharField(max_length=20)
     enter_id = models.CharField(max_length=20)
     bas_id = models.IntegerField()
+
+    class Meta:
+        db_table = "industry_commerce_mainperson"
 
 
 class IndustryCommerceMortgage(models.Model):

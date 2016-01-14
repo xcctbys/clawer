@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import json
-from profiles.mappings import mappings
 import profiles.settings as settings
+from clawer_parse.models import Basic
+from profiles.mappings import mappings
 
 
 class Parse(object):
@@ -35,18 +36,21 @@ class Parse(object):
                     self.handle_dict(company[key], mappings[key])
                 else:
                     pass
-
             elif type(company[key] == list):
                 if key in keys and key in mappings:
                     self.handle_list()
                 else:
                     pass
-
             else:
                 pass
 
         # write to mysql
         print self.company_result
+        basic = Basic(enter_name="普林科技")
+        fields = basic._meta.get_all_field_names()
+
+        basic.save()
+        print fields
 
     def handle_dict(self, dict_in_company, mapping):
         for key in dict_in_company:
