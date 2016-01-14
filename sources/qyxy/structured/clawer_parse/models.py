@@ -27,19 +27,19 @@ class IndustrycommerceAdministrativePenalty(models.Model):
     """工商-行政处罚
     """
 
-    penalty_decision_num = models.IntField()
+    penalty_decision_num = models.IntegerField()
     illegal_type = models.CharField(max_length=30)
     penalty_content = models.CharField(max_length=50)
     penalty_decision_gov = models.CharField(max_length=50)
-    penalty_decision_date = models.DataTimeField()
+    penalty_decision_date = models.DateTimeField()
     detail = models.CharField(max_length=30)
-    penalty_register_date = models.DataTimeField()
+    penalty_register_date = models.DateTimeField()
     enter_name = models.CharField(max_length=50)
     creidit_code = models.CharField(max_length=20)
     corporation = models.CharField(max_length=30)
-    penalty_publicity_time = models.DataTimeField()
+    penalty_publicity_time = models.DateTimeField()
     enter_id = models.CharField(max_length=30)
-    bas_id = models.IntField()
+    bas_id = models.IntegerField()
 
 
 class IndustryCommerceBranch(models.Model):
@@ -50,7 +50,7 @@ class IndustryCommerceBranch(models.Model):
     branch_name = models.CharField(max_length=30)
     register_gov = models.CharField(max_length=50)
     enter_id = models.CharField(max_length=20)
-    bas_id = models.IntField()
+    bas_id = models.IntegerField()
 
 
 class IndustryCommerceChange(models.Model):
@@ -60,9 +60,9 @@ class IndustryCommerceChange(models.Model):
     modify_item = models.CharField(max_length=30)
     modify_before = models.CharField(max_length=50)
     modify_after = models.CharField(max_length=50)
-    modify_date = models.DataTimeField()
+    modify_date = models.DateTimeField()
     enter_id = models.CharField(max_length=20)
-    bas_id = models.IntField()
+    bas_id = models.IntegerField()
 
 
 class IndustryCommerceCheck(models.Model):
@@ -71,11 +71,11 @@ class IndustryCommerceCheck(models.Model):
 
     check_gov = models.CharField(max_length=50)
     check_type = models.CharField(max_length=20)
-    check_date = models.DataTimeField()
+    check_date = models.DateTimeField()
     check_result = models.CharField(max_length=50)
     check_comment = models.CharField(max_length=50)
     enter_id = models.CharField(max_length=20)
-    bas_id = models.IntField()
+    bas_id = models.IntegerField()
 
 
 class IndustryCommerceClear(models.Model):
@@ -85,7 +85,7 @@ class IndustryCommerceClear(models.Model):
     person_in_charge = models.CharField(max_length=30)
     persons = models.CharField(max_length=100)
     enter_id = models.CharField(max_length=20)
-    bas_id = models.IntField()
+    bas_id = models.IntegerField()
 
 
 class IndustryCommerceDetailGuarantee(models.Model):
@@ -93,10 +93,10 @@ class IndustryCommerceDetailGuarantee(models.Model):
     """
 
     register_code = models.CharField(max_length=20)
-    sharechange_register_date = models.DataTimeField()
+    sharechange_register_date = models.DateTimeField()
     register_gov = models.CharField(max_length=50)
     register_id = models.CharField(max_length=20)
-    ind_id = models.IntField()
+    ind_id = models.IntegerField()
 
 
 class IndustryCommerceException(models.Model):
@@ -104,14 +104,14 @@ class IndustryCommerceException(models.Model):
     """
 
     list_on_reason = models.CharField(max_length=100)
-    list_on_date = models.DataTimeField()
+    list_on_date = models.DateTimeField()
     list_out_reason = models.CharField(max_length=100)
-    list_out_date = models.DataTimeField()
+    list_out_date = models.DateTimeField()
     list_gov = models.CharField(max_length=50)
     list_on_gov = models.CharField(max_length=50)
     list_out_gov = models.CharField(max_length=50)
     enter_id = models.CharField(max_length=20)
-    bas_id = models.IntField()
+    bas_id = models.IntegerField()
 
 
 class IndustryCommerceIllegal(models.Model):
@@ -119,12 +119,12 @@ class IndustryCommerceIllegal(models.Model):
     """
 
     list_on_reason = models.CharField(max_length=100)
-    list_on_date = models.DataTimeField()
+    list_on_date = models.DateTimeField()
     list_out_reason = models.CharField(max_length=100)
-    list_out_date = models.DataTimeField(max_length=100)
+    list_out_date = models.DateTimeField(max_length=100)
     decision_gov = models.CharField(max_length=30)
     enter_id = models.CharField(max_length=20)
-    bas_id = models.IntField()
+    bas_id = models.IntegerField()
 
 
 class IndustryCommerceMainperson(models.Model):
@@ -134,7 +134,7 @@ class IndustryCommerceMainperson(models.Model):
     name = models.CharField(max_length=30)
     position = models.CharField(max_length=20)
     enter_id = models.CharField(max_length=20)
-    bas_id = models.IntField(max_length=100)
+    bas_id = models.IntegerField(max_length=100)
 
 
 class IndustryCommerceMortgage(models.Model):

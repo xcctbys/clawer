@@ -1,4 +1,5 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
+from clawer_parse.parse import Parse
 
 
 class Command(BaseCommand):
@@ -6,3 +7,5 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write('Successfully!')
+        worker = Parse('../../../profiles/test1.json')
+        worker.handle_companies()
