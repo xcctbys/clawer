@@ -34,10 +34,10 @@ class industry_commerce_administrative_penalty(models.Model):
     penalty_register_date = models.DataTimeField()
     enter_name = models.CharField(max_length=50)
     creidit_code = models.CharField(max_length=20)
-    corporation  = models.CharField(max_length=30)
-    penalty_publicity_time  = models.DataTimeField()
-    enter_id  = models.CharField(max_length=30)
-    bas_id  = models.IntField()
+    corporation = models.CharField(max_length=30)
+    penalty_publicity_time = models.DataTimeField()
+    enter_id = models.CharField(max_length=30)
+    bas_id = models.IntField()
 
 
 class industry_commerce_branch(models.Model):
@@ -51,7 +51,7 @@ class industry_commerce_branch(models.Model):
     bas_id = models.IntField()
 
 
-class  industry_commerce_change(models.Model):
+class industry_commerce_change(models.Model):
     """工商-变更
     """
 
@@ -63,7 +63,7 @@ class  industry_commerce_change(models.Model):
     bas_id = models.IntField()
 
 
-class  industry_commerce_check(models.Model):
+class industry_commerce_check(models.Model):
     """工商-抽查检查
     """
 
@@ -76,7 +76,7 @@ class  industry_commerce_check(models.Model):
     bas_id = models.IntField()
 
 
-class  industry_commerce_clear(models.Model):
+class industry_commerce_clear(models.Model):
     """工商-清算
     """
 
@@ -86,7 +86,7 @@ class  industry_commerce_clear(models.Model):
     bas_id = models.IntField()
 
 
-class  industry_commerce_detail_guarantee(models.Model):
+class industry_commerce_detail_guarantee(models.Model):
     """工商-动产抵押-详情-动产抵押
     """
 
@@ -97,7 +97,7 @@ class  industry_commerce_detail_guarantee(models.Model):
     ind_id = models.IntField()
 
 
-class  industry_commerce_exception(models.Model):
+class industry_commerce_exception(models.Model):
     """工商-经营异常
     """
 
@@ -112,7 +112,7 @@ class  industry_commerce_exception(models.Model):
     bas_id = models.IntField()
 
 
-class  industry_commerce_illegal(models.Model):
+class industry_commerce_illegal(models.Model):
     """工商-严重违法
     """
 
@@ -125,7 +125,7 @@ class  industry_commerce_illegal(models.Model):
     bas_id = models.IntField()
 
 
-class  industry_commerce_mainperson(models.Model):
+class industry_commerce_mainperson(models.Model):
     """工商-主要人员
     """
 
@@ -135,10 +135,10 @@ class  industry_commerce_mainperson(models.Model):
     bas_id = models.IntField(max_length=100)
 
 
-class industry_commerce_mortgage(models.Model):
+class IndustryCommerceMortgage(models.Model):
     """工商-动产抵押登记
     """
-    
+
     register_num = models.CharField(max_length=20)
     sharechange_register_date = models.DateTimeField()
     register_gov = models.CharField(max_length=50)
@@ -150,7 +150,7 @@ class industry_commerce_mortgage(models.Model):
     bas_id = models.IntegerField()
 
 
-class industry_commerce_mortgage_detail_change(models.Model):
+class IndustryCommerceMortgageDetailChange(models.Model):
     """工商-抵押-详情-变更
     """
 
@@ -160,7 +160,7 @@ class industry_commerce_mortgage_detail_change(models.Model):
     ind_id = models.IntegerField()
 
 
-class industry_commerce_mortgage_detail_guarantee(models.Model):
+class IndustryCommerceMortgageDetailGuarantee(models.Model):
     """工商-抵押-详情-抵押权人
     """
 
@@ -173,7 +173,7 @@ class industry_commerce_mortgage_detail_guarantee(models.Model):
     ind_id = models.IntegerField()
 
 
-class industry_commerce_mortgage_guaranty(models.Model):
+class IndustryCommerceMortgageGuaranty(models.Model):
     """工商-抵押-详情-抵押物
     """
 
@@ -185,7 +185,7 @@ class industry_commerce_mortgage_guaranty(models.Model):
     ind_id = models.IntegerField()
 
 
-class industry_commerce_revoke(models.Model):
+class IndustryCommerceRevoke(models.Model):
     """工商-撤销
     """
 
@@ -196,7 +196,8 @@ class industry_commerce_revoke(models.Model):
     enter_id = models.CharField(max_length=20)
     bas_id = models.IntegerField()
 
-class industry_commerce_shareholders(models.Model):
+
+class IndustryCommerceShareholders(models.Model):
     """工商-股东
     """
 
@@ -216,7 +217,7 @@ class industry_commerce_shareholders(models.Model):
     bas_id = models.IntegerField()
 
 
-class industry_commerce_sharepledge(models.Model):
+class IndustryCommerceSharepledge(models.Model):
     """
     """
 
@@ -236,7 +237,7 @@ class industry_commerce_sharepledge(models.Model):
     bas_id = models.IntegerField()
 
 
-class industry_mortgage_detail_mortgagee(models.Model):
+class IndustryMortgageDetailMortgagee(models.Model):
     """工商-抵押-详情-抵押权人
     """
 
