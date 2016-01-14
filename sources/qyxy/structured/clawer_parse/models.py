@@ -22,108 +22,123 @@ class Basic(models.Model):
 
 
 class industry_commerce_administrative_penalty(models.Model):
+    """工商-行政处罚
+    """
 
-    penalty_decision_num
-    illegal_type
-    penalty_content
-    penalty_decision_gov
-    penalty_decision_date
-    detail
-    penalty_register_date
-    enter_name
-    creidit_code
-    corporation
-    penalty_publicity_time
-    enter_id
-    bas_id
+    penalty_decision_num = models.IntField()
+    illegal_type = models.CharField(max_length=30)
+    penalty_content = models.CharField(max_length=50)
+    penalty_decision_gov = models.CharField(max_length=50)
+    penalty_decision_date = models.DataTimeField()
+    detail = models.CharField(max_length=30)
+    penalty_register_date = models.DataTimeField()
+    enter_name = models.CharField(max_length=50)
+    creidit_code = models.CharField(max_length=20)
+    corporation  = models.CharField(max_length=30)
+    penalty_publicity_time  = models.DataTimeField()
+    enter_id  = models.CharField(max_length=30)
+    bas_id  = models.IntField()
 
 
 class industry_commerce_branch(models.Model):
+    """工商-分支机构
+    """
 
-    enter_code
-    branch_name
-    register_gov
-    enter_id
-    bas_id
+    enter_code = models.CharField(max_length=20)
+    branch_name = models.CharField(max_length=30)
+    register_gov = models.CharField(max_length=50)
+    enter_id = models.CharField(max_length=20)
+    bas_id = models.IntField()
 
 
 class  industry_commerce_change(models.Model):
+    """工商-变更
+    """
 
-
-    modify_item
-    modify_before
-    modify_after
-    modify_date
-    enter_id
-    bas_id
+    modify_item = models.CharField(max_length=30)
+    modify_before = models.CharField(max_length=50)
+    modify_after = models.CharField(max_length=50)
+    modify_date = models.DataTimeField()
+    enter_id = models.CharField(max_length=20)
+    bas_id = models.IntField()
 
 
 class  industry_commerce_check(models.Model):
+    """工商-抽查检查
+    """
 
-
-    check_gov
-    check_type
-    check_date
-    check_result
-    check_comment
-    enter_id
-    bas_id
+    check_gov = models.CharField(max_length=50)
+    check_type = models.CharField(max_length=20)
+    check_date = models.DataTimeField()
+    check_result = models.CharField(max_length=50)
+    check_comment = models.CharField(max_length=50)
+    enter_id = models.CharField(max_length=20)
+    bas_id = models.IntField()
 
 
 class  industry_commerce_clear(models.Model):
+    """工商-清算
+    """
 
-    person_in_charge
-    persons
-    enter_id
-    bas_id
+    person_in_charge = models.CharField(max_length=30)
+    persons = models.CharField(max_length=100)
+    enter_id = models.CharField(max_length=20)
+    bas_id = models.IntField()
 
 
 class  industry_commerce_detail_guarantee(models.Model):
+    """工商-动产抵押-详情-动产抵押
+    """
 
-    register_code
-    sharechange_register_date
-    register_gov
-    register_id
-    ind_id
+    register_code = models.CharField(max_length=20)
+    sharechange_register_date = models.DataTimeField()
+    register_gov = models.CharField(max_length=50)
+    register_id = models.CharField(max_length=20)
+    ind_id = models.IntField()
 
 
 class  industry_commerce_exception(models.Model):
+    """工商-经营异常
+    """
 
-    list_on_reason
-    list_on_date
-    list_out_reason
-    list_out_date
-    list_gov
-    list_on_gov
-    list_out_gov
-    enter_id
-    bas_id
+    list_on_reason = models.CharField(max_length=100)
+    list_on_date = models.DataTimeField()
+    list_out_reason = models.CharField(max_length=100)
+    list_out_date = models.DataTimeField()
+    list_gov = models.CharField(max_length=50)
+    list_on_gov = models.CharField(max_length=50)
+    list_out_gov = models.CharField(max_length=50)
+    enter_id = models.CharField(max_length=20)
+    bas_id = models.IntField()
 
 
 class  industry_commerce_illegal(models.Model):
+    """工商-严重违法
+    """
 
-
-    list_on_reason
-    list_on_date
-    list_out_reason
-    list_out_date
-    decision_gov
-    enter_id
-    bas_id
+    list_on_reason = models.CharField(max_length=100)
+    list_on_date = models.DataTimeField()
+    list_out_reason = models.CharField(max_length=100)
+    list_out_date = models.DataTimeField(max_length=100)
+    decision_gov = models.CharField(max_length=30)
+    enter_id = models.CharField(max_length=20)
+    bas_id = models.IntField()
 
 
 class  industry_commerce_mainperson(models.Model):
+    """工商-主要人员
+    """
 
-    name
-    position
-    enter_id
-    bas_id
+    name = models.CharField(max_length=30)
+    position = models.CharField(max_length=20)
+    enter_id = models.CharField(max_length=20)
+    bas_id = models.IntField(max_length=100)
 
 
 class industry_commerce_mortgage(models.Model):
     """工商-动产抵押登记
     """
-
+    
     register_num = models.CharField(max_length=20)
     sharechange_register_date = models.DateTimeField()
     register_gov = models.CharField(max_length=50)
