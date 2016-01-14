@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 
 import json
-from mysql import Mysql
+import profiles.mappings as mappings
+import profiles.settings as settings
 
 
 class Parse(object):
     """解析爬虫生成的json结构
     """
-    def __init__(self, clawer_file_path='', mappings_file_path='', settings={}):
+
+    mappings = mappings
+
+    def __init__(self, clawer_file_path=''):
         self.keys = settings.keys
-        self.mysql_confs = settings.mysql_confs
-        if (clawer_file_path == '' or mappings_file_path == ''):
+        if (clawer_file_path == ''):
             raise Exception('must have clawer_file_path and mappings_file_path')
 
         else:
             with open(clawer_file_path) as clawer_file:
                 self.companies = json.load(clawer_file)
-
-            with open(mappings_file_path) as mappings_file:
-                self.mappings = json.load(mappings_file)
 
     def handle_companies(self):
         for enter_id in self.companies:
@@ -47,8 +47,6 @@ class Parse(object):
                 pass
 
         print self.company_result
-        mycli = Mysql()
-        mycli.update_table(self.company_result)
 
     def handle_dict(self, dict_in_company, mappings):
         for key in dict_in_company:
