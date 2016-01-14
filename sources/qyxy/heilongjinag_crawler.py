@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#encoding=utf-8
+# encoding=utf-8
 import os
 import requests
 import time
@@ -7,11 +7,6 @@ import re
 import random
 import threading
 import unittest
-ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
-if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
-    import settings_pro as settings
-else:
-    import settings
 from bs4 import BeautifulSoup
 from crawler import Crawler
 from crawler import Parser
@@ -19,6 +14,11 @@ from crawler import CrawlerUtils
 import types
 import urlparse
 import json
+ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
+if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
+    import settings_pro as settings
+else:
+    import settings
 
 
 class HeilongjiangClawer(Crawler):
@@ -32,8 +32,6 @@ class HeilongjiangClawer(Crawler):
 
     # 多线程爬取时往最后的json文件中写时的加锁保护
     write_file_mutex = threading.Lock()
-
-
 
     urls = {'host': 'www.hljaic.gov.cn',
             'get_checkcode': 'http://gsxt.hljaic.gov.cn/validateCode.jspx?type=0',
@@ -80,7 +78,7 @@ class HeilongjiangClawer(Crawler):
 
     def run(self, ent_number=0):
         self.ent_number = str(ent_number)
-        #对每个企业都指定一个html的存储目录
+        # 对每个企业都指定一个html的存储目录
         self.html_restore_path = self.html_restore_path + self.ent_number + '/'
         if settings.save_html and not os.path.exists(self.html_restore_path):
             CrawlerUtils.make_dir(self.html_restore_path)
@@ -101,7 +99,7 @@ class HeilongjiangClawer(Crawler):
         self.crawl_other_dept_pub_pages()
         self.crawl_judical_assist_pub_pages()
 
-        #采用多线程，在写入文件时需要注意加锁
+        # 采用多线程，在写入文件时需要注意加锁
         self.write_file_mutex.acquire()
         CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.json_dict})
         self.write_file_mutex.release()
@@ -237,8 +235,8 @@ class HeilongjiangParser(Parser):
         soup = BeautifulSoup(page, "html5lib")
         # 一类表
         name_table_map = {
-            u'基本信息': 'ind_comm_pub_reg_basic', # 登记信息-基本信息
-            u'清算信息': 'ind_comm_pub_arch_liquidation', # 备案信息-清算信息
+            u'基本信息': 'ind_comm_pub_reg_basic',  # 登记信息-基本信息
+            u'清算信息': 'ind_comm_pub_arch_liquidation',  # 备案信息-清算信息
         }
 
         for table in soup.find_all('table'):
@@ -437,7 +435,7 @@ class HeilongjiangParser(Parser):
                             table_c = []
                             for table_tr in table_trs[2:-1]:
                                 tds = table_tr.find_all("td")
-                                table_td = [td.text for td in tds]
+                                table_td = [td.text.strip() for td in tds]
 
                                 table_save = {}
                                 wrap = {}
@@ -772,8 +770,8 @@ if __name__ == '__main__':
     run.config_logging()
     HeilongjiangClawer.code_cracker = CaptchaRecognition('heilongjiang')
     crawler = HeilongjiangClawer('./enterprise_crawler/heilongjiang.json')
-    # enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/heilongjiang.txt')
-    enterprise_list = ['231000100085734']
+    enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/heilongjiang.txt')
+    # enterprise_list = ['230199100039345']
 
     for ent_number in enterprise_list:
         ent_number = ent_number.rstrip('\n')

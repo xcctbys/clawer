@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-#encoding=utf-8
+# !/usr/bin/env python
+# encoding=utf-8
 import os
 import requests
 import time
@@ -8,6 +8,10 @@ import random
 import threading
 import unittest
 from datetime import datetime, timedelta
+from bs4 import BeautifulSoup
+from crawler import Crawler
+from crawler import Parser
+from crawler import CrawlerUtils
 
 ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
 if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
@@ -15,22 +19,17 @@ if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
 else:
     import settings
 
-from bs4 import BeautifulSoup
-from crawler import Crawler
-from crawler import Parser
-from crawler import CrawlerUtils
-
 
 class HunanCrawler(Crawler):
     """湖南工商爬虫
     """
-    #html数据的存储路径
+    # html数据的存储路径
     html_restore_path = settings.html_restore_path + '/hunan/'
 
-    #验证码图片的存储路径
+    # 验证码图片的存储路径
     ckcode_image_path = settings.json_restore_path + '/hunan/ckcode.jpg'
 
-    #多线程爬取时往最后的json文件中写时的加锁保护
+    # 多线程爬取时往最后的json文件中写时的加锁保护
     write_file_mutex = threading.Lock()
 
     urls = {'host': 'http://www.hnaic.net.cn/visit/category/a/hnaicalllist',
@@ -38,8 +37,9 @@ class HunanCrawler(Crawler):
             'get_checkcode': 'http://gsxt.hnaic.gov.cn/notice/captcha?preset=',
             'post_checkcode': 'http://gsxt.hnaic.gov.cn/notice/search/popup_captcha',
 
-            'get_info_entry': 'http://gsxt.hnaic.gov.cn/notice/search/ent_info_list', #获得企业入口
-            'open_info_entry': 'http://gsxt.hnaic.gov.cn/notice/notice/view?', #获得企业信息页面的url，通过指定不同的tab=1-4来选择不同的内容（工商公示，企业公示...）
+            'get_info_entry': 'http://gsxt.hnaic.gov.cn/notice/search/ent_info_list',  # 获得企业入口
+            'open_info_entry': 'http://gsxt.hnaic.gov.cn/notice/notice/view?',
+            # 获得企业信息页面的url，通过指定不同的tab=1-4来选择不同的内容（工商公示，企业公示...）
             'open_detail_info_entry': ''
             }
 
@@ -53,58 +53,6 @@ class HunanCrawler(Crawler):
         """爬取的主函数
         """
         Crawler.run(self, ent_number)
-        '''
-        self.ent_number = str(ent_number)
-        self.html_restore_path = HunanCrawler.html_restore_path + self.ent_number + '/'
-
-        if settings.save_html and os.path.exists(self.html_restore_path):
-            CrawlerUtils.make_dir(self.html_restore_path)
-
-        self.json_dict = {}
-
-        self.reqst = requests.Session()
-        self.reqst.headers.update({
-                'Accept': 'text/html, application/xhtml+xml, */*',
-                'Accept-Encoding': 'gzip, deflate',
-                'Accept-Language': 'en-US, en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:39.0) Gecko/20100101 Firefox/39.0'})
-
-        if not self.crawl_check_page():
-            settings.logger.error('crack check code failed, stop to crawl enterprise %s' % self.ent_number)
-            return
-
-        cur_time = datetime.now()
-        if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
-            settings.logger.info('crawl time over, exit!')
-            exit(1)
-
-        self.crawl_ind_comm_pub_pages()
-
-        cur_time = datetime.now()
-        if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
-            settings.logger.info('crawl time over, exit!')
-            exit(1)
-
-        self.crawl_ent_pub_pages()
-
-        cur_time = datetime.now()
-        if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
-            settings.logger.info('crawl time over, exit!')
-            exit(1)
-        self.crawl_other_dept_pub_pages()
-
-        cur_time = datetime.now()
-        if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
-            settings.logger.info('crawl time over, exit!')
-            exit(1)
-        self.crawl_judical_assist_pub_pages()
-
-        #采用多线程，在写入文件时需要注意加锁
-        self.write_file_mutex.acquire()
-        CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.json_dict})
-        self.write_file_mutex.release()
-        return True
-        '''
 
     def crawl_check_page(self):
         """爬取验证码页面，包括获取验证码url，下载验证码图片，破解验证码并提交
@@ -122,7 +70,7 @@ class HunanCrawler(Crawler):
         while count < 10:
             count += 1
             ckcode = self.crack_checkcode()
-            post_data = {'captcha': ckcode[1], 'session.token': self.session_token};
+            post_data = {'captcha': ckcode[1], 'session.token': self.session_token}
             next_url = self.urls['post_checkcode']
             resp = self.reqst.post(next_url, data=post_data, verify=False)
             if resp.status_code != 200:
@@ -143,7 +91,7 @@ class HunanCrawler(Crawler):
              }
             resp = self.reqst.post(next_url, data=post_data, verify=False)
             if resp.status_code != 200:
-                settings.logger.error('faild to crawl url %s'%next_url)
+                settings.logger.error('faild to crawl url %s' % next_url)
                 return False
 
             if self.parse_post_check_page(resp.content):
@@ -158,7 +106,7 @@ class HunanCrawler(Crawler):
         在 Parser的ind_comm_pub_page 中，访问并设置 crawler中的 json_dict。
         """
         next_url = self.urls['open_info_entry'] + 'uuid=' + self.uuid + '&tab=01'
-        settings.logger.info('crawl ind comm pub pages, url:\n%s'%next_url)
+        settings.logger.info('crawl ind comm pub pages, url:\n%s' % next_url)
         resp = self.reqst.get(next_url, verify=False)
         if resp.status_code != 200:
             settings.logger.warn('get ind comm pub info failed!')
@@ -169,7 +117,7 @@ class HunanCrawler(Crawler):
         """爬取企业公示信息页面
         """
         next_url = self.urls['open_info_entry'] + 'uuid=' + self.uuid + '&tab=02'
-        settings.logger.info('crawl ent pub pages, url:\n%s'%next_url)
+        settings.logger.info('crawl ent pub pages, url:\n%s' % next_url)
         resp = self.reqst.get(next_url, verify=False)
         if resp.status_code != 200:
             settings.logger.warn('get ent pub info failed!')
@@ -180,7 +128,7 @@ class HunanCrawler(Crawler):
         """爬取其他部门公示信息页面
         """
         next_url = self.urls['open_info_entry'] + 'uuid=' + self.uuid + '&tab=03'
-        settings.logger.info('crawl other dept pub pages, url:\n%s'%next_url)
+        settings.logger.info('crawl other dept pub pages, url:\n%s' % next_url)
         resp = self.reqst.get(next_url, verify=False)
         if resp.status_code != 200:
             settings.logger.warn('get other dept pub info failed!')
@@ -192,7 +140,7 @@ class HunanCrawler(Crawler):
         """
         next_url = self.urls['open_info_entry'] + 'uuid=' + self.uuid + '&tab=06'
         settings.logger.info('crawl judical assist pub pages, url:\n%s' % next_url)
-        resp = self.reqst.get(next_url,verify=False)
+        resp = self.reqst.get(next_url, verify=False)
         if resp.status_code != 200:
             settings.logger.warn('get judical assist info failed!')
             return False
@@ -329,7 +277,6 @@ class HunanParser(Parser):
         else:
             self.crawler.json_dict['ind_comm_pub_arch_key_persons'] = []
 
-
     def parse_ent_pub_pages(self, page):
         """解析企业公示信息页面
         """
@@ -383,11 +330,11 @@ class HunanParser(Parser):
         if soup.body:
             if soup.body.table:
                 try:
-                    #一个页面中只含有一个表格
+                    # 一个页面中只含有一个表格
                     if len(soup.body.find_all('table')) == 1:
                         page_data = self.parse_table(soup.body.table, type, page)
 
-                    #页面中含有多个表格
+                    # 页面中含有多个表格
                     else:
                         table = soup.body.find('table')
                         while table:
@@ -419,21 +366,21 @@ class HunanParser(Parser):
             item = {}
             for td in tr.find_all('td', recursive=False):
                 if td.find('a'):
-                    #try to retrieve detail link from page
+                    # try to retrieve detail link from page
                     next_url = self.get_detail_link(td.find('a'), page)
-                    #has detail link
+                    # has detail link
                     if next_url:
                         detail_page = self.crawler.crawl_page_by_url(next_url)
                         if table_name == 'ent_pub_ent_annual_report':
                             page_data = self.parse_ent_pub_annual_report_page(detail_page)
                             item[u'报送年度'] = CrawlerUtils.get_raw_text_in_bstag(td)
-                            item[u'详情'] = page_data #this may be a detail page data
+                            item[u'详情'] = page_data  # this may be a detail page data
                         elif table_name == 'ind_comm_pub_reg_shareholder':
                             page_data = self.parse_ind_comm_pub_shareholder_detail_page(detail_page)
                             item[u'详情'] = page_data
                         else:
                             page_data = self.parse_page(detail_page, table_name + '_detail')
-                            item[columns[col_count][0]] = page_data #this may be a detail page data
+                            item[columns[col_count][0]] = page_data  # this may be a detail page data
                     else:
                         item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
                 else:
@@ -582,9 +529,9 @@ if __name__ == '__main__':
     HunanCrawler.code_cracker = CaptchaRecognition('hunan')
 
     crawler = HunanCrawler('./enterprise_crawler/hunan.json')
-    # enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/hunan.txt')
-    enterprise_list = ['430000000011972']
+    enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/hunan.txt')
+    # enterprise_list = ['430000000011972']
     for ent_number in enterprise_list:
         ent_number = ent_number.rstrip('\n')
-        settings.logger.info('###################   Start to crawl enterprise with id %s   ###################\n' % ent_number)
+        settings.logger.info('###############   Start to crawl enterprise with id %s   ################\n' % ent_number)
         crawler.run(ent_number=ent_number)
