@@ -33,6 +33,7 @@ from tianjin_crawler import TianjinCrawler
 from hunan_crawler import HunanCrawler
 from fujian_crawler import FujianCrawler
 from sichuan_crawler import SichuanCrawler
+from shandong_crawler import ShandongCrawler
 
 failed_ent = {}
 province_crawler = {
@@ -48,6 +49,7 @@ province_crawler = {
     'hunan' : HunanCrawler,
     'fujian' : FujianCrawler,
     'sichuan': SichuanCrawler,
+    'shandong' : ShandongCrawler,
 }
 
 max_crawl_time = 0
@@ -174,12 +176,12 @@ def crawl_province(province, cur_date):
 
     #删除json文件，只保留  .gz 文件
     os.remove(json_restore_path)
-    
+
 
 def force_exit():
     settings.logger.error("run timeout")
     os._exit(1)
-    
+
 
 if __name__ == '__main__':
     config_logging()
@@ -205,7 +207,7 @@ if __name__ == '__main__':
     except ValueError as e:
         settings.logger.error('invalid max_crawl_time, should be a integer')
         exit(1)
-        
+
     timer = threading.Timer(max_crawl_time, force_exit)
     timer.start()
 
@@ -226,4 +228,4 @@ if __name__ == '__main__':
                 process = multiprocessing.Process(target=crawl_province, args=(p, cur_date))
                 process.start()
                 process.join(max_crawl_time/6)
-                
+
