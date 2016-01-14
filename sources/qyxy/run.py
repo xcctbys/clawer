@@ -218,7 +218,7 @@ if __name__ == '__main__':
         for p in province_crawler.keys():
             process = multiprocessing.Process(target=crawl_province, args=(p, cur_date))
             process.start()
-            process.join(max_crawl_time/6)
+            process.join(max_crawl_time)
     else:
         provinces = sys.argv[2:]
         for p in provinces:
@@ -227,5 +227,5 @@ if __name__ == '__main__':
             else:
                 process = multiprocessing.Process(target=crawl_province, args=(p, cur_date))
                 process.start()
-                process.join(max_crawl_time/6)
+                process.join(max_crawl_time)
 
