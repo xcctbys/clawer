@@ -41,16 +41,10 @@ class ShandongCrawler(object):
     write_file_mutex = threading.Lock()
 
     def __init__(self, json_restore_path):
-        self.html_search = None
-        self.html_showInfo = None
-        self.Captcha = None
-        #self.path_captcha = './Captcha.png'
-
         self.CR = CR.CaptchaRecognition("shandong")
         self.requests = requests.Session()
         self.requests.headers.update(headers)
         self.ents = []
-        self.json_dict={}
         self.json_restore_path = json_restore_path
         self.csrf = ""
         #验证码图片的存储路径
@@ -67,7 +61,7 @@ class ShandongCrawler(object):
             return
         r.encoding = "utf-8"
         #settings.logger.debug("searchpage html :\n  %s", r.text)
-        self.html_search = r.text
+        return r.text
 
     #分析 展示页面， 获得搜索到的企业列表
     def analyze_showInfo(self, page):
@@ -79,8 +73,9 @@ class ShandongCrawler(object):
         self.ents = Ent
 
     # 破解验证码页面
-    def crawl_page_captcha(self, url_Captcha, url_CheckCode,url_showInfo,  textfield= '370000018067809'):
+    def crawl_page_captcha(self, url_search, url_Captcha, url_CheckCode,url_showInfo,  textfield= '370000018067809'):
 
+        html_search = self.crawl_page_search(url_search)
         count = 0
         while True:
             count+= 1
@@ -88,16 +83,14 @@ class ShandongCrawler(object):
             if r.status_code != 200:
                 settings.logger.error(u"Something wrong when getting the Captcha url:%s , status_code=%d", url_Captcha, r.status_code)
                 return
-            self.Captcha = r.content
             #settings.logger.debug("Captcha page html :\n  %s", self.Captcha)
-            if self.save_captcha():
+            if self.save_captcha(r.content):
                 settings.logger.info("Captcha is saved successfully \n" )
                 result = self.crack_captcha()
-                print result
                 secode = hashlib.md5(str(result)).hexdigest() # MD5 encode
-                if not self.html_search:
-                    settings.logger.error(u"There is no front page")
-                soup = BeautifulSoup(self.html_search, 'html5lib')
+                if not html_search:
+                    settings.logger.error(u"There is no search page")
+                soup = BeautifulSoup(html_search, 'html5lib')
                 csrf = soup.find('input', {'name':'_csrf'})['value']
                 self.csrf = csrf
                 datas= {
@@ -105,7 +98,6 @@ class ShandongCrawler(object):
                         '_csrf': csrf,
                         'secode': secode,
                 }
-                #response = self.get_check_response(url_CheckCode, datas)
                 page=  self.crawl_page_by_url_post(url_CheckCode, datas)['page']
                 # 如果验证码正确，就返回一种页面，否则返回主页面
 
@@ -131,15 +123,15 @@ class ShandongCrawler(object):
         return result[1]
         #print result
     # 保存验证码图片
-    def save_captcha(self):
+    def save_captcha(self, Captcha):
         url_Captcha = self.path_captcha
-        if self.Captcha is None:
+        if Captcha is None:
             settings.logger.error(u"Can not store Captcha: None\n")
             return False
         self.write_file_mutex.acquire()
         f = open(url_Captcha, 'w')
         try:
-            f.write(self.Captcha)
+            f.write(Captcha)
         except IOError:
             settings.logger.debug("%s can not be written", url_Captcha)
         finally:
@@ -160,7 +152,8 @@ class ShandongCrawler(object):
                 m = re.match('http', ent)
                 if m is None:
                     ent = urls['host']+ ent
-                settings.logger.debug(u"ent url:%s\n"% ent)
+                #settings.logger.debug(u"ent url:%s\n"% ent)
+                settings.logger.info(u"crawl main url:%s"% ent)
                 #ent_num = ent[ent.index('entId=')+6 :]
                 #工商公示信息
                 url = ent
@@ -170,14 +163,14 @@ class ShandongCrawler(object):
                 enttype =  temp[temp.rfind('/')+1 :]
 
                 sub_json_dict.update(self.crawl_ind_comm_pub_pages(url))
-                # url = urls['host'] + 'qygsdetail/'+ enttype+'/'+entpripid
-                # sub_json_dict.update(self.crawl_ent_pub_pages(url))
-                # #其他部门http://218.57.139.24/pub/qtgsdetail/
-                # url = urls['host']+'qtgsdetail/' + enttype+'/' + entpripid
-                # sub_json_dict.update(self.crawl_other_dept_pub_pages(url))
-                # # 司法协助公示信息 sfgsdetail
-                # url = urls['host']+ 'sfgsdetail/' + enttype +'/' + entpripid
-                # sub_json_dict.update(self.crawl_judical_assist_pub_pages(url))
+                url = urls['host'] + 'qygsdetail/'+ enttype+'/'+entpripid
+                sub_json_dict.update(self.crawl_ent_pub_pages(url))
+                #其他部门http://218.57.139.24/pub/qtgsdetail/
+                url = urls['host']+'qtgsdetail/' + enttype+'/' + entpripid
+                sub_json_dict.update(self.crawl_other_dept_pub_pages(url))
+                # 司法协助公示信息 sfgsdetail
+                url = urls['host']+ 'sfgsdetail/' + enttype +'/' + entpripid
+                sub_json_dict.update(self.crawl_judical_assist_pub_pages(url))
 
         except Exception as e:
             settings.logger.error(u"An error ocurred when getting the main page, error: %s"% type(e))
@@ -190,6 +183,7 @@ class ShandongCrawler(object):
         try:
             #url = "http://218.57.139.24/pub/gsgsdetail/1223/6e0948678bfeed4ac8115d5cafef819ad6951a24f0c0188cd6c047570329c9b6"
             #page = html_from_file('next.html')
+            settings.logger.info( u"crawl the crawl_ind_comm_pub_pages page %s."%(url))
             page = self.crawl_page_by_url(url)['page']
             entpripid = url[url.rfind('/')+1:]
             post_data = {'encrpripid' : entpripid}
@@ -202,23 +196,6 @@ class ShandongCrawler(object):
             sub_json_dict['ind_comm_pub_arch_key_persons'] = ba[u'主要人员信息'] if ba.has_key(u'主要人员信息') else []   # 备案信息-主要人员信息
             sub_json_dict['ind_comm_pub_arch_branch'] = ba[u'分支机构信息'] if ba.has_key(u'分支机构信息') else []       # 备案信息-分支机构信息
             sub_json_dict['ind_comm_pub_arch_liquidation'] = ba[u'清算信息'] if ba.has_key(u'清算信息') else []   # 备案信息-清算信息
-            # titles = ('ind_comm_pub_movable_property_reg',  # 动产抵押登记信息
-            #          'ind_comm_pub_equity_ownership_reg',  # 股权出置登记信息
-            #          'ind_comm_pub_administration_sanction',  # 行政处罚信息
-            #          'ind_comm_pub_business_exception',  # 经营异常信息
-            #          'ind_comm_pub_serious_violate_law',  # 严重违法信息
-            #          'ind_comm_pub_spot_check'        # 抽查检查信息
-            #          )
-            # tabs = (
-            #             'dongchandiya',#动产抵押登记信息
-            #             'guquanchuzhi'  ,# 股权出质登记信息
-            #             'xingzhengchufa' ,#行政处罚信息
-            #             'jingyingyichangminglu' , # 经营异常信息
-            #             'yanzhongweifaqiye' , # 严重违法信息
-            #             'chouchaxinxi' ,#抽查检查信息
-            #         )
-            # for title, tab in zip(titles, tabs):
-            #     sub_json_dict[title] = self.parse_page(page, tab, post_data)
             dcdy = self.parse_page(page, 'dongchandiya', post_data)
             sub_json_dict['ind_comm_pub_movable_property_reg'] = dcdy[u'动产抵押登记信息'] if dcdy.has_key(u'动产抵押登记信息') else []
             gqcz = self.parse_page(page, 'guquanchuzhi', post_data)
@@ -240,30 +217,11 @@ class ShandongCrawler(object):
     def crawl_ent_pub_pages(self, url):
         sub_json_dict = {}
         try:
+            settings.logger.info( u"crawl the crawl_ent_pub_pages page %s."%(url))
             page = self.crawl_page_by_url(url)['page']
             #html_to_file('next.html', page)
             entpripid = url[url.rfind('/')+1:]
             post_data = {'encrpripid' : entpripid}
-            #page = html_from_file('next.html')
-            # titles= (   'ent_pub_ent_annual_report',      #企业年报
-            #             'ent_pub_administration_license', #行政许可信息
-            #             'ent_pub_administration_sanction', #行政处罚信息
-            #             'ent_pub_shareholder_capital_contribution', #企业投资人出资比例
-            #             'ent_pub_equity_change', #股权变更信息
-            #             'ent_pub_knowledge_property', #知识产权出资登记
-            #             'ent_pub_reg_modify', # 变更信息
-            #         )
-            # items = (
-            #             'qiyenianbao', #企业年报
-            #             'xingzhengxuke', #行政许可信息
-            #             'xingzhengchufa', # 行政处罚信息
-            #             'touziren', #股东及出资信息, 变更信息
-            #             'gudongguquan', #股权变更信息
-            #             'zhishichanquan', #知识产权出质登记信息
-            #         )
-            # for title, item in zip(titles, items):
-            #     sub_json_dict[title] = self.parse_page_qygs(page, item, post_data)
-
             nb = self.parse_page_qygs(page, 'qiyenianbao', post_data)
             sub_json_dict['ent_pub_ent_annual_report'] = nb[u'企业年报'] if nb.has_key(u'企业年报') else []
             xk = self.parse_page_qygs(page, 'xingzhengxuke', post_data)
@@ -287,6 +245,7 @@ class ShandongCrawler(object):
     def crawl_other_dept_pub_pages(self, url):
         sub_json_dict = {}
         try:
+            settings.logger.info( u"crawl the crawl_other_dept_pub_pages page %s."%(url))
             page = self.crawl_page_by_url(url)['page']
             #html_to_file('next.html', page)
             # entpripid = url[url.rfind('/')+1:]
@@ -306,14 +265,13 @@ class ShandongCrawler(object):
         """
         sub_json_dict = {}
         try:
+            settings.logger.info( u"crawl the crawl_judical_assist_pub_pages page %s."%(url))
             page = self.crawl_page_by_url(url)['page']
-            settings.logger.info( u"crawl the new page %s."%(url))
             #html_to_file('next.html', page)
             xz = self.parse_page_sfxz(page, 'sifaxiezhu')
             sub_json_dict['judical_assist_pub_equity_freeze'] = xz[u'司法股权冻结信息'] if xz.has_key(u'司法股权冻结信息') else []
             gd = self.parse_page_sfxz(page, 'sifagudong')
             sub_json_dict['judical_assist_pub_shareholder_modify'] = gd[u'司法股东变更登记信息'] if gd.has_key(u'司法股东变更登记信息') else []
-
         except Exception as e:
             settings.logger.debug(u"An error ocurred in crawl_judical_assist_pub_pages: %s"% (type(e)))
             raise e
@@ -490,15 +448,15 @@ class ShandongCrawler(object):
                         gqxxliststr = m.group()
                         #print gqxxliststr
                         try:
-                            strs = re.compile(r"(\'.*?\')").search(gqxxliststr).group()
-                            strs =strs.encode('utf8')
                             # 不知道啥情况，strs自动添加了连个引号
-                            strs = strs[1:-1]
-                            gqxxlist = json.JSONDecoder().decode(strs)
+                            strs = re.compile(r"(\'.*?\')").search(gqxxliststr).group().strip("'")
+                            if strs:
+                                gqxxlist = json.JSONDecoder().decode(strs)
                         except Exception as e:
                             raise e
                         sub_item = []
                         for i, item in enumerate(gqxxlist):
+
                             link = urls['webroot']+'pub/sfgsgqxxdetail/'+encrpripid+'/'+enttype+'/'+str(item['pid'])+'/'+ str(item['frozstate'])
                             settings.logger.info( u"crawl the link %s, table_name is %s"%(link, table_name))
                             link_page = self.crawl_page_by_url(link)['page']
@@ -620,80 +578,98 @@ class ShandongCrawler(object):
 
             if m:
                 wdxxliststr = m.group()
-                wdxxlist = eval(re.compile(r"(\'.*?\')").search(wdxxliststr).group()[1:-1])  # 将字符串转换成list
+                strs = re.compile(r"(\'.*?\')").search(wdxxliststr).group().strip("'")
+                wdxxlist = json.loads(strs) if strs else []  # 将字符串转换成list
                 sub_item = []
                 for item in wdxxlist:
                     datas = [ u'网站' if str(item['webtype'])== '1' else u'网店', item['websitname'], item['domain'] ]
                     sub_item.append(dict(zip(titles, datas)))
                 sub_dict[u"网站或网店信息"] = sub_item
+            else:
+                settings.logger.error(u"cann't find 网站或网店信息 str in html")
 
             #股东及出资信息
             titles = [u'股东（发起人）', u'认缴出资额（万元）', u'认缴出资时间', u'认缴出资方式', u'实缴出资额（万元）', u'出资时间', u'出资方式']
-            m = re.compile(r"czxxliststr\s*=(\'.*?\')").search(page)
+            m = re.compile(r"czxxliststr\s*=\s*(\'.*?\')").search(page)
             if m:
                 czxxliststr = m.group()
-                czxxlist = eval(re.compile(r"(\'.*?\')").search(czxxliststr).group()[1:-1])  # 将字符串转换成list
+                strs = re.compile(r"(\'.*?\')").search(czxxliststr).group().strip("'")
                 sub_item = []
+                czxxlist = json.loads(strs) if strs else []  # 将字符串转换成list
                 for item in czxxlist:
                     date_sub = item['subcondate']
                     date_acc = item['accondate']
-                    datas = [ item['inv'], str(item['lisubconam'])+"万"+ self.currency(item['subconcurrency']), str(date_sub['year']+1900)+'年'+ str(date_sub['month']%12+1)+'月'+ str(date_sub['date'])+'日', item['subconform'].split('|')[1], \
-                                 str(item['liacconam'])+"万" +self.currency(item['acconcurrency']),str(date_acc['year']+1900)+'年'+ str(date_acc['month']%12+1)+'月'+ str(date_acc['date'])+'日', item['acconform'].split('|')[1] ]
+                    datas = [ item['inv'], str(item['lisubconam'])+"万"+ self.currency(item['subconcurrency']), self.SetJsonTime(date_sub), item['subconform'].split('|')[1], \
+                                 str(item['liacconam'])+"万" +self.currency(item['acconcurrency']), self.SetJsonTime(date_acc), item['acconform'].split('|')[1] ]
                     sub_item.append(dict(zip(titles, datas)))
                 sub_dict[u"股东及出资信息"] = sub_item
+            else:
+                settings.logger.error(u"cann't find 股东及出资信息 str in html")
             #对外投资信息
             titles = [u'投资设立企业或购买股权企业名称', u'注册号']
-            m = re.compile(r"dwtzliststr\s*=(\'.*?\');").search(page)
+            m = re.compile(r"dwtzliststr\s*=\s*(\'.*?\');").search(page)
             if m:
                 dwtzliststr = m.group()
-                dwtzlist = eval(re.compile(r"(\'.*?\')").search(dwtzliststr).group()[1:-1])  # 将字符串转换成list
                 sub_item = []
+                strs = re.compile(r"(\'.*?\')").search(dwtzliststr).group().strip("'")
+                dwtzlist = json.loads(strs) if strs else []  # 将字符串转换成list
                 for item in dwtzlist:
                     datas = [ item['entname'], item['regno']]
                     sub_item.append(dict(zip(titles, datas)))
                 sub_dict[u"对外投资信息"] = sub_item
+            else:
+                settings.logger.error(u"cann't find 对外投资信息 str in html")
 
             #对外提供保证担保信息
             titles = [u'债权人', u'债务人' ,u'主债权种类', u'主债权数额', u'履行债务的期限', u'保证的期间', u'保证的方式', u'保证担保的范围']
-            m = re.compile(r"nbdwdbstr\s*=(\'.*?\');").search(page)
+            m = re.compile(r"nbdwdbstr\s*=\s*(\'.*?\');").search(page)
             if m:
                 nbdwdbstr = m.group()
                 m1 = re.compile(r"(\'.*?\')").search(nbdwdbstr)
+                sub_item = []
                 if m1:
-                    dwdblist = eval(m1.group()[1:-1])  # 将字符串转换成list
-                    sub_item = []
-                    for item in dwdblist:
-                        datas = [ item['more'], item['mortgagor'],'合同' if int(item['priclaseckind'])==1 else '其他', item['priclasecam']+"万元", self.SetJsonTime(item['pefperfrom']) +" - "+ self.SetJsonTime(item['pefperto']),\
-                                 "期限" if int(item['guaranperiod'])==1 else "未约定", "一般保证" if int(item['gatype'])==1 else "连带保证" if int(item['gatype'])==2 else "未约定", self.getRange(item['rage'])]
-                        sub_item.append(dict(zip(titles, datas)))
-                    sub_dict[u"对外提供保证担保信息"] = sub_item
+                    if m1.group().strip("'"):
+                        dwdblist = json.loads(m1.group().strip("'"))  # 将字符串转换成list
+                        for item in dwdblist:
+                            datas = [ item['more'], item['mortgagor'],'合同' if int(item['priclaseckind'])==1 else '其他', item['priclasecam']+"万元", self.SetJsonTime(item['pefperfrom']) +" - "+ self.SetJsonTime(item['pefperto']),\
+                                     "期限" if int(item['guaranperiod'])==1 else "未约定", "一般保证" if int(item['gatype'])==1 else "连带保证" if int(item['gatype'])==2 else "未约定", self.getRange(item['rage'])]
+                            sub_item.append(dict(zip(titles, datas)))
+                sub_dict[u"对外提供保证担保信息"] = sub_item
+            else:
+                settings.logger.error(u"cann't find 对外提供保证担保信息 str in html")
 
             #股权变更信息
             titles = [u'股东（发起人）', u'变更前股权比例' ,u'变更后股权比例', u'股权变更日期']
-            m = re.compile(r"nbgqbgsstr\s*=(\'.*?\');").search(page)
+            m = re.compile(r"nbgqbgsstr\s*=\s*(\'.*?\');").search(page)
             if m:
                 nbgqbgsstr = m.group()
                 m1 = re.compile(r"(\'.*?\')").search(nbgqbgsstr)
+                sub_item = []
                 if m1:
-                    gqbglist = eval(m1.group()[1:-1])  # 将字符串转换成list
-                    sub_item = []
-                    for item in gqbglist:
-                        datas = [ item['inv'], item['transamprpre'], item['transampraf'] ,self.SetJsonTime(item['altdate'])]
-                        sub_item.append(dict(zip(titles, datas)))
-                    sub_dict[u"股权变更信息"] = sub_item
+                    if m1.group().strip("'"):
+                        gqbglist = json.loads(m1.group().strip("'"))  # 将字符串转换成list
+                        for item in gqbglist:
+                            datas = [ item['inv'], item['transamprpre'], item['transampraf'] ,self.SetJsonTime(item['altdate'])]
+                            sub_item.append(dict(zip(titles, datas)))
+                sub_dict[u"股权变更信息"] = sub_item
+            else:
+                settings.logger.error(u"cann't find 股权变更信息 str in html")
             #修改记录
             titles = [u'序号', u'修改事项' ,u'修改前', u'修改后', u'修改日期']
-            m = re.compile(r"nbalthisstr\s*=(\'.*?\');").search(page)
+            m = re.compile(r"nbalthisstr\s*=\s*(\'.*?\');").search(page)
             if m:
                 nbalthisstr = m.group()
                 m1 = re.compile(r"(\'.*?\')").search(nbalthisstr)
+                sub_item = []
                 if m1:
-                    althistlist = eval(m1.group()[1:-1])  # 将字符串转换成list
-                    sub_item = []
-                    for item in althistlist:
-                        datas = [i+1,  item['altfield'], item['altbefore'], item['altafter'], self.SetJsonTime(item['altdate']) ]
-                        sub_item.append(dict(zip(titles, datas)))
-                    sub_dict[u"修改记录"] = sub_item
+                    if m1.group().strip("'"):
+                        althistlist = json.loads(m1.group().strip("'"))  # 将字符串转换成list
+                        for item in althistlist:
+                            datas = [i+1,  item['altfield'], item['altbefore'], item['altafter'], self.SetJsonTime(item['altdate']) ]
+                            sub_item.append(dict(zip(titles, datas)))
+                sub_dict[u"修改记录"] = sub_item
+            else:
+                settings.logger.error(u"cann't find 修改记录 str in html")
 
 
             content_table = soup.find_all('table')[1:]
@@ -779,30 +755,30 @@ class ShandongCrawler(object):
                 item[u'股东'] = czxx['inv']
                 item[u'认缴额（万元）'] = czxx['lisubconam']
                 item[u'实缴额（万元）'] = czxx['liacconam']
-                if len(rjxxs) >0 :
+                if len(rjxxs) >0 and rjxxs[0]:
                     sub_item[u'认缴出资方式'] =  rjxxs[0]['conform']
                     sub_item[u'认缴出资额（万元）'] =rjxxs[0]['subconam']
                     date_dict = rjxxs[0]['condate']
                     #print type(date_dict['date'])   全是int型
-                    sub_item[u'认缴出资日期'] =str(date_dict['year']+1900)+'年'+ str(date_dict['month']%12+1)+'月'+ str(date_dict['date'])+'日'
+                    sub_item[u'认缴出资日期'] =self.SetJsonTime(date_dict)
                 else:
                     sub_item[u'认缴出资方式'] =""
                     sub_item[u'认缴出资额（万元）'] =""
                     sub_item[u'认缴出资日期'] = ""
                 item[u'认缴明细'] = sub_item
 
-                if len(sjxxs) > 0 :
+                if len(sjxxs) > 0 and sjxxs[0]:
                     sub_item = {}
                     sub_item[u'实缴出资方式'] =sjxxs[0]['conform']
                     sub_item[u'实缴出资额（万元）'] =sjxxs[0]['acconam']
                     date_dict = sjxxs[0]['condate']
-                    sub_item[u'实缴出资日期'] = str(date_dict['year']+1900)+'年'+ str(date_dict['month']%12+1)+'月'+ str(date_dict['date'])+'日'
+                    sub_item[u'实缴出资日期'] = self.SetJsonTime(date_dict)
                 else:
                     sub_item[u'实缴出资方式'] =""
                     sub_item[u'实缴出资额（万元'] =""
                     sub_item[u'实缴出资日期'] = ""
                 item[u'实缴明细'] = sub_item
-                sub_json_dict.append(item.copy())
+                sub_json_list.append(item.copy())
         except Exception as e:
             settings.logger.error(u"parse qygs table 股东及出资信息 failed with exception:%s" % (type(e)))
         finally:
@@ -815,16 +791,16 @@ class ShandongCrawler(object):
             columns = self.get_columns_of_record_table(bs_table, page, table_name)
             titles = [column[0] for column in columns]
             url = self.dicts_qygs[table_name]
-            #print post_data
             res = self.crawl_page_by_url_post(url, post_data, {'X-CSRF-TOKEN': self.csrf})['page']
             #print type(res)
             ls = json.loads(res)
-            for i, l in enumerate(ls):
-                date_from = l['altdate']
-                #settings.logger.info( u"crawl the link %s, table_name is %s"%(link, table_name))
-                # 这里注意type
-                datas = [i+1, l['altitem'], str(date_from['year']+1900)+'年'+ str(date_from['month']%12+1)+'月'+ str(date_from['date'])+'日', l['altbe'], l['altaf'] ]
-                sub_json_list.append(dict(zip(titles, datas)))
+            for rows in ls:
+                for i, l in enumerate(rows['bgxx']):
+                    date_from = l['altdate']
+                    #settings.logger.info( u"crawl the link %s, table_name is %s"%(link, table_name))
+                    # 这里注意type
+                    datas = [i+1, l['altitem'], self.SetJsonTime(date_from), l['altbe'], l['altaf'] ]
+                    sub_json_list.append(dict(zip(titles, datas)))
         except Exception as e:
             settings.logger.error(u"parse qygs table 股东及出资- 变更信息 failed with exception:%s" % (type(e)))
         finally:
@@ -848,8 +824,7 @@ class ShandongCrawler(object):
                 settings.logger.info( u"crawl the link %s, table_name is %s"%(link, table_name))
                 link_data = self.parse_page_qygs(link_page)
                 # 这里注意type
-                datas = [i+1, l['tmregno'], l['tmname'], l['kinds'], l['pledgor'], l['imporg'],  str(date_from['year']+1900)+'年'+ str(date_from['month']%12+1)+'月'+ str(date_from['date'])+'日' +" - " + \
-                            str(date_to['year']+1900)+'年'+ str(date_to['month']%12+1)+'月'+ str(date_to['date'])+'日', '有效' if int(l['type'])==1 else '无效', link_data]
+                datas = [i+1, l['tmregno'], l['tmname'], l['kinds'], l['pledgor'], l['imporg'],  self.SetJsonTime(date_from) +" - " + self.SetJsonTime(date_to) , '有效' if int(l['type'])==1 else '无效', link_data]
                 sub_json_list.append(dict(zip(titles, datas)))
         except Exception as e:
             settings.logger.error(u"parse qygs table 知识产权出质登记信息 failed with exception:%s" % (type(e)))
@@ -871,7 +846,7 @@ class ShandongCrawler(object):
                 date_from = l['altdate']
                 #settings.logger.info( u"crawl the link %s, table_name is %s"%(link, table_name))
                 # 这里注意type
-                datas = [i+1, l['inv'], l['transamprpre'], l['transampraft'] , str(date_from['year']+1900)+'年'+ str(date_from['month']%12+1)+'月'+ str(date_from['date'])+'日']
+                datas = [i+1, l['inv'], l['transamprpre'], l['transampraft'] , self.SetJsonTime(date_from)]
                 sub_json_list.append(dict(zip(titles, datas)))
         except Exception as e:
             settings.logger.error(u"parse qygs table 股权变更信息 failed with exception:%s" % (type(e)))
@@ -893,7 +868,7 @@ class ShandongCrawler(object):
                 date_from = l['pendecissdate']
                 #settings.logger.info( u"crawl the link %s, table_name is %s"%(link, table_name))
                 # 这里注意type
-                datas = [i+1, l['pendecno'], self.getCfType(l['pentype']),l['penauth'] , str(date_from['year']+1900)+'年'+ str(date_from['month']%12+1)+'月'+ str(date_from['date'])+'日', l['remark']]
+                datas = [i+1, l['pendecno'], self.getCfType(l['pentype']),l['penauth'] , self.SetJsonTime(date_from), l['remark']]
                 sub_json_list.append(dict(zip(titles, datas)))
         except Exception as e:
             settings.logger.error(u"parse qygs table 行政处罚信息 failed with exception:%s" % (type(e)))
@@ -915,11 +890,12 @@ class ShandongCrawler(object):
                 date_from = l['valfrom']
                 date_to   = l['valto']
                 link = urls['webroot']+"pub/jsxzxkdetail/"+post_data['encrpripid']+"/"+l['pid']+"/"+l['type']
-                link_page = self.crawl_page_by_url(link)['page']
-                settings.logger.info( u"crawl the link %s, table_name is %s"%(link, table_name))
-                link_data = self.parse_page_qygs(link_page)
+                #link_page = self.crawl_page_by_url(link)['page']
+                #settings.logger.info( u"crawl the link %s, table_name is %s"%(link, table_name))
+                #link_data = self.parse_page_qygs(link_page)
+                link_data = u"无"
                 # 这里注意type
-                datas = [i+1, l['licno'], l['licname'], str(date_from['year']+1900)+'年'+ str(date_from['month']%12+1)+'月'+ str(date_from['date'])+'日', str(date_to['year']+1900)+'年'+ str(date_to['month']%12+1)+'月'+ str(date_to['date'])+'日' ,\
+                datas = [i+1, l['licno'], l['licname'], self.SetJsonTime(date_from), self.SetJsonTime(date_to) ,\
                             l['licanth'], l['licitem'], '有效' if int(l['type'])==1 else '无效', link_data]
                 sub_json_list.append(dict(zip(titles, datas)))
         except Exception as e:
@@ -1001,7 +977,7 @@ class ShandongCrawler(object):
                 date_abn = l['abntime']
                 date_rem = l['remdate']
                 # 这里注意type
-                datas = [i+1, l['specause'], str(date_abn['year']+1900)+'年'+ str(date_abn['month']%12+1)+'月'+ str(date_abn['date'])+'日', l['remexcpres'], str(date_rem['year']+1900)+'年'+ str(date_rem['month']%12+1)+'月'+ str(date_rem['date'])+'日',l['decorg']]
+                datas = [i+1, l['specause'], self.SetJsonTime(date_abn), l['remexcpres'], self.SetJsonTime(date_rem), l['decorg']]
                 sub_json_list.append(dict(zip(titles, datas)))
         except Exception as e:
             settings.logger.error(u"parse table 经营异常信息 failed with exception:%s" % (type(e)))
@@ -1027,7 +1003,7 @@ class ShandongCrawler(object):
                 ########!!!!!!!!!!!!!!这里的link_page没有做
                 link_data = self.parse_page(link_page)
                 # 这里注意type
-                datas = [i+1, l['pendecno'], l['illegacttype'], self.getCfType(l['pentype'])+" 罚款金额:"+str(l['penam'])+"万元 没收金额:"+ str(l['forfam'])+"万元", l['penauth'], str(date_abn['year']+1900)+'年'+ str(date_abn['month']%12+1)+'月'+ str(date_abn['date'])+'日', l['insres']]
+                datas = [i+1, l['pendecno'], l['illegacttype'], self.getCfType(l['pentype'])+" 罚款金额:"+str(l['penam'])+"万元 没收金额:"+ str(l['forfam'])+"万元", l['penauth'],self.SetJsonTime(date_abn), l['insres']]
                 sub_json_list.append(dict(zip(titles, datas)))
         except Exception as e:
             settings.logger.error(u"parse table 行政处罚信息 failed with exception:%s" % (type(e)))
@@ -1070,7 +1046,7 @@ class ShandongCrawler(object):
                 #settings.logger.info( u"crawl the link %s, table_name is %s"%(link, table_name))
 
                 # 这里注意type
-                datas = [i+1, l['insauth'], l['instype'],str(date_abn['year']+1900)+'年'+ str(date_abn['month']%12+1)+'月'+ str(date_abn['date'])+'日', l['insres']]
+                datas = [i+1, l['insauth'], l['instype'],self.SetJsonTime(date_abn), l['insres']]
                 sub_json_list.append(dict(zip(titles, datas)))
         except Exception as e:
             settings.logger.error(u"parse table 抽样检查信息 failed with exception:%s" % (type(e)))
@@ -1092,7 +1068,7 @@ class ShandongCrawler(object):
                 date_rem = l['remdate']
                 #settings.logger.info( u"crawl the link %s, table_name is %s"%(link, table_name))
                 # 这里注意type
-                datas = [i+1, l['serillrea'],str(date_abn['year']+1900)+'年'+ str(date_abn['month']%12+1)+'月'+ str(date_abn['date'])+'日', l['remexcpres'], str(date_rem['year']+1900)+'年'+ str(date_rem['month']%12+1)+'月'+ str(date_rem['date'])+'日' ,l['decorg']]
+                datas = [i+1, l['serillrea'],self.SetJsonTime(date_abn), l['remexcpres'],self.SetJsonTime(date_rem), l['decorg']]
                 sub_json_list.append(dict(zip(titles, datas)))
         except Exception as e:
             settings.logger.error(u"parse table 严重违法信息 failed with exception:%s" % (type(e)))
@@ -1104,16 +1080,17 @@ class ShandongCrawler(object):
         try:
             columns = self.get_columns_of_record_table(bs_table, page, table_name)
             titles = [column[0] for column in columns]
-            m1  = re.compile(r"_gqczBgxxlist=eval\((\'.*?\')\)").search(page)
+            m1  = re.compile(r"_gqczBgxxlist\s*=\s*eval\((\'.*?\')\)").search(page)
             if m1:
                 pripidstr = m1.group()
                 # turn into list
-                bglist = eval(re.compile(r"(\'.*?\')").search(pripidstr).group()[1:-1])
-
-                for i, item in enumerate(bglist):
-                    altdate = item['altdate']
-                    datas= [i+1, str(altdate['year']+1900)+'年'+ str(altdate['month']%12+1)+'月'+ str(altdate['date'])+'日', item['alt']]
-                    sub_json_list.append(dict(zip(titles, datas)))
+                strs = re.compile(r"(\'.*?\')").search(pripidstr).group()
+                if strs.strip("'"):
+                    bglist = json.loads(strs.strip("'"))
+                    for i, item in enumerate(bglist):
+                        altdate = item['altdate']
+                        datas= [i+1,self.SetJsonTime(altdate), item['alt']]
+                        sub_json_list.append(dict(zip(titles, datas)))
         except Exception as e:
             settings.logger.error(u"parse table 股权出质--变更 failed with exception:%s" % (type(e)))
         finally:
@@ -1138,7 +1115,7 @@ class ShandongCrawler(object):
                 ########!!!!!!!!!!!!!!这里的link_page没有做
                 link_data = self.parse_page(link_page)
                 # 这里注意type
-                datas = [i+1, l['equityno'], l['pledgor'], l['blicno'], str(l['impam'])+l['pledamunit'], l['imporg'], l['impmorblicno'], str(date_dict['year']+1900)+'年'+ str(date_dict['month']%12+1)+'月'+ str(date_dict['date'])+'日' ,'有效' if int(l['type'])==1 else '无效', link_data]
+                datas = [i+1, l['equityno'], l['pledgor'], l['blicno'], str(l['impam'])+l['pledamunit'], l['imporg'], l['impmorblicno'],self.SetJsonTime(date_dict) ,'有效' if int(l['type'])==1 else '无效', link_data]
                 sub_json_list.append(dict(zip(titles, datas)))
         except Exception as e:
             settings.logger.error(u"parse table 股权出质 failed with exception:%s" % (type(e)))
@@ -1158,7 +1135,7 @@ class ShandongCrawler(object):
             for i, l in enumerate(ls):
                 date_dict = l['regidate']
                 # 详情处没有处理，还没有见到有数据的表格
-                datas = [i+1, l['morregcno'], str(date_dict['year']+1900)+'年'+ str(date_dict['month']%12+1)+'月'+ str(date_dict['date'])+'日' ,l['regorg'], str(l['priclasecam'])+"万元", '有效' if l['type']==1 else '无效', '详情']
+                datas = [i+1, l['morregcno'], self.SetJsonTime(date_dict) ,l['regorg'], str(l['priclasecam'])+"万元", '有效' if l['type']==1 else '无效', '详情']
                 sub_json_list.append(dict(zip(titles, datas)))
         except Exception as e:
             settings.logger.error(u"parse table 动产抵押登记信息 failed with exception:%s" % (type(e)))
@@ -1205,28 +1182,29 @@ class ShandongCrawler(object):
         try:
             columns = self.get_columns_of_record_table(bs_table, page, table_name)
             titles = [column[0] for column in columns]
-            #czxxlist
-            m = re.compile(r"czxxliststr =(\'.*?\')").search(page)
+            m = re.compile(r"czxxliststr\s*=\s*(\'.*?\');").search(page)
             if m:
                 czxxliststr = m.group()
-                czxxlist = eval(re.compile(r"(\'.*?\')").search(czxxliststr).group()[1:-1])  # 将字符串转换成list
-                #print type(czxxlist)
-                #var encrpripid = '6e0948678bfeed4ac8115d5cafef819ad6951a24f0c0188cd6c047570329c9b6';
-                m1  = re.compile(r"encrpripid = (\'.*?\')").search(page)
-                if m1:
-                    pripidstr = m1.group()
+                strs = re.compile(r"(\'.*?\')").search(czxxliststr).group()
+                if strs.strip("'"):
+                    czxxlist = json.loads(strs.strip("'"))  # 将字符串转换成list
+                    #print type(czxxlist)
+                    #var encrpripid = '6e0948678bfeed4ac8115d5cafef819ad6951a24f0c0188cd6c047570329c9b6';
+                    m1  = re.compile(r"encrpripid\s*=\s*(\'.*?\');").search(page)
+                    if m1:
+                        pripidstr = m1.group()
 
-                    encrpripid = re.compile(r"(\'.*?\')").search(pripidstr).group()[1:-1]
+                        encrpripid = re.compile(r"(\'.*?\')").search(pripidstr).group().strip("'")
 
-                    for item in czxxlist:
-                        if item['xzqh'] == "1":
-                            link = urls['webroot'] + 'pub/gsnzczxxdetail/'+ encrpripid+'/'+ item['recid']
-                            link_page = self.crawl_page_by_url(link)['page']
-                            link_data = self.parse_page(link_page, table_name+'_detail')
-                            datas = [ item['invtype'], item['inv'], item['blictype'], item['blicno'], link_data]
-                        else:
-                            datas = [ item['invtype'], item['inv'], item['blictype'], item['blicno'], '']
-                        sub_json_list.append(dict(zip(titles, datas)))
+                        for item in czxxlist:
+                            if item['xzqh'] == "1":
+                                link = urls['webroot'] + 'pub/gsnzczxxdetail/'+ encrpripid+'/'+ item['recid']
+                                link_page = self.crawl_page_by_url(link)['page']
+                                link_data = self.parse_page(link_page, table_name+'_detail')
+                                datas = [ item['invtype'], item['inv'], item['blictype'], item['blicno'], link_data]
+                            else:
+                                datas = [ item['invtype'], item['inv'], item['blictype'], item['blicno'], '']
+                            sub_json_list.append(dict(zip(titles, datas)))
         except Exception as e:
             settings.logger.error(u"parse table 股东信息表 failed with exception:%s" % (type(e)))
         finally:
@@ -1237,40 +1215,51 @@ class ShandongCrawler(object):
         try:
             #columns = self.get_columns_of_record_table(bs_table, page, table_name)
             #czxxlist
-            m = re.compile(r"czxxstr =(\'.*?\')").search(page)
+            m = re.compile(r"czxxstr\s*=\s*(\'.*?\');").search(page)
             if m:
                 czxxliststr = m.group()
-                czxxlist = eval(re.compile(r"(\'.*?\')").search(czxxliststr).group()[1:-1])  # 将字符串转换成list
-                m1  = re.compile(r"czxxrjstr =(\'.*?\')").search(page)      # 认缴
+                czxxliststr = re.compile(r"(\'.*?\')").search(czxxliststr).group()
+                czxxlist = json.loads(czxxliststr.strip("'")) if czxxliststr.strip("'") else [] # 将字符串转换成list
+                m1  = re.compile(r"czxxrjstr\s*=\s*(\'.*?\');").search(page)      # 认缴
                 if m1:
                     czxxrjstr = m1.group()
-                    czxxrjlist = eval(re.compile(r"(\'.*?\')").search(czxxrjstr).group()[1:-1])
-                    m2  = re.compile(r"czxxsjstr =(\'.*?\')").search(page)      # 实缴
+                    czxxrjstr = re.compile(r"(\'.*?\')").search(czxxrjstr).group().strip("'")
+                    czxxrjlist = json.loads(czxxrjstr) if czxxrjstr else []
+                    m2  = re.compile(r"czxxsjstr\s*=\s*(\'.*?\');").search(page)      # 实缴
                     if m2:
                         czxxsjstr = m2.group()
-                        czxxsjlist = eval(re.compile(r"(\'.*?\')").search(czxxsjstr).group()[1:-1])
-
+                        czxxsjstr = re.compile(r"(\'.*?\')").search(czxxsjstr).group().strip("'")
+                        czxxsjlist = json.loads(czxxsjstr) if czxxsjstr else []
                         ######################
                         item = {}
                         sub_item = {}
-                        item[u'股东（发起人）'] = czxxlist[0]['inv']
-                        item[u'认缴额（万元）'] = czxxlist[0]['lisubconam']
-                        item[u'实缴额（万元）'] = czxxlist[0]['liacconam']
-                        if len(czxxrjlist) >0 :
+                        if len(czxxlist) > 0 and czxxlist[0]:
+                            item[u'股东（发起人）'] = czxxlist[0]['inv']
+                            item[u'认缴额（万元）'] = czxxlist[0]['lisubconam']
+                            item[u'实缴额（万元）'] = czxxlist[0]['liacconam']
+                        if len(czxxrjlist) >0 and czxxrjlist[0]:
                             sub_item[u'认缴出资方式'] =  czxxrjlist[0]['conform']
                             sub_item[u'认缴出资额（万元）'] =czxxrjlist[0]['subconam']
                             date_dict = czxxrjlist[0]['condate']
                             #print type(date_dict['date'])   全是int型
-                            sub_item[u'认缴出资日期'] =str(date_dict['year']+1900)+'年'+ str(date_dict['month']%12+1)+'月'+ str(date_dict['date'])+'日'
-                            item[u'认缴明细'] = sub_item
-                        if len(czxxsjlist) > 0 :
-                            sub_item = {}
+                            sub_item[u'认缴出资日期'] =self.SetJsonTime(date_dict)
+                        else:
+                            sub_item[u'认缴出资方式'] =""
+                            sub_item[u'认缴出资额（万元）'] =""
+                            sub_item[u'认缴出资日期'] = ""
+                        item[u'认缴明细'] = sub_item
+                        sub_item = {}
+                        if len(czxxsjlist) > 0 and czxxsjlist[0]:
                             sub_item[u'实缴出资方式'] =czxxsjlist[0]['conform']
                             sub_item[u'实缴出资额（万元）'] =czxxsjlist[0]['acconam']
                             date_dict = czxxsjlist[0]['condate']
 
-                            sub_item[u'实缴出资日期'] = str(date_dict['year']+1900)+'年'+ str(date_dict['month']%12+1)+'月'+ str(date_dict['date'])+'日'
-                            item[u'实缴明细'] = sub_item
+                            sub_item[u'实缴出资日期'] = self.SetJsonTime(date_dict)
+                        else:
+                            sub_item[u'实缴出资方式'] =""
+                            sub_item[u'实缴出资额（万元'] =""
+                            sub_item[u'实缴出资日期'] = ""
+                        item[u'实缴明细'] = sub_item
                         sub_json_dict = (item.copy())
         except Exception as e:
             settings.logger.error(u"parse table 股东及出资信息 failed with exception:%s" % (type(e)))
@@ -1284,15 +1273,20 @@ class ShandongCrawler(object):
             columns = self.get_columns_of_record_table(bs_table, page, table_name)
             titles = [column[0] for column in columns]
 
-            m = re.compile(r"bgsxliststr =(\'.*?\')").search(page)
+            m = re.compile(r"bgsxliststr\s*=\s*(\'.*?\');").search(page)
             if m:
                 bgsxliststr = m.group()
-                bgsxlist = eval(re.compile(r"(\'.*?\')").search(bgsxliststr).group()[1:-1])  # 将字符串转换成list
-                #print type(bgsxlist)
-                for item in bgsxlist:
-                    date_dict = item['altdate']
-                    datas = [ item['altitem'], item['altbe'], item['altaf'], str(date_dict['year']+1900)+'年'+ str(date_dict['month']%12+1)+'月'+ str(date_dict['date'])+'日']
-                    sub_json_list.append(dict(zip(titles, datas)))
+                m1 = re.compile(r"(\'.*?\')").search(bgsxliststr)
+                if m1:
+                    strs = m1.group().strip("'")
+                    bgsxlist = json.loads(strs) if strs else []  # 将字符串转换成list
+                    # print type(bgsxlist)
+                    for item in bgsxlist:
+                        date_dict = item['altdate']
+                        datas = [ item['altitem'], item['altbe'], item['altaf'], self.SetJsonTime(date_dict) ]
+                        sub_json_list.append(dict(zip(titles, datas)))
+                else:
+                    settings.logger.error(u"can't find bgsxliststr in table 变更信息表" )
         except Exception as e:
             settings.logger.error(u"parse table 变更信息表 failed with exception:%s" % (type(e)))
         finally:
@@ -1404,42 +1398,49 @@ class ShandongCrawler(object):
 
 
     def crawl_page_by_url(self, url):
-        r = self.requests.get( url)
-        if r.status_code != 200:
-            settings.logger.error(u"Getting page by url:%s\n, return status %s\n"% (url, r.status_code))
-            return False
-        # 为了防止页面间接跳转，获取最终目标url
-        return {'page' : r.text, 'url': r.url}
+        try:
+            r = self.requests.get( url)
+            if r.status_code != 200:
+                settings.logger.error(u"Getting page by url:%s, return status %s\n"% (url, r.status_code))
+            text = r.text
+            urls = r.url
+            # 为了防止页面间接跳转，获取最终目标url
+        except Exception as e:
+            settings.logger.error(u"Cann't get page by url:%s, exception is %s"%(url, type(e)))
+        finally:
+            return {'page' : text, 'url': urls}
 
     def crawl_page_by_url_post(self, url, data, headers={}):
-        if headers:
-            self.requests.headers.update(headers)
-            r = self.requests.post(url, data)
-        else :
-            r = self.requests.post(url, data)
-        if r.status_code != 200:
-            settings.logger.error(u"Getting page by url with post:%s\n, return status %s\n"% (url, r.status_code))
-            return False
-        return {'page': r.text, 'url': r.url}
+        try:
+            if headers:
+                self.requests.headers.update(headers)
+                r = self.requests.post(url, data)
+            else :
+                r = self.requests.post(url, data)
+            if r.status_code != 200:
+                settings.logger.error(u"Getting page by url with post:%s, return status %s\n"% (url, r.status_code))
+            text = r.text
+            urls = r.url
+        except Exception as e:
+            settings.logger.error(u"Cann't post page by url:%s, exception is %s"%(url, type(e)))
+        finally:
+            return {'page': text, 'url': urls}
 
     def run(self, ent_num):
         if not os.path.exists(self.html_restore_path):
             os.makedirs(self.html_restore_path)
-        self.json_dict = {}
-        self.crawl_page_search(urls['page_search'])
-        self.crawl_page_captcha(urls['page_Captcha'], urls['checkcode'], urls['page_showinfo'], ent_num)
+        json_dict = {}
+        self.crawl_page_captcha(urls['page_search'], urls['page_Captcha'], urls['checkcode'], urls['page_showinfo'], ent_num)
         data = self.crawl_page_main()
-        self.json_dict[ent_num] = data
-        json_dump_to_file(self.json_restore_path , self.json_dict)
+        json_dict[ent_num] = data
+        json_dump_to_file(self.json_restore_path , json_dict)
 
     def work(self, ent_num= ""):
 
         if not os.path.exists(self.html_restore_path):
             os.makedirs(self.html_restore_path)
         # self.json_dict = {}
-
-        self.crawl_page_search(urls['page_search'])
-        self.crawl_page_captcha(urls['page_Captcha'], urls['checkcode'], urls['page_showinfo'], ent_num)
+        self.crawl_page_captcha(urls['page_search'], urls['page_Captcha'], urls['checkcode'], urls['page_showinfo'], ent_num)
         data = self.crawl_page_main()
         json_dump_to_file('shandong_json.json', data)
 
@@ -1493,8 +1494,8 @@ if __name__ == "__main__":
     if not os.path.exists("./enterprise_crawler"):
         os.makedirs("./enterprise_crawler")
     shandong = ShandongCrawler('./enterprise_crawler/shandong.json')
-    shandong.work('370000018067809')
-    #shandong.work('120000000000165')
+    #shandong.work('370000018067809')
+    shandong.work('371400400000937')
 
 """
 if __name__ == "__main__":
@@ -1511,4 +1512,5 @@ if __name__ == "__main__":
         settings.logger.info(u'###################   Start to crawl enterprise with id %s   ###################\n' % ent_str[2])
         shandong.run(ent_num = ent_str[2])
         settings.logger.info(u'###################   Enterprise with id  %s Finished!  ###################\n' % ent_str[2])
+
 
