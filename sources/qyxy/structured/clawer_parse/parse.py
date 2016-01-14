@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import json
-import profiles.mappings as mappings
+from profiles.mappings import mappings
 import profiles.settings as settings
 
 
@@ -27,7 +27,6 @@ class Parse(object):
             self.handle_company(company)
 
     def handle_company(self, company={}):
-        mappings = self.mappings
         keys = self.keys
         self.company_result = {}
         for key in company:
@@ -46,12 +45,13 @@ class Parse(object):
             else:
                 pass
 
+        # write to mysql
         print self.company_result
 
-    def handle_dict(self, dict_in_company, mappings):
+    def handle_dict(self, dict_in_company, mapping):
         for key in dict_in_company:
             if key != u"详情":
-                self.company_result[mappings[key]] = dict_in_company[key]
+                self.company_result[mapping[key]] = dict_in_company[key]
             else:
                 pass
 

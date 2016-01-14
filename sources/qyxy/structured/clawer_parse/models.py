@@ -22,6 +22,9 @@ class Basic(models.Model):
     register_status = models.CharField(max_length=20)
     register_num = models.CharField(max_length=20)
 
+    class Meta:
+        db_table = "basic"
+
 
 class IndustrycommerceAdministrativePenalty(models.Model):
     """工商-行政处罚
@@ -134,7 +137,7 @@ class IndustryCommerceMainperson(models.Model):
     name = models.CharField(max_length=30)
     position = models.CharField(max_length=20)
     enter_id = models.CharField(max_length=20)
-    bas_id = models.IntegerField(max_length=100)
+    bas_id = models.IntegerField()
 
 
 class IndustryCommerceMortgage(models.Model):
@@ -151,6 +154,9 @@ class IndustryCommerceMortgage(models.Model):
     enter_id = models.CharField(max_length=20)
     bas_id = models.IntegerField()
 
+    class Meta:
+        db_table = "industry_commerce_mortgage"
+
 
 class IndustryCommerceMortgageDetailChange(models.Model):
     """工商-抵押-详情-变更
@@ -160,6 +166,9 @@ class IndustryCommerceMortgageDetailChange(models.Model):
     modify_content = models.TextField()
     register_id = models.CharField(max_length=20)
     ind_id = models.IntegerField()
+
+    class Meta:
+        db_table = "industry_commerce_mortgage_detail_change"
 
 
 class IndustryCommerceMortgageDetailGuarantee(models.Model):
@@ -174,6 +183,9 @@ class IndustryCommerceMortgageDetailGuarantee(models.Model):
     register_id = models.CharField(max_length=20)
     ind_id = models.IntegerField()
 
+    class Meta:
+        db_table = "industry_commerce_cortgage_detail_guarantee"
+
 
 class IndustryCommerceMortgageGuaranty(models.Model):
     """工商-抵押-详情-抵押物
@@ -186,6 +198,9 @@ class IndustryCommerceMortgageGuaranty(models.Model):
     register_id = models.CharField(max_length=20)
     ind_id = models.IntegerField()
 
+    class Meta:
+        db_table = "industry_commerce_mortgage_guaranty"
+
 
 class IndustryCommerceRevoke(models.Model):
     """工商-撤销
@@ -197,6 +212,9 @@ class IndustryCommerceRevoke(models.Model):
     revoke_date = models.DateTimeField()
     enter_id = models.CharField(max_length=20)
     bas_id = models.IntegerField()
+
+    class Meta:
+        db_table = "industry_commerce_revoke"
 
 
 class IndustryCommerceShareholders(models.Model):
@@ -218,6 +236,9 @@ class IndustryCommerceShareholders(models.Model):
     enter_id = models.CharField(max_length=20)
     bas_id = models.IntegerField()
 
+    class Meta:
+        db_table = "industry_commerce_shareholders"
+
 
 class IndustryCommerceSharepledge(models.Model):
     """
@@ -238,6 +259,9 @@ class IndustryCommerceSharepledge(models.Model):
     register_id = models.CharField(max_length=20)
     bas_id = models.IntegerField()
 
+    class Meta:
+        db_table = "industry_commerce_sharepledge"
+
 
 class IndustryMortgageDetailMortgagee(models.Model):
     """工商-抵押-详情-抵押权人
@@ -248,3 +272,6 @@ class IndustryMortgageDetailMortgagee(models.Model):
     pledgor_certificate_code = models.CharField(max_length=20)
     register_id = models.CharField(max_length=20)
     ind_id = models.IntegerField()
+
+    class Meta:
+        db_table = "industry_mortgage_detail_mortgagee"
