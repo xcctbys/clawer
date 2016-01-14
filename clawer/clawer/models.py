@@ -602,7 +602,7 @@ class ClawerDayMonitor(models.Model):
     
     def as_json(self):
         data = {"id": self.id,
-            "day": self.hour.strftime("%Y-%m-%d"),
+            "day": self.day.strftime("%Y-%m-%d"),
             "bytes": self.bytes,
             "clawer": self.clawer.as_json(),
             "is_exception": self.is_exception,
