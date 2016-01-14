@@ -53,7 +53,11 @@ class IndustryCommerceBranch(models.Model):
     bas_id = models.IntField()
 
 
+<<<<<<< HEAD
+class industry_commerce_change(models.Model):
+=======
 class IndustryCommerceChange(models.Model):
+>>>>>>> 9e44ed1b4d850f5c28baf3504a9d00893c10816d
     """工商-变更
     """
 
@@ -65,7 +69,11 @@ class IndustryCommerceChange(models.Model):
     bas_id = models.IntField()
 
 
+<<<<<<< HEAD
+class industry_commerce_check(models.Model):
+=======
 class IndustryCommerceCheck(models.Model):
+>>>>>>> 9e44ed1b4d850f5c28baf3504a9d00893c10816d
     """工商-抽查检查
     """
 
@@ -78,7 +86,11 @@ class IndustryCommerceCheck(models.Model):
     bas_id = models.IntField()
 
 
+<<<<<<< HEAD
+class industry_commerce_clear(models.Model):
+=======
 class IndustryCommerceClear(models.Model):
+>>>>>>> 9e44ed1b4d850f5c28baf3504a9d00893c10816d
     """工商-清算
     """
 
@@ -88,7 +100,11 @@ class IndustryCommerceClear(models.Model):
     bas_id = models.IntField()
 
 
+<<<<<<< HEAD
+class industry_commerce_detail_guarantee(models.Model):
+=======
 class IndustryCommerceDetailGuarantee(models.Model):
+>>>>>>> 9e44ed1b4d850f5c28baf3504a9d00893c10816d
     """工商-动产抵押-详情-动产抵押
     """
 
@@ -99,7 +115,11 @@ class IndustryCommerceDetailGuarantee(models.Model):
     ind_id = models.IntField()
 
 
+<<<<<<< HEAD
+class industry_commerce_exception(models.Model):
+=======
 class IndustryCommerceException(models.Model):
+>>>>>>> 9e44ed1b4d850f5c28baf3504a9d00893c10816d
     """工商-经营异常
     """
 
@@ -114,7 +134,11 @@ class IndustryCommerceException(models.Model):
     bas_id = models.IntField()
 
 
+<<<<<<< HEAD
+class industry_commerce_illegal(models.Model):
+=======
 class IndustryCommerceIllegal(models.Model):
+>>>>>>> 9e44ed1b4d850f5c28baf3504a9d00893c10816d
     """工商-严重违法
     """
 
@@ -127,7 +151,11 @@ class IndustryCommerceIllegal(models.Model):
     bas_id = models.IntField()
 
 
+<<<<<<< HEAD
+class industry_commerce_mainperson(models.Model):
+=======
 class IndustryCommerceMainperson(models.Model):
+>>>>>>> 9e44ed1b4d850f5c28baf3504a9d00893c10816d
     """工商-主要人员
     """
 
