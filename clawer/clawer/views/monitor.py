@@ -10,4 +10,7 @@ def realtime_dashboard(request):
 
 def hour(request):
     return render_template("clawer/monitor/hour.html", request=request)
-    
+
+
+def day(request):
+    return render_template("clawer/monitor/day.html", request=request)
