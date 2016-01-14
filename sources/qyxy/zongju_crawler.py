@@ -7,38 +7,38 @@ import re
 import random
 import threading
 import unittest
+from bs4 import BeautifulSoup
+from crawler import Crawler
+from crawler import Parser
+from crawler import CrawlerUtils
 from datetime import datetime, timedelta
 
-ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
+ENT_CRAWLER_SETTINGS = os.getenv('ENT_CRAWLER_SETTINGS')
 if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
     import settings_pro as settings
 else:
     import settings
 
-from bs4 import BeautifulSoup
-from crawler import Crawler
-from crawler import Parser
-from crawler import CrawlerUtils
-
 
 class ZongjuCrawler(Crawler):
     """总局工商爬虫
     """
-    #html数据的存储路径
+    # html数据的存储路径
     html_restore_path = settings.html_restore_path + '/zongju/'
 
-    #验证码图片的存储路径
+    # 验证码图片的存储路径
     ckcode_image_path = settings.json_restore_path + '/zongju/ckcode.jpg'
 
-    #多线程爬取时往最后的json文件中写时的加锁保护
+    # 多线程爬取时往最后的json文件中写时的加锁保护
     write_file_mutex = threading.Lock()
 
     urls = {'host': 'http://qyxy.baic.gov.cn',
             'official_site': 'http://gsxt.saic.gov.cn/zjgs/',
             'get_checkcode': 'http://gsxt.saic.gov.cn/zjgs/captcha?preset=',
             'post_checkcode': 'http://gsxt.saic.gov.cn/zjgs/security/verify_captcha',
-            'get_info_entry': 'http://gsxt.saic.gov.cn/zjgs/search/ent_info_list', #获得企业入口
-            'open_info_entry': 'http://gsxt.saic.gov.cn/zjgs/notice/view?', #获得企业信息页面的url，通过指定不同的tab=1-4来选择不同的内容（工商公示，企业公示...）
+            'get_info_entry': 'http://gsxt.saic.gov.cn/zjgs/search/ent_info_list',  # 获得企业入口
+            'open_info_entry': 'http://gsxt.saic.gov.cn/zjgs/notice/view?',
+            # 获得企业信息页面的url，通过指定不同的tab=1-4来选择不同的内容（工商公示，企业公示...）
             'open_detail_info_entry': ''
             }
 
@@ -132,7 +132,7 @@ class ZongjuCrawler(Crawler):
                 settings.logger.warn('failed to get crackcode image by url %s, fail count = %d' % (next_url, count))
                 continue
 
-            settings.logger.info('crack code = %s, %s, response =  %s' %(ckcode[0], ckcode[1], resp.content))
+            settings.logger.info('crack code = %s, %s, response =  %s' % (ckcode[0], ckcode[1], resp.content))
             if resp.content == '0':
                 settings.logger.error('crack checkcode failed!')
                 continue
@@ -146,7 +146,7 @@ class ZongjuCrawler(Crawler):
              }
             resp = self.reqst.post(next_url, data=post_data, verify=False)
             if resp.status_code != 200:
-                settings.logger.error('faild to crawl url %s'%next_url)
+                settings.logger.error('faild to crawl url %s' % next_url)
                 return False
 
             if self.parse_post_check_page(resp.content):
@@ -161,7 +161,7 @@ class ZongjuCrawler(Crawler):
         在 Parser的ind_comm_pub_page 中，访问并设置 crawler中的 json_dict。
         """
         next_url = self.urls['open_info_entry'] + 'uuid=' + self.uuid + '&tab=01'
-        settings.logger.info('crawl ind comm pub pages, url:\n%s'%next_url)
+        settings.logger.info('crawl ind comm pub pages, url:\n%s' % next_url)
         resp = self.reqst.get(next_url, verify=False)
         if resp.status_code != 200:
             settings.logger.warn('get ind comm pub info failed!')
@@ -172,7 +172,7 @@ class ZongjuCrawler(Crawler):
         """爬取企业公示信息页面
         """
         next_url = self.urls['open_info_entry'] + 'uuid=' + self.uuid + '&tab=02'
-        settings.logger.info('crawl ent pub pages, url:\n%s'%next_url)
+        settings.logger.info('crawl ent pub pages, url:\n%s' % next_url)
         resp = self.reqst.get(next_url, verify=False)
         if resp.status_code != 200:
             settings.logger.warn('get ent pub info failed!')
@@ -183,7 +183,7 @@ class ZongjuCrawler(Crawler):
         """爬取其他部门公示信息页面
         """
         next_url = self.urls['open_info_entry'] + 'uuid=' + self.uuid + '&tab=03'
-        settings.logger.info('crawl other dept pub pages, url:\n%s'%next_url)
+        settings.logger.info('crawl other dept pub pages, url:\n%s' % next_url)
         resp = self.reqst.get(next_url, verify=False)
         if resp.status_code != 200:
             settings.logger.warn('get other dept pub info failed!')
@@ -195,7 +195,7 @@ class ZongjuCrawler(Crawler):
         """
         next_url = self.urls['open_info_entry'] + 'uuid=' + self.uuid + '&tab=06'
         settings.logger.info('crawl judical assist pub pages, url:\n%s' % next_url)
-        resp = self.reqst.get(next_url,verify=False)
+        resp = self.reqst.get(next_url, verify=False)
         if resp.status_code != 200:
             settings.logger.warn('get judical assist info failed!')
             return False
@@ -306,7 +306,7 @@ class ZongjuParser(Parser):
             table_title = self.get_table_title(table)
             table_name = name_table_map.get(table_title, None)
             if table_name:
-                self.crawler.json_dict[table_name] = self.parse_table(table, table_name, page)
+                self.crawler.json_dict[table_name] = self.parse_table1(table)
 
         # 备案信息-主要人员信息
         table = soup.find("table", {"id": "memberTable"})
@@ -386,11 +386,11 @@ class ZongjuParser(Parser):
         if soup.body:
             if soup.body.table:
                 try:
-                    #一个页面中只含有一个表格
+                    # 一个页面中只含有一个表格
                     if len(soup.body.find_all('table')) == 1:
                         page_data = self.parse_table(soup.body.table, type, page)
 
-                    #页面中含有多个表格
+                    # 页面中含有多个表格
                     else:
                         table = soup.body.find('table')
                         while table:
@@ -422,23 +422,23 @@ class ZongjuParser(Parser):
             item = {}
             for td in tr.find_all('td', recursive=False):
                 if td.find('a'):
-                    #try to retrieve detail link from page
+                    # try to retrieve detail link from page
                     next_url = self.get_detail_link(td.find('a'), page)
-                    #has detail link
+                    # has detail link
                     if next_url:
                         detail_page = self.crawler.crawl_page_by_url(next_url)
                         if table_name == 'ent_pub_ent_annual_report':
                             page_data = self.parse_ent_pub_annual_report_page(detail_page)
                             item[u'报送年度'] = CrawlerUtils.get_raw_text_in_bstag(td)
-                            item[u'详情'] = page_data #this may be a detail page data
+                            item[u'详情'] = page_data  # this may be a detail page data
                         elif table_name == 'ind_comm_pub_reg_shareholder':
                             page_data = self.parse_ind_comm_pub_shareholder_detail_page(detail_page)
                             item[u'详情'] = page_data
                         else:
                             page_data = self.parse_page(detail_page, table_name + '_detail')
-                            item[columns[col_count][0]] = page_data #this may be a detail page data
+                            item[columns[col_count][0]] = page_data  # this may be a detail page data
                     else:
-                        #item[columns[col_count]] = CrawlerUtils.get_raw_text_in_bstag(td)
+                        # item[columns[col_count]] = CrawlerUtils.get_raw_text_in_bstag(td)
                         item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
                 else:
                     item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
@@ -500,6 +500,24 @@ class ZongjuParser(Parser):
             annual_report_dict[table_name] = self.parse_table(table, table_name, page)
 
         return annual_report_dict
+
+    def parse_table1(self, table):
+        table_ths = table.find_all("th")
+        table_th = []
+        for th in table_ths:
+            if 'colspan' in th.attrs:
+                continue
+            if th.text.strip() == "":
+                continue
+            table_th.append(th.text.strip())
+
+        table_tds = table.find_all("td")
+        table_td = [td.text.strip() for td in table_tds]
+
+        table_save = {}
+        for i in range(0, len(table_th)):
+            table_save[table_th[i]] = table_td[i]
+        return table_save
 
     def get_detail_link(self, bs4_tag, page):
         """获取详情链接 url，在bs tag中或者page中提取详情页面
@@ -566,5 +584,5 @@ if __name__ == '__main__':
     # enterprise_list = ['100000000018305']
     for ent_number in enterprise_list:
         ent_number = ent_number.rstrip('\n')
-        settings.logger.info('###################   Start to crawl enterprise with id %s   ###################\n' % ent_number)
+        settings.logger.info('###############   Start to crawl enterprise with id %s   ################\n' % ent_number)
         crawler.run(ent_number=ent_number)
