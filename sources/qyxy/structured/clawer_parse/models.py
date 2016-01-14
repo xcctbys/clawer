@@ -19,3 +19,18 @@ class Basic(models.Model):
     check_date = models.DateTimeField()
     register_status = models.CharField(max_length=20)
     register_num = models.CharField(max_length=20)
+
+
+class industry_commerce_mortgage(models.Model):
+    """工商-动产抵押登记
+    """
+
+    register_num = models.CharField(max_length=20)
+    sharechange_register_date = models.DateTimeField()
+    register_gov = models.CharField(max_length=50)
+    guarantee_debt_amount = models.FloatField()
+    status = models.CharField(max_length=20)
+    publicity_time = models.DateTimeField()
+    details = models.TextField()
+    enter_id = models.CharField(max_length=20)
+    bas_id = models.IntegerField()
