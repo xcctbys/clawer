@@ -642,13 +642,13 @@ class MonitorClawerDay(MonitorClawerHour):
         for hour in range(24):
             target_path = os.path.join(self.result_path, "%s/%s/%02d.json.gz" % (clawer.id, self.day.strftime("%Y/%m/%d"), hour))
             if os.path.exists(target_path) is False:
-                clawer_day_monitor.bytes = 0
                 print "not found target path is %s" % target_path
-            else:
-                file_stat = os.stat(target_path)
-                clawer_day_monitor.bytes = file_stat[stat.ST_SIZE]
-                print "target size is %s" % clawer_day_monitor.bytes
-            
+                continue
+        
+            file_stat = os.stat(target_path)
+            clawer_day_monitor.bytes = file_stat[stat.ST_SIZE]
+            print "target size is %s" % clawer_day_monitor.bytes
+        
         clawer_day_monitor.save()
         print "clawer day monitor id %d, bytes %d" % (clawer_day_monitor.id, clawer_day_monitor.bytes)
     
