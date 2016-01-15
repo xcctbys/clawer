@@ -34,6 +34,7 @@ from hunan_crawler import HunanCrawler
 from fujian_crawler import FujianCrawler
 from sichuan_crawler import SichuanCrawler
 from shandong_crawler import ShandongCrawler
+from hebei_crawler import HebeiCrawler
 
 failed_ent = {}
 province_crawler = {
@@ -50,6 +51,7 @@ province_crawler = {
     'fujian' : FujianCrawler,
     'sichuan': SichuanCrawler,
     'shandong' : ShandongCrawler,
+    'hebei' : HebeiCrawler,
 }
 
 max_crawl_time = 0
