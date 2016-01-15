@@ -81,6 +81,11 @@ class TestMonitorViews(TestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         
+    def test_day(self):
+        url = reverse("clawer.views.monitor.day")
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        
 
 class TestRealTimeMonitor(TestCase):
     def setUp(self):

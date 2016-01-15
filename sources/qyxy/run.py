@@ -34,6 +34,7 @@ from hunan_crawler import HunanCrawler
 from fujian_crawler import FujianCrawler
 from sichuan_crawler import SichuanCrawler
 from shandong_crawler import ShandongCrawler
+from hebei_crawler import HebeiCrawler
 
 failed_ent = {}
 province_crawler = {
@@ -50,6 +51,7 @@ province_crawler = {
     'fujian' : FujianCrawler,
     'sichuan': SichuanCrawler,
     'shandong' : ShandongCrawler,
+    'hebei' : HebeiCrawler,
 }
 
 max_crawl_time = 0
@@ -218,7 +220,7 @@ if __name__ == '__main__':
         for p in province_crawler.keys():
             process = multiprocessing.Process(target=crawl_province, args=(p, cur_date))
             process.start()
-            process.join(max_crawl_time/6)
+            process.join(max_crawl_time)
     else:
         provinces = sys.argv[2:]
         for p in provinces:
@@ -227,5 +229,5 @@ if __name__ == '__main__':
             else:
                 process = multiprocessing.Process(target=crawl_province, args=(p, cur_date))
                 process.start()
-                process.join(max_crawl_time/6)
+                process.join(max_crawl_time)
 
