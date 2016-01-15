@@ -1,24 +1,4 @@
 # -*- coding: utf-8 -*-
-from datetime import date
-
-fields = {}
-fields['basic_data'] = {
-    'credit_code': 1000,
-    'enter_name': u"普林科技",
-    'enter_type': "",
-    'corporation': "",
-    'register_capital': 100.0,
-    'establish_date': date(2016, 1, 13),
-    'place': "1+1",
-    'time_start': date(2016, 1, 13),
-    'time_end': date(2016, 1, 13),
-    'business_scope': "",
-    'register_gov': "",
-    'check_date': date(2016, 1, 13),
-    'register_status': "",
-    'register_num': "",
-    'id': 0,
-}
 
 # to handle one company's json keys
 keys = [
@@ -38,3 +18,21 @@ keys = [
 "ind_comm_pub_serious_violate_law",
 "ind_comm_pub_spot_check",
 """
+
+type_date = [
+    "check_date",
+    "subscription_date",
+    "paid_date",
+    "modify_date",
+    "sharechange_register_date",
+    "penalty_publicit_date",
+    "penalty_decision_date",
+    "list_on_date",
+    "list_out_date",
+    "sharechange_publicity_date",
+    "share_change_date",
+    "license_end_date",
+    "license_begien_date",
+    "mortgage_register_date",
+    "decision_date",
+]
