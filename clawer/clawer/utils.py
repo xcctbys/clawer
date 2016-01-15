@@ -559,7 +559,7 @@ class GenerateClawerTask(object):
         self.generate_log.save()
         
 
-class MonitorClawer(object):
+class MonitorClawerHour(object):
     
     def __init__(self):
         from clawer.models import Clawer
@@ -625,6 +625,35 @@ class MonitorClawer(object):
         send_mail(u'爬虫[%s]在%s，数据异常' % (current.hour.strftime("%Y-%m-%d %H时")), 
                       u'当前归并数据大小%d' % current.bytes, 'robot@princetechs.com', report_mails, 
                       fail_silently=False)
+        
+        
+class MonitorClawerDay(MonitorClawerHour):
+    
+    def __init__(self):
+        super(MonitorClawerDay, self).__init__()
+        self.day = (datetime.datetime.now() - datetime.timedelta(1)).date()
+        
+    def _do_check(self, clawer):
+        from clawer.models import ClawerDayMonitor
+        #remove old
+        ClawerDayMonitor.objects.filter(clawer=clawer, day=self.day).delete()
+        
+        clawer_day_monitor = ClawerDayMonitor(clawer = clawer, day = self.day)
+        for hour in range(24):
+            target_path = os.path.join(self.result_path, "%s/%s/%02d.json.gz" % (clawer.id, self.day.strftime("%Y/%m/%d"), hour))
+            if os.path.exists(target_path) is False:
+                print "not found target path is %s" % target_path
+                continue
+        
+            file_stat = os.stat(target_path)
+            clawer_day_monitor.bytes = file_stat[stat.ST_SIZE]
+            print "target size is %s" % clawer_day_monitor.bytes
+        
+        clawer_day_monitor.save()
+        print "clawer day monitor id %d, bytes %d" % (clawer_day_monitor.id, clawer_day_monitor.bytes)
+    
+    def _do_report(self, clawer):
+        pass
 
 
 #rqworker function

@@ -588,6 +588,28 @@ class ClawerHourMonitor(models.Model):
         }
         return data
 
+    
+class ClawerDayMonitor(models.Model):
+    clawer = models.ForeignKey(Clawer)
+    day = models.DateField()  #only to hour
+    bytes = models.IntegerField(default=0)
+    is_exception = models.BooleanField(default=False)
+    add_datetime = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        app_label = "clawer"     
+        ordering = ["-id"]
+    
+    def as_json(self):
+        data = {"id": self.id,
+            "day": self.day.strftime("%Y-%m-%d"),
+            "bytes": self.bytes,
+            "clawer": self.clawer.as_json(),
+            "is_exception": self.is_exception,
+            "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        return data
+
 
 
 class MenuPermission:
@@ -608,9 +630,10 @@ class MenuPermission:
             {"id":104, "text":u"爬虫分析日志", "url":"clawer.views.home.clawer_analysis_log", "groups":GROUPS},
             {"id":105, "text":u"数据下载", "url":settings.MEDIA_URL, "groups":GROUPS},
         ]},
-        {"id":3, "text": u"实时监控", "url":"", "children": [
-            {"id":301, "text":u"实时Dashboard", "url":"clawer.views.monitor.realtime_dashboard", "groups":GROUPS},
-            {"id":301, "text":u"每小时结果", "url":"clawer.views.monitor.hour", "groups":GROUPS},
+        {"id":3, "text": u"系统监控", "url":"", "children": [
+            {"id":301, "text":u"实时数据", "url":"clawer.views.monitor.realtime_dashboard", "groups":GROUPS},
+            {"id":301, "text":u"小时结果", "url":"clawer.views.monitor.hour", "groups":GROUPS},
+            {"id":301, "text":u"每日结果", "url":"clawer.views.monitor.day", "groups":GROUPS},
         ]},
         
         {"id":2, "text": u"系统管理", "url":"", "children": [
