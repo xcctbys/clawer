@@ -42,13 +42,13 @@ mappings['ind_comm_pub_reg_modify'] = {
 }
 
 mappings['ind_comm_pub_arch_key_persons'] = {
-    u'序号': 'enter_id',
+    u'序号': 'bas_id',
     u'姓名': 'name',
     u'职务': 'postion',
 }
 
 mappings['ind_comm_pub_arch_branch'] = {
-    u'序号': 'enter_id',
+    u'序号': 'bas_id',
     u'登记机关': 'register_gov',
     u'注册号/统一社会信用代码': 'enter_code',
     u'名称': 'branch_name',
@@ -65,7 +65,7 @@ mappings['ind_comm_pub_movable_property_reg'] = {
     u'登记日期': 'sharechange_register_date',
     u'登记编号': 'register_num',
     u'被担保债权数额': 'guarantee_debt_amount',
-    u'序号': 'enter_id',
+    u'序号': 'bas_id',
     u'登记机关': 'register_gov',
 }
 

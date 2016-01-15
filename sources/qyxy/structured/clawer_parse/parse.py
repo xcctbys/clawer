@@ -48,20 +48,24 @@ class Parse(object):
         for enter_id in self.companies:
             company = self.companies[enter_id]
             print u"\n公司注册Id: %s\n" % enter_id
-            self.handle_company(company)
+            self.handle_company(company, enter_id)
 
-    def handle_company(self, company={}):
+    def handle_company(self, company={}, enter_id=0):
         keys = self.keys
-        self.company_result = {}
+        self.company_result = {'enter_id': enter_id}
         for key in company:
             if type(company[key]) == dict:
                 if key in keys and key in mappings:
                     self.handle_dict(company[key], mappings[key])
                 else:
                     pass
-            elif type(company[key] == list):
+            else:
+                pass
+
+        for key in company:
+            if type(company[key] == list):
                 if key in keys and key in mappings:
-                    self.handle_list()
+                    self.handle_list(company[key], mappings[key])
                 else:
                     pass
             else:
@@ -77,7 +81,7 @@ class Parse(object):
             else:
                 pass
 
-    def handle_list(self):
+    def handle_list(self, dict_in_company, mapping):
         pass
 
     def write_to_mysql(self):
