@@ -79,8 +79,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'clawer',
-        'USER': 'db_user',
-        'PASSWORD': 'db_password',
+        'USER': 'root',
+        'PASSWORD': 'ChuHuimin1990',
         'HOST': '127.0.0.1',
         'PORT': '3306',
     }
