@@ -27,7 +27,9 @@ logger_api_urls = patterns("clawer.apis.logger",
 monitor_api_urls = patterns("clawer.apis.monitor",
     url(r"^task/stat/$", "task_stat"),
     url(r"^hour/$", "hour"),
+    url(r"^day/$", "day"),
     url(r"^hour/echarts/$", "hour_echarts"),
+    url(r"^day/echarts/$", "day_echarts"),
 )
 
 home_api_urls = patterns("clawer.apis.home",
@@ -67,6 +69,7 @@ logger_urls = patterns("clawer.views.logger",
 monitor_urls = patterns("clawer.views.monitor",
     url(r"^realtime/dashboard/$", "realtime_dashboard"),
     url(r"^hour/$", "hour"),
+    url(r"^day/$", "day"),
 )
 
 
