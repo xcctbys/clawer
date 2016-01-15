@@ -6,21 +6,21 @@ from clawer_parse.models import (
     Basic,
     IndustryCommerceAdministrativePenalty,
     IndustryCommerceBranch,
-    IndustryCommerceChange,
-    IndustryCommerceCheck,
-    IndustryCommerceClear,
-    IndustryCommerceDetailGuarantee,
-    IndustryCommerceException,
-    IndustryCommerceIllegal,
-    IndustryCommerceMainperson,
-    IndustryCommerceMortgage,
-    IndustryCommerceMortgageDetailChange,
-    IndustryCommerceMortgageDetailGuarantee,
-    IndustryCommerceMortgageGuaranty,
-    IndustryCommerceRevoke,
-    IndustryCommerceShareholders,
-    IndustryCommerceSharepledge,
-    IndustryMortgageDetailMortgagee,
+    # IndustryCommerceChange,
+    # IndustryCommerceCheck,
+    # IndustryCommerceClear,
+    # IndustryCommerceDetailGuarantee,
+    # IndustryCommerceException,
+    # IndustryCommerceIllegal,
+    # IndustryCommerceMainperson,
+    # IndustryCommerceMortgage,
+    # IndustryCommerceMortgageDetailChange,
+    # IndustryCommerceMortgageDetailGuarantee,
+    # IndustryCommerceMortgageGuaranty,
+    # IndustryCommerceRevoke,
+    # IndustryCommerceShareholders,
+    # IndustryCommerceSharepledge,
+    # IndustryMortgageDetailMortgagee,
 )
 from profiles.mappings import mappings
 
@@ -79,21 +79,21 @@ class Parse(object):
         self.update(Basic)
         self.update(IndustryCommerceAdministrativePenalty)
         self.update(IndustryCommerceBranch)
-        self.update(IndustryCommerceChange)
-        self.update(IndustryCommerceCheck)
-        self.update(IndustryCommerceClear)
-        self.update(IndustryCommerceDetailGuarantee)
-        self.update(IndustryCommerceException)
-        self.update(IndustryCommerceIllegal)
-        self.update(IndustryCommerceMainperson)
-        self.update(IndustryCommerceMortgage)
-        self.update(IndustryCommerceMortgageDetailChange)
-        self.update(IndustryCommerceMortgageDetailGuarantee)
-        self.update(IndustryCommerceMortgageGuaranty)
-        self.update(IndustryCommerceRevoke)
-        self.update(IndustryCommerceShareholders)
-        self.update(IndustryCommerceSharepledge)
-        self.update(IndustryMortgageDetailMortgagee)
+        # self.update(IndustryCommerceChange)
+        # self.update(IndustryCommerceCheck)
+        # self.update(IndustryCommerceClear)
+        # self.update(IndustryCommerceDetailGuarantee)
+        # self.update(IndustryCommerceException)
+        # self.update(IndustryCommerceIllegal)
+        # self.update(IndustryCommerceMainperson)
+        # self.update(IndustryCommerceMortgage)
+        # self.update(IndustryCommerceMortgageDetailChange)
+        # self.update(IndustryCommerceMortgageDetailGuarantee)
+        # self.update(IndustryCommerceMortgageGuaranty)
+        # self.update(IndustryCommerceRevoke)
+        # self.update(IndustryCommerceShareholders)
+        # self.update(IndustryCommerceSharepledge)
+        # self.update(IndustryMortgageDetailMortgagee)
 
     def update(self, model):
         company_result = self.company_result
