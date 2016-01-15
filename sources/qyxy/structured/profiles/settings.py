@@ -9,15 +9,12 @@ keys = (
     "ind_comm_pub_arch_branch",
     "ind_comm_pub_arch_liquidation",
     "ind_comm_pub_movable_property_reg",
+    "ind_comm_pub_equity_ownership_reg",
+    "ind_comm_pub_administration_sanction",
+    "ind_comm_pub_business_exception",
+    "ind_comm_pub_serious_violate_law",
+    "ind_comm_pub_spot_check",
 )
-
-"""
-"ind_comm_pub_equity_ownership_reg",
-"ind_comm_pub_administration_sanction",
-"ind_comm_pub_business_exception",
-"ind_comm_pub_serious_violate_law",
-"ind_comm_pub_spot_check",
-"""
 
 type_date = (
     "check_date",
@@ -37,6 +34,7 @@ type_date = (
     "decision_date",
     "time_start",
     "time_end",
+    "publicity_time",
 )
 
 type_float = (

@@ -74,7 +74,7 @@ mappings['ind_comm_pub_equity_ownership_reg'] = {
     u'公示日期': 'publicity_time',
     u'状态': 'status',
     u'质权人': 'mortgagee',
-    u'股权出质设立登记日期': '2015年12月24日',
+    u'股权出质设立登记日期': None,
     u'出质人': 'pledgor',
     u'登记编号': 'register_num',
     u'证照/证件号码': 'pledgor_certificate_code',
