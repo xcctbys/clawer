@@ -16,42 +16,58 @@ class Base(object):
         type_date = settings.type_date
         type_float = settings.type_float
         to_date = tools.trans_time
+        to_float = tools.trans_float
 
         fields = model._meta.get_all_field_names()
-
-        query = model.objects.filter()
-        if (len(query) == 0):
-            for field in fields:
-                value = data.get(field)
-                if value is None:
-                    pass
-                elif field in type_date:
-                    print value
-                    setattr(self, field, to_date(value.encode('utf-8')))
-                elif field in type_float:
-                    pass
-                elif field in data:
-                    setattr(self, field, value)
-                else:
-                    pass
-            self.save()
-        else:
-            fields = query[0]._meta.get_all_field_names()
-            for field in fields:
-                print field
-                value = data.get(field)
-                if value is None:
-                    pass
-                elif field in type_date:
-                    pass
-                elif field in type_float:
-                    pass
-                elif field in data:
-                    print "%s : %s" % (field, value)
-                    setattr(query[0], field, value)
-                else:
-                    pass
-            query[0].save()
+        for field in fields:
+            value = data.get(field)
+            if value is None:
+                pass
+            elif field in type_date:
+                print value
+                setattr(self, field, to_date(value.encode('utf-8')))
+            elif field in type_float:
+                print value
+                setattr(self, field, to_float(value.encode('utf-8')))
+            elif field in data:
+                setattr(self, field, value)
+            else:
+                pass
+        self.save()
+        # query = model.objects.filter()
+        # fields = model._meta.get_all_field_names()
+        # if (len(query) == 0):
+        #     for field in fields:
+        #         value = data.get(field)
+        #         if value is None:
+        #             pass
+        #         elif field in type_date:
+        #             print value
+        #             setattr(self, field, to_date(value.encode('utf-8')))
+        #         elif field in type_float:
+        #             pass
+        #         elif field in data:
+        #             setattr(self, field, value)
+        #         else:
+        #             pass
+        #     self.save()
+        # else:
+        #     fields = query[0]._meta.get_all_field_names()
+        #     for field in fields:
+        #         print field
+        #         value = data.get(field)
+        #         if value is None:
+        #             pass
+        #         elif field in type_date:
+        #             pass
+        #         elif field in type_float:
+        #             pass
+        #         elif field in data:
+        #             print "%s : %s" % (field, value)
+        #             setattr(query[0], field, value)
+        #         else:
+        #             pass
+        #     query[0].save()
 
 
 class Basic(models.Model, Base):
@@ -60,16 +76,16 @@ class Basic(models.Model, Base):
 
     credit_code = models.CharField(max_length=20, null=True, blank=True)
     enter_name = models.CharField(max_length=50, null=True, blank=True)
-    enter_type = models.CharField(max_length=20, null=True, blank=True)
+    enter_type = models.CharField(max_length=100, null=True, blank=True)
     corporation = models.CharField(max_length=30, null=True, blank=True)
     register_capital = models.FloatField(null=True)
-    establish_date = models.DateTimeField(null=True)
+    establish_date = models.DateField(null=True)
     place = models.CharField(max_length=100, null=True, blank=True)
-    time_start = models.DateTimeField(null=True)
-    time_end = models.DateTimeField(null=True)
+    time_start = models.DateField(null=True)
+    time_end = models.DateField(null=True)
     business_scope = models.TextField(null=True)
     register_gov = models.CharField(max_length=50, null=True, blank=True)
-    check_date = models.DateTimeField(null=True)
+    check_date = models.DateField(null=True)
     register_status = models.CharField(max_length=20, null=True, blank=True)
     register_num = models.CharField(max_length=20, null=True, blank=True)
 
@@ -85,13 +101,13 @@ class IndustryCommerceAdministrativePenalty(models.Model, Base):
     illegal_type = models.CharField(max_length=30, null=True, blank=True)
     penalty_content = models.CharField(max_length=50, null=True, blank=True)
     penalty_decision_gov = models.CharField(max_length=50, null=True, blank=True)
-    penalty_decision_date = models.DateTimeField(null=True)
+    penalty_decision_date = models.DateField(null=True)
     detail = models.CharField(max_length=30, null=True, blank=True)
-    penalty_register_date = models.DateTimeField(null=True)
+    penalty_register_date = models.DateField(null=True)
     enter_name = models.CharField(max_length=50, null=True, blank=True)
     creidit_code = models.CharField(max_length=20, null=True, blank=True)
     corporation = models.CharField(max_length=30, null=True, blank=True)
-    penalty_publicity_time = models.DateTimeField(null=True)
+    penalty_publicity_time = models.DateField(null=True)
     enter_id = models.CharField(max_length=30, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
 
@@ -118,9 +134,9 @@ class IndustryCommerceChange(models.Model, Base):
     """
 
     modify_item = models.CharField(max_length=30, null=True, blank=True)
-    modify_before = models.CharField(max_length=50, null=True, blank=True)
-    modify_after = models.CharField(max_length=50, null=True, blank=True)
-    modify_date = models.DateTimeField(null=True)
+    modify_before = models.TextField(null=True, blank=True)
+    modify_after = models.TextField(max_length=50, null=True, blank=True)
+    modify_date = models.DateField(null=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
 
@@ -134,7 +150,7 @@ class IndustryCommerceCheck(models.Model, Base):
 
     check_gov = models.CharField(max_length=50, null=True, blank=True)
     check_type = models.CharField(max_length=20, null=True, blank=True)
-    check_date = models.DateTimeField(null=True)
+    check_date = models.DateField(null=True)
     check_result = models.CharField(max_length=50, null=True, blank=True)
     check_comment = models.CharField(max_length=50, null=True, blank=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
@@ -162,7 +178,7 @@ class IndustryCommerceDetailGuarantee(models.Model, Base):
     """
 
     register_code = models.CharField(max_length=20, null=True, blank=True)
-    sharechange_register_date = models.DateTimeField(null=True)
+    sharechange_register_date = models.DateField(null=True)
     register_gov = models.CharField(max_length=50, null=True, blank=True)
     register_id = models.CharField(max_length=20, null=True, blank=True)
     ind_id = models.IntegerField(null=True)
@@ -176,9 +192,9 @@ class IndustryCommerceException(models.Model, Base):
     """
 
     list_on_reason = models.CharField(max_length=100, null=True, blank=True)
-    list_on_date = models.DateTimeField(null=True)
+    list_on_date = models.DateField(null=True)
     list_out_reason = models.CharField(max_length=100, null=True, blank=True)
-    list_out_date = models.DateTimeField(null=True)
+    list_out_date = models.DateField(null=True)
     list_gov = models.CharField(max_length=50, null=True, blank=True)
     list_on_gov = models.CharField(max_length=50, null=True, blank=True)
     list_out_gov = models.CharField(max_length=50, null=True, blank=True)
@@ -194,9 +210,9 @@ class IndustryCommerceIllegal(models.Model, Base):
     """
 
     list_on_reason = models.CharField(max_length=100, null=True, blank=True)
-    list_on_date = models.DateTimeField(null=True)
+    list_on_date = models.DateField(null=True)
     list_out_reason = models.CharField(max_length=100, null=True, blank=True)
-    list_out_date = models.DateTimeField(max_length=100, null=True, blank=True)
+    list_out_date = models.DateField(max_length=100, null=True, blank=True)
     decision_gov = models.CharField(max_length=30, null=True, blank=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
@@ -223,11 +239,11 @@ class IndustryCommerceMortgage(models.Model, Base):
     """
 
     register_num = models.CharField(max_length=20, null=True, blank=True)
-    sharechange_register_date = models.DateTimeField(null=True)
+    sharechange_register_date = models.DateField(null=True)
     register_gov = models.CharField(max_length=50, null=True, blank=True)
     guarantee_debt_amount = models.FloatField(null=True)
     status = models.CharField(max_length=20, null=True, blank=True)
-    publicity_time = models.DateTimeField(null=True)
+    publicity_time = models.DateField(null=True)
     details = models.TextField(null=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
@@ -240,7 +256,7 @@ class IndustryCommerceMortgageDetailChange(models.Model, Base):
     """工商-抵押-详情-变更
     """
 
-    modify_date = models.DateTimeField(null=True)
+    modify_date = models.DateField(null=True)
     modify_content = models.TextField(null=True)
     register_id = models.CharField(max_length=20, null=True, blank=True)
     ind_id = models.IntegerField(null=True)
@@ -287,7 +303,7 @@ class IndustryCommerceRevoke(models.Model, Base):
     revoke_item = models.CharField(max_length=30, null=True, blank=True)
     content_before_revoke = models.CharField(max_length=50, null=True, blank=True)
     content_after_revoke = models.CharField(max_length=50, null=True, blank=True)
-    revoke_date = models.DateTimeField(null=True)
+    revoke_date = models.DateField(null=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
 
@@ -306,11 +322,11 @@ class IndustryCommerceShareholders(models.Model, Base):
     subscription_amount = models.FloatField(null=True)
     paid_amount = models.FloatField(null=True)
     subscription_type = models.CharField(max_length=30, null=True, blank=True)
-    subscription_date = models.DateTimeField(null=True)
+    subscription_date = models.DateField(null=True)
     subscription_money_amount = models.FloatField(null=True)
     paid_type = models.CharField(max_length=20, null=True, blank=True)
     paid_money_amount = models.FloatField(null=True)
-    paid_date = models.DateTimeField(null=True)
+    paid_date = models.DateField(null=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
 
@@ -328,11 +344,11 @@ class IndustryCommerceSharepledge(models.Model, Base):
     share_pledge_num = models.FloatField(null=True)
     mortgagee = models.CharField(max_length=30, null=True, blank=True)
     mortgagee_certificate_code = models.CharField(max_length=20, null=True, blank=True)
-    sharechange_register_date = models.DateTimeField(null=True)
+    sharechange_register_date = models.DateField(null=True)
     status = models.CharField(max_length=20, null=True, blank=True)
     change_detail = models.CharField(max_length=100, null=True, blank=True)
-    publicity_time = models.DateTimeField(null=True)
-    modify_date = models.DateTimeField(null=True)
+    publicity_time = models.DateField(null=True)
+    modify_date = models.DateField(null=True)
     modify_content = models.TextField(null=True)
     register_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
