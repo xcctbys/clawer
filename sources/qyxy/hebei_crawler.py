@@ -730,7 +730,7 @@ if __name__ == "__main__":
 """
 if __name__ == "__main__":
     reload (sys)
-    sys.setdefaultencoding('utf8')
+    sys.setdefaultencoding('utf-8')
     import run
     run.config_logging()
     if not os.path.exists("./enterprise_crawler"):
