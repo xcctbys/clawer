@@ -1,9 +1,56 @@
 # -*- coding: utf-8 -*-
 
 from django.db import models
+import profiles.settings as settings
 
 
-class Basic(models.Model):
+class Base(object):
+    """数据库操作基本类
+    """
+
+    def update(self, model, data):
+        """if is exist update else insert
+        """
+
+        type_date = settings.type_date
+        type_float = settings.type_float
+
+        query = model.objects.filter(enter_name=data['enter_name'])
+        if (len(query) == 0):
+            fields = self._meta.get_all_field_names()
+            for field in fields:
+                value = data.get(field)
+                if value is None:
+                    pass
+                elif field in type_date:
+                    pass
+                elif field in type_float:
+                    pass
+                elif field in data:
+                    setattr(self, field, value)
+                else:
+                    pass
+            self.save()
+        else:
+            fields = query[0]._meta.get_all_field_names()
+            for field in fields:
+                print field
+                value = data.get(field)
+                if value is None:
+                    pass
+                elif field in type_date:
+                    pass
+                elif field in type_float:
+                    pass
+                elif field in data:
+                    print "%s : %s" % (field, value)
+                    setattr(query[0], field, value)
+                else:
+                    pass
+            query[0].save()
+
+
+class Basic(models.Model, Base):
     """公司基本类
     """
 
@@ -26,7 +73,7 @@ class Basic(models.Model):
         db_table = "basic"
 
 
-class IndustrycommerceAdministrativePenalty(models.Model):
+class IndustryCommerceAdministrativePenalty(models.Model, Base):
     """工商-行政处罚
     """
 
@@ -48,7 +95,7 @@ class IndustrycommerceAdministrativePenalty(models.Model):
         db_table = "industrycommerce_administrative_penalty"
 
 
-class IndustryCommerceBranch(models.Model):
+class IndustryCommerceBranch(models.Model, Base):
     """工商-分支机构
     """
 
@@ -62,7 +109,7 @@ class IndustryCommerceBranch(models.Model):
         db_table = "industry_commerce_branch"
 
 
-class IndustryCommerceChange(models.Model):
+class IndustryCommerceChange(models.Model, Base):
     """工商-变更
     """
 
@@ -77,7 +124,7 @@ class IndustryCommerceChange(models.Model):
         db_table = "industry_commerce_change"
 
 
-class IndustryCommerceCheck(models.Model):
+class IndustryCommerceCheck(models.Model, Base):
     """工商-抽查检查
     """
 
@@ -93,7 +140,7 @@ class IndustryCommerceCheck(models.Model):
         db_table = "industry_commerce_check"
 
 
-class IndustryCommerceClear(models.Model):
+class IndustryCommerceClear(models.Model, Base):
     """工商-清算
     """
 
@@ -106,7 +153,7 @@ class IndustryCommerceClear(models.Model):
         db_table = "industry_commerce_clear"
 
 
-class IndustryCommerceDetailGuarantee(models.Model):
+class IndustryCommerceDetailGuarantee(models.Model, Base):
     """工商-动产抵押-详情-动产抵押
     """
 
@@ -120,7 +167,7 @@ class IndustryCommerceDetailGuarantee(models.Model):
         db_table = "industry_commerce_detail_guarantee"
 
 
-class IndustryCommerceException(models.Model):
+class IndustryCommerceException(models.Model, Base):
     """工商-经营异常
     """
 
@@ -138,7 +185,7 @@ class IndustryCommerceException(models.Model):
         db_table = "industry_commerce_exception"
 
 
-class IndustryCommerceIllegal(models.Model):
+class IndustryCommerceIllegal(models.Model, Base):
     """工商-严重违法
     """
 
@@ -154,7 +201,7 @@ class IndustryCommerceIllegal(models.Model):
         db_table = "industry_commerce_illegal"
 
 
-class IndustryCommerceMainperson(models.Model):
+class IndustryCommerceMainperson(models.Model, Base):
     """工商-主要人员
     """
 
@@ -167,7 +214,7 @@ class IndustryCommerceMainperson(models.Model):
         db_table = "industry_commerce_mainperson"
 
 
-class IndustryCommerceMortgage(models.Model):
+class IndustryCommerceMortgage(models.Model, Base):
     """工商-动产抵押登记
     """
 
@@ -185,7 +232,7 @@ class IndustryCommerceMortgage(models.Model):
         db_table = "industry_commerce_mortgage"
 
 
-class IndustryCommerceMortgageDetailChange(models.Model):
+class IndustryCommerceMortgageDetailChange(models.Model, Base):
     """工商-抵押-详情-变更
     """
 
@@ -198,7 +245,7 @@ class IndustryCommerceMortgageDetailChange(models.Model):
         db_table = "industry_commerce_mortgage_detail_change"
 
 
-class IndustryCommerceMortgageDetailGuarantee(models.Model):
+class IndustryCommerceMortgageDetailGuarantee(models.Model, Base):
     """工商-抵押-详情-抵押权人
     """
 
@@ -214,7 +261,7 @@ class IndustryCommerceMortgageDetailGuarantee(models.Model):
         db_table = "industry_commerce_cortgage_detail_guarantee"
 
 
-class IndustryCommerceMortgageGuaranty(models.Model):
+class IndustryCommerceMortgageGuaranty(models.Model, Base):
     """工商-抵押-详情-抵押物
     """
 
@@ -229,7 +276,7 @@ class IndustryCommerceMortgageGuaranty(models.Model):
         db_table = "industry_commerce_mortgage_guaranty"
 
 
-class IndustryCommerceRevoke(models.Model):
+class IndustryCommerceRevoke(models.Model, Base):
     """工商-撤销
     """
 
@@ -244,7 +291,7 @@ class IndustryCommerceRevoke(models.Model):
         db_table = "industry_commerce_revoke"
 
 
-class IndustryCommerceShareholders(models.Model):
+class IndustryCommerceShareholders(models.Model, Base):
     """工商-股东
     """
 
@@ -267,7 +314,7 @@ class IndustryCommerceShareholders(models.Model):
         db_table = "industry_commerce_shareholders"
 
 
-class IndustryCommerceSharepledge(models.Model):
+class IndustryCommerceSharepledge(models.Model, Base):
     """
     """
 
@@ -290,7 +337,7 @@ class IndustryCommerceSharepledge(models.Model):
         db_table = "industry_commerce_sharepledge"
 
 
-class IndustryMortgageDetailMortgagee(models.Model):
+class IndustryMortgageDetailMortgagee(models.Model, Base):
     """工商-抵押-详情-抵押权人
     """
 

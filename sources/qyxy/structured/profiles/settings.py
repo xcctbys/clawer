@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # to handle one company's json keys
-keys = [
+keys = (
     "ind_comm_pub_reg_basic",
     "ind_comm_pub_reg_shareholder",
     "ind_comm_pub_reg_modify",
@@ -9,7 +9,7 @@ keys = [
     "ind_comm_pub_arch_branch",
     "ind_comm_pub_arch_liquidation",
     "ind_comm_pub_movable_property_reg",
-]
+)
 
 """
 "ind_comm_pub_equity_ownership_reg",
@@ -19,7 +19,7 @@ keys = [
 "ind_comm_pub_spot_check",
 """
 
-type_date = [
+type_date = (
     "check_date",
     "subscription_date",
     "paid_date",
@@ -35,4 +35,17 @@ type_date = [
     "license_begien_date",
     "mortgage_register_date",
     "decision_date",
-]
+    "time_start",
+    "time_end",
+)
+
+type_float = (
+    "register_capital",
+    "guarantee_debt_amount",
+    "amount",
+    "subscription_amount",
+    "paid_amount",
+    "subscription_money_amount",
+    "paid_money_amount",
+    "share_pledge_num",
+)

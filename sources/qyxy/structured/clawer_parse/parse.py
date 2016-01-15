@@ -1,9 +1,27 @@
 # -*- coding: utf-8 -*-
 
 import json
-import re
 import profiles.settings as settings
-from clawer_parse.models import Basic
+from clawer_parse.models import (
+    Basic,
+    IndustryCommerceAdministrativePenalty,
+    IndustryCommerceBranch,
+    IndustryCommerceChange,
+    IndustryCommerceCheck,
+    IndustryCommerceClear,
+    IndustryCommerceDetailGuarantee,
+    IndustryCommerceException,
+    IndustryCommerceIllegal,
+    IndustryCommerceMainperson,
+    IndustryCommerceMortgage,
+    IndustryCommerceMortgageDetailChange,
+    IndustryCommerceMortgageDetailGuarantee,
+    IndustryCommerceMortgageGuaranty,
+    IndustryCommerceRevoke,
+    IndustryCommerceShareholders,
+    IndustryCommerceSharepledge,
+    IndustryMortgageDetailMortgagee,
+)
 from profiles.mappings import mappings
 
 
@@ -30,7 +48,6 @@ class Parse(object):
 
     def handle_company(self, company={}):
         keys = self.keys
-        type_date = settings.type_date
         self.company_result = {}
         for key in company:
             if type(company[key]) == dict:
@@ -46,25 +63,7 @@ class Parse(object):
             else:
                 pass
 
-        # write to mysql
-        company_result = self.company_result
-        si = re.compile("\d\d\d\d年\d月\d日")
-        for field in company_result:
-            string = company_result[field]
-            if field in type_date and string is not None:
-                print string
-                p = si.search(string)
-                print p.group()
-        # basic = Basic()
-        # fields = basic._meta.get_all_field_names()
-        # for field in fields:
-        #     value = company_result[field]
-        #     if field in company_result and value is not None:
-        #         print value
-        #         setattr(basic, field, value.encode('utf-8'))
-        #     else:
-        #         pass
-        # basic.save()
+        self.write_to_mysql()
 
     def handle_dict(self, dict_in_company, mapping):
         for key in dict_in_company:
@@ -75,3 +74,27 @@ class Parse(object):
 
     def handle_list(self):
         pass
+
+    def write_to_mysql(self):
+        self.update(Basic)
+        self.update(IndustryCommerceAdministrativePenalty)
+        self.update(IndustryCommerceBranch)
+        self.update(IndustryCommerceChange)
+        self.update(IndustryCommerceCheck)
+        self.update(IndustryCommerceClear)
+        self.update(IndustryCommerceDetailGuarantee)
+        self.update(IndustryCommerceException)
+        self.update(IndustryCommerceIllegal)
+        self.update(IndustryCommerceMainperson)
+        self.update(IndustryCommerceMortgage)
+        self.update(IndustryCommerceMortgageDetailChange)
+        self.update(IndustryCommerceMortgageDetailGuarantee)
+        self.update(IndustryCommerceMortgageGuaranty)
+        self.update(IndustryCommerceRevoke)
+        self.update(IndustryCommerceShareholders)
+        self.update(IndustryCommerceSharepledge)
+        self.update(IndustryMortgageDetailMortgagee)
+
+    def update(self, model):
+        company_result = self.company_result
+        model().update(model, company_result)
