@@ -18,7 +18,7 @@ sys.setdefaultencoding('utf8')
 
 from bs4 import BeautifulSoup
 
-DEBUG = True
+DEBUG = False
 if DEBUG:
     level = logging.DEBUG
 else:
@@ -44,10 +44,7 @@ class Analysis(object):
         else:
             with open(self.path, "r") as f:
                 self.text = f.read()
-                # data =  self.text
-                # if data[:3] == codecs.BOM_UTF8:
-                #     data = data[3:]
-                # print data.decode("gbk")
+                
                 if self.text == '':
                     r = requests.get(self.url)
                     self.text = r.content
@@ -66,42 +63,26 @@ class Analysis(object):
             self.result["title"] = ''
 
     def parse_time(self):
-        # span = self.soup.find("div", {"style":"padding-top:5px;"},{"class":"lai"})
         span = self.soup.find("div",{"id":"riqi_"})
         if span != None:
-            # s = span.get_text().strip()
-            # m = s.split(u'人民日报')[1]
-            # self.result["time"] = m
-            # 
+            
             time = span.get_text().strip()
             self.result["time"] = str(time).replace(u"人民日报","")
-            # man= []
-            # try:
-            #     time = span.get_text().strip()
-            #     m = str(time).split(u'人民日报')[0]
-            #     man.append(m)
-            # except IOError:
-            #     print('The datafile is missing!')
-             
-            # try:  
-            #     with open('man_data3.txt','wb') as man_file: 
-            #         pickle.dump(man,man_file)   
-            # except IOError as err:  
-            #     print('File Error:'+str(err))
-            # self.result["time"]=time  
-
+            
         else:
             self.result["time"] = ''
 
     def parse_content(self):
         articleContent = self.soup.find("div", {"id":"articleContent"})
-        all_p = articleContent.find_all("p")
         content = ''
-        for p in all_p:
-            content += p.get_text().replace("\n", "")
+        try:
+            all_p = articleContent.find_all("p")
+        
+            for p in all_p:
+                content += p.get_text().replace("\n", "")
+        except:
+            pass     
         self.result["content"] = content
-
-
 
 class TestAnalysis(unittest.TestCase):
 
