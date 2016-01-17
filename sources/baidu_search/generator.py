@@ -1548,7 +1548,7 @@ class History(object):  # 实现程序的可持续性，每次运行时读取上
 
     def __init__(self):
         self.company_num = 0  # 初始化pickle中用作公司名称位置索引值
-        self.path = "/tmp/baidu_company_search_20160117"  # pickle文件存放路径（提交至平台的代码记住带上tmp前斜杠）
+        self.path = "/tmp/new1_baidu_company_search"  # pickle文件存放路径（提交至平台的代码记住带上tmp前斜杠）
         
     def load(self):  # pickle的载入
         if os.path.exists(self.path) is False:  # 读取pickle失败则返回
