@@ -70,7 +70,7 @@ def config_logging():
     ch = logging.StreamHandler()
     ch.setLevel(settings.log_level)
 
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(pathname)s:%(lineno)d:: %(message)s')
     fh.setFormatter(formatter)
     ch.setFormatter(formatter)
     settings.logger.addHandler(fh)
