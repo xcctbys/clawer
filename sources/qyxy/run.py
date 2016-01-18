@@ -244,4 +244,6 @@ if __name__ == '__main__':
                 process = multiprocessing.Process(target=crawl_province, args=(p, cur_date))
                 process.start()
                 #process.join(max_crawl_time)
+    
+    os._exit(0)
 
