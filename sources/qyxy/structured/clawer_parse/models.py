@@ -369,3 +369,419 @@ class IndustryMortgageDetailMortgagee(models.Model, Base):
 
     class Meta:
         db_table = "industry_mortgage_detail_mortgagee"
+
+
+class EnterAdministrativeLicense(models.Model, Base):
+    """企业-行政许可
+    """
+
+    license_num = models.IntegerField(null=True)
+    license_filename = models.CharField(max_length=50, null=True, blank=True)
+    license_begien_date = models.DateField( null=True)
+    license_end_date = models.DateField( null=True)
+    license_authority = models.CharField(max_length=30, null=True, blank=True)
+    license_content = models.CharField(max_length=50, null=True, blank=True)
+    license_status = models.CharField(max_length=20, null=True, blank=True)
+    license_detail = models.CharField(max_length=10, null=True, blank=True)
+    license_register_time = models.DateField( null=True)
+    license_publicity_time = models.DateField( null=True)
+    license_change_item = models.CharField(max_length=20, null=True, blank=True)
+    license_change_time  = models.DateField( null=True)
+    license_content_before = models.CharField(max_length=50, null=True, blank=True)
+    license_content_after = models.CharField(max_length=50, null=True, blank=True)
+    enter_id = models.CharField(max_length=20, null=True, blank=True)
+    id = models.IntegerField(null=True)
+    bas_id = models.IntegerField(null=True)
+
+    class Meta:
+        db_table = "enter_administrative_license"
+
+
+class EnterAdministrativePenalty(models.Model, Base):
+    """企业-行政处罚
+    """
+
+    penalty_decision_num = models.IntegerField(null=True)
+    illegal_type = models.CharField(max_length=30, null=True, blank=True)
+    administrative_penalty_content = models.CharField(max_length=30, null=True, blank=True)
+    decision_gov = models.CharField(max_length=30, null=True, blank=True)
+    decision_date = models.DateField( null=True)
+    penalty_comment = models.CharField(max_length=50, null=True, blank=True)
+    penalty_publicit_date datetime = models.DateField( null=True)
+    enter_id = models.CharField(max_length=20, null=True, blank=True)
+    id = models.IntegerField(null=True)
+    bas_id = models.IntegerField(null=True)
+
+    class Meta:
+        db_table = "enter_administrative_penalty"
+
+
+class EnterAnnualReport(models.Model, Base):
+    """企业年报
+    """
+
+    report_year = models.IntegerField(null=True)
+    publicity_date = models.DateField(null=True)
+    enter_id = models.CharField(max_length=20, null=True, blank=True)
+    id = models.IntegerField(null=True)
+    bas_id = models.IntegerField(null=Ture)
+    primary =models.IntegerField(null=Ture)
+
+    class Meta:
+        db_table = "enter_annual_report"
+
+
+class EnterIntellectualPropertyPledge(models.Model, Base):
+    """企业-知识产权出质
+    """
+
+    credit_code = models.CharField(max_length=20, null=True, blank=True)
+    enter_name = models.CharField(max_length=50, null=True, blank=True)
+    property_type = models.CharField(max_length=30, null=True, blank=True)
+    pledgor_name = models.CharField(max_length=30, null=True, blank=True)
+    mortgagee_name = models.CharField(max_length=30, null=True, blank=True)
+    mortgage_register_date = models.DateField(null=True)
+    property_status = models.CharField(max_length=40, null=True, blank=True)
+    property_pledge_change = models.CharField(max_length=40, null=True, blank=True)
+    property_pledge_register_gov = models.CharField(max_length=30, null=True, blank=True)
+    property_pledge_register_date = models.DateField(null=True)
+    property_pledge_publicity_time = models.DateField(null=True)
+    enter_id = models.CharField(max_length=20, null=True, blank=True)
+    id = models.IntegerField(null=True)
+    bas_id = models.IntegerField(null=True)
+
+    class Meta:
+        db_table = "enter_intellectual_property_pledge"
+
+
+class EnterModification(models.Model, Base):
+    """企业-变更
+    """
+
+    modify_item = models.CharField(max_length=30, null=True, blank=True)
+    modify_before = models.CharField(max_length=50, null=True, blank=True)
+    modify_after = models.CharField(max_length=50, null=True, blank=True)
+    modify_date = models.DateField(null=True)
+    enter_id = models.CharField(max_length=20, null=True, blank=True)
+    id = models.IntegerField(null=True)
+    bas_id = models.IntegerField(null=True)
+
+    class Meta:
+        db_table = "enter_modification"
+
+
+class EnterSharechange(models.Model, Base):
+    """企业-股权变更
+    """
+
+    shareholder = models.CharField(max_length=30, null=True, blank=True)
+    share_ratio_before = models.FloatField(null=True)
+    share_ratio_after = models.FloatField(null=True)
+    share_change_date = models.DateField(null=True)
+    sharechange_register_date = models.DateField(null=True)
+    sharechange_publicity_date =models.DateField(null=True)
+    enter_id = models.CharField(max_length=20, null=True, blank=True)
+    id = models.IntegerField(null=True)
+    bas_id =models.IntegerField(null=True)
+
+    class Meta:
+        db_table = "enter_sharechange"
+
+
+class EnterShareholder(models.Model, Base):
+    """企业-股东及出资
+    """
+
+    shareholder_name = models.CharField(max_length=30, null=True, blank=True)
+    subscription_amount = models.FloatField(null=True)
+    paid_amount = models.FloatField(null=True)
+    subscription_type = models.CharField(max_length=20, null=True, blank=True)
+    subscription_date = models.DateField(null=True)
+    subscription_money_amount = models.FloatField(null=True)
+    paid_type = models.CharField(max_length=20, null=True, blank=True)
+    paid_money_amount = models.FloatField(null=True)
+    paid_date = models.DateField(null=True)
+    shareholder_type = models.CharField(max_length=20, null=True, blank=True)
+    subscription_publicity_time = models.DateField(null=True)
+    paid_publicity_time = models.DateField(null=True)
+    publicity_time = models.DateField(null=True)
+    modify_time = models.DateField(null=True)
+    detals = models.CharField(max_length=256, null=True, blank=True)
+    enter_id = models.CharField(max_length=20, null=True, blank=True)
+    id = models.IntegerField(null=True)
+    bas_id = models.IntegerField(null=True)
+
+    class Meta:
+        db_table = "enter_shareholder"
+
+
+class JudicialShareFreeze(models.Model, Base):
+    """司法股权冻结
+    """
+
+    been_excute_person = models.CharField(max_length=30, null=True, blank=True)
+    share_num = models.IntegerField(null=True)
+    excute_court = models.CharField(max_length=30, null=True, blank=True)
+    notice_num = models.IntegerField(null=True)
+    freeze_status = models.CharField(max_length=30, null=True, blank=True)
+    freeze_detail = models.CharField(max_length=30, null=True, blank=True)
+    enter_id = models.CharField(max_length=20, null=True, blank=True)
+    id = models.IntegerField(null=True)
+    bas_id = models.IntegerField(null=True)
+
+    class Meta:
+        db_table = "judicial_share_freeze"
+
+class JudicialShareholderChange(models.Model, Base):
+    """司法-司法股东变更登记
+    """
+
+    been_excute_name = models.CharField(max_length=30, null=True, blank=True)
+    share_num = models.IntegerField(null=True)
+    excute_court = models.CharField(max_length=30, null=True, blank=True)
+    assignee = models.CharField(max_length=30, null=True, blank=True)
+    detail = models.CharField(max_length=30, null=True, blank=True)
+    enter_id = models.CharField(max_length=20, null=True, blank=True)
+    id = models.IntegerField(null=True)
+    bas_id = models.IntegerField(null=True)
+
+    class Meta:
+        db_table = "judicial_shareholder_change"
+
+
+class OtherAdministrativeChange(models.Model, Base):
+    """其他-行政许可变更
+    """
+
+    administrative_change_item = models.CharField(max_length=30, null=True, blank=True)
+    administrative_change_tme = models.DateField(null=True)
+    administrative_change_before = models.CharField(max_length=50, null=True, blank=True)
+    administrative_change_after = models.CharField(max_length=50, null=True, blank=True)
+    enter_id = models.CharField(max_length=20, null=True, blank=True)
+    id = models.IntegerField(null=True)
+    bas_id = models.IntegerField(null=True)
+
+    class Meta:
+        db_table = "other_administrative_change"
+
+class OtherAdministrativeLicense(models.Model, Base):
+    """其他部门-行政许可
+    """
+
+    license_file_num = models.IntegerField(null=True)
+    license_filename = models.CharField(max_length=50, null=True, blank=True)
+    license_begin_date = models.DateField(null=True)
+    license_end_date = models.DateField(null=True)
+    license_content = models.CharField(max_length=50, null=True, blank=True)
+    license_authority_gov = models.CharField(max_length=50, null=True, blank=True)
+    license_status = models.CharField(max_length=20, null=True, blank=True)
+    license_detail = models.CharField(max_length=20, null=True, blank=True)
+    license_valid_date = models.DateField(null=True)
+    source = models.CharField(max_length=10, null=True, blank=True)
+    update_date = models.DateField(null=True)
+    enter_id = models.CharField(max_length=20, null=True, blank=True)
+    id = models.IntegerField(null=True)
+    bas_id = models.IntegerField(null=True)
+
+    class Meta:
+        db_table = "other_administrative_license"
+
+
+class OtherAdministrativePenalty(models.Model, Base):
+    """其他部门-行政处罚
+    """
+
+    penalty_decision_num = models.IntegerField(null=True)
+    illegal_type = models.CharField(max_length=30, null=True, blank=True)
+    penalty_content = models.CharField(max_length=50, null=True, blank=True)
+    penalty_decision_gov = models.CharField(max_length=50, null=True, blank=True)
+    penalty_decision_date = models.DateField(null=True)
+    detail = models.CharField(max_length=30, null=True, blank=True)
+    penalty_type = models.CharField(max_length=30, null=True, blank=True)
+    forfeiture_money = models.FloatField(null=True)
+    confiscate_money = models.FloatField(null=True)
+    source = models.CharField(max_length=20, null=True, blank=True)
+    update_date = models.DateField(null=True)
+    enter_id = models.CharField(max_length=20, null=True, blank=True)
+    id = models.IntegerField(null=True)
+    bas_id = models.IntegerField(null=True)
+
+
+    class Meta:
+        db_table = "other_administrative_penalty"
+
+
+class OtherProductionSecurity(models.Model, Base):
+    """其他-生产安全事故
+    """
+
+    accidient_number = models.IntegerField(null=True)
+    accident_level = models.IntegerField(null=True)
+    accidient_type = models.CharField(max_length=30, null=True, blank=True)
+    accidient_time = models.DateField(null=True)
+    death_num = models.IntegerField(null=True)
+    info_publish_gov = models.CharField(max_length=30, null=True, blank=True)
+    enter_id = models.CharField(max_length=20, null=True, blank=True)
+    id = models.IntegerField(null=True)
+    bas_id = models.IntegerField(null=True)
+
+    class Meta:
+        db_table = "other_production_security"
+
+
+class YearReportAssets(models.Model, Base):
+    """年报-企业资产状况
+    """
+
+    asset_all = models.FloatField(null=True)
+    owner_asset = models.FloatField(null=True)
+    business_income = models.FloatField(null=True)
+    profit = models.FloatField(null=True)
+    main_business_income = models.FloatField(null=True)
+    net_income = models.FloatField(null=True)
+    tax = models.FloatField(null=True)
+    debts = models.FloatField(null=True)
+    year_report_id = models.CharField(max_length=20, null=True, blank=True)
+    id = models.IntegerField(null=True)
+    ent_id = models.IntegerField(null=True)
+
+    class Meta:
+        db_table = "year_report_assets"
+
+class YearReportBasic(models.Model, Base):
+    """年报-基本
+    """
+
+    credit_code = models.CharField(max_length=20, null=True, blank=True)
+    enter_name = models.CharField(max_length=50, null=True, blank=True)
+    enter_phone = models.CharField(max_length=15, null=True, blank=True)
+    zipcode = models.CharField(max_length=10, null=True, blank=True)
+    enter_place = models.CharField(max_length=50, null=True, blank=True)
+    email = models.CharField(max_length=20, null=True, blank=True)
+    shareholder_change = models.BooleanField(null=True)
+    status = models.CharField(max_length=20, null=True, blank=True)
+    web_onlinestore = models.BooleanField(null=True)
+    staff_number = models.IntegerField(null=True)
+    register_num = models.CharField(max_length=20, null=True, blank=True)
+    is_warrandice = models.CharField(max_length=10, null=True, blank=True)
+    is_invest = models.BooleanField(null=True)
+    year_report_id = models.CharField(max_length=20, null=True, blank=True)
+    id = models.IntegerField(null=True)
+    ent_id = models.IntegerField(null=True)
+
+    class Meta:
+        db_table = "year_report_basic"
+
+
+class YearReportCorrect(models.Model, Base):
+    """年报-年报信息更正声明
+    """
+
+    correct_item = models.CharField(max_length=30, null=True, blank=True)
+    correct_reason = models.CharField(max_length=50, null=True, blank=True)
+    correct_time = models.DateField(null=True)
+    year_report_id = models.CharField(max_length=20, null=True, blank=True)
+    id = models.IntegerField(null=True)
+    ent_id = models.IntegerField(null=True)
+
+    class Meta:
+        db_table = "year_report_correct"
+
+
+class YearReportInvestment(models.Model, Base):
+    """年报-对外投资
+    """
+
+    invest_enter_name = models.CharField(max_length=50, null=True, blank=True)
+    enter_code = models.CharField(max_length=20, null=True, blank=True)
+    year_report_id = models.CharField(max_length=20, null=True, blank=True)
+    id = models.IntegerField(null=True)
+    ent_id =models.IntegerField(null=True)
+
+    class Meta:
+        db_table = "year_report_investment"
+
+
+class YearReportModification(models.Model, Base):
+    """年报-修改记录
+    """
+
+    modify_item = models.CharField(max_length=30, null=True, blank=True)
+    modify_before = models.CharField(max_length=50, null=True, blank=True)
+    modify_after = models.CharField(max_length=50, null=True, blank=True)
+    modify_date = models.DateField(null=True)
+    year_report_id = models.CharField(max_length=20, null=True, blank=True)
+    id = models.IntegerField(null=True)
+    ent_id =models.IntegerField(null=True)
+
+    class Meta:
+        db_table = "year_report_modification"
+
+
+    class YearReportOnline(models.Model, Base):
+    """年报-网站或网店
+    """
+
+    online_type = models.CharField(max_length=20, null=True, blank=True)
+    enter_name = models.CharField(max_length=50, null=True, blank=True)
+    enter_url = models.CharField(max_length=50, null=True, blank=True)
+    year_report_id = models.CharField(max_length=20, null=True, blank=True)
+    id = models.IntegerField(null=True)
+    ent_id = models.IntegerField(null=True)
+
+    class Meta:
+        db_table = "year_report_online"
+
+
+
+class YearReportSharechange(models.Model, Base):
+	"""年报-股权变更
+	"""
+
+    shareholder = models.CharField(max_length=20, null=True, blank=True)
+    shares_before = models.FloatField(null=True)
+    shares_after = models.FloatField(null=True)
+    year_report_id = models.CharField(max_length=20, null=True, blank=True)
+    id = models.IntegerField(null=True)
+    ent_id = models.IntegerField(null=True)
+
+    class Meta:
+        db_table = "year_report_sharechange"
+
+
+class YearReportShareholder(models.Model, Base):
+	"""年报-股东及出资
+	"""
+
+    shareholder = models.CharField(max_length=30, null=True, blank=True)
+    subscription_money_amount = models.FloatField(null=True)
+    subscription_time = models.DateField(null=True)
+    subscription_type = models.CharField(max_length=20, null=True, blank=True)
+    paid_money_amount = models.FloatField(null=True)
+    paid_time = models.DateField(null=True)
+    paid_type = models.CharField(max_length=20, null=True, blank=True)
+    year_report_id = models.CharField(max_length=20, null=True, blank=True)
+    id = models.IntegerField(null=True)
+    ent_id =models.IntegerField(null=True)
+
+    class Meta:
+        db_table = "year_report_shareholder"
+
+class YearReportWarrandice(models.Model, Base):
+	"""年报-对外提供保证担保
+	"""
+
+    creditor = models.CharField(max_length=30, null=True, blank=True)
+    debtor = models.CharField(max_length=30, null=True, blank=True)
+    main_creditor_right = models.CharField(max_length=30, null=True, blank=True)
+    main_creditor_right_amount = models.FloatField(null=True)
+    fullfill_debt_duration = models.CharField(max_length=30, null=True, blank=True)
+    guarantee_duration = models.CharField(max_length=30, null=True, blank=True)
+    guarantee_type = models.CharField(max_length=30, null=True, blank=True)
+    warrandice_scope = models.CharField(max_length=100, null=True, blank=True)
+    year_report_id = models.CharField(max_length=20, null=True, blank=True)
+    id = models.IntegerField(null=True)
+    ent_id = models.IntegerField(null=True)
+
+    class Meta:
+        db_table = "year_report_warrandice"
