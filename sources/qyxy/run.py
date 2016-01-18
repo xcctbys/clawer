@@ -177,13 +177,13 @@ class Checker(object):
             self.success.append({"name": province, "size": st[stat.ST_SIZE]})
             
         #output
-        settings.logger.error("success %d, failed %d\n", len(self.success), len(self.failed))
+        settings.logger.error("success %d, failed %d", len(self.success), len(self.failed))
         for item in self.success:
-            settings.logger.error("\t%s: %d bytes\n", item['name'], item['size'])
+            settings.logger.error("\t%s: %d bytes", item['name'], item['size'])
         
-        settings.logger.error("Failed province\n")
+        settings.logger.error("Failed province")
         for item in self.failed:
-            settings.logger.error("\t%s\n", item)
+            settings.logger.error("\t%s", item)
         
     def _json_path(self, province):
         path = os.path.join(self.parent, province, self.yesterday.strftime("%Y/%m/%d.json.gz"))
