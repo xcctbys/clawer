@@ -233,8 +233,9 @@ if __name__ == '__main__':
     if sys.argv[2] == 'all':
         for p in sorted(province_crawler.keys()):
             process = multiprocessing.Process(target=crawl_province, args=(p, cur_date))
+            process.daemon = True
             process.start()
-            #process.join(max_crawl_time/2)
+            process.join(max_crawl_time/2)
     else:
         provinces = sys.argv[2:]
         for p in provinces:
@@ -242,8 +243,10 @@ if __name__ == '__main__':
                 settings.logger.warn('province %s is not supported currently' % p)
             else:
                 process = multiprocessing.Process(target=crawl_province, args=(p, cur_date))
+                process.daemon = True
                 process.start()
-                #process.join(max_crawl_time)
+                process.join(max_crawl_time)
+                settings.logger.info("child process exit code %d", process.exitcode)
     
     os._exit(0)
 
