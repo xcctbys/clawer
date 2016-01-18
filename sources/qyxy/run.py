@@ -95,7 +95,8 @@ def crawl_work(n, province, json_restore_path, ent_queue):
         try:
             crawler.run(ent)
         except Exception as e:
-            settings.logger.error('crawler %d failed to crawl enterprise(id = %s), with exception %s' %(n, ent, e))
+            settings.logger.error('crawler %s failed to get enterprise(id = %s), with exception %s' % (province, ent, e))
+            """
             if failed_ent.get(ent, 0) > 3:
                 settings.logger.error('Failed to crawl and parse enterprise %s' % ent)
                 #report to sentry
@@ -106,6 +107,7 @@ def crawl_work(n, province, json_restore_path, ent_queue):
                 failed_ent[ent] = failed_ent.get(ent, 0) + 1
                 settings.logger.warn('failed to crawl enterprise(id = %s) %d times!' % (ent, failed_ent[ent]))
                 ent_queue.put(ent)
+            """
         finally:
             ent_queue.task_done()
 
