@@ -35,7 +35,7 @@ def install(foreign=False):
             continue
         if test_beta(task_generator) is False:
             continue
-        if test_product(task_generator, foreign) is False:
+        if test_product(task_generator, foreign, user_cron) is False:
             continue
         
         task_generator.status = ClawerTaskGenerator.STATUS_ON
@@ -78,7 +78,7 @@ def test_beta(task_generator):
 
 
 def test_product(task_generator, foreign, user_cron):
-    test_crontab(task_generator, foreign)
+    test_crontab(task_generator, foreign, user_cron)
     return True
 
 
