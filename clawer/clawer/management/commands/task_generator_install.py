@@ -20,7 +20,7 @@ def install(foreign=False):
     clawers = Clawer.objects.filter(status=Clawer.STATUS_ON)
     for clawer in clawers:
         clawer_setting = clawer.settings()
-        print "foreign %s, prior %d" % (foreign, clawer_setting.prior)
+        
         if foreign and clawer_setting.prior != ClawerSetting.PRIOR_FOREIGN:
             continue
         if foreign is False and clawer_setting.prior == ClawerSetting.PRIOR_FOREIGN:
@@ -41,7 +41,7 @@ def install(foreign=False):
         task_generator.status = ClawerTaskGenerator.STATUS_ON
         task_generator.save()
         
-        print "success %d" % task_generator.id
+        print "success! generator %d, clawer %d" % (task_generator.id, clawer.id)
         #make old offline
         ClawerTaskGenerator.objects.filter(clawer_id=task_generator, \
             status=ClawerTaskGenerator.STATUS_ON).exclude(id=task_generator.id).update(status=ClawerTaskGenerator.STATUS_OFF)
