@@ -80,7 +80,7 @@ class Command(BaseCommand):
                 continue
             
             comment = "clawer %d task generator" % task_generator.clawer_id
-            self.user_cron.remove_all(comment=comment)
+            self.cron.remove_all(comment=comment)
             
         
     def _test_alpha(self, task_generator):
@@ -102,7 +102,7 @@ class Command(BaseCommand):
         
     def _try_install_crontab(self, task_generator):
         comment = "clawer %d task generator" % task_generator.clawer_id
-        self.user_cron.remove_all(comment=comment)
+        self.cron.remove_all(comment=comment)
         
         if task_generator.status == ClawerTaskGenerator.STATUS_OFF:
             return False
