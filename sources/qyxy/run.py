@@ -215,7 +215,7 @@ if __name__ == '__main__':
 
     try:
         max_crawl_time = int(sys.argv[1])
-        settings.max_crawl_time = timedelta(minutes=max_crawl_time)
+        settings.max_crawl_time = datetime.timedelta(minutes=max_crawl_time)
     except ValueError as e:
         settings.logger.error('invalid max_crawl_time, should be a integer')
         os._exit(1)
@@ -224,7 +224,7 @@ if __name__ == '__main__':
     timer.start()
 
     settings.logger.info(u'即将开始爬取，最长爬取时间为 %s 秒' % settings.max_crawl_time)
-    settings.start_crawl_time = datetime.now()
+    settings.start_crawl_time = datetime.datetime.now()
 
     if sys.argv[2] == 'all':
         for p in sorted(province_crawler.keys()):
