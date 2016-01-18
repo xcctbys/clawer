@@ -26,7 +26,7 @@ class Base(object):
                 query = model()
 
                 for y in row:
-                    print y,':', row[y]
+                    print y, ':', row[y]
 
                 for field in fields:
                     value = row.get(field)
@@ -372,16 +372,16 @@ class EnterAdministrativeLicense(models.Model, Base):
 
     license_num = models.IntegerField(null=True)
     license_filename = models.CharField(max_length=50, null=True, blank=True)
-    license_begien_date = models.DateField( null=True)
-    license_end_date = models.DateField( null=True)
+    license_begien_date = models.DateField(null=True)
+    license_end_date = models.DateField(null=True)
     license_authority = models.CharField(max_length=30, null=True, blank=True)
     license_content = models.CharField(max_length=50, null=True, blank=True)
     license_status = models.CharField(max_length=20, null=True, blank=True)
     license_detail = models.CharField(max_length=10, null=True, blank=True)
-    license_register_time = models.DateField( null=True)
-    license_publicity_time = models.DateField( null=True)
+    license_register_time = models.DateField(null=True)
+    license_publicity_time = models.DateField(null=True)
     license_change_item = models.CharField(max_length=20, null=True, blank=True)
-    license_change_time  = models.DateField( null=True)
+    license_change_time = models.DateField(null=True)
     license_content_before = models.CharField(max_length=50, null=True, blank=True)
     license_content_after = models.CharField(max_length=50, null=True, blank=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
@@ -400,9 +400,9 @@ class EnterAdministrativePenalty(models.Model, Base):
     illegal_type = models.CharField(max_length=30, null=True, blank=True)
     administrative_penalty_content = models.CharField(max_length=30, null=True, blank=True)
     decision_gov = models.CharField(max_length=30, null=True, blank=True)
-    decision_date = models.DateField( null=True)
+    decision_date = models.DateField(null=True)
     penalty_comment = models.CharField(max_length=50, null=True, blank=True)
-    penalty_publicit_date datetime = models.DateField( null=True)
+    penalty_publicit_date = models.DateField(null=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     id = models.IntegerField(null=True)
     bas_id = models.IntegerField(null=True)
@@ -419,8 +419,8 @@ class EnterAnnualReport(models.Model, Base):
     publicity_date = models.DateField(null=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     id = models.IntegerField(null=True)
-    bas_id = models.IntegerField(null=Ture)
-    primary =models.IntegerField(null=Ture)
+    bas_id = models.IntegerField(null=True)
+    primary = models.IntegerField(null=True)
 
     class Meta:
         db_table = "enter_annual_report"
@@ -474,10 +474,10 @@ class EnterSharechange(models.Model, Base):
     share_ratio_after = models.FloatField(null=True)
     share_change_date = models.DateField(null=True)
     sharechange_register_date = models.DateField(null=True)
-    sharechange_publicity_date =models.DateField(null=True)
+    sharechange_publicity_date = models.DateField(null=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     id = models.IntegerField(null=True)
-    bas_id =models.IntegerField(null=True)
+    bas_id = models.IntegerField(null=True)
 
     class Meta:
         db_table = "enter_sharechange"
@@ -527,6 +527,7 @@ class JudicialShareFreeze(models.Model, Base):
     class Meta:
         db_table = "judicial_share_freeze"
 
+
 class JudicialShareholderChange(models.Model, Base):
     """司法-司法股东变更登记
     """
@@ -558,6 +559,7 @@ class OtherAdministrativeChange(models.Model, Base):
 
     class Meta:
         db_table = "other_administrative_change"
+
 
 class OtherAdministrativeLicense(models.Model, Base):
     """其他部门-行政许可
@@ -601,7 +603,6 @@ class OtherAdministrativePenalty(models.Model, Base):
     id = models.IntegerField(null=True)
     bas_id = models.IntegerField(null=True)
 
-
     class Meta:
         db_table = "other_administrative_penalty"
 
@@ -642,6 +643,7 @@ class YearReportAssets(models.Model, Base):
 
     class Meta:
         db_table = "year_report_assets"
+
 
 class YearReportBasic(models.Model, Base):
     """年报-基本
@@ -691,7 +693,7 @@ class YearReportInvestment(models.Model, Base):
     enter_code = models.CharField(max_length=20, null=True, blank=True)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
     id = models.IntegerField(null=True)
-    ent_id =models.IntegerField(null=True)
+    ent_id = models.IntegerField(null=True)
 
     class Meta:
         db_table = "year_report_investment"
@@ -707,13 +709,13 @@ class YearReportModification(models.Model, Base):
     modify_date = models.DateField(null=True)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
     id = models.IntegerField(null=True)
-    ent_id =models.IntegerField(null=True)
+    ent_id = models.IntegerField(null=True)
 
     class Meta:
         db_table = "year_report_modification"
 
 
-    class YearReportOnline(models.Model, Base):
+class YearReportOnline(models.Model, Base):
     """年报-网站或网店
     """
 
@@ -728,10 +730,9 @@ class YearReportModification(models.Model, Base):
         db_table = "year_report_online"
 
 
-
 class YearReportSharechange(models.Model, Base):
-	"""年报-股权变更
-	"""
+    """年报-股权变更
+    """
 
     shareholder = models.CharField(max_length=20, null=True, blank=True)
     shares_before = models.FloatField(null=True)
@@ -745,8 +746,8 @@ class YearReportSharechange(models.Model, Base):
 
 
 class YearReportShareholder(models.Model, Base):
-	"""年报-股东及出资
-	"""
+    """年报-股东及出资
+    """
 
     shareholder = models.CharField(max_length=30, null=True, blank=True)
     subscription_money_amount = models.FloatField(null=True)
@@ -757,14 +758,15 @@ class YearReportShareholder(models.Model, Base):
     paid_type = models.CharField(max_length=20, null=True, blank=True)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
     id = models.IntegerField(null=True)
-    ent_id =models.IntegerField(null=True)
+    ent_id = models.IntegerField(null=True)
 
     class Meta:
         db_table = "year_report_shareholder"
 
+
 class YearReportWarrandice(models.Model, Base):
-	"""年报-对外提供保证担保
-	"""
+    """年报-对外提供保证担保
+    """
 
     creditor = models.CharField(max_length=30, null=True, blank=True)
     debtor = models.CharField(max_length=30, null=True, blank=True)
