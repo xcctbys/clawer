@@ -13,6 +13,8 @@ from optparse import make_option
 
 
 def install(foreign=False):
+    user_cron = CronTab(user=settings.CRONTAB_USER)
+    
     remove_unused(foreign)
     
     clawers = Clawer.objects.filter(status=Clawer.STATUS_ON)
@@ -43,6 +45,9 @@ def install(foreign=False):
         #make old offline
         ClawerTaskGenerator.objects.filter(clawer_id=task_generator, \
             status=ClawerTaskGenerator.STATUS_ON).exclude(id=task_generator.id).update(status=ClawerTaskGenerator.STATUS_OFF)
+            
+    #done
+    user_cron.write_to_user(user=settings.CRONTAB_USER)
     
     
 def remove_unused(foreign=False):
@@ -72,16 +77,14 @@ def test_beta(task_generator):
 
 
 
-def test_product(task_generator, foreign):
+def test_product(task_generator, foreign, user_cron):
     test_crontab(task_generator, foreign)
     return True
 
 
-def test_crontab(task_generator, foreign):
+def test_crontab(task_generator, foreign, user_cron):
     comment = "clawer %d task generator" % task_generator.clawer_id
-    user_cron = CronTab(user=settings.CRONTAB_USER)
     user_cron.remove_all(comment=comment)
-    user_cron.write_to_user(user=settings.CRONTAB_USER)
     
     if task_generator.status == ClawerTaskGenerator.STATUS_OFF:
         return
@@ -96,8 +99,6 @@ def test_crontab(task_generator, foreign):
     
     job = user_cron.new(command="cd %s; sh %s task_generator_run %d" % (settings.CRONTAB_HOME, cmd, task_generator.id), comment=comment)
     job.setall(task_generator.cron.strip())
-    
-    user_cron.write_to_user(user=settings.CRONTAB_USER)
     
                 
 
