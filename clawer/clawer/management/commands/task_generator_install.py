@@ -98,9 +98,8 @@ class Command(BaseCommand):
         return True
     
     def _test_product(self, task_generator):
-        return True
-    
-    
+        return self._try_install_crontab(task_generator)
+        
     def _try_install_crontab(self, task_generator):
         comment = "clawer %d task generator" % task_generator.clawer_id
         self.user_cron.remove_all(comment=comment)
