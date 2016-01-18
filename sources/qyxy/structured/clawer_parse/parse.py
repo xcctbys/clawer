@@ -2,7 +2,7 @@
 
 import json
 import fileinput
-import profiles.settings as settings
+import profiles.consts as consts
 from clawer_parse.models import (
     Basic,
     IndustryCommerceAdministrativePenalty,
@@ -33,9 +33,9 @@ class Parse(object):
     mappings = mappings
 
     def __init__(self, clawer_file_path=''):
-        self.keys = settings.keys
+        self.keys = consts.keys
         if (clawer_file_path == ''):
-            raise Exception('must have clawer_file_path and mappings_file_path')
+            raise Exception('must have clawer_file_path')
 
         else:
             self.companies = {}
@@ -65,24 +65,45 @@ class Parse(object):
         for key in company:
             if type(company[key] == list):
                 if key in keys and key in mappings:
-                    self.handle_list(company[key], mappings[key])
+                    self.handle_list(key, company[key], mappings[key])
                 else:
                     pass
             else:
                 pass
 
+        if self.company_result['register_num'] is None:
+            self.company_result['register_num'] = enter_id
         self.write_to_mysql()
         self.company_result = {}
 
     def handle_dict(self, dict_in_company, mapping):
-        for key in dict_in_company:
-            if key != u"详情" and key != u"":
-                self.company_result[mapping[key]] = dict_in_company[key]
+        for field in dict_in_company:
+            if field != u"详情" and field != u"":
+                self.company_result[mapping[field]] = dict_in_company[field]
             else:
                 pass
 
-    def handle_list(self, dict_in_company, mapping):
-        pass
+    def handle_list(self, key, list_in_company, mapping):
+        company_result = self.company_result
+        if key == "ind_comm_pub_reg_shareholder":
+            result = []
+            for d in list_in_company:
+
+                ind_shareholder = {}
+                for field in d:
+                    if type(d[field]) == str:
+                        ind_shareholder[mapping[field]] = d[field]
+                    if type(d[field]) == dict:
+                        detail = d[field]
+                        for detail_field in detail:
+                            if detail_field in mapping:
+                                ind_shareholder[mapping[detail_field]] = detail[detail_field]
+                result.append(ind_shareholder)
+
+            company_result["industry_commerce_shareholders"] = result
+
+        else:
+            pass
 
     def write_to_mysql(self):
         self.update(Basic)
