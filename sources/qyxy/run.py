@@ -6,7 +6,8 @@ import raven
 import gzip
 import random
 import time
-from datetime import datetime, timedelta
+import datetime
+import stat
 
 import logging
 import Queue
@@ -154,6 +155,40 @@ def crawl_province(province, cur_date):
 def force_exit():
     settings.logger.error("run timeout")
     os._exit(1)
+    
+
+class Checker(object):
+    """ Is obtain data from province enterprise site today ?
+    """
+    def __init__(self):
+        self.yesterday = datetime.datetime.now() - datetime.timedelta(1)
+        self.parent = settings.json_restore_path
+        self.success = [] # {'name':'', "size':0}
+        self.failed = [] # string list
+    
+    def run(self):
+        for province in sorted(province_crawler.keys()):
+            path = self._json_path(province)
+            if os.path.exists(path) is False:
+                self.failed.append(province)
+                continue
+            
+            st = os.stat(path)
+            self.success.append({"name": province, "size": st[stat.ST_SIZE]})
+            
+        #output
+        settings.logger.error("success %d, failed %d\n", len(self.success), len(self.failed))
+        for item in self.success:
+            settings.logger.error("\t%s: %d bytes\n", item['name'], item['size'])
+        
+        settings.logger.error("Failed province\n")
+        for item in self.failed:
+            settings.logger.error("\t%s\n", item)
+        
+    def _json_path(self, province):
+        path = os.path.join(self.parent, province, self.yesterday.strftime("%Y/%m/%d.json.gz"))
+        return path
+
 
 
 if __name__ == '__main__':
@@ -170,8 +205,12 @@ if __name__ == '__main__':
     set_codecracker()
     cur_date = CrawlerUtils.get_cur_y_m_d()
 
-    if len(sys.argv) < 3:
-        print 'usage: run.py max_crawl_time(minutes) province... \n\tmax_crawl_time 最大爬取时间，以秒计;\n\tprovince 是所要爬取的省份列表 用空格分开, all表示爬取全部)'
+    if len(sys.argv) == 2 and sys.argv[1] == "check":
+        checker = Checker()
+        checker.run()
+        exit(0)
+    elif len(sys.argv) < 3:
+        print 'usage: run.py [check] [max_crawl_time(minutes) province...] \n\tmax_crawl_time 最大爬取时间，以秒计;\n\tprovince 是所要爬取的省份列表 用空格分开, all表示爬取全部)'
         exit(1)
 
     try:
@@ -188,7 +227,7 @@ if __name__ == '__main__':
     settings.start_crawl_time = datetime.now()
 
     if sys.argv[2] == 'all':
-        for p in province_crawler.keys():
+        for p in sorted(province_crawler.keys()):
             process = multiprocessing.Process(target=crawl_province, args=(p, cur_date))
             process.start()
             process.join(max_crawl_time/2)
