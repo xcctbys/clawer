@@ -79,21 +79,15 @@ def config_logging():
 
 def crawl_work(n, province, json_restore_path, ent_queue):
     crawler = province_crawler[province](json_restore_path)
+    
     while True:
-        cur_time = datetime.now()
-        if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
-            settings.logger.info('crawl time over, exit!')
-            while not ent_queue.empty():
-                ent = ent_queue.get(timeout=3)
-                ent_queue.task_done()
-            break
-
+        
         try:
             ent = ent_queue.get(timeout=3)
         except Exception as e:
             if ent_queue.empty():
                 settings.logger.info('ent queue is empty, crawler %d stop' % n)
-                return
+                break
 
         time.sleep(random.uniform(0.2, 1))
         settings.logger.info('crawler %d start to crawler enterprise(ent_id = %s)' % (n, ent))
@@ -114,21 +108,6 @@ def crawl_work(n, province, json_restore_path, ent_queue):
         finally:
             ent_queue.task_done()
 
-
-"""
-def run(province, enterprise_list, json_restore_path):
-    ent_queue = Queue.Queue()
-    for x in enterprise_list:
-        ent_queue.put(x)
-
-    for i in range(settings.crawler_num):
-        worker = threading.Thread(target=crawl_work,args=(i, province, json_restore_path, ent_queue))
-        worker.start()
-        time.sleep(random.uniform(1, 2))
-
-    ent_queue.join()
-    settings.logger.info('All crawlers work over')
-"""
 
 def crawl_province(province, cur_date):
     #创建存储路径
@@ -157,17 +136,9 @@ def crawl_province(province, cur_date):
     ent_queue.join()
     settings.logger.info('All %s crawlers work over' % province)
 
-#    #压缩保存
-#    with open(json_restore_path, 'r') as f:
-#        compressed_data = zlib.compress(f.read())
-#        compressed_json_restore_path = json_restore_path + '.gz'
-#        with open(compressed_json_restore_path, 'wb') as cf:
-#            cf.write(compressed_data)
-
-
     #压缩保存
     if not os.path.exists(json_restore_path):
-        settings.logger.warn('json restore path %s does not exist!'%json_restore_path)
+        settings.logger.warn('json restore path %s does not exist!' % json_restore_path)
         return
 
     with open(json_restore_path, 'r') as f:
@@ -208,7 +179,7 @@ if __name__ == '__main__':
         settings.max_crawl_time = timedelta(minutes=max_crawl_time)
     except ValueError as e:
         settings.logger.error('invalid max_crawl_time, should be a integer')
-        exit(1)
+        os._exit(1)
 
     timer = threading.Timer(max_crawl_time, force_exit)
     timer.start()
@@ -220,7 +191,7 @@ if __name__ == '__main__':
         for p in province_crawler.keys():
             process = multiprocessing.Process(target=crawl_province, args=(p, cur_date))
             process.start()
-            process.join(max_crawl_time)
+            process.join(max_crawl_time/2)
     else:
         provinces = sys.argv[2:]
         for p in provinces:
