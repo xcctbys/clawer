@@ -142,6 +142,7 @@ def crawl_province(province, cur_date):
     #压缩保存
     if not os.path.exists(json_restore_path):
         settings.logger.warn('json restore path %s does not exist!' % json_restore_path)
+        os._exit(1)
         return
 
     with open(json_restore_path, 'r') as f:
@@ -152,6 +153,7 @@ def crawl_province(province, cur_date):
 
     #删除json文件，只保留  .gz 文件
     os.remove(json_restore_path)
+    os._exit(0)
 
 
 def force_exit():
