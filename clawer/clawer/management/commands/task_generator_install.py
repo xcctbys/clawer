@@ -90,11 +90,11 @@ def test_crontab(task_generator, foreign):
     if foreign and prior != ClawerSetting.PRIOR_FOREIGN:
         return
     
-    cmd = "./bg_cmd.sh"
+    cmd = "bg_cmd.sh"
     if prior == ClawerSetting.PRIOR_FOREIGN:
-        cmd = "./foreign_bg_cmd.sh"
+        cmd = "foreign_bg_cmd.sh"
     
-    job = user_cron.new(command="cd %s; %s task_generator_run %d" % (settings.CRONTAB_HOME, cmd, task_generator.id), comment=comment)
+    job = user_cron.new(command="cd %s; sh %s task_generator_run %d" % (settings.CRONTAB_HOME, cmd, task_generator.id), comment=comment)
     job.setall(task_generator.cron.strip())
     
     user_cron.write_to_user(user=settings.CRONTAB_USER)
