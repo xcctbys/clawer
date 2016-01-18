@@ -52,11 +52,11 @@ class Command(BaseCommand):
             except:
                 continue
                 
-            if self.test_alpha(task_generator) is False:
+            if self._test_alpha(task_generator) is False:
                 continue
-            if self.test_beta(task_generator) is False:
+            if self._test_beta(task_generator) is False:
                 continue
-            if self.test_product(task_generator) is False:
+            if self._test_product(task_generator) is False:
                 continue
             
             task_generator.status = ClawerTaskGenerator.STATUS_ON
