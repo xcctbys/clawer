@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.db import models
-import profiles.settings as settings
+import profiles.consts as consts
 from clawer_parse import tools
 
 
@@ -13,61 +13,56 @@ class Base(object):
         """if is exist update else insert
         """
 
-        type_date = settings.type_date
-        type_float = settings.type_float
+        type_date = consts.type_date
+        type_float = consts.type_float
         to_date = tools.trans_time
         to_float = tools.trans_float
+        name = model._meta.db_table
 
         fields = model._meta.get_all_field_names()
-        for field in fields:
-            value = data.get(field)
-            if value is None:
-                pass
-            elif field in type_date:
-                print value
-                setattr(self, field, to_date(value.encode('utf-8')))
-            elif field in type_float:
-                print value
-                setattr(self, field, to_float(value.encode('utf-8')))
-            elif field in data:
-                setattr(self, field, value)
-            else:
-                pass
-        self.save()
-        # query = model.objects.filter()
-        # fields = model._meta.get_all_field_names()
-        # if (len(query) == 0):
-        #     for field in fields:
-        #         value = data.get(field)
-        #         if value is None:
-        #             pass
-        #         elif field in type_date:
-        #             print value
-        #             setattr(self, field, to_date(value.encode('utf-8')))
-        #         elif field in type_float:
-        #             pass
-        #         elif field in data:
-        #             setattr(self, field, value)
-        #         else:
-        #             pass
-        #     self.save()
-        # else:
-        #     fields = query[0]._meta.get_all_field_names()
-        #     for field in fields:
-        #         print field
-        #         value = data.get(field)
-        #         if value is None:
-        #             pass
-        #         elif field in type_date:
-        #             pass
-        #         elif field in type_float:
-        #             pass
-        #         elif field in data:
-        #             print "%s : %s" % (field, value)
-        #             setattr(query[0], field, value)
-        #         else:
-        #             pass
-        #     query[0].save()
+
+        if name == "industry_commerce_shareholders":
+            for row in data["industry_commerce_shareholders"]:
+                query = model()
+
+                for y in row:
+                    print y,':', row[y]
+
+                for field in fields:
+                    value = row.get(field)
+                    if value is None:
+                        value = data.get(field)
+
+                    if value is None:
+                        pass
+                    elif field in type_date:
+                        print value
+                        setattr(query, field, to_date(value.encode('utf-8')))
+                    elif field in type_float:
+                        print value
+                        setattr(query, field, to_float(value.encode('utf-8')))
+                    elif field in data:
+                        setattr(query, field, value)
+                    else:
+                        pass
+                query.save()
+
+        else:
+            for field in fields:
+                value = data.get(field)
+                if value is None:
+                    pass
+                elif field in type_date:
+                    print value
+                    setattr(self, field, to_date(value.encode('utf-8')))
+                elif field in type_float:
+                    print value
+                    setattr(self, field, to_float(value.encode('utf-8')))
+                elif field in data:
+                    setattr(self, field, value)
+                else:
+                    pass
+            self.save()
 
 
 class Basic(models.Model, Base):
