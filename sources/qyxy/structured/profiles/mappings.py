@@ -226,3 +226,34 @@ mappings['judical_assist_pub_shareholder_modify'] = {
     u'执行法院': 'excute_court',
     u'受让人': 'assignee',
 }
+
+
+mappings['ent_pub_ent_annual_report'] = {
+}
+
+mappings['ent_pub_shareholder_capital_contribution'] = {
+}
+
+mappings['ent_pub_equity_change'] = {
+}
+
+mappings['ent_pub_administration_license'] = {
+}
+
+mappings['ent_pub_knowledge_property'] = {
+}
+
+mappings['ent_pub_administration_sanction'] = {
+}
+
+mappings['other_dept_pub_administration_license'] = {
+}
+
+mappings['other_dept_pub_administration_sanction'] = {
+}
+
+mappings['judical_assist_pub_equity_freeze'] = {
+}
+
+mappings['judical_assist_pub_shareholder_modify'] = {
+}
