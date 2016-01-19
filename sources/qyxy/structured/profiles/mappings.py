@@ -44,7 +44,7 @@ mappings["ind_comm_pub_reg_modify"] = {
 mappings["ind_comm_pub_arch_key_persons"] = {
     u"序号": "bas_id",
     u"姓名": "name",
-    u"职务": "postion",
+    u"职务": "position",
 }
 
 mappings["ind_comm_pub_arch_branch"] = {
@@ -79,7 +79,7 @@ mappings["ind_comm_pub_equity_ownership_reg"] = {
     u"登记编号": "register_num",
     u"证照/证件号码": "pledgor_certificate_code",
     u"变化情况": "change_detail",
-    u"序号": "id",
+    u"序号": None,
 }
 
 mappings["ind_comm_pub_administration_sanction"] = {
@@ -90,7 +90,7 @@ mappings["ind_comm_pub_administration_sanction"] = {
     u"作出行政处罚决定日期": "penalty_decision_date",
     u"详情": "detail",
     u"行政处罚决定书文号": "penalty_decision_num",
-    u"序号": "id",
+    u"序号": None,
 }
 
 mappings["ind_comm_pub_business_exception"] = {
@@ -100,7 +100,7 @@ mappings["ind_comm_pub_business_exception"] = {
     u"列入经营异常名录原因": "list_on_reason",
     u"列入日期": "list_on_date",
     u"移出日期": "list_out_date",
-    u"序号": "id",
+    u"序号": None,
 }
 
 mappings["ind_comm_pub_serious_violate_law"] = {
@@ -110,7 +110,7 @@ mappings["ind_comm_pub_serious_violate_law"] = {
     u"作出决定机关": "decision_gov",
     u"列入日期": "list_on_date",
     u"移出日期": "list_out_date",
-    u"序号": "id",
+    u"序号": None,
 }
 
 mappings["ind_comm_pub_spot_check"] = {
@@ -119,7 +119,7 @@ mappings["ind_comm_pub_spot_check"] = {
     u"结果": "check_result",
     u"类型": "check_type",
     u"日期": "check_date",
-    u"序号": "id",
+    u"序号": None,
 }
 
 mappings["ent_pub_shareholder_capital_contribution"] = {
@@ -142,7 +142,7 @@ mappings["ent_pub_equity_change"] = {
     u"公示日期": "sharechange_publicity_date",
     u"股权变更日期": "share_change_date",
     u"变更后股权比例": "share_ratio_after",
-    u"序号": "id",
+    u"序号": None,
     u"股东": "shareholder",
 }
 
@@ -154,7 +154,7 @@ mappings["ent_pub_administration_license"] = {
     u"许可文件名称": "license_filename",
     u"许可文件编号": "license_num",
     u"详情": "license_detail",
-    u"序号": "id",
+    u"序号": None,
     u"许可机关": "license_authority",
     u"有效期自": "license_begien_date",
 }
@@ -169,7 +169,7 @@ mappings["ent_pub_knowledge_property"] = {
     u"质权人名称": "mortgagee_name",
     u"名称": "enter_name",
     u"序号": "property_type",
-    u"种类": "id",
+    u"种类": None,
 }
 
 mappings["ent_pub_administration_sanction"] = {
@@ -179,7 +179,7 @@ mappings["ent_pub_administration_sanction"] = {
     u"违法行为类型": "illegal_type",
     u"作出行政处罚决定日期": "decision_date",
     u"行政处罚决定书文号": "penalty_decision_num",
-    u"序号": "id",
+    u"序号": None,
     u"备注": "penalty_comment",
     u"详情": "detail",
 }
@@ -191,7 +191,7 @@ mappings["other_dept_pub_administration_license"] = {
     u"许可文件名称": "license_filename",
     u"许可文件编号": "license_file_num",
     u"详情": "license_detail",
-    u"序号": "id",
+    u"序号": None,
     u"许可机关": "license_authority_gov",
     u"有效期自": "license_begin_date",
 }
@@ -202,7 +202,7 @@ mappings["other_dept_pub_administration_sanction"] = {
     u"违法行为类型": "illegal_type",
     u"作出行政处罚决定日期": "decision_date",
     u"行政处罚决定书文号": "penalty_decision_num",
-    u"序号": "id",
+    u"序号": None,
     u"详情": "detail",
 }
 
@@ -211,7 +211,7 @@ mappings["judical_assist_pub_equity_freeze"] = {
     u"被执行人": "been_excute_person",
     u"股权数额": "share_num",
     u"详情": "freeze_detail",
-    u"序号": "id",
+    u"序号": None,
     u"执行法院": "excute_court",
     u"协助公示通知书文号": "notice_num",
 }
@@ -220,13 +220,13 @@ mappings["judical_assist_pub_shareholder_modify"] = {
     u"被执行人": "been_excute_name",
     u"股权数额": "share_num",
     u"详情": "detail",
-    u"序号": "id",
+    u"序号": None,
     u"执行法院": "excute_court",
     u"受让人": "assignee",
 }
 
 mappings["ent_pub_ent_annual_report"] = {
-    u"序号": "id",
+    u"序号": None,
     u"报送年度": "report_year",
     u"详情": "",
     u"年报日期": "publicity_date",
