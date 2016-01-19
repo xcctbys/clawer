@@ -95,7 +95,8 @@ def crawl_work(n, province, json_restore_path, ent_queue):
         try:
             crawler.run(ent)
         except Exception as e:
-            settings.logger.error('crawler %d failed to crawl enterprise(id = %s), with exception %s' %(n, ent, e))
+            settings.logger.error('crawler %s failed to get enterprise(id = %s), with exception %s' % (province, ent, e))
+            """
             if failed_ent.get(ent, 0) > 3:
                 settings.logger.error('Failed to crawl and parse enterprise %s' % ent)
                 #report to sentry
@@ -106,6 +107,7 @@ def crawl_work(n, province, json_restore_path, ent_queue):
                 failed_ent[ent] = failed_ent.get(ent, 0) + 1
                 settings.logger.warn('failed to crawl enterprise(id = %s) %d times!' % (ent, failed_ent[ent]))
                 ent_queue.put(ent)
+            """
         finally:
             ent_queue.task_done()
 
@@ -140,6 +142,7 @@ def crawl_province(province, cur_date):
     #压缩保存
     if not os.path.exists(json_restore_path):
         settings.logger.warn('json restore path %s does not exist!' % json_restore_path)
+        os._exit(1)
         return
 
     with open(json_restore_path, 'r') as f:
@@ -150,6 +153,7 @@ def crawl_province(province, cur_date):
 
     #删除json文件，只保留  .gz 文件
     os.remove(json_restore_path)
+    os._exit(0)
 
 
 def force_exit():
@@ -215,7 +219,7 @@ if __name__ == '__main__':
 
     try:
         max_crawl_time = int(sys.argv[1])
-        settings.max_crawl_time = timedelta(minutes=max_crawl_time)
+        settings.max_crawl_time = datetime.timedelta(minutes=max_crawl_time)
     except ValueError as e:
         settings.logger.error('invalid max_crawl_time, should be a integer')
         os._exit(1)
@@ -224,11 +228,12 @@ if __name__ == '__main__':
     timer.start()
 
     settings.logger.info(u'即将开始爬取，最长爬取时间为 %s 秒' % settings.max_crawl_time)
-    settings.start_crawl_time = datetime.now()
+    settings.start_crawl_time = datetime.datetime.now()
 
     if sys.argv[2] == 'all':
         for p in sorted(province_crawler.keys()):
             process = multiprocessing.Process(target=crawl_province, args=(p, cur_date))
+            process.daemon = True
             process.start()
             process.join(max_crawl_time/2)
     else:
@@ -238,6 +243,10 @@ if __name__ == '__main__':
                 settings.logger.warn('province %s is not supported currently' % p)
             else:
                 process = multiprocessing.Process(target=crawl_province, args=(p, cur_date))
+                process.daemon = True
                 process.start()
                 process.join(max_crawl_time)
+                settings.logger.info("child process exit code %d", process.exitcode)
+    
+    os._exit(0)
 
