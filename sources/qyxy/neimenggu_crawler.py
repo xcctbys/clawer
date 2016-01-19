@@ -430,36 +430,85 @@ class HeilongjiangParser(Parser):
         base_info = soup.find('table', {'id': 'baseinfo'})
         base_trs = base_info.find_all('tr')
         ind_comm_pub_reg_basic = {}
-        ind_comm_pub_reg_basic[base_trs[1].find('th').get_text()] = self.wipe_off_newline_and_blank_for_fe(base_trs[1].find('td').get_text())
-        ind_comm_pub_reg_basic[base_trs[2].find_all('th')[0].get_text()] = self.wipe_off_newline_and_blank_for_fe(base_trs[2].find_all('td')[0].get_text())
-        ind_comm_pub_reg_basic[base_trs[2].find_all('th')[1].get_text()] = self.wipe_off_newline_and_blank_for_fe(base_trs[2].find_all('td')[1].get_text())
-        ind_comm_pub_reg_basic[base_trs[3].find_all('th')[0].get_text()] = self.wipe_off_newline_and_blank_for_fe(base_trs[3].find_all('td')[0].get_text())
-        ind_comm_pub_reg_basic[base_trs[3].find_all('th')[1].get_text()] = self.wipe_off_newline_and_blank_for_fe(base_trs[3].find_all('td')[1].get_text())
-        ind_comm_pub_reg_basic[base_trs[4].find_all('th')[0].get_text()] = self.wipe_off_newline_and_blank_for_fe(base_trs[4].find_all('td')[0].get_text())
-        ind_comm_pub_reg_basic[base_trs[4].find_all('th')[1].get_text()] = self.wipe_off_newline_and_blank_for_fe(base_trs[4].find_all('td')[1].get_text())
-        ind_comm_pub_reg_basic[base_trs[5].find('th').get_text()] = self.wipe_off_newline_and_blank_for_fe(base_trs[5].find('td').get_text())
-        ind_comm_pub_reg_basic[base_trs[6].find_all('th')[0].get_text()] = self.wipe_off_newline_and_blank_for_fe(base_trs[6].find_all('td')[0].get_text())
-        ind_comm_pub_reg_basic[base_trs[6].find_all('th')[1].get_text()] = self.wipe_off_newline_and_blank_for_fe(base_trs[6].find_all('td')[1].get_text())
-        ind_comm_pub_reg_basic[base_trs[7].find('th').get_text()] = self.wipe_off_newline_and_blank_for_fe(base_trs[7].find('td').get_text())
-        ind_comm_pub_reg_basic[base_trs[8].find_all('th')[0].get_text()] = self.wipe_off_newline_and_blank_for_fe(base_trs[8].find_all('td')[0].get_text())
-        ind_comm_pub_reg_basic[base_trs[8].find_all('th')[1].get_text()] = self.wipe_off_newline_and_blank_for_fe(base_trs[8].find_all('td')[1].get_text())
-        ind_comm_pub_reg_basic[base_trs[9].find('th').get_text()] = self.wipe_off_newline_and_blank_for_fe(base_trs[9].find('td').get_text())
+        ind_comm_pub_reg_basic[base_trs[1].find('th').get_text()] = self.wipe_off_newline_and_blank_for_fe(
+                base_trs[1].find('td').get_text())
+        ind_comm_pub_reg_basic[base_trs[2].find_all('th')[0].get_text()] = self.wipe_off_newline_and_blank_for_fe(
+                base_trs[2].find_all('td')[0].get_text())
+        ind_comm_pub_reg_basic[base_trs[2].find_all('th')[1].get_text()] = self.wipe_off_newline_and_blank_for_fe(
+                base_trs[2].find_all('td')[1].get_text())
+        ind_comm_pub_reg_basic[base_trs[3].find_all('th')[0].get_text()] = self.wipe_off_newline_and_blank_for_fe(
+                base_trs[3].find_all('td')[0].get_text())
+        ind_comm_pub_reg_basic[base_trs[3].find_all('th')[1].get_text()] = self.wipe_off_newline_and_blank_for_fe(
+                base_trs[3].find_all('td')[1].get_text())
+        ind_comm_pub_reg_basic[base_trs[4].find_all('th')[0].get_text()] = self.wipe_off_newline_and_blank_for_fe(
+                base_trs[4].find_all('td')[0].get_text())
+        ind_comm_pub_reg_basic[base_trs[4].find_all('th')[1].get_text()] = self.wipe_off_newline_and_blank_for_fe(
+                base_trs[4].find_all('td')[1].get_text())
+        ind_comm_pub_reg_basic[base_trs[5].find('th').get_text()] = self.wipe_off_newline_and_blank_for_fe(
+                base_trs[5].find('td').get_text())
+        ind_comm_pub_reg_basic[base_trs[6].find_all('th')[0].get_text()] = self.wipe_off_newline_and_blank_for_fe(
+                base_trs[6].find_all('td')[0].get_text())
+        ind_comm_pub_reg_basic[base_trs[6].find_all('th')[1].get_text()] = self.wipe_off_newline_and_blank_for_fe(
+                base_trs[6].find_all('td')[1].get_text())
+        ind_comm_pub_reg_basic[base_trs[7].find('th').get_text()] = self.wipe_off_newline_and_blank_for_fe(
+                base_trs[7].find('td').get_text())
+        ind_comm_pub_reg_basic[base_trs[8].find_all('th')[0].get_text()] = self.wipe_off_newline_and_blank_for_fe(
+                base_trs[8].find_all('td')[0].get_text())
+        ind_comm_pub_reg_basic[base_trs[8].find_all('th')[1].get_text()] = self.wipe_off_newline_and_blank_for_fe(
+                base_trs[8].find_all('td')[1].get_text())
+        ind_comm_pub_reg_basic[base_trs[9].find('th').get_text()] = self.wipe_off_newline_and_blank_for_fe(
+                base_trs[9].find('td').get_text())
         self.crawler.json_dict['ind_comm_pub_reg_basic'] = ind_comm_pub_reg_basic
 
         # 投资人信息
         ind_comm_pub_reg_shareholderes = []
         touziren_table = soup.find('table', {'id': 'touziren'})
         if touziren_table is not None:
-            shareholder_trs = touziren_table.find_all('tr')
-            for i in range(len(shareholder_trs)):
-                ind_comm_pub_reg_shareholder = {}
-                tds = shareholder_trs[i].find_all('td')
-                ind_comm_pub_reg_shareholder[u'股东类型'] = self.wipe_off_newline_and_blank_for_fe(tds[0].get_text())
-                ind_comm_pub_reg_shareholder[u'股东'] = self.wipe_off_newline_and_blank_for_fe(tds[1].get_text())
-                ind_comm_pub_reg_shareholder[u'证照/证件类型'] = self.wipe_off_newline_and_blank_for_fe(tds[2].get_text())
-                ind_comm_pub_reg_shareholder[u'证照/证件号码'] = self.wipe_off_newline_and_blank_for_fe(tds[3].get_text())
-                ind_comm_pub_reg_shareholder[u'详情'] = None
-                ind_comm_pub_reg_shareholderes.append(ind_comm_pub_reg_shareholder)
+            if ck_string in touziren_table.get_text():
+                pass
+            else:
+                touziren_div = soup.find('div', {'id': 'invInfo'})
+                multi_number_string = str(
+                        touziren_div.find_all('table', {'class': 'detailsList'})[1].find('th').get_text()).replace('<',
+                                                                                                                   '').replace(
+                        '>', '').replace('\n', '').replace(' ', '').strip('>').strip('\n').strip('<').strip('>').strip(
+                    ' ')
+                multi_number = int(multi_number_string[6:7])
+                ind_comm_pub_arch_key_persons = []
+                if multi_number > 1:
+                    i = 1
+                    url = 'http://www.nmgs.gov.cn:7001/aiccips/GSpublicity/invInfoPage.html'
+                    url_data = {'pageNo': i, 'entNo': self.crawler.entNo, 'regOrg': self.crawler.regOrg}
+                    mutli_page = self.crawler.crawl_page_by_url(url, data=url_data, method="POST")
+                    mutli_json = json.loads(mutli_page)
+                    list = mutli_json.get('list')
+                    for item in list:
+                        ind_comm_pub_reg_shareholder = {}
+                        ind_comm_pub_reg_shareholder[u'股东类型'] = self.wipe_off_newline_and_blank_for_fe(
+                                item.get('invType'))
+                        ind_comm_pub_reg_shareholder[u'股东'] = self.wipe_off_newline_and_blank_for_fe(item.get('inv'))
+                        ind_comm_pub_reg_shareholder[u'证照/证件类型'] = self.wipe_off_newline_and_blank_for_fe(
+                                item.get('certName'))
+                        ind_comm_pub_reg_shareholder[u'证照/证件号码'] = self.wipe_off_newline_and_blank_for_fe(
+                                item.get('certNo'))
+                        ind_comm_pub_reg_shareholder[u'详情'] = None
+                        ind_comm_pub_reg_shareholderes.append(ind_comm_pub_reg_shareholder)
+                else:
+                    if touziren_table is not None:
+                        shareholder_trs = touziren_table.find_all('tr')
+                        for i in range(len(shareholder_trs)):
+                            ind_comm_pub_reg_shareholder = {}
+                            tds = shareholder_trs[i].find_all('td')
+                            ind_comm_pub_reg_shareholder[u'股东类型'] = self.wipe_off_newline_and_blank_for_fe(
+                                    tds[0].get_text())
+                            ind_comm_pub_reg_shareholder[u'股东'] = self.wipe_off_newline_and_blank_for_fe(
+                                    tds[1].get_text())
+                            ind_comm_pub_reg_shareholder[u'证照/证件类型'] = self.wipe_off_newline_and_blank_for_fe(
+                                    tds[2].get_text())
+                            ind_comm_pub_reg_shareholder[u'证照/证件号码'] = self.wipe_off_newline_and_blank_for_fe(
+                                    tds[3].get_text())
+                            ind_comm_pub_reg_shareholder[u'详情'] = None
+                            ind_comm_pub_reg_shareholderes.append(ind_comm_pub_reg_shareholder)
 
         self.crawler.json_dict['ind_comm_pub_reg_shareholder'] = ind_comm_pub_reg_shareholderes
         # 变更信息
@@ -491,28 +540,30 @@ class HeilongjiangParser(Parser):
         if ck_string in zyry_table.get_text():
             pass
         else:
-            multi_number_string = str(zyry_div.find_all('table', {'class': 'detailsList'})[1].find('th').get_text()).replace('<','').replace('>','').replace('\n','').replace(' ','').strip('>').strip('\n').strip('<').strip('>').strip(' ')
+            multi_number_string = str(
+                    zyry_div.find_all('table', {'class': 'detailsList'})[1].find('th').get_text()).replace('<',
+                                                                                                           '').replace(
+                    '>', '').replace('\n', '').replace(' ', '').strip('>').strip('\n').strip('<').strip('>').strip(' ')
             multi_number = int(multi_number_string[6:7])
             ind_comm_pub_arch_key_persons = []
             key_persons = zyry_table.find_all('td')
             if multi_number > 1:
                 i = 1
-                while i < multi_number:
-                    url = 'http://www.nmgs.gov.cn:7001/aiccips/GSpublicity/vipInfoPage'
-                    url_data = {'pageNo':i,'entNo':self.crawler.entNo,'regOrg':self.crawler.regOrg}
-                    mutli_page = self.crawler.crawl_page_by_url(url,data=url_data,method="POST")
-                    mutli_json = json.loads(mutli_page)
-                    list = mutli_json.get('list')
-                    for item in list:
-                        ind_comm_pub_arch_key_person = {}
-                        ind_comm_pub_arch_key_person[u'序号'] = i
-                        ind_comm_pub_arch_key_person[u'姓名'] = item.get('name')
-                        ind_comm_pub_arch_key_person[u'职务'] = item.get('position')
-                        ind_comm_pub_arch_key_persons.append(ind_comm_pub_arch_key_person)
-                        i += 1
+                url = 'http://www.nmgs.gov.cn:7001/aiccips/GSpublicity/vipInfoPage'
+                url_data = {'pageNo': i, 'entNo': self.crawler.entNo, 'regOrg': self.crawler.regOrg}
+                mutli_page = self.crawler.crawl_page_by_url(url, data=url_data, method="POST")
+                mutli_json = json.loads(mutli_page)
+                list = mutli_json.get('list')
+                for item in list:
+                    ind_comm_pub_arch_key_person = {}
+                    ind_comm_pub_arch_key_person[u'序号'] = i
+                    ind_comm_pub_arch_key_person[u'姓名'] = item.get('name')
+                    ind_comm_pub_arch_key_person[u'职务'] = item.get('position')
+                    ind_comm_pub_arch_key_persons.append(ind_comm_pub_arch_key_person)
+                    i += 1
             else:
                 i = 0
-                while i < len(key_persons)-3:
+                while i < len(key_persons) - 3:
                     ind_comm_pub_arch_key_person = {}
                     if (len(key_persons) < 3):
                         break
@@ -526,13 +577,16 @@ class HeilongjiangParser(Parser):
         # 分支机构
 
         arch_branch_div = soup.find('div', {'id': 'branch'})
-        arch_branch_info = arch_branch_div.find_all('table',{'class':'detailsList'})[0]
+        arch_branch_info = arch_branch_div.find_all('table', {'class': 'detailsList'})[0]
 
         detail_arch_branch_infoes = []
         if ck_string in arch_branch_info.get_text():
             pass
         else:
-            multi_number_string = str(arch_branch_div.find_all('table', {'class': 'detailsList'})[1].find('th').get_text()).replace('<','').replace('>','').replace('\n','').replace(' ','').strip('>').strip('\n').strip('<').strip('>').strip(' ')
+            multi_number_string = str(
+                    arch_branch_div.find_all('table', {'class': 'detailsList'})[1].find('th').get_text()).replace('<',
+                                                                                                                  '').replace(
+                    '>', '').replace('\n', '').replace(' ', '').strip('>').strip('\n').strip('<').strip('>').strip(' ')
             multi_number = int(multi_number_string[6:7])
             arch_branch_trs = arch_branch_info.find_all('tr')
             if multi_number < 2:
@@ -556,8 +610,8 @@ class HeilongjiangParser(Parser):
             else:
                 i = 1
                 url = 'http://www.nmgs.gov.cn:7001/aiccips/GSpublicity/braInfoPage'
-                url_data = {'pageNo':i,'entNo':self.crawler.entNo,'regOrg':self.crawler.regOrg}
-                mutli_page = self.crawler.crawl_page_by_url(url,data=url_data,method="POST")
+                url_data = {'pageNo': i, 'entNo': self.crawler.entNo, 'regOrg': self.crawler.regOrg}
+                mutli_page = self.crawler.crawl_page_by_url(url, data=url_data, method="POST")
                 mutli_json = json.loads(mutli_page)
                 list = mutli_json.get('list')
                 for item in list:
@@ -1385,15 +1439,18 @@ class TestParser(unittest.TestCase):
         isOK = self.crawler.crawl_check_page()
         self.assertEqual(isOK, True)
 
+
 if __name__ == '__main__':
     from CaptchaRecognition import CaptchaRecognition
     import run
 
     run.config_logging()
     NeimengguClawer.code_cracker = CaptchaRecognition('neimenggu')
-    crawler = NeimengguClawer('./enterprise_crawler/neimenggu.json')
+    crawler = NeimengguClawer('./enterprise_crawler/neimenggu/neimenggu.json')
     enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/neimenggu.txt')
+
     for ent_number in enterprise_list:
         ent_number = ent_number.rstrip('\n')
-        settings.logger.info('############   Start to crawl enterprise with id %s   ################\n' % ent_number)
+        settings.logger.info(
+                '############   Start to crawl enterprise with id %s   ################\n' % ent_number)
         crawler.run(ent_number=ent_number)
