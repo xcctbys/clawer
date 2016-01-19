@@ -7,4 +7,4 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         worker = Parse('profiles/test1.json')
-        worker.handle_companies()
+        worker.parse_companies()
