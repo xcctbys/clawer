@@ -15,14 +15,14 @@ from optparse import make_option
 
 class Command(BaseCommand):
     args = ""
-    help = "Install generator"
+    help = "Install generator to crontab."
     
     option_list = BaseCommand.option_list + (
         make_option('--foreign',
-            dest='foreign',
-            action="store_true",
-            default=False,
-            help='Run task generators of foreigh'
+            dest = 'foreign',
+            action = "store_true",
+            default = False,
+            help = 'Run task generators of foreigh'
         ),
     )
     
@@ -36,7 +36,7 @@ class Command(BaseCommand):
         self.install()
         
     def install(self):
-        self._remove_unused()
+        self._remove_offline()
         
         clawers = Clawer.objects.filter(status=Clawer.STATUS_ON)
         for clawer in clawers:
@@ -64,14 +64,13 @@ class Command(BaseCommand):
             
             print "success! generator %d, clawer %d" % (task_generator.id, clawer.id)
             #make old offline
-            ClawerTaskGenerator.objects.filter(clawer_id=task_generator, \
+            ClawerTaskGenerator.objects.filter(clawer_id=clawer.id, \
                 status=ClawerTaskGenerator.STATUS_ON).exclude(id=task_generator.id).update(status=ClawerTaskGenerator.STATUS_OFF)
                 
         #done
         self._save_cron()
         
-        
-    def _remove_unused(self):
+    def _remove_offline(self):
         clawers = Clawer.objects.filter(status=Clawer.STATUS_OFF)
         
         for clawer in clawers:
@@ -79,9 +78,11 @@ class Command(BaseCommand):
             if not task_generator:
                 continue
             
-            comment = "clawer %d task generator" % task_generator.clawer_id
+            comment = self._task_generator_cron_comment(task_generator)
             self.cron.remove_all(comment=comment)
             
+    def _task_generator_cron_comment(self, task_generator):
+        return "clawer %d task generator" % task_generator.clawer_id            
         
     def _test_alpha(self, task_generator):
         path = task_generator.alpha_path()
@@ -101,7 +102,7 @@ class Command(BaseCommand):
         return self._try_install_crontab(task_generator)
         
     def _try_install_crontab(self, task_generator):
-        comment = "clawer %d task generator" % task_generator.clawer_id
+        comment = self._task_generator_cron_comment(task_generator)
         self.cron.remove_all(comment=comment)
         
         if task_generator.status == ClawerTaskGenerator.STATUS_OFF:
