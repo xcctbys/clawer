@@ -12,10 +12,10 @@ class UpdateByDict(object):
         name = model._meta.db_table
         if name in data:
             for row in data[name]:
+                print name, data, row
                 query = model()
                 for field in fields:
                     value = row.get(field) or data.get(field)
-
                     if value is not None:
                         setattr(query, field, value)
                 query.save()
@@ -605,13 +605,13 @@ class YearReportBasic(models.Model, UpdateByDict):
     zipcode = models.CharField(max_length=10, null=True, blank=True)
     enter_place = models.CharField(max_length=50, null=True, blank=True)
     email = models.CharField(max_length=20, null=True, blank=True)
-    shareholder_change = models.BooleanField()
+    shareholder_change = models.BooleanField(default=False)
     status = models.CharField(max_length=20, null=True, blank=True)
-    web_onlinestore = models.BooleanField()
+    web_onlinestore = models.BooleanField(default=False)
     staff_number = models.IntegerField(null=True)
     register_num = models.CharField(max_length=20, null=True, blank=True)
     is_warrandice = models.CharField(max_length=10, null=True, blank=True)
-    is_invest = models.BooleanField()
+    is_invest = models.BooleanField(default=False)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
     ent_id = models.IntegerField(null=True)
 

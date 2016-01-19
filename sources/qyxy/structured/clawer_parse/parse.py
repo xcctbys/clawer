@@ -23,6 +23,31 @@ from clawer_parse.models import (
     IndustryCommerceShareholders,
     IndustryCommerceSharepledge,
     IndustryMortgageDetailMortgagee,
+    EnterAdministrativeLicense,
+    EnterAdministrativePenalty,
+    EnterAnnualReport,
+    EnterIntellectualPropertyPledge,
+    EnterModification,
+    EnterAnnualReport,
+    EnterIntellectualPropertyPledge,
+    EnterModification,
+    EnterSharechange,
+    EnterShareholder,
+    JudicialShareFreeze,
+    JudicialShareholderChange,
+    OtherAdministrativeChange,
+    OtherAdministrativeLicense,
+    OtherAdministrativePenalty,
+    OtherProductionSecurity,
+    YearReportAssets,
+    YearReportBasic,
+    YearReportCorrect,
+    YearReportInvestment,
+    YearReportModification,
+    YearReportOnline,
+    YearReportSharechange,
+    YearReportShareholder,
+    YearReportWarrandice,
 )
 from profiles.mappings import mappings
 
@@ -47,30 +72,28 @@ class Parse(object):
 
     def parse_companies(self):
         handled_num = 0
-        for enter_id in self.companies:
-            company = self.companies[enter_id]
-            print u"\n公司注册Id: %s" % enter_id
-            self.parse_company(company, enter_id)
+        for register_num in self.companies:
+            company = self.companies[register_num]
+            print u"\n公司注册Id: %s" % register_num
+            self.parse_company(company, register_num)
             handled_num = handled_num + 1
+
         print u"\n=== 共导入%d个公司的数据 ===" % handled_num
 
-    def parse_company(self, company={}, enter_id=0):
+    def parse_company(self, company={}, register_num=0):
         keys = self.keys
 
-        self.company_result = {'enter_id': enter_id}
+        self.company_result = {}
 
         for key in company:
             if type(company[key]) == dict:
                 if key in keys and key in mappings:
-                    print "dict: ", key
                     self.parse_dict(company[key], mappings[key])
             elif type(company[key] == list):
                 if key in keys and key in mappings:
-                    print "list: ", key
                     self.parse_list(key, company[key], mappings[key])
 
         credit_code = self.company_result.get('credit_code')
-        register_num = self.company_result.get('register_num')
         if credit_code is None:
             credit_code = register_num
         elif register_num is None:
@@ -87,12 +110,17 @@ class Parse(object):
 
     def parse_list(self, key, list_in_company, mapping):
         keys_to_tables = consts.keys_to_tables
+        special_parse_keys = consts.special_parse_keys
         name = keys_to_tables.get(key)
         parse_func = self.key_to_parse_function(key)
-        for d in list_in_company:
-            value = parse_func(d, mapping)
-            if name is not None and value is not None:
-                self.company_result[name] = value
+        if key not in special_parse_keys:
+            for d in list_in_company:
+                value = parse_func(d, mapping)
+                if name is not None and value is not None:
+                    self.company_result[name] = []
+                    self.company_result[name].append(value)
+        else:
+            pass
 
     def key_to_parse_function(self, key):
         keys_to_functions = {
@@ -129,7 +157,12 @@ class Parse(object):
         pass
 
     def parse_ind_key_persons(self, dict_in_company, mapping):
-        pass
+        result = {}
+        for field in dict_in_company:
+            if field in mapping and dict_in_company[field] is not None:
+                result[mapping[field]] = dict_in_company[field]
+        print result
+        return result
 
     def parse_ind_branch(self, dict_in_company, mapping):
         pass
@@ -201,6 +234,31 @@ class Parse(object):
         self.update(IndustryCommerceShareholders)
         self.update(IndustryCommerceSharepledge)
         self.update(IndustryMortgageDetailMortgagee)
+        self.update(EnterAdministrativeLicense)
+        self.update(EnterAdministrativePenalty)
+        self.update(EnterAnnualReport)
+        self.update(EnterIntellectualPropertyPledge)
+        self.update(EnterModification)
+        self.update(EnterAnnualReport)
+        self.update(EnterIntellectualPropertyPledge)
+        self.update(EnterModification)
+        self.update(EnterSharechange)
+        self.update(EnterShareholder)
+        self.update(JudicialShareFreeze)
+        self.update(JudicialShareholderChange)
+        self.update(OtherAdministrativeChange)
+        self.update(OtherAdministrativeLicense)
+        self.update(OtherAdministrativePenalty)
+        self.update(OtherProductionSecurity)
+        self.update(YearReportAssets)
+        self.update(YearReportBasic)
+        self.update(YearReportCorrect)
+        self.update(YearReportInvestment)
+        self.update(YearReportModification)
+        self.update(YearReportOnline)
+        self.update(YearReportSharechange)
+        self.update(YearReportShareholder)
+        self.update(YearReportWarrandice)
 
     def update(self, model):
         company_result = self.company_result
@@ -220,7 +278,7 @@ class Parse(object):
             elif field in type_float and value is not None:
                 company_result[field] = to_float(value.encode('utf-8'))
             elif type(value) == list:
-                for d in company_result[field]:
+                for d in value:
                     for d_field in d:
                         d_value = d[d_field]
                         if d_field in type_date and d_value is not None:
