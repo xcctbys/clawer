@@ -670,7 +670,7 @@ class MonitorClawerDay(MonitorClawerHour):
         
         #send mail
         report_mails = clawer.settings().valid_report_mails() or list(settings.ADMINS)
-        title = u'爬虫 %s 在 %s，数据异常' % (clawer.name, last_day_monitor.hour.strftime("%Y-%m-%d"))
+        title = u'爬虫 %s 在 %s，数据异常' % (clawer.name, last_day_monitor.day.strftime("%Y-%m-%d"))
         content = u'%s 当前归并数据大小 %d bytes' % (socket.gethostname(), last_day_monitor.bytes)
         send_mail(title, content, settings.EMAIL_HOST_USER, report_mails, fail_silently=False)
 

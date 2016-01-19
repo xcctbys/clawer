@@ -102,14 +102,12 @@ TEMPLATE_DIRS = (
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 
 
-EMAIL_HOST = "smtp.exmail.qq.com"
-EMAIL_HOST_PASSWORD = "robot0022"
-EMAIL_HOST_USER = "robot@princetechs.com"
-EMAIL_PORT = 1025
-#EMAIL_SUBJECT_PREFIX = ""
-EMAIL_USE_TLS = True
-EMAIL_FROM = "robot@princetechs.com"
-DEFAULT_FROM_EMAIL = "robot@princetechs.com"
+EMAIL_BACKEND = 'django_smtp_ssl.SSLEmailBackend'
+EMAIL_HOST = 'smtp.exmail.qq.com'
+EMAIL_PORT = 465   
+EMAIL_HOST_USER='robot@princetechs.com'  
+EMAIL_HOST_PASSWORD='Robot0023' 
+USE_TLS = True
 
 
 AUTH_PROFILE_MODULE = 'clawer.UserProfile'
