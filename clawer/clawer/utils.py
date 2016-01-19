@@ -653,7 +653,26 @@ class MonitorClawerDay(MonitorClawerHour):
         print "clawer day monitor id %d, bytes %d" % (clawer_day_monitor.id, clawer_day_monitor.bytes)
     
     def _do_report(self, clawer):
-        pass
+        from clawer.models import ClawerDayMonitor
+        
+        need_report = False
+        
+        try:
+            last_day_monitor = ClawerDayMonitor.objects.get(clawer=clawer, day=self.day)
+            if last_day_monitor.bytes <= 0:
+                need_report = True
+        except:
+            last_day_monitor = None
+            need_report = True
+            
+        if need_report is False:
+            return
+        
+        #send mail
+        report_mails = clawer.settings().valid_report_mails() or list(settings.ADMINS)
+        send_mail(u'爬虫[%s]在%s，数据异常' % (last_day_monitor.hour.strftime("%Y-%m-%d %H时")), 
+                      u'当前归并数据大小 %d bytes' % last_day_monitor.bytes, settings.EMAIL_HOST_USER, report_mails, 
+                      fail_silently=False)
 
 
 #rqworker function
