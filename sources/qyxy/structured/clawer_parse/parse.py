@@ -36,7 +36,7 @@ class Parse(object):
     def __init__(self, clawer_file_path=''):
         self.keys = consts.keys
         if (clawer_file_path == ''):
-            raise Exception('must have clawer_file_path')
+            raise Exception('Must give clawer json file path.')
 
         else:
             self.companies = {}
@@ -45,16 +45,16 @@ class Parse(object):
                 for key in company:
                     self.companies[key] = company[key]
 
-    def handle_companies(self):
+    def parse_companies(self):
         handled_num = 0
         for enter_id in self.companies:
             company = self.companies[enter_id]
             print u"\n公司注册Id: %s" % enter_id
-            self.handle_company(company, enter_id)
+            self.parse_company(company, enter_id)
             handled_num = handled_num + 1
         print u"\n=== 共导入%d个公司的数据 ===" % handled_num
 
-    def handle_company(self, company={}, enter_id=0):
+    def parse_company(self, company={}, enter_id=0):
         keys = self.keys
 
         self.company_result = {'enter_id': enter_id}
@@ -62,10 +62,10 @@ class Parse(object):
         for key in company:
             if type(company[key]) == dict:
                 if key in keys and key in mappings:
-                    self.handle_dict(company[key], mappings[key])
+                    self.parse_dict(company[key], mappings[key])
             elif type(company[key] == list):
                 if key in keys and key in mappings:
-                    self.handle_list(key, company[key], mappings[key])
+                    self.parse_list(key, company[key], mappings[key])
 
         if self.company_result.get('register_num') is None:
             self.company_result['register_num'] = enter_id
@@ -74,30 +74,13 @@ class Parse(object):
         self.write_to_mysql()
         self.company_result = {}
 
-    def handle_dict(self, dict_in_company, mapping):
+    def parse_dict(self, dict_in_company, mapping):
         for field in dict_in_company:
             if field in mapping:
                 self.company_result[mapping[field]] = dict_in_company[field]
 
-    def handle_list(self, key, list_in_company, mapping):
-        company_result = self.company_result
-        if key == "ind_comm_pub_reg_shareholder":
-            result = []
-            for d in list_in_company:
-
-                ind_shareholder = {}
-                for field in d:
-                    if type(d[field]) == str:
-                        ind_shareholder[mapping[field]] = d[field]
-                    elif type(d[field]) == dict:
-                        detail = d[field]
-                        for detail_field in detail:
-                            if detail_field in mapping:
-                                ind_shareholder[mapping[detail_field]] = \
-                                    detail[detail_field]
-                result.append(ind_shareholder)
-
-            company_result["industry_commerce_shareholders"] = result
+    def parse_list(self, key, list_in_company, mapping):
+        pass
 
     def write_to_mysql(self):
         self.update(Basic)
