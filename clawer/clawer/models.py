@@ -464,6 +464,7 @@ class ClawerSetting(models.Model):
             if mail.find("@") == -1:
                 continue
             valid.append(mail)
+            
         return valid
                 
     def as_json(self):

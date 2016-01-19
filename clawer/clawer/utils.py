@@ -621,7 +621,9 @@ class MonitorClawerHour(object):
             return
         
         #send mail
-        report_mails = clawer.settings().valid_report_mails() or list(settings.ADMINS)
+        report_mails = clawer.settings().valid_report_mails()
+        if not report_mails:
+            report_mails = [ x[1] for x in settings.ADMINS ]
         title = u'爬虫 %s 在 %s，数据异常' % (clawer.name, current.hour.strftime("%Y-%m-%d %H时"))
         content = u'当前归并数据大小 %d bytes, Host: %s' % (current.bytes, socket.gethostname())
         send_mail(title, content, settings.EMAIL_HOST_USER, report_mails, fail_silently=False)
@@ -669,7 +671,9 @@ class MonitorClawerDay(MonitorClawerHour):
             return
         
         #send mail
-        report_mails = clawer.settings().valid_report_mails() or list(settings.ADMINS)
+        report_mails = clawer.settings().valid_report_mails()
+        if not report_mails:
+            report_mails = [ x[1] for x in settings.ADMINS ]
         title = u'爬虫 %s 在 %s，数据异常' % (clawer.name, last_day_monitor.day.strftime("%Y-%m-%d"))
         content = u'%s 当前归并数据大小 %d bytes' % (socket.gethostname(), last_day_monitor.bytes)
         send_mail(title, content, settings.EMAIL_HOST_USER, report_mails, fail_silently=False)
