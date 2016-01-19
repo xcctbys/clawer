@@ -498,3 +498,20 @@ class Parser(object):
         """提取页面的链接
         """
         pass
+
+    def wipe_off_newline_and_blank_for_fe(self,data):
+        """
+        去除字符串首尾中的换行,空格,还有制表符
+        """
+        return str(data).strip('\n').strip(' ').strip('\t').strip('\n').encode(encoding='utf-8')
+
+    def wipe_off_newline_and_blank(self, data):
+        """
+        去除字符串中所有的换行,空格,制表符
+        """
+        data = str(data)
+        data.replace('\n','')
+        data.replace('\t','')
+        data.replace(' ','')
+        return data.encode(encoding='utf-8')
+

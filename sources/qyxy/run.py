@@ -36,6 +36,7 @@ from fujian_crawler import FujianCrawler
 from sichuan_crawler import SichuanCrawler
 from shandong_crawler import ShandongCrawler
 from hebei_crawler import HebeiCrawler
+from shaanxi_crawler import ShaanxiCrawler
 
 failed_ent = {}
 province_crawler = {
@@ -53,6 +54,7 @@ province_crawler = {
     'sichuan': SichuanCrawler,
     'shandong' : ShandongCrawler,
     'hebei' : HebeiCrawler,
+    'shaanxi': ShaanxiCrawler,
 }
 
 max_crawl_time = 0
@@ -80,9 +82,9 @@ def config_logging():
 
 def crawl_work(n, province, json_restore_path, ent_queue):
     crawler = province_crawler[province](json_restore_path)
-    
+
     while True:
-        
+
         try:
             ent = ent_queue.get(timeout=3)
         except Exception as e:
@@ -159,7 +161,7 @@ def crawl_province(province, cur_date):
 def force_exit():
     settings.logger.error("run timeout")
     os._exit(1)
-    
+
 
 class Checker(object):
     """ Is obtain data from province enterprise site today ?
@@ -169,26 +171,26 @@ class Checker(object):
         self.parent = settings.json_restore_path
         self.success = [] # {'name':'', "size':0}
         self.failed = [] # string list
-    
+
     def run(self):
         for province in sorted(province_crawler.keys()):
             path = self._json_path(province)
             if os.path.exists(path) is False:
                 self.failed.append(province)
                 continue
-            
+
             st = os.stat(path)
             self.success.append({"name": province, "size": st[stat.ST_SIZE]})
-            
+
         #output
         settings.logger.error("success %d, failed %d", len(self.success), len(self.failed))
         for item in self.success:
             settings.logger.error("\t%s: %d bytes", item['name'], item['size'])
-        
+
         settings.logger.error("Failed province")
         for item in self.failed:
             settings.logger.error("\t%s", item)
-        
+
     def _json_path(self, province):
         path = os.path.join(self.parent, province, self.yesterday.strftime("%Y/%m/%d.json.gz"))
         return path
@@ -247,6 +249,6 @@ if __name__ == '__main__':
                 process.start()
                 process.join(max_crawl_time)
                 settings.logger.info("child process exit code %d", process.exitcode)
-    
+
     os._exit(0)
 

@@ -567,6 +567,7 @@ class MonitorClawerHour(object):
         self.result_path = settings.CLAWER_RESULT
         self.clawers = Clawer.objects.filter(status=Clawer.STATUS_ON)
         self.hour = datetime.datetime.now().replace(minute=0, second=0, microsecond=0) - datetime.timedelta(minutes=120)
+        self.reports = []  # {'title': "", 'content': '', 'to': []}
     
     def monitor(self):
         if os.path.exists(self.result_path) is False:
@@ -577,6 +578,8 @@ class MonitorClawerHour(object):
             
         for clawer in self.clawers:
             self._do_report(clawer)
+            
+        self._send_mail()
         
     def _do_check(self, clawer):
         from clawer.models import ClawerHourMonitor
@@ -621,10 +624,16 @@ class MonitorClawerHour(object):
             return
         
         #send mail
-        report_mails = clawer.settings().valid_report_mails() or list(settings.ADMINS)
+        report_mails = clawer.settings().valid_report_mails()
+        if not report_mails:
+            report_mails = [ x[1] for x in settings.ADMINS ]
         title = u'爬虫 %s 在 %s，数据异常' % (clawer.name, current.hour.strftime("%Y-%m-%d %H时"))
         content = u'当前归并数据大小 %d bytes, Host: %s' % (current.bytes, socket.gethostname())
-        send_mail(title, content, settings.EMAIL_HOST_USER, report_mails, fail_silently=False)
+        self.reports.append({'title': title, 'content': content, 'to': report_mails})
+        
+    def _send_mail(self):
+        for report in self.reports:
+            send_mail(report['title'], report['content'], settings.EMAIL_HOST_USER, report['to'], fail_silently=False)
         
         
 class MonitorClawerDay(MonitorClawerHour):
@@ -668,12 +677,14 @@ class MonitorClawerDay(MonitorClawerHour):
         if need_report is False:
             return
         
-        #send mail
-        report_mails = clawer.settings().valid_report_mails() or list(settings.ADMINS)
+        #add to reports
+        report_mails = clawer.settings().valid_report_mails()
+        if not report_mails:
+            report_mails = [ x[1] for x in settings.ADMINS ]
         title = u'爬虫 %s 在 %s，数据异常' % (clawer.name, last_day_monitor.day.strftime("%Y-%m-%d"))
         content = u'%s 当前归并数据大小 %d bytes' % (socket.gethostname(), last_day_monitor.bytes)
-        send_mail(title, content, settings.EMAIL_HOST_USER, report_mails, fail_silently=False)
-
+        self.reports.append({'title': title, 'content': content, 'to': report_mails})
+        
 
 #rqworker function
 def download_clawer_task(clawer_task, clawer_setting):
