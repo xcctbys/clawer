@@ -11,14 +11,15 @@ from sklearn.svm import SVC
 from sklearn.neural_network import BernoulliRBM
 from sklearn.pipeline import Pipeline
 from sklearn.externals import joblib
+import datetime
+
 
 class CaptchaRecognition(object):
-
     '''
 
       Should you find any problems or any models with extremely low accuracy in predict results,
       please feel free to contact me.
-      
+
       Author: Yutong Zhou
       Email: yutongz@princetechs.com
 
@@ -30,6 +31,8 @@ class CaptchaRecognition(object):
     image_height = 47  # end postion from top
     image_top = 3  # start postion of top
     image_gap = 0
+    width = 0
+    height = 0
     image_label_count = 4
     masker = 255
     to_denoise = True
@@ -43,6 +46,8 @@ class CaptchaRecognition(object):
     to_binarized = False
     anti_noise = False
     to_summarized = False
+    is_dynamic = False
+    style_checker = None
 
     def __init__(self, captcha_type="beijing"):
         '''
@@ -52,8 +57,8 @@ class CaptchaRecognition(object):
             captcha_type points out the province captcha you want to use.
             There are few provinces in the same models, but the difference can be ignored.
             You are allowed to use the specific province name as the model name.
-            
-            For example: 
+
+            For example:
               beijing is for the model of Beijing City.
               fujian is for Fujian Province, although Yunan has the same model with Fujian.
 
@@ -70,7 +75,7 @@ class CaptchaRecognition(object):
         if captcha_type not in ["jiangsu", "beijing", "zongju", "liaoning", "guangdong", "hubei", "tianjin",
                                 "qinghai", "shanxi", "henan", "guangxi", "xizang", "heilongjiang", "anhui", "shaanxi",
                                 "ningxia", "chongqing", "sichuan", "hunan", "gansu", "xinjiang", "guizhou", "shandong",
-                                "neimenggu", "zhejiang","heibei","jilin","yunnan","fujian","hebei","shanghai"]:
+                                "neimenggu", "zhejiang", "heibei", "jilin", "yunnan", "fujian", "hebei", "shanghai"]:
             exit(1)
         elif captcha_type in ["jiangsu", "beijing", "liaoning"]:
             self.label_list = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
@@ -82,9 +87,11 @@ class CaptchaRecognition(object):
                                "Z", "X", "C", "V", "B", "N", "M"]
             self.to_denoise = True
             self.masker = 255
-        elif captcha_type in ["guangdong", "hubei","shanghai","zongju", "tianjin", "qinghai", "shanxi", "henan", "guangxi", "xizang",
+        elif captcha_type in ["guangdong", "hubei", "shanghai", "zongju", "tianjin", "qinghai", "shanxi", "henan",
+                              "guangxi", "xizang",
                               "heilongjiang", "anhui", "shaanxi", "ningxia", "chongqing", "sichuan", "hunan", "gansu",
-                              "xinjiang", "guizhou", "shandong","hebei", "neimenggu", "zhejiang","jilin","yunnan","fujian","hebei"]:
+                              "xinjiang", "guizhou", "shandong", "hebei", "neimenggu", "zhejiang", "jilin", "yunnan",
+                              "fujian", "hebei"]:
             self.to_denoise = True
             self.masker = 255
             self.to_calculate = True
@@ -109,7 +116,7 @@ class CaptchaRecognition(object):
             self.customized_width = 20
             self.to_binarized = True
             self.masker = 150
-        elif captcha_type in ["yunnan", "fujian","zongju","shanghai"]:
+        elif captcha_type in ["yunnan", "fujian", "zongju", "shanghai"]:
             self.image_label_count = 3
             self.margin = 8
             self.customized_postisions = True
@@ -154,7 +161,7 @@ class CaptchaRecognition(object):
             self.to_binarized = False
             self.masker = 250
             self.to_summarized = True
-        elif captcha_type in ["sichuan","xinjiang"]:
+        elif captcha_type in ["sichuan", "xinjiang"]:
             self.image_label_count = 5
             self.masker = 110
             self.customized_postisions = True
@@ -168,7 +175,7 @@ class CaptchaRecognition(object):
             self.customized_width = 20
             self.double_denoise = False
             captcha_type = "sichuan"
-        elif captcha_type in ["hunan","hebei"]:
+        elif captcha_type in ["hunan", "hebei"]:
             self.margin = 8
             self.image_label_count = 3
             self.masker = 450
@@ -288,6 +295,9 @@ class CaptchaRecognition(object):
             self.image_gap = 11
             self.to_denoise = False
             self.masker = 254
+            self.width = 86
+            self.height = 31
+            self.style_checker = "model/liaoning_style_checker/model.m"
         # elif captcha_type == "zongju":
         #     self.image_label_count = 4
         #     self.image_width = 180
@@ -308,7 +318,24 @@ class CaptchaRecognition(object):
             self.image_height = 40
             self.image_top = 0
             self.image_gap = 0
-
+        elif captcha_type == "zhejiang":
+            self.image_label_count = 3
+            self.masker = 500
+            self.is_dynamic = True
+            self.dynamic_masker = [110, 175, 175]
+            self.customized_postisions = True
+            self.position_left = [35, 65, 135]
+            self.position_right = [70, 100, 165]
+            self.to_denoise = False
+            self.to_calculate = True
+            self.to_binarized = False
+            self.customized_width = 35
+            self.to_summarized = False
+            self.image_top = 0
+            self.image_height = 50
+            self.width = 250
+            self.height = 50
+            self.style_checker = "model/zhejiang_style_checker/model.m"
 
         self.model_path = "model/" + captcha_type
         self.model_file = self.model_path + "/model.m"
@@ -325,6 +352,8 @@ class CaptchaRecognition(object):
                         _pixel_data.append(0.0)
                     else:
                         _pixel_data.append(1.0)
+                elif self.is_dynamic:
+                    _pixel_data.append(sum(captcha_image.getpixel((i, j))))
                 elif self.to_binarized:
                     _pixel_data.append(1.0 if captcha_image.getpixel((i, j)) < self.masker else 0.0)
                 elif self.to_summarized:
@@ -340,38 +369,38 @@ class CaptchaRecognition(object):
     def __convertPoint__(self, image_path):
         _data = []
         if not self.anti_noise:
-          try:
-              im = Image.open(image_path)
-              (width, height) = im.size
-              if self.to_denoise:
-                  if self.double_denoise:
-                      im = im.convert('L')
-                  im = im.filter(ImageFilter.MedianFilter())
-                  enhancer = ImageEnhance.Contrast(im)
-                  im = enhancer.enhance(10)
-                  im = im.convert('L')
-              elif self.to_binarized:
-                  im = im.convert("L")
-              for k in range(self.image_label_count):
-                  if not self.customized_postisions:
-                      left = max(0, self.image_start + self.image_width * k + self.image_gap * k)
-                      right = min(self.image_start + self.image_width * (k + 1) + self.image_gap * k, width)
-                  else:
-                      left = self.position_left[k]
-                      right = self.position_right[k]
-                  sub_image = im.crop((left, self.image_top, right, self.image_height))
-                  pixel_list = self.__get_pixel_list__(sub_image)
-                  if k == 0:
-                      _data = np.array([pixel_list])
-                  else:
-                      try:
-                          _data = np.append(_data, [pixel_list], axis=0)
-                      except:
-                          print image_path, len(pixel_list), len(_data[0])
-                          exit(1)
-              return _data
-          except IOError:
-              pass
+            try:
+                im = Image.open(image_path)
+                (width, height) = im.size
+                if self.to_denoise:
+                    if self.double_denoise:
+                        im = im.convert('L')
+                    im = im.filter(ImageFilter.MedianFilter())
+                    enhancer = ImageEnhance.Contrast(im)
+                    im = enhancer.enhance(10)
+                    im = im.convert('L')
+                elif self.to_binarized:
+                    im = im.convert("L")
+                for k in range(self.image_label_count):
+                    if not self.customized_postisions:
+                        left = max(0, self.image_start + self.image_width * k + self.image_gap * k)
+                        right = min(self.image_start + self.image_width * (k + 1) + self.image_gap * k, width)
+                    else:
+                        left = self.position_left[k]
+                        right = self.position_right[k]
+                    sub_image = im.crop((left, self.image_top, right, self.image_height))
+                    pixel_list = self.__get_pixel_list__(sub_image)
+                    if k == 0:
+                        _data = np.array([pixel_list])
+                    else:
+                        try:
+                            _data = np.append(_data, [pixel_list], axis=0)
+                        except:
+                            print image_path, len(pixel_list), len(_data[0])
+                            exit(1)
+                return _data
+            except IOError:
+                pass
         else:
             an = AntiNoise(image_path, self.masker)
             pixels = an.pixels
@@ -437,7 +466,6 @@ class CaptchaRecognition(object):
         model = classifier.fit(x, y)
         joblib.dump(model, self.model_file)
         return True
-
 
     def __convert_to_number__(self, number):
         digits = {u"零": 0, u"〇": 0, u"壹": 1, u"贰": 2, u"叁": 3, u"肆": 4, u"伍": 5, u"陆": 6, u"柒": 7, u"捌": 8, u"玖": 9,
@@ -518,10 +546,28 @@ class CaptchaRecognition(object):
             self.position_left = position_left
             self.position_right = position_right
 
+    def __check_style__(self, im):
+        if self.style_checker is not None:
+            im_checker = im.convert("L")
+            width, height = im_checker.size
+            if width != self.width and height != self.height:
+                return 0
+
+            checker = joblib.load(self.style_checker)
+            pixel = []
+            for w in range(width):
+                for h in range(height):
+                    pixel.append(im_checker.getpixel((w, h)))
+            pixel = np.array([pixel])
+            predict = checker.predict(pixel)
+            return predict
+        else:
+            return 1
+
     def predict_result(self, image_path):
         '''
         This function will return two results.
-        The first one is the predict value, 
+        The first one is the predict value,
         and the second one is used to pass the Captcha.
 
         If the captcha is in the type of calculation, the second value is a number;
@@ -531,6 +577,17 @@ class CaptchaRecognition(object):
             self.clf = joblib.load(self.model_file)
         else:
             raise IOError
+        try:
+            im = Image.open(image_path)
+        except:
+            return "", ""
+
+        if self.__check_style__(im) == 0:
+            return "", ""
+
+        pixel_matrix = self.__convertPoint__(image_path)
+        if pixel_matrix is None:
+            return "", ""
         pixel_matrix = self.__convertPoint__(image_path)
         if pixel_matrix is None:
             return "", ""
