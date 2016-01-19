@@ -150,6 +150,7 @@ class ShaanxiCrawler(object):
                 params = re.findall(r'\'(.*?)\'', ent)
                 url = "http://xygs.snaic.gov.cn/ztxy.do"
                 pripid, enttype, others= params
+                self.pripid = pripid
                 sub_json_dict.update(self.crawl_ind_comm_pub_pages(url, {
                     'maent.pripid': pripid,
                     'maent.entbigtype' : enttype,
@@ -715,7 +716,6 @@ class ShaanxiCrawler(object):
         if not os.path.exists(self.html_restore_path):
             os.makedirs(self.html_restore_path)
         json_dict = {}
-        self.pripid = str(ent_num)
         self.crawl_page_captcha(urls['page_search'], urls['page_Captcha'], urls['checkcode'], urls['page_showinfo'], ent_num)
         data = self.crawl_page_main()
         json_dict[ent_num] = data
@@ -725,7 +725,6 @@ class ShaanxiCrawler(object):
 
         if not os.path.exists(self.html_restore_path):
             os.makedirs(self.html_restore_path)
-        self.pripid = str(ent_num)
         self.crawl_page_captcha(urls['page_search'], urls['page_Captcha'], urls['checkcode'], urls['page_showinfo'], ent_num)
         data = self.crawl_page_main()
         #json_dump_to_file('shaanxi_json.json', data)
@@ -774,7 +773,7 @@ if __name__ == "__main__":
     if not os.path.exists("./enterprise_crawler"):
         os.makedirs("./enterprise_crawler")
     shaanxi = ShaanxiCrawler('./enterprise_crawler/shaanxi.json')
-    shaanxi.work('610000100026931')
+    shaanxi.work('610000100018589')
 
 """
 if __name__ == "__main__":
