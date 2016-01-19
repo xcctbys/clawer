@@ -447,15 +447,6 @@ class TestCmd(TestCase):
         self.user.delete()
         self.group.delete()
         
-    def test_task_generator_test(self):
-        clawer = Clawer.objects.create(name="hi", info="good")
-        generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print '{\"uri\": \"http://www.github.com\"}'\nos.exit(2)\n", cron="*")
-        
-        ret = task_generator_install.test_alpha(generator)
-        self.assertTrue(ret)
-        
-        clawer.delete()
-        generator.delete()
         
     def test_task_generator_run(self):
         clawer = Clawer.objects.create(name="hi", info="good")
@@ -632,3 +623,5 @@ class TestMonitorClawer(TestCase):
         
         clawer.delete()
         clawer_hour_monitors.delete()
+        clawer_hour_monitor.delete()
+        last_clawer_hour_monitor.delete()
