@@ -183,7 +183,7 @@ class HenanCrawler(object):
 		alltds = [td.get_text().strip() if td.get_text() else None for td in table.find_all('td')]
 		self.test_print_head_ths_tds(head, allths, alltds)
 		son_need_dict = {}
-		for key, value in zip(allths[5:], alltds[3:]):
+		for key, value in zip(allths[6:], alltds[3:]):
 			son_need_dict[key] = value
 		need_dict = {}
 		for key, value in zip(allths[1:4], alltds[:3]):
