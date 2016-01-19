@@ -62,13 +62,19 @@ class Parse(object):
         for key in company:
             if type(company[key]) == dict:
                 if key in keys and key in mappings:
+                    print "dict: ", key
                     self.parse_dict(company[key], mappings[key])
             elif type(company[key] == list):
                 if key in keys and key in mappings:
+                    print "list: ", key
                     self.parse_list(key, company[key], mappings[key])
 
-        if self.company_result.get('register_num') is None:
-            self.company_result['register_num'] = enter_id
+        credit_code = self.company_result.get('credit_code')
+        register_num = self.company_result.get('register_num')
+        if credit_code is None:
+            credit_code = register_num
+        elif register_num is None:
+            register_num = credit_code
 
         self.conversion_type()
         self.write_to_mysql()
@@ -80,6 +86,100 @@ class Parse(object):
                 self.company_result[mapping[field]] = dict_in_company[field]
 
     def parse_list(self, key, list_in_company, mapping):
+        keys_to_tables = consts.keys_to_tables
+        name = keys_to_tables.get(key)
+        parse_func = self.key_to_parse_function(key)
+        for d in list_in_company:
+            value = parse_func(d, mapping)
+            if name is not None and value is not None:
+                self.company_result[name] = value
+
+    def key_to_parse_function(self, key):
+        keys_to_functions = {
+            "ind_comm_pub_reg_shareholder": self.parse_ind_shareholder,
+            "ind_comm_pub_reg_modify": self.parse_ind_modify,
+            "ind_comm_pub_arch_key_persons": self.parse_ind_key_persons,
+            "ind_comm_pub_arch_branch": self.parse_ind_branch,
+            "ind_comm_pub_movable_property_reg": self.parse_ind_property_reg,
+            "ind_comm_pub_equity_ownership_reg": self.parse_ind_ownership_reg,
+            "ind_comm_pub_administration_sanction": self.parse_ind_sanction,
+            "ind_comm_pub_business_exception": self.parse_ind_exception,
+            "ind_comm_pub_serious_violate_law": self.parse_ind_violate_law,
+            "ind_comm_pub_spot_check": self.parse_ind_check,
+
+            "ent_pub_ent_annual_report": self.parse_ent_report,
+            "ent_pub_shareholder_capital_contribution": self.parse_ent_contribution,
+            "ent_pub_equity_change": self.parse_ent_change,
+            "ent_pub_administration_license": self.parse_ent_license,
+            "ent_pub_knowledge_property": self.parse_ent_property,
+            "ent_pub_administration_sanction": self.parse_ent_sanction,
+
+            "other_dept_pub_administration_license": self.parse_other_license,
+            "other_dept_pub_administration_sanction": self.parse_other_sanction,
+
+            "judical_assist_pub_equity_freeze": self.parse_judical_freeze,
+            "judical_assist_pub_shareholder_modify": self.parse_judical_modify,
+        }
+        return keys_to_functions.get(key, lambda: "noting")
+
+    def parse_ind_shareholder(self, dict_in_company, mapping):
+        pass
+
+    def parse_ind_modify(self, dict_in_company, mapping):
+        pass
+
+    def parse_ind_key_persons(self, dict_in_company, mapping):
+        pass
+
+    def parse_ind_branch(self, dict_in_company, mapping):
+        pass
+
+    def parse_ind_property_reg(self, dict_in_company, mapping):
+        pass
+
+    def parse_ind_ownership_reg(self, dict_in_company, mapping):
+        pass
+
+    def parse_ind_sanction(self, dict_in_company, mapping):
+        pass
+
+    def parse_ind_exception(self, dict_in_company, mapping):
+        pass
+
+    def parse_ind_violate_law(self, dict_in_company, mapping):
+        pass
+
+    def parse_ind_check(self, dict_in_company, mapping):
+        pass
+
+    def parse_ent_report(self, dict_in_company, mapping):
+        pass
+
+    def parse_ent_contribution(self, dict_in_company, mapping):
+        pass
+
+    def parse_ent_change(self, dict_in_company, mapping):
+        pass
+
+    def parse_ent_license(self, dict_in_company, mapping):
+        pass
+
+    def parse_ent_property(self, dict_in_company, mapping):
+        pass
+
+    def parse_ent_sanction(self, dict_in_company, mapping):
+        pass
+
+    def parse_other_license(self, dict_in_company, mapping):
+        pass
+
+    def parse_other_sanction(self, dict_in_company, mapping):
+        pass
+
+    def parse_judical_freeze(self, dict_in_company, mapping):
+        pass
+
+    def parse_judical_modify(self, dict_in_company, mapping):
         pass
 
     def write_to_mysql(self):
