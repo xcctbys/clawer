@@ -191,6 +191,20 @@ class CaptchaRecognition(object):
             self.customized_width = 25
             self.anti_noise = True
             captcha_type = "hunan"
+        elif captcha_type in ["guizhou"]:
+            self.image_label_count = 4
+            self.customized_postisions = True
+            self.position_left = [31, 51, 90, 115]
+            self.position_right = [60, 88, 115, 146]
+            self.image_top = 10
+            self.image_height = 40
+            self.image_width = 260
+            self.to_denoise = False
+            self.customized_width = 40
+            self.to_calculate = True
+            self.to_binarized = True
+            self.masker = 180
+            captcha_type = "guizhou"
         elif captcha_type == "gansu":
             self.image_label_count = 3
             self.customized_postisions = True
