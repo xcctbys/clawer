@@ -31,6 +31,8 @@ class CaptchaRecognition(object):
     image_height = 47  # end postion from top
     image_top = 3  # start postion of top
     image_gap = 0
+    width = 0
+    height = 0
     image_label_count = 4
     masker = 255
     to_denoise = True
@@ -293,6 +295,9 @@ class CaptchaRecognition(object):
             self.image_gap = 11
             self.to_denoise = False
             self.masker = 254
+            self.width = 86
+            self.height = 31
+            self.style_checker = "model/liaoning_style_checker/model.m"
         # elif captcha_type == "zongju":
         #     self.image_label_count = 4
         #     self.image_width = 180
@@ -328,6 +333,8 @@ class CaptchaRecognition(object):
             self.to_summarized = False
             self.image_top = 0
             self.image_height = 50
+            self.width = 250
+            self.height = 50
             self.style_checker = "model/zhejiang_style_checker/model.m"
 
         self.model_path = "model/" + captcha_type
@@ -543,7 +550,7 @@ class CaptchaRecognition(object):
         if self.style_checker is not None:
             im_checker = im.convert("L")
             width, height = im_checker.size
-            if width != 250 and height != 50:
+            if width != self.width and height != self.height:
                 return 0
 
             checker = joblib.load(self.style_checker)
