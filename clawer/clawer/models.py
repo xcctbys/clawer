@@ -456,6 +456,9 @@ class ClawerSetting(models.Model):
         
     def valid_report_mails(self):
         valid = []
+        
+        if not self.report_mails:
+            return []
         mails = self.report_mails.split(" ")
         for mail in mails:
             if mail.find("@") == -1:

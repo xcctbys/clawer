@@ -622,9 +622,9 @@ class MonitorClawerHour(object):
         
         #send mail
         report_mails = clawer.settings().valid_report_mails() or list(settings.ADMINS)
-        send_mail(u'爬虫[%s]在%s，数据异常' % (current.hour.strftime("%Y-%m-%d %H时")), 
-                      u'当前归并数据大小%d' % current.bytes, 'robot@princetechs.com', report_mails, 
-                      fail_silently=False)
+        title = u'爬虫 %s 在 %s，数据异常' % (clawer.name, current.hour.strftime("%Y-%m-%d %H时"))
+        content = u'当前归并数据大小 %d bytes, Host: %s' % (current.bytes, socket.gethostname())
+        send_mail(title, content, settings.EMAIL_HOST_USER, report_mails, fail_silently=False)
         
         
 class MonitorClawerDay(MonitorClawerHour):
@@ -653,7 +653,26 @@ class MonitorClawerDay(MonitorClawerHour):
         print "clawer day monitor id %d, bytes %d" % (clawer_day_monitor.id, clawer_day_monitor.bytes)
     
     def _do_report(self, clawer):
-        pass
+        from clawer.models import ClawerDayMonitor
+        
+        need_report = False
+        
+        try:
+            last_day_monitor = ClawerDayMonitor.objects.get(clawer=clawer, day=self.day)
+            if last_day_monitor.bytes <= 0:
+                need_report = True
+        except:
+            last_day_monitor = None
+            need_report = True
+            
+        if need_report is False:
+            return
+        
+        #send mail
+        report_mails = clawer.settings().valid_report_mails() or list(settings.ADMINS)
+        title = u'爬虫 %s 在 %s，数据异常' % (clawer.name, last_day_monitor.day.strftime("%Y-%m-%d"))
+        content = u'%s 当前归并数据大小 %d bytes' % (socket.gethostname(), last_day_monitor.bytes)
+        send_mail(title, content, settings.EMAIL_HOST_USER, report_mails, fail_silently=False)
 
 
 #rqworker function
