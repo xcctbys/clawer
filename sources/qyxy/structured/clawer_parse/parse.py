@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import time
 import fileinput
 import profiles.consts as consts
 from clawer_parse import tools
@@ -25,9 +26,6 @@ from clawer_parse.models import (
     IndustryMortgageDetailMortgagee,
     EnterAdministrativeLicense,
     EnterAdministrativePenalty,
-    EnterAnnualReport,
-    EnterIntellectualPropertyPledge,
-    EnterModification,
     EnterAnnualReport,
     EnterIntellectualPropertyPledge,
     EnterModification,
@@ -72,13 +70,17 @@ class Parse(object):
 
     def parse_companies(self):
         handled_num = 0
+        begin = time.time()
+
         for register_num in self.companies:
             company = self.companies[register_num]
             print u"\n公司注册Id: %s" % register_num
             self.parse_company(company, register_num)
             handled_num = handled_num + 1
 
-        print u"\n=== 共导入%d个公司的数据 ===" % handled_num
+        end = time.time()
+        secs = int(round((end - begin) * 1000))
+        print u"\n=== 共导入%d个公司的数据，耗时%dms ===" % (handled_num, secs)
 
     def parse_company(self, company={}, register_num=0):
         keys = self.keys
@@ -96,8 +98,8 @@ class Parse(object):
         credit_code = self.company_result.get('credit_code')
         if credit_code is None:
             credit_code = register_num
-        elif register_num is None:
-            register_num = credit_code
+        if self.company_result.get('register_num') is None:
+            self.company_result['register_num'] = register_num
 
         self.conversion_type()
         self.write_to_mysql()
@@ -117,7 +119,8 @@ class Parse(object):
             for d in list_in_company:
                 value = parse_func(d, mapping)
                 if name is not None and value is not None:
-                    self.company_result[name] = []
+                    if self.company_result.get(name) is None:
+                        self.company_result[name] = []
                     self.company_result[name].append(value)
         else:
             pass
@@ -166,7 +169,6 @@ class Parse(object):
         for field in dict_in_company:
             if field in mapping and dict_in_company[field] is not None:
                 result[mapping[field]] = dict_in_company[field]
-        print result
         return result
 
     def parse_ind_branch(self, dict_in_company, mapping):
@@ -241,9 +243,6 @@ class Parse(object):
         self.update(IndustryMortgageDetailMortgagee)
         self.update(EnterAdministrativeLicense)
         self.update(EnterAdministrativePenalty)
-        self.update(EnterAnnualReport)
-        self.update(EnterIntellectualPropertyPledge)
-        self.update(EnterModification)
         self.update(EnterAnnualReport)
         self.update(EnterIntellectualPropertyPledge)
         self.update(EnterModification)
