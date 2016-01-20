@@ -21,16 +21,19 @@ mappings["ind_comm_pub_reg_basic"] = {
 
 mappings["ind_comm_pub_reg_shareholder"] = {
     u"股东类型": "shareholder_type",
+    u"股东（发起人）类型": "shareholder_type",
     u"证照/证件号码": "certificate_number",
     u"认缴出资日期": "subscription_date",
     u"认缴额（万元）": "subscription_amount",
     u"认缴出资方式": "subscription_type",
     u"认缴出资额（万元）": "subscription_money_amount",
     u"实缴出资方式": "paid_type",
+    u"实缴明细": "paid_date",
     u"实缴额（万元）": "paid_amount",
     u"实缴出资日期": "paid_date",
     u"实缴出资额（万元）": "paid_money_amount",
     u"股东": "shareholder_name",
+    u"股东（发起人）": "shareholder_name",
     u"证照/证件类型": "certificate_type",
 }
 
