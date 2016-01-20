@@ -172,20 +172,22 @@ class Parse(object):
         print "parse_ind_shareholder"
         for field in dict_in_company:
             if field == u"详情":
-                for dic in dict_in_company[field]:
-                    for key_add in dic:
-                        list_in = dic[key_add]
-                        for dict_in in list_in:
-                            for key_in in dict_in:
-                                if key_in ==u"list":
-                                    for dict_fuck in dict_in[key_in]:
-                                        for key_fuck in dict_fuck:
-                                            dict_inner[mapping.get(key_fuck)] = dict_fuck[key_fuck]
-                                        result.append(dict_inner)
-                                        dict_inner = {}
-                                else:
-                                    for result_dict in result: 
-                                        result_dict[mapping.get(key_in)] = dict_in[key_in]
+                if not dict_in_company[field]:
+                    for dic in dict_in_company[field]:
+                        for key_add in dic:
+                            list_in = dic[key_add]
+                            if not list_in:
+                                for dict_in in list_in:
+                                    for key_in in dict_in:
+                                        if key_in ==u"list":
+                                            for dict_fuck in dict_in[key_in]:
+                                                for key_fuck in dict_fuck:
+                                                    dict_inner[mapping.get(key_fuck)] = dict_fuck[key_fuck]
+                                                result.append(dict_inner)
+                                                dict_inner = {}
+                                        else:
+                                            for result_dict in result: 
+                                                result_dict[mapping.get(key_in)] = dict_in[key_in]
         for field in dict_in_company:
             if field != u"详情":                                
                 try:
