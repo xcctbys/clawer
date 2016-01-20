@@ -60,6 +60,16 @@ keys_to_tables["other_dept_pub_administration_license"] = "other_administrative_
 keys_to_tables["other_dept_pub_administration_sanction"] = "other_administrative_penalty"
 keys_to_tables["judical_assist_pub_equity_freeze"] = "judicial_share_freeze"
 keys_to_tables["judical_assist_pub_shareholder_modify"] = "judicial_shareholder_change"
+keys_to_tables["ent_pub_ent_annual_report"] = "enter_annual_report"
+keys_to_tables["股权变更信息"] = "year_report_sharechange"
+keys_to_tables["网站或网店信息"] = "year_report_online"
+keys_to_tables["对外投资信息"] = "year_report_investment"
+keys_to_tables["修改记录"] = "year_report_modification"
+keys_to_tables["企业资产状况信息"] = "year_report_assets"
+keys_to_tables["股东及出资信息"] = "year_report_shareholder"
+keys_to_tables["对外提供保证担保信息"] = "year_report_warrandice"
+keys_to_tables["企业基本信息"] = "year_report_basic"
+keys_to_tables["信息更正声明"] = "year_report_correct"
 
 type_date = (
     "check_date",

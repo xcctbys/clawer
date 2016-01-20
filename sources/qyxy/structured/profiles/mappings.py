@@ -228,7 +228,6 @@ mappings["judical_assist_pub_shareholder_modify"] = {
 mappings["ent_pub_ent_annual_report"] = {
     u"序号": None,
     u"报送年度": "report_year",
-    u"详情": "",
     u"年报日期": "publicity_date",
     u"网站或网店信息": {
         "网址": "enter_url",
