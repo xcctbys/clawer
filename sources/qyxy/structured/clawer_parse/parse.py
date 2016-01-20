@@ -122,13 +122,17 @@ class Parse(object):
                     if self.company_result.get(name) is None:
                         self.company_result[name] = []
                     self.company_result[name].append(value)
-        else:
+        elif key == special_parse_keys[0]:
             for d in list_in_company:
                 value = parse_func(d, mapping)
                 if name is not None and value is not None:
                     if self.company_result.get(name) is None:
                         self.company_result[name] = []
                     self.company_result[name].append(value)
+        else:
+            for d in  list_in_company:
+                parse_func(d, mapping)
+
 
     def key_to_parse_function(self, key):
         keys_to_functions = {
