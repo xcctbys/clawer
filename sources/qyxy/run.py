@@ -204,8 +204,8 @@ class Checker(object):
         return path
     
     def _report(self):
-        title = u"%s %s 企业信用爬取情况" % (self.yesterday.strftime("%Y-%m-%d"), socket.gethostname()) 
-        content = u"Stat Info. Success %d, failed %d\n" % (len(self.success), len(self.failed))
+        title = u"%s 企业信用爬取情况" % (self.yesterday.strftime("%Y-%m-%d")) 
+        content = u"Stat Info. Success %d, failed %d\r\n" % (len(self.success), len(self.failed))
         
         content += u"Success province:\n"
         for item in self.success:
@@ -214,6 +214,8 @@ class Checker(object):
         content += u"Failed province:\n"
         for item in self.failed:
             content += u"\t%s\n" % (item)
+            
+        content += u"\r\n -- from %s" % socket.gethostname()
             
         to_admins = [x[1] for x in settings.ADMINS]
         
