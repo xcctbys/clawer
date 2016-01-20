@@ -212,7 +212,7 @@ class Checker(object):
         
         content += u"Failed province:\n"
         for item in self.failed:
-            content += u"\t" % (item)
+            content += u"\t%s" % (item)
             
         to_admins = [x[1] for x in settings.ADMINS]
         
