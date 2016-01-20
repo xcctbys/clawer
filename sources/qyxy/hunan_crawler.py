@@ -399,42 +399,46 @@ class HunanParser(Parser):
         if m:
             detail_dict[u'股东'] = unicode(m.group(1), 'utf8')
 
-        subscribe_detail = {}
+        detail = {}
         m = re.search(r'invt\.subConAm = \"([\d\.]+)\";', page)
         if m:
-            subscribe_detail[u'认缴出资额（万元）'] = m.group(1)
+            detail[u'认缴出资额（万元）'] = m.group(1)
 
         m = re.search(r'invt\.conDate = \'([\w\-\.]*)\';', page)
         if m:
-            subscribe_detail[u'认缴出资日期'] = m.group(1)
+            detail[u'认缴出资日期'] = m.group(1)
         m = re.search(r'invt\.conDate = \'(\d+年\d+月\d+日)\';', page)
         if m:
-            subscribe_detail[u'认缴出资日期'] = m.group(1)
+            detail[u'认缴出资日期'] = m.group(1)
 
         m = re.search(r'invt\.conForm = \"(.+)\";', page)
         if m:
-            subscribe_detail[u'认缴出资方式'] = m.group(1)
+            detail[u'认缴出资方式'] = m.group(1)
 
-        paid_in_detail = {}
+        # paid_in_detail = {}
         m = re.search(r'invtActl\.acConAm = \"([\d\.]+)\";', page)
         if m:
-            paid_in_detail[u'实缴出资额（万元）'] = m.group(1)
+            detail[u'实缴出资额（万元）'] = m.group(1)
 
         m = re.search(r'invtActl\.conForm = \"(.+)\";', page)
         if m:
-            paid_in_detail[u'实缴出资方式'] = m.group(1)
+            detail[u'实缴出资方式'] = m.group(1)
 
         m = re.search(r'invtActl\.conDate = \'([\w\-\.]*)\';', page)
         if m:
-            paid_in_detail[u'实缴出资日期'] = m.group(1)
+            detail[u'实缴出资日期'] = m.group(1)
         m = re.search(r'invtActl\.conDate = \'(\d+年\d+月\d+日)\';', page)
         if m:
-            paid_in_detail[u'实缴出资日期'] = m.group(1)
+            detail[u'实缴出资日期'] = m.group(1)
 
-        detail_dict[u'认缴额（万元）'] = subscribe_detail.get(u'认缴出资额（万元）', '0')
-        detail_dict[u'实缴额（万元）'] = paid_in_detail.get(u'实缴出资额（万元）', '0')
-        detail_dict[u'认缴明细'] = subscribe_detail
-        detail_dict[u'实缴明细'] = paid_in_detail
+        # detail_dict[u'认缴额（万元）'] = subscribe_detail.get(u'认缴出资额（万元）', '0')
+        # detail_dict[u'实缴额（万元）'] = paid_in_detail.get(u'实缴出资额（万元）', '0')
+        # detail_dict[u'认缴明细'] = subscribe_detail
+        # detail_dict[u'实缴明细'] = paid_in_detail
+        detail_dict[u'认缴额（万元）'] = detail.get(u'认缴出资额（万元）', '0')
+        detail_dict[u'实缴额（万元）'] = detail.get(u'实缴出资额（万元）', '0')
+        detail_dict["list"] = detail
+
         return detail_dict
 
     def parse_ent_pub_annual_report_page(self, page):
@@ -484,7 +488,7 @@ class HunanParser(Parser):
 class TestParser(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
-        self.crawler = HunnaCrawler('./enterprise_crawler/hunan.json')
+        self.crawler = HunanCrawler('./enterprise_crawler/hunan.json')
         self.parser = self.crawler.parser
         self.crawler.json_dict = {}
         self.crawler.ent_number = '00000'
