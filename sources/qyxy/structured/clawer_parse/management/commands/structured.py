@@ -6,5 +6,8 @@ class Command(BaseCommand):
     help = 'Closes the specified poll for voting'
 
     def handle(self, *args, **options):
-        worker = Parse('profiles/henan.json')
-        worker.parse_companies()
+        worker_henan = Parse('profiles/henan.json')
+        worker_henan.parse_companies()
+
+        worker_hebei = Parse('profiles/hebei.json')
+        worker_hebei.parse_companies()

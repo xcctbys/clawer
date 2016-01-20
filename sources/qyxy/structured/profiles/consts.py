@@ -46,20 +46,20 @@ keys_to_tables["ind_comm_pub_arch_key_persons"] = "industry_commerce_mainperson"
 keys_to_tables["ind_comm_pub_arch_branch"] = "industry_commerce_branch"
 keys_to_tables["ind_comm_pub_movable_property_reg"] = "industry_commerce_mortgage"
 keys_to_tables["ind_comm_pub_equity_ownership_reg"] = "industry_mortgage_detail_mortgagee"
-keys_to_tables["ind_comm_pub_administration_sanction"] = ""
-keys_to_tables["ind_comm_pub_business_exception"] = ""
-keys_to_tables["ind_comm_pub_serious_violate_law"] = "industry_commerce_administrative_penalty"
+keys_to_tables["ind_comm_pub_administration_sanction"] = "industry_commerce_administrative_penalty"
+keys_to_tables["ind_comm_pub_business_exception"] = "industry_commerce_exception"
+keys_to_tables["ind_comm_pub_serious_violate_law"] = "industry_commerce_illegal"
 keys_to_tables["ind_comm_pub_spot_check"] = "industry_commerce_check"
 keys_to_tables["ent_pub_ent_annual_report"] = ""
-keys_to_tables["ent_pub_shareholder_capital_contribution"] = ""
-keys_to_tables["ent_pub_equity_change"] = ""
-keys_to_tables["ent_pub_administration_license"] = ""
-keys_to_tables["ent_pub_knowledge_property"] = ""
-keys_to_tables["ent_pub_administration_sanction"] = ""
-keys_to_tables["other_dept_pub_administration_license"] = ""
-keys_to_tables["other_dept_pub_administration_sanction"] = ""
-keys_to_tables["judical_assist_pub_equity_freeze"] = ""
-keys_to_tables["judical_assist_pub_shareholder_modify"] = ""
+keys_to_tables["ent_pub_shareholder_capital_contribution"] = "enter_shareholder"
+keys_to_tables["ent_pub_equity_change"] = "enter_sharechange"
+keys_to_tables["ent_pub_administration_license"] = "enter_administrative_license"
+keys_to_tables["ent_pub_knowledge_property"] = "enter_intellectual_property_pledge"
+keys_to_tables["ent_pub_administration_sanction"] = "enter_administrative_license"
+keys_to_tables["other_dept_pub_administration_license"] = "other_administrative_license"
+keys_to_tables["other_dept_pub_administration_sanction"] = "other_administrative_penalty"
+keys_to_tables["judical_assist_pub_equity_freeze"] = "judicial_share_freeze"
+keys_to_tables["judical_assist_pub_shareholder_modify"] = "judicial_shareholder_change"
 
 type_date = (
     "check_date",
@@ -80,6 +80,7 @@ type_date = (
     "time_start",
     "time_end",
     "publicity_time",
+    "license_publicity_time",
 )
 
 type_float = (
@@ -91,4 +92,8 @@ type_float = (
     "subscription_money_amount",
     "paid_money_amount",
     "share_pledge_num",
+    "share_ratio_before",
+    "share_ratio_after",
+    "share_num",
+    "notice_num",
 )

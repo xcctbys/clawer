@@ -6,8 +6,6 @@ import profiles.consts as consts
 
 
 class UpdateByDict(object):
-    """数据库操作基本类
-    """
 
     def update_by_dict(self, model, data):
         special_tables = consts.special_tables
@@ -30,7 +28,7 @@ class UpdateByDict(object):
             is_null = True
             for field in fields:
                 value = data.get(field)
-                if value is not None and value != "":
+                if value is not None and value != u"":
                     is_null = False
                     setattr(self, field, value)
             if not is_null:
@@ -337,7 +335,6 @@ class IndustryMortgageDetailMortgagee(models.Model, UpdateByDict):
     mortgagee_certificate_type = models.CharField(max_length=20, null=True, blank=True)
     pledgor_certificate_code = models.CharField(max_length=20, null=True, blank=True)
     register_id = models.CharField(max_length=20, null=True, blank=True)
-    ind_id = models.IntegerField(null=True)
 
     class Meta:
         db_table = "industry_mortgage_detail_mortgagee"
@@ -347,14 +344,14 @@ class EnterAdministrativeLicense(models.Model, UpdateByDict):
     """企业-行政许可
     """
 
-    license_num = models.IntegerField(null=True)
+    license_num = models.CharField(max_length=100, null=True, blank=True)
     license_filename = models.CharField(max_length=50, null=True, blank=True)
     license_begien_date = models.DateField(null=True)
     license_end_date = models.DateField(null=True)
     license_authority = models.CharField(max_length=30, null=True, blank=True)
     license_content = models.CharField(max_length=50, null=True, blank=True)
     license_status = models.CharField(max_length=20, null=True, blank=True)
-    license_detail = models.CharField(max_length=10, null=True, blank=True)
+    license_detail = models.TextField(null=True, blank=True)
     license_register_time = models.DateField(null=True)
     license_publicity_time = models.DateField(null=True)
     license_change_item = models.CharField(max_length=20, null=True, blank=True)
@@ -489,7 +486,7 @@ class JudicialShareFreeze(models.Model, UpdateByDict):
     excute_court = models.CharField(max_length=30, null=True, blank=True)
     notice_num = models.IntegerField(null=True)
     freeze_status = models.CharField(max_length=30, null=True, blank=True)
-    freeze_detail = models.CharField(max_length=30, null=True, blank=True)
+    freeze_detail = models.TextField(null=True, blank=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
 
@@ -539,7 +536,7 @@ class OtherAdministrativeLicense(models.Model, UpdateByDict):
     license_content = models.CharField(max_length=50, null=True, blank=True)
     license_authority_gov = models.CharField(max_length=50, null=True, blank=True)
     license_status = models.CharField(max_length=20, null=True, blank=True)
-    license_detail = models.CharField(max_length=20, null=True, blank=True)
+    license_detail = models.TextField(null=True, blank=True)
     license_valid_date = models.DateField(null=True)
     source = models.CharField(max_length=10, null=True, blank=True)
     update_date = models.DateField(null=True)
