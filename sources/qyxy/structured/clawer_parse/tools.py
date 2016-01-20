@@ -28,7 +28,10 @@ def trans_float(s):
     for c in list(s):
         if '0' <= c and c <= '9' or c == '.':
             res.append(c)
-    return float("".join(res))
+    if res == []:
+        return 0
+    else:
+        return float("".join(res))
 
 
 if __name__ == '__main__':
