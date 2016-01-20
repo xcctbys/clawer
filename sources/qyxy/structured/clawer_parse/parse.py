@@ -157,7 +157,12 @@ class Parse(object):
         pass
 
     def parse_ind_modify(self, dict_in_company, mapping):
-        pass
+        inner = {}
+        for d in dict_in_company:
+            d_map = mapping[d]
+            if d in mapping and dict_in_company[d] is not None:
+                inner[d_map] = dict_in_company[d]
+        return inner 
 
     def parse_ind_key_persons(self, dict_in_company, mapping):
         result = {}
