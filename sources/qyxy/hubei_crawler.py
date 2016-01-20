@@ -71,15 +71,7 @@ class HubeiCrawler(Crawler):
         count = 0
         next_url = self.urls['official_site']
         resp = self.reqst.get(next_url, verify=False)
-        # import gc
-        # import objgraph
-        # ### 强制进行垃圾回收
-        # gc.collect()
-        # ### 打印出对象数目最多的 50 个类型信息
-        # print "\n"
-        # objgraph.show_most_common_types(limit=50)
-        # print "============================="
-        # objgraph.show_growth()
+        
         if resp.status_code != 200:
             settings.logger.error('failed to get official site')
             return False
@@ -335,15 +327,7 @@ class HubeiParser(Parser):
                 self.crawler.json_dict['ind_comm_pub_arch_key_persons'] = []
         else:
             self.crawler.json_dict['ind_comm_pub_arch_key_persons'] = []
-        # import gc
-        # import objgraph
-        # # ### 强制进行垃圾回收
-        # # gc.collect()
-        # # ### 打印出对象数目最多的 50 个类型信息
-        # # print "\n"
-        # # objgraph.show_most_common_types(limit=50)
-        # print "=========show_growth===================="
-        # objgraph.show_growth()
+        
 
     def parse_ent_pub_pages(self, page):
         soup = BeautifulSoup(page, "html5lib")
@@ -391,12 +375,12 @@ class HubeiParser(Parser):
                 table_td1.append(table_td_text.text.strip())
             for i in range(0, len(table_th1)):
                 table_ts[table_th1[i]] = table_td1[i]
-            table_detail = []
+            table_detail = {}
             a = qiyenianbao.find_all("a")
             if a:
 
                 for a1 in a:
-                    table_detail = []
+                    # table_detail = []
                     re1 = '.*?'	 # Non-greedy match on filler
                     re2 = '(\\d+)'  # Integer Number 1
                     re3 = '((?:[a-z][a-z]*[0-9]+[a-z0-9]*))'  # Alphanum 1
@@ -410,7 +394,7 @@ class HubeiParser(Parser):
                     rep = requests.get(url)
                     soup = BeautifulSoup(rep.content, 'html5lib')
 
-                    wrap = {}
+                    # wrap = {}
                     tables = soup.find_all("table")
                     for table in tables:
                         table_tiiles = table.find("th")
@@ -420,8 +404,8 @@ class HubeiParser(Parser):
 
                         name_table_map2 = [u'企业资产状况信息', u'企业基本信息', u'基本信息']
                         if table_tiiles.text in name_table_map2:
-                            wrap[table_tiiles.text] = self.parse_table1(table)
-                    table_detail.append(wrap)
+                            table_detail[table_tiiles.text] = self.parse_table1(table)
+                    # table_detail.append(wrap)
 
 
                     # 四类表
@@ -444,11 +428,11 @@ class HubeiParser(Parser):
                                 for i in range(0, len(table_td)):
                                     table_save[table_th[i]] = table_td[i]
                                 table_c.append(table_save)
-                            wrap[list_table_title.text] = table_c
-                            table_detail.append(wrap)
+                            table_detail[list_table_title.text] = table_c
+                            # table_detail.append(wrap)
 
                 # cont = table_ts[u'报送年度']
-                table_ts[u'报送年度'] = table_detail
+                table_ts[u'详情'] = table_detail
 
             table_save_all.append(table_ts)
 
@@ -689,10 +673,9 @@ class HubeiParser(Parser):
     def coarse_page_table(self, table):
 
         colspan_list = []  # 跨列的列数
-        colspan_th = []  # 跨列的列名
         list_title_th = []  # 第一行不跨列的列名
         list_th = []  # 第二行的列名
-        # list_title_all = []  # 全部的列名
+
 
         table_trs = table.find_all("tr")
         list_tr = [tr for tr in table_trs]
@@ -702,89 +685,35 @@ class HubeiParser(Parser):
             if 'colspan' in title_wrap.attrs:
                 for colspan in title_wrap['colspan']:
                     colspan_list.append(int(colspan))
-                    colspan_th.append(title_wrap.text)
             else:
                 list_title_th.append(title_wrap.text)
 
         table_title = list_tr[2].find_all("th")
         for title_wrap in table_title:
             list_th.append(title_wrap.text)
-
-        list_title_all = list_th + list_title_th
-        total = []  # 若有多行td
-
         sum = 0
         for i in colspan_list:
             sum = sum + i
-        for tr in table_trs[3:]:
 
-            rowspan_td = tr.find("td")
+        total = []  # 若有多行td
+
+        for tr in table_trs[3:]:
             table_td = tr.find_all("td")
             list_td = [td.text.strip() for td in table_td]  # 表格内容列表
+            table_save = {}  # 保存的表格
+            for i in range(0, len(list_title_th)):
+                table_save[list_title_th[i]] = list_td[i]
 
-            if 'rowspan' in rowspan_td.attrs or len(table_td) == len(list_title_all):
-                table_save = {}  # 保存的表格
-                for i in range(0, len(list_title_th)):  # 获取没有跨列的内容字典
-                    table_save[list_title_th[i]] = list_td[i]
+            del list_td[0:len(list_title_th)]
+            list_test = []
+            table_test = {}
+            for i in range(0, sum):
 
-                del list_td[0:len(list_title_th)]
-                list_test = []
-
-                for i in colspan_list:
-                    table_test = {}
-                    for j in range(0, i):
-                        table_test[list_th[j]] = list_td[j]
-                    list_test.append(table_test)
-                    del list_td[0:i]
-                    del list_th[0:i]
-                for i in range(0, len(colspan_th)):
-                     table_save[colspan_th[i]] = list_test[i]
-                total.append(table_save)
-
-                table_title = list_tr[2].find_all("th")
-                for title_wrap in table_title:
-                    list_th.append(title_wrap.text)
-            elif len(table_td) == sum:
-                list_test = []
-                for i in colspan_list:
-                    table_test = {}
-
-                    for j in range(0, i):
-                        table_test[list_th[j]] = list_td[j]
-                    list_test.append(table_test)
-                    del list_td[0:i]
-                    del list_th[0:i]
-                if type(total[-1][u'认缴明细']) is dict:
-                    total[-1][u'认缴明细'] = [total[-1][u'认缴明细']]
-                total[-1][u'认缴明细'].append(list_test[0])
-
-                if type(total[-1][u'实缴明细']) is dict:
-                    total[-1][u'实缴明细'] = [total[-1][u'实缴明细']]
-
-                total[-1][u'实缴明细'].append(list_test[1])
-
-                table_title = list_tr[2].find_all("th")
-                for title_wrap in table_title:
-                    list_th.append(title_wrap.text)
-            else:
-                list_test = []
-                i = colspan_list[1]
-                table_test = {}
-                del list_th[0:i]
-                for j in range(0, i):
-                    table_test[list_th[j]] = list_td[j]
-                list_test.append(table_test)
-                del list_td[0:i]
-                del list_th[0:i]
-
-                if type(total[-1][u'实缴明细']) is dict:
-                    total[-1][u'实缴明细'] = [total[-1][u'实缴明细']]
-                total[-1][u'实缴明细'].append(list_test[0])
-
-                table_title = list_tr[2].find_all("th")
-                for title_wrap in table_title:
-                    list_th.append(title_wrap.text)
-
+                table_test[list_th[i]] = list_td[i]
+            list_test.append(table_test)
+               
+            table_save["list"] = list_test
+            total.append(table_save)
 
         return total
 
