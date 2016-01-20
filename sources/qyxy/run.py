@@ -118,12 +118,12 @@ def crawl_work(n, province, json_restore_path, ent_queue):
 
 def crawl_province(province, cur_date):
     #创建存储路径
-    json_restore_dir = '%s/%s/%s/%s' % (settings.json_restore_path, p, cur_date[0], cur_date[1])
+    json_restore_dir = '%s/%s/%s/%s' % (settings.json_restore_path, province, cur_date[0], cur_date[1])
     if not os.path.exists(json_restore_dir):
         CrawlerUtils.make_dir(json_restore_dir)
 
     #获取企业名单
-    enterprise_list = CrawlerUtils.get_enterprise_list(settings.enterprise_list_path + p + '.txt')
+    enterprise_list = CrawlerUtils.get_enterprise_list(settings.enterprise_list_path + province + '.txt')
 
     #json存储文件名
     json_restore_path = '%s/%s.json' % (json_restore_dir, cur_date[2])
