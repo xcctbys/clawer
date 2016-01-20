@@ -13,6 +13,7 @@ import logging
 import Queue
 import threading
 import multiprocessing
+import socket
 
 ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
 if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
@@ -203,16 +204,16 @@ class Checker(object):
         return path
     
     def _report(self):
-        title = u"%s 省份爬取情况" % (self.yesterday.strftime("%Y-%m-%d")) 
+        title = u"%s %s 企业信用爬取情况" % (self.yesterday.strftime("%Y-%m-%d"), socket.gethostname()) 
         content = u"Stat Info. Success %d, failed %d\n" % (len(self.success), len(self.failed))
         
         content += u"Success province:\n"
         for item in self.success:
-            content += u"\t%s: %d bytes" % (item["name"], item['size'])
+            content += u"\t%s: %d bytes\n" % (item["name"], item['size'])
         
         content += u"Failed province:\n"
         for item in self.failed:
-            content += u"\t%s" % (item)
+            content += u"\t%s\n" % (item)
             
         to_admins = [x[1] for x in settings.ADMINS]
         
