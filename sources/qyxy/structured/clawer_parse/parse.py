@@ -122,108 +122,82 @@ class Parse(object):
                     if self.company_result.get(name) is None:
                         self.company_result[name] = []
                     self.company_result[name].append(value)
+        elif key == special_parse_keys[0]:
+            for d in list_in_company:
+                value = parse_func(d, mapping)
+                if name is not None and value is not None:
+                    if self.company_result.get(name) is None:
+                        self.company_result[name] = []
+                    self.company_result[name] = value
         else:
-            pass
+            for d in list_in_company:
+                parse_func(d, mapping)
 
     def key_to_parse_function(self, key):
         keys_to_functions = {
             "ind_comm_pub_reg_shareholder": self.parse_ind_shareholder,
-            "ind_comm_pub_reg_modify": self.parse_ind_modify,
-            "ind_comm_pub_arch_key_persons": self.parse_ind_key_persons,
-            "ind_comm_pub_arch_branch": self.parse_ind_branch,
-            "ind_comm_pub_movable_property_reg": self.parse_ind_property_reg,
-            "ind_comm_pub_equity_ownership_reg": self.parse_ind_ownership_reg,
-            "ind_comm_pub_administration_sanction": self.parse_ind_sanction,
-            "ind_comm_pub_business_exception": self.parse_ind_exception,
-            "ind_comm_pub_serious_violate_law": self.parse_ind_violate_law,
-            "ind_comm_pub_spot_check": self.parse_ind_check,
-
+            "ind_comm_pub_reg_modify": self.parse_general,
+            "ind_comm_pub_arch_key_persons": self.parse_general,
+            "ind_comm_pub_arch_branch": self.parse_general,
+            "ind_comm_pub_movable_property_reg": self.parse_general,
+            "ind_comm_pub_equity_ownership_reg": self.parse_general,
+            "ind_comm_pub_administration_sanction": self.parse_general,
+            "ind_comm_pub_business_exception": self.parse_general,
+            "ind_comm_pub_serious_violate_law": self.parse_general,
+            "ind_comm_pub_spot_check": self.parse_general,
             "ent_pub_ent_annual_report": self.parse_ent_report,
-            "ent_pub_shareholder_capital_contribution": self.parse_ent_contribution,
-            "ent_pub_equity_change": self.parse_ent_change,
-            "ent_pub_administration_license": self.parse_ent_license,
-            "ent_pub_knowledge_property": self.parse_ent_property,
-            "ent_pub_administration_sanction": self.parse_ent_sanction,
-
-            "other_dept_pub_administration_license": self.parse_other_license,
-            "other_dept_pub_administration_sanction": self.parse_other_sanction,
-
-            "judical_assist_pub_equity_freeze": self.parse_judical_freeze,
-            "judical_assist_pub_shareholder_modify": self.parse_judical_modify,
+            "ent_pub_shareholder_capital_contribution": self.parse_general,
+            "ent_pub_equity_change": self.parse_general,
+            "ent_pub_administration_license": self.parse_general,
+            "ent_pub_knowledge_property": self.parse_general,
+            "ent_pub_administration_sanction": self.parse_general,
+            "other_dept_pub_administration_license": self.parse_general,
+            "other_dept_pub_administration_sanction": self.parse_general,
+            "judical_assist_pub_equity_freeze": self.parse_general,
+            "judical_assist_pub_shareholder_modify": self.parse_general,
         }
         return keys_to_functions.get(key, lambda: "noting")
 
-    def parse_ind_shareholder(self, dict_in_company, mapping):
-        pass
-
-    def parse_ind_modify(self, dict_in_company, mapping):
-        inner = {}
-        for d in dict_in_company:
-            d_map = mapping[d]
-            if d in mapping and dict_in_company[d] is not None:
-                inner[d_map] = dict_in_company[d]
-        return inner 
-
-    def parse_ind_key_persons(self, dict_in_company, mapping):
+    def parse_general(self, dict_in_company, mapping):
         result = {}
         for field in dict_in_company:
             if field in mapping and dict_in_company[field] is not None:
                 result[mapping[field]] = dict_in_company[field]
         return result
 
-    def parse_ind_branch(self, dict_in_company, mapping):
-        pass
-
-    def parse_ind_property_reg(self, dict_in_company, mapping):
-        pass
-
-    def parse_ind_ownership_reg(self, dict_in_company, mapping):
-        pass
-
-    def parse_ind_sanction(self, dict_in_company, mapping):
-        pass
-
-    def parse_ind_exception(self, dict_in_company, mapping):
-        pass
-
-    def parse_ind_violate_law(self, dict_in_company, mapping):
-        pass
-
-    def parse_ind_check(self, dict_in_company, mapping):
-        result = {}
+    def parse_ind_shareholder(self, dict_in_company, mapping):
+        result = []
+        dict_inner = {}
+        print "parse_ind_shareholder"
         for field in dict_in_company:
-            if field in mapping and dict_in_company[field] is not None:
-                result[mapping[field]] = dict_in_company[field]
+            if field == u"详情":
+                if not dict_in_company[field]:
+                    for dic in dict_in_company[field]:
+                        for key_add in dic:
+                            list_in = dic[key_add]
+                            if not list_in:
+                                for dict_in in list_in:
+                                    for key_in in dict_in:
+                                        if key_in ==u"list":
+                                            for dict_fuck in dict_in[key_in]:
+                                                for key_fuck in dict_fuck:
+                                                    dict_inner[mapping.get(key_fuck)] = dict_fuck[key_fuck]
+                                                result.append(dict_inner)
+                                                dict_inner = {}
+                                        else:
+                                            for result_dict in result: 
+                                                result_dict[mapping.get(key_in)] = dict_in[key_in]
+        for field in dict_in_company:
+            if field != u"详情":
+                try:
+                    for result_dict in result:
+                        result_dict[mapping.get(field)] = dict_in_company[field]
+                except:
+                    pass
+
         return result
 
     def parse_ent_report(self, dict_in_company, mapping):
-        pass
-
-    def parse_ent_contribution(self, dict_in_company, mapping):
-        pass
-
-    def parse_ent_change(self, dict_in_company, mapping):
-        pass
-
-    def parse_ent_license(self, dict_in_company, mapping):
-        pass
-
-    def parse_ent_property(self, dict_in_company, mapping):
-        pass
-
-    def parse_ent_sanction(self, dict_in_company, mapping):
-        pass
-
-    def parse_other_license(self, dict_in_company, mapping):
-        pass
-
-    def parse_other_sanction(self, dict_in_company, mapping):
-        pass
-
-    def parse_judical_freeze(self, dict_in_company, mapping):
-        pass
-
-    def parse_judical_modify(self, dict_in_company, mapping):
         pass
 
     def write_to_mysql(self):
@@ -291,5 +265,5 @@ class Parse(object):
                         d_value = d[d_field]
                         if d_field in type_date and d_value is not None:
                             d[d_field] = to_date(d_value.encode('utf-8'))
-                        elif d_field in type_float and d_value is not None:
+                        elif d_field in type_float and d_value is not None and type(d_value) == unicode:
                             d[d_field] = to_float(d_value.encode('utf-8'))
