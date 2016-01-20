@@ -151,14 +151,15 @@ class Parse(object):
         return keys_to_functions.get(key, lambda: "noting")
 
     def parse_ind_shareholder(self, dict_in_company, mapping):
+        pass
+
+    def parse_ind_modify(self, dict_in_company, mapping):
         inner = {}
         for d in dict_in_company:
             d_map = mapping[d]
             inner[d_map] = dict_in_company[d]
-        return inner    
-
-    def parse_ind_modify(self, dict_in_company, mapping):
-        pass
+        print inner
+        return inner 
 
     def parse_ind_key_persons(self, dict_in_company, mapping):
         result = {}
