@@ -97,7 +97,7 @@ class NeimengguClawer(Crawler):
         Returns:
         """
         self.json_restore_path = json_restore_path
-        self.parser = HeilongjiangParser(self)
+        self.parser = NeimengguParser(self)
 
         self.reqst = requests.Session()
         self.reqst.headers.update({
@@ -398,7 +398,7 @@ class NeimengguClawer(Crawler):
         return page
 
 
-class HeilongjiangParser(Parser):
+class NeimengguParser(Parser):
     """内蒙古工商页面的解析类
     """
 
@@ -874,7 +874,7 @@ class HeilongjiangParser(Parser):
 
                 detail_reg_modify_infoes.append(detail_reg_modify_info)
                 i += 1
-        self.crawler.json_dict['ind_comm_pub_reg_modify'] = detail_reg_modify_infoes
+        self.crawler.json_dict['ent_pub_reg_modify'] = detail_reg_modify_infoes
 
     def parse_ent_pub_ent_annual_report_pages(self, page):
         soup = BeautifulSoup(page, 'html5lib')
