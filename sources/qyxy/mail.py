@@ -1,6 +1,8 @@
 #encoding=utf-8
 
 import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 
 class SendMail(object):
@@ -16,10 +18,17 @@ class SendMail(object):
     def send(self, from_addr, to_addrs, subject, content):
         self._login()
         
-        msg = u"From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n" % (from_addr, ", ".join(to_addrs), subject)
-        msg += content
-
-        self.smtp.sendmail(from_addr, to_addrs, msg)
+        multipart = MIMEMultipart('alternative')
+        multipart.set_charset('utf-8')
+        
+        multipart["Subject"] = subject
+        multipart["From"] = fromEmail
+        multipart["To"] = ", ".join(to_addrs)
+        
+        text = MIMEText(content, 'plain', "utf-8")
+        multipart.attach(text)
+        
+        self.smtp.sendmail(from_addr, to_addrs, multipart.as_string(False))
         self.smtp.quit()
     
     def _login(self):

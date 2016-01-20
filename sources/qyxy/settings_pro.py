@@ -30,5 +30,5 @@ EMAIL_HOST_PASSWORD='Robot0023'
 
 ADMINS = (
     ('admin', 'xiaotaop@princetechs.com'),
-    ('shaoxiongz', 'shaoxiongz@princetechs.com'),
+    #('shaoxiongz', 'shaoxiongz@princetechs.com'),
 )
