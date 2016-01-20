@@ -2,6 +2,7 @@
 
 from django.db import models
 from django.db.models import Max
+import profiles.consts as consts
 
 
 class UpdateByDict(object):
@@ -9,27 +10,36 @@ class UpdateByDict(object):
     """
 
     def update_by_dict(self, model, data):
+        special_tables = consts.special_tables
         fields = model._meta.get_all_field_names()
         name = model._meta.db_table
-        if name in data:
-            enter_id = Basic.objects.all().aggregate(Max('id')).get('id__max')
-            data['enter_id'] = enter_id
+        enter_id = Basic.objects.all().aggregate(Max('id')).get('id__max')
 
+        if name in data:
             for row in data[name]:
                 query = model()
                 for field in fields:
                     value = row.get(field) or data.get(field)
                     if value is not None:
                         setattr(query, field, value)
+                query.enter_id = enter_id
                 query.save()
                 del query
 
-        else:
+        elif name in special_tables:
+            is_null = True
             for field in fields:
                 value = data.get(field)
-                if value is not None:
+                if value is not None and value != "":
+                    is_null = False
                     setattr(self, field, value)
-            self.save()
+            if not is_null:
+                if hasattr(self, 'enter_id'):
+                    self.enter_id = enter_id + 1
+                self.save()
+
+        else:
+            pass
 
 
 class Basic(models.Model, UpdateByDict):

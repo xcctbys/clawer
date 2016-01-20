@@ -185,7 +185,11 @@ class Parse(object):
         pass
 
     def parse_ind_check(self, dict_in_company, mapping):
-        pass
+        result = {}
+        for field in dict_in_company:
+            if field in mapping and dict_in_company[field] is not None:
+                result[mapping[field]] = dict_in_company[field]
+        return result
 
     def parse_ent_report(self, dict_in_company, mapping):
         pass
