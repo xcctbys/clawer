@@ -133,28 +133,25 @@ class Parse(object):
     def key_to_parse_function(self, key):
         keys_to_functions = {
             "ind_comm_pub_reg_shareholder": self.parse_ind_shareholder,
-            "ind_comm_pub_reg_modify": self.parse_ind_modify,
+            "ind_comm_pub_reg_modify": self.parse_general,
             "ind_comm_pub_arch_key_persons": self.parse_general,
             "ind_comm_pub_arch_branch": self.parse_general,
-            "ind_comm_pub_movable_property_reg": self.parse_ind_property_reg,
-            "ind_comm_pub_equity_ownership_reg": self.parse_ind_ownership_reg,
-            "ind_comm_pub_administration_sanction": self.parse_ind_sanction,
-            "ind_comm_pub_business_exception": self.parse_ind_exception,
-            "ind_comm_pub_serious_violate_law": self.parse_ind_violate_law,
+            "ind_comm_pub_movable_property_reg": self.parse_general,
+            "ind_comm_pub_equity_ownership_reg": self.parse_general,
+            "ind_comm_pub_administration_sanction": self.parse_general,
+            "ind_comm_pub_business_exception": self.parse_general,
+            "ind_comm_pub_serious_violate_law": self.parse_general,
             "ind_comm_pub_spot_check": self.parse_general,
-
             "ent_pub_ent_annual_report": self.parse_ent_report,
-            "ent_pub_shareholder_capital_contribution": self.parse_ent_contribution,
-            "ent_pub_equity_change": self.parse_ent_change,
-            "ent_pub_administration_license": self.parse_ent_license,
-            "ent_pub_knowledge_property": self.parse_ent_property,
-            "ent_pub_administration_sanction": self.parse_ent_sanction,
-
-            "other_dept_pub_administration_license": self.parse_other_license,
-            "other_dept_pub_administration_sanction": self.parse_other_sanction,
-
-            "judical_assist_pub_equity_freeze": self.parse_judical_freeze,
-            "judical_assist_pub_shareholder_modify": self.parse_judical_modify,
+            "ent_pub_shareholder_capital_contribution": self.parse_general,
+            "ent_pub_equity_change": self.parse_general,
+            "ent_pub_administration_license": self.parse_general,
+            "ent_pub_knowledge_property": self.parse_general,
+            "ent_pub_administration_sanction": self.parse_general,
+            "other_dept_pub_administration_license": self.parse_general,
+            "other_dept_pub_administration_sanction": self.parse_general,
+            "judical_assist_pub_equity_freeze": self.parse_general,
+            "judical_assist_pub_shareholder_modify": self.parse_general,
         }
         return keys_to_functions.get(key, lambda: "noting")
 
@@ -174,52 +171,7 @@ class Parse(object):
                 pass
         return result
 
-    def parse_ind_modify(self, dict_in_company, mapping):
-        pass
-
-    def parse_ind_property_reg(self, dict_in_company, mapping):
-        pass
-
-    def parse_ind_ownership_reg(self, dict_in_company, mapping):
-        pass
-
-    def parse_ind_sanction(self, dict_in_company, mapping):
-        pass
-
-    def parse_ind_exception(self, dict_in_company, mapping):
-        pass
-
-    def parse_ind_violate_law(self, dict_in_company, mapping):
-        pass
-
     def parse_ent_report(self, dict_in_company, mapping):
-        pass
-
-    def parse_ent_contribution(self, dict_in_company, mapping):
-        pass
-
-    def parse_ent_change(self, dict_in_company, mapping):
-        pass
-
-    def parse_ent_license(self, dict_in_company, mapping):
-        pass
-
-    def parse_ent_property(self, dict_in_company, mapping):
-        pass
-
-    def parse_ent_sanction(self, dict_in_company, mapping):
-        pass
-
-    def parse_other_license(self, dict_in_company, mapping):
-        pass
-
-    def parse_other_sanction(self, dict_in_company, mapping):
-        pass
-
-    def parse_judical_freeze(self, dict_in_company, mapping):
-        pass
-
-    def parse_judical_modify(self, dict_in_company, mapping):
         pass
 
     def write_to_mysql(self):
@@ -287,5 +239,5 @@ class Parse(object):
                         d_value = d[d_field]
                         if d_field in type_date and d_value is not None:
                             d[d_field] = to_date(d_value.encode('utf-8'))
-                        elif d_field in type_float and d_value is not None:
+                        elif d_field in type_float and d_value is not None and type(d_value) == unicode:
                             d[d_field] = to_float(d_value.encode('utf-8'))
