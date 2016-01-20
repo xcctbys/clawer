@@ -625,15 +625,24 @@ class MonitorClawerHour(object):
         
         #send mail
         report_mails = clawer.settings().valid_report_mails()
-        if not report_mails:
-            report_mails = [ x[1] for x in settings.ADMINS ]
-        title = u'爬虫 %s 在 %s，数据异常' % (clawer.name, current.hour.strftime("%Y-%m-%d %H时"))
-        content = u'当前归并数据大小 %d bytes, Host: %s' % (current.bytes, socket.gethostname())
+        title = u'爬虫ID:%d(%s) 在 %s，数据异常' % (clawer.id, clawer.name, current.hour.strftime("%Y-%m-%d %H"))
+        content = u'%s - 当前归并数据大小 %d bytes' % (socket.gethostname(), current.bytes)
         self.reports.append({'title': title, 'content': content, 'to': report_mails})
         
     def _send_mail(self):
+        if len(self.reports) <= 0:
+            return
+        
         for report in self.reports:
-            send_mail(report['title'], report['content'], settings.EMAIL_HOST_USER, report['to'], fail_silently=False)
+            if report["to"]:
+                send_mail(report['title'], report['content'], settings.EMAIL_HOST_USER, report['to'], fail_silently=False)
+                
+        #send to admin
+        title = u"%d条报警，%s" % (len(self.reports), self.reports[0]["title"])
+        content = u"\n".join([u"%s :: %s" % (x['title'], x['content']) for x in self.reports])
+        admins = [x[1] for x in settings.ADMINS]
+        send_mail(title, content, settings.EMAIL_HOST_USER, admins, fail_silently=False)
+        
         
         
 class MonitorClawerDay(MonitorClawerHour):
@@ -679,9 +688,7 @@ class MonitorClawerDay(MonitorClawerHour):
         
         #add to reports
         report_mails = clawer.settings().valid_report_mails()
-        if not report_mails:
-            report_mails = [ x[1] for x in settings.ADMINS ]
-        title = u'爬虫 %s 在 %s，数据异常' % (clawer.name, last_day_monitor.day.strftime("%Y-%m-%d"))
+        title = u'爬虫ID:%d(%s) 在 %s，数据异常' % (clawer.id, clawer.name, last_day_monitor.day.strftime("%Y-%m-%d"))
         content = u'%s 当前归并数据大小 %d bytes' % (socket.gethostname(), last_day_monitor.bytes)
         self.reports.append({'title': title, 'content': content, 'to': report_mails})
         
