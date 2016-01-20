@@ -19,6 +19,8 @@ if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
     import settings_pro as settings
 else:
     import settings
+    
+from mail import SendMail
 
 from CaptchaRecognition import CaptchaRecognition
 from crawler import CrawlerUtils
@@ -173,6 +175,7 @@ class Checker(object):
         self.parent = settings.json_restore_path
         self.success = [] # {'name':'', "size':0}
         self.failed = [] # string list
+        self.send_mail = SendMail(settings.EMAIL_HOST, settings.EMAIL_PORT, settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD, ssl=True)
 
     def run(self):
         for province in sorted(province_crawler.keys()):
@@ -192,10 +195,32 @@ class Checker(object):
         settings.logger.error("Failed province")
         for item in self.failed:
             settings.logger.error("\t%s", item)
+            
+        self._report()
 
     def _json_path(self, province):
         path = os.path.join(self.parent, province, self.yesterday.strftime("%Y/%m/%d.json.gz"))
         return path
+    
+    def _report(self):
+        title = u"%s 省份爬取情况" % (self.yesterday.strftime("%Y-%m-%d")) 
+        content = u"Stat Info. Success %d, failed %d\n" % (len(self.success), len(self.failed))
+        
+        content += u"Success province:\n"
+        for item in self.success:
+            content += u"\t: %d bytes" % (item["name"], item['size'])
+        
+        content += u"Failed province:\n"
+        for item in self.failed:
+            content += u"\t" % (item)
+            
+        to_admins = [x[1] for x in settings.ADMINS]
+        
+        self.send_mail.send(settings.EMAIL_HOST_USER, to_admins, title, content)
+            
+            
+            
+        
 
 
 
