@@ -13,12 +13,15 @@ import logging
 import Queue
 import threading
 import multiprocessing
+import socket
 
 ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
 if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
     import settings_pro as settings
 else:
     import settings
+    
+from mail import SendMail
 
 from CaptchaRecognition import CaptchaRecognition
 from crawler import CrawlerUtils
@@ -37,6 +40,7 @@ from sichuan_crawler import SichuanCrawler
 from shandong_crawler import ShandongCrawler
 from hebei_crawler import HebeiCrawler
 from shaanxi_crawler import ShaanxiCrawler
+from henan_crawler import HenanCrawler
 
 failed_ent = {}
 province_crawler = {
@@ -55,6 +59,7 @@ province_crawler = {
     'shandong' : ShandongCrawler,
     'hebei' : HebeiCrawler,
     'shaanxi': ShaanxiCrawler,
+    'henan' : HenanCrawler,
 }
 
 max_crawl_time = 0
@@ -116,12 +121,12 @@ def crawl_work(n, province, json_restore_path, ent_queue):
 
 def crawl_province(province, cur_date):
     #创建存储路径
-    json_restore_dir = '%s/%s/%s/%s' % (settings.json_restore_path, p, cur_date[0], cur_date[1])
+    json_restore_dir = '%s/%s/%s/%s' % (settings.json_restore_path, province, cur_date[0], cur_date[1])
     if not os.path.exists(json_restore_dir):
         CrawlerUtils.make_dir(json_restore_dir)
 
     #获取企业名单
-    enterprise_list = CrawlerUtils.get_enterprise_list(settings.enterprise_list_path + p + '.txt')
+    enterprise_list = CrawlerUtils.get_enterprise_list(settings.enterprise_list_path + province + '.txt')
 
     #json存储文件名
     json_restore_path = '%s/%s.json' % (json_restore_dir, cur_date[2])
@@ -171,6 +176,7 @@ class Checker(object):
         self.parent = settings.json_restore_path
         self.success = [] # {'name':'', "size':0}
         self.failed = [] # string list
+        self.send_mail = SendMail(settings.EMAIL_HOST, settings.EMAIL_PORT, settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD, ssl=True)
 
     def run(self):
         for province in sorted(province_crawler.keys()):
@@ -190,10 +196,34 @@ class Checker(object):
         settings.logger.error("Failed province")
         for item in self.failed:
             settings.logger.error("\t%s", item)
+            
+        self._report()
 
     def _json_path(self, province):
         path = os.path.join(self.parent, province, self.yesterday.strftime("%Y/%m/%d.json.gz"))
         return path
+    
+    def _report(self):
+        title = u"%s 企业信用爬取情况" % (self.yesterday.strftime("%Y-%m-%d")) 
+        content = u"Stat Info. Success %d, failed %d\r\n" % (len(self.success), len(self.failed))
+        
+        content += u"Success province:\n"
+        for item in self.success:
+            content += u"\t%s: %d bytes\n" % (item["name"], item['size'])
+        
+        content += u"Failed province:\n"
+        for item in self.failed:
+            content += u"\t%s\n" % (item)
+            
+        content += u"\r\n -- from %s" % socket.gethostname()
+            
+        to_admins = [x[1] for x in settings.ADMINS]
+        
+        self.send_mail.send(settings.EMAIL_HOST_USER, to_admins, title, content)
+            
+            
+            
+        
 
 
 

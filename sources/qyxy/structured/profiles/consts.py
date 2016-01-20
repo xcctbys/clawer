@@ -29,6 +29,16 @@ keys = (
     "judical_assist_pub_shareholder_modify",
 )
 
+special_parse_keys = (
+    "ent_pub_ent_annual_report",
+    "ind_comm_pub_reg_shareholder",
+)
+
+special_tables = (
+    "basic",
+    "industry_commerce_clear"
+)
+
 keys_to_tables = {}
 keys_to_tables["ind_comm_pub_reg_shareholder"] = "industry_commerce_shareholders"
 keys_to_tables["ind_comm_pub_reg_modify"] = "industry_commerce_change"
