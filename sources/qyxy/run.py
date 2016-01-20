@@ -41,6 +41,9 @@ from shandong_crawler import ShandongCrawler
 from hebei_crawler import HebeiCrawler
 from shaanxi_crawler import ShaanxiCrawler
 from henan_crawler import HenanCrawler
+from neimenggu_crawler import NeimengguClawer
+from chongqing_crawler import ChongqingClawer
+from xinjiang_crawler import XinjiangClawer
 
 failed_ent = {}
 province_crawler = {
@@ -58,8 +61,11 @@ province_crawler = {
     'sichuan': SichuanCrawler,
     'shandong' : ShandongCrawler,
     'hebei' : HebeiCrawler,
+    'neimenggu':NeimengguClawer,
     'shaanxi': ShaanxiCrawler,
     'henan' : HenanCrawler,
+    'xinjiang':XinjiangClawer,
+    'chongqing':ChongqingClawer,
 }
 
 max_crawl_time = 0
