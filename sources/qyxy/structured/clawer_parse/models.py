@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.db import models
+from django.db.models import Max
 
 
 class UpdateByDict(object):
@@ -11,8 +12,10 @@ class UpdateByDict(object):
         fields = model._meta.get_all_field_names()
         name = model._meta.db_table
         if name in data:
+            enter_id = Basic.objects.all().aggregate(Max('id')).get('id__max')
+            data['enter_id'] = enter_id
+
             for row in data[name]:
-                print name, data, row
                 query = model()
                 for field in fields:
                     value = row.get(field) or data.get(field)
