@@ -22,7 +22,7 @@ class SendMail(object):
         multipart.set_charset('utf-8')
         
         multipart["Subject"] = subject
-        multipart["From"] = fromEmail
+        multipart["From"] = from_addr
         multipart["To"] = ", ".join(to_addrs)
         
         text = MIMEText(content, 'plain', "utf-8")
