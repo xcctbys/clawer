@@ -63,6 +63,7 @@ class HenanCrawler(object):
 				u'企业投资人出资比例':'ent_pub_shareholder_capital_contribution',
 				u'股东（发起人）及出资信息':'ent_pub_shareholder_capital_contribution',
 				u'股东及出资信息（币种与注册资本一致）':'ent_pub_shareholder_capital_contribution',
+				u'股东及出资信息':'ent_pub_shareholder_capital_contribution',
 				u'股权变更信息':'ent_pub_equity_change',
 				u'行政许可信息':'ent_pub_administration_license',
 				u'知识产权出资登记':'ent_pub_knowledge_property',
@@ -96,7 +97,7 @@ class HenanCrawler(object):
 		count = 0
 		while count < 30:
 			check_num = self.get_check_num()
-			print check_num
+			if check_num is None: continue
 			data = {'checkNo':check_num, 'entName':findCode}
 			resp = self.reqst.post(self.search_dict['searchList'], data=data)
 			if resp.status_code != 200:
@@ -131,32 +132,67 @@ class HenanCrawler(object):
 		if resp.status_code == 200:
 			return BeautifulSoup(resp.content).find_all('table')
 	def get_one_to_one_dict(self, allths, alltds):
-		if len(allths) == len(alltds):
-			one_to_one_dict = {}
-			for key, value in zip(allths, alltds):
-				one_to_one_dict[key] = value
-			return one_to_one_dict
-		else:
-			templist = []
-			x = 0
+		# if len(allths) == len(alltds):
+		# 	one_to_one_dict = {}
+		# 	for key, value in zip(allths, alltds):
+		# 		one_to_one_dict[key] = value
+		# 	return one_to_one_dict
+		# else:
+		templist = []
+		x = 0
+		y = x + len(allths)
+		#print '---------------------%d-------------------------------%d' % (len(allth), len(alltd))
+		while y <= len(alltds):
+			tempdict = {}
+			for keys, values in zip(allths,alltds[x:y]):
+				tempdict[keys] = values
+			x = y
 			y = x + len(allths)
-			#print '---------------------%d-------------------------------%d' % (len(allth), len(alltd))
-			while y <= len(alltds):
-				tempdict = {}
-				for keys, values in zip(allths,alltds[x:y]):
-					tempdict[keys] = values
-				x = y
-				y = x + len(allths)
-				templist.append(tempdict)
-			return templist
+			templist.append(tempdict)
+		return templist
+	def get_dict_from_enter(self, tables):
+		tempdict = {}
+		for i, table in enumerate(tables):
+			head = table.find_all('th')[0].get_text().strip()
+			allths = [th.get_text().strip() for th in table.find_all('th')[1:] if th.get_text()]
+			for index, th in enumerate(allths):
+				if th[:2] == '<<':
+					allths = allths[:index]
+					break
+			alltds = [td.get_text().strip() if td.get_text() else None for td in table.find_all('td')]
+			if i==0:
+				head = allths[0]
+				allths = allths[1:]
+			if not any(alltds):
+				#alltds = [None for th in allths]
+				alltds = []
+			self.test_print_head_ths_tds(head, allths, alltds)
+			if head == u'企业资产状况信息' or head == u'企业基本信息':
+				tempdict[head] = self.get_one_to_one_dict(allths, alltds)[0]
+				pass
+			else:
+				tempdict[head] = self.get_one_to_one_dict(allths, alltds)
+		return tempdict
 
 	def get_dict_from_gudong_detail(self, table):
-		allths = [th.get_text().strip() for th in table.find_all('th')[1:]]
-		allths = allths[:3]+allths[5:]
+		# allths = [th.get_text().strip() for th in table.find_all('th')[1:]]
+		# allths = allths[:3]+allths[5:]
+		# alltds = [td.get_text().strip() if td.get_text() else None for td in table.find_all('td')]
+		allths = [th.get_text().strip() for th in table.find_all('th')]
+		head = allths[0]
 		alltds = [td.get_text().strip() if td.get_text() else None for td in table.find_all('td')]
-		if len(alltds) == 0:
-			alltds = [None for th in allths]
-		return self.get_one_to_one_dict(allths, alltds)
+		self.test_print_head_ths_tds(head, allths, alltds)
+		son_need_dict = {}
+		for key, value in zip(allths[6:], alltds[3:]):
+			son_need_dict[key] = value
+		need_dict = {}
+		for key, value in zip(allths[1:4], alltds[:3]):
+			need_dict[key] = value
+		need_dict['list'] = [son_need_dict]
+		return [{head:[need_dict]}]
+		# if len(alltds) == 0:
+		# 	alltds = [None for th in allths]
+		# return self.get_one_to_one_dict(allths, alltds)
 
 	def get_dict_from_dongcan_detail(self, tables):
 		tempdict = {}
@@ -171,8 +207,8 @@ class HenanCrawler(object):
 				elif head == u'抵押物概况':
 					allths = [th.get_text().strip() for th in table.find_all('th')[1:] if th.get_text()]
 					alltds = [td.get_text().strip() if td.get_text() else None for td in tables[i+1].find_all('td')]
-				if len(alltds) == 0:
-					alltds = [None for th in allths]
+				# if len(alltds) == 0:
+				# 	alltds = [None for th in allths]
 				tempdict[head] = self.get_one_to_one_dict(allths, alltds)
 		return tempdict
 # 
@@ -187,6 +223,7 @@ class HenanCrawler(object):
 		count_a = len(table_a)
 		href = table_a.find_all('a')[0]['href']
 		m = re.search(r'\(\"(\w+?)\",\d+\)', href)
+		alltds = []
 		if m:
 			where = m.group(1).capitalize()
 			alltds = []
@@ -196,13 +233,13 @@ class HenanCrawler(object):
 				resp = self.reqst.get(urls)
 				if resp.status_code == 200:
 					next_table = self.get_tables(urls)[0]
-					if head == u'股东（发起人）信息':
+					if head == u'股东（发起人）信息' or head == u'股东信息' or head == u'动产抵押登记信息':
 						for td in next_table.find_all('td'):
 							if td.find_all('a'):
 								detail_href = td.a['onclick']
 								first = detail_href.find('window.open')
 								#print detail_href[first+13:-2]
-								if head == u'股东（发起人）信息':
+								if head == u'股东（发起人）信息' or head == u'股东信息':
 									alltds.append(self.get_dict_from_gudong_detail(self.get_tables(self.search_dict['eareName'] + detail_href[first+13:-2])[0]))
 								elif head == u'动产抵押登记信息':
 									alltds.append(self.get_dict_from_dongcan_detail(self.get_tables(self.search_dict['eareName'] + detail_href[first+13:-2])))
@@ -219,14 +256,20 @@ class HenanCrawler(object):
 									alltds.append(td.get_text().strip())
 							else:
 								alltds.append(None)
+					else:
+						if i == 1 and alltds:
+							alltds = []
+						else:
+							alltds = alltds + [td.get_text().strip() if td.get_text() else None for td in next_table.find_all('td')]
 
 		else:
 			print 'in hasnext no find search!'*3
 
-		if len(alltds) == 0:
-			alltds = [None for th in allths]
+		# if len(alltds) == 0:
+		# 	alltds = [None for th in allths]
 		self.test_print_head_ths_tds(head, allths, alltds)
-		self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
+		if head != '':
+			self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
 
 
 	def do_with_nonext(self, mydict, head, table_th, table_td):
@@ -237,14 +280,14 @@ class HenanCrawler(object):
 		alltds = [td.get_text().strip() if td.get_text() else None for td in table_td.find_all('td')]
 		# if head == u'股东（发起人）信息':
 		# 	pass
-		if head == u'股东（发起人）信息' or head == u'动产抵押登记信息':
+		if head == u'股东（发起人）信息' or head == u'动产抵押登记信息' or head == u'股东信息':
 			alltds = []
 			for td in table_td.find_all('td'):
 				if td.find_all('a'):
 					detail_href = td.a['onclick']
 					first = detail_href.find('window.open')
 					#print detail_href[first+13:-2]
-					if head == u'股东（发起人）信息':
+					if head == u'股东（发起人）信息' or head == u'股东信息':
 						alltds.append(self.get_dict_from_gudong_detail(self.get_tables(self.search_dict['eareName'] + detail_href[first+13:-2])[0]))
 					elif head == u'动产抵押登记信息':
 						alltds.append(self.get_dict_from_dongcan_detail(self.get_tables(self.search_dict['eareName'] + detail_href[first+13:-2])))
@@ -263,19 +306,25 @@ class HenanCrawler(object):
 				else:
 					alltds.append(None)
 
-		if len(alltds) == 0:
-			alltds = [None for th in allths]
+		# if len(alltds) == 0:
+		# 	alltds = [None for th in allths]
 		self.test_print_head_ths_tds(head, allths, alltds)
-		self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
+		if head != '':
+			self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
 
 	def do_with_only_table(self, mydict, head, table):
 		print 'onlytable', head
 		allths = [th.get_text().strip() for th in table.find_all('th')[1:] if th.get_text()]
 		alltds = [td.get_text().strip() if td.get_text() else None for td in table.find_all('td')]
-		if len(alltds)==0:
-			alltds = [None for th in allths]
+		# if len(alltds)==0:
+		# 	alltds = [None for th in allths]
 		self.test_print_head_ths_tds(head, allths, alltds)
-		self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
+		if head != '':
+			if head == u'清算信息' or head == u'基本信息':
+				self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)[0]
+				pass
+			else:
+				self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
 
 	def get_json_one(self, mydict, tables):
 		count_table = len(tables)
@@ -294,20 +343,76 @@ class HenanCrawler(object):
 	def get_json_two(self, mydict, tables):
 		count_table = len(tables)
 		print count_table
-		# self.test_print_table(tables)
+		#self.test_print_table(tables)
+		for i, table in enumerate(tables):
+			if table.find_all('th'):
+				head = table.find_all('th')[0].get_text().split('\n')[0].strip()
+				print head
+				allths = [th.get_text().strip() for th in table.find_all('th')[1:] if th.get_text()]
+				alltds = [td.get_text().strip() if td.get_text() else None for td in table.find_all('td')]
+				if head == u'企业年报':
+					alltds = []
+					for td in table.find_all('td'):
+						# detail_enter_port_dict = {}
+						if td.get_text():
+							if td.find('a'):
+								alltds.append(td.get_text().strip())
+								print 'a-----:', td.get_text().strip()
+								alltds.append( self.get_dict_from_enter(self.get_tables(self.search_dict['eareName'] + td.a['href'])) )
+								#alltds.append(None)
+							else:
+								alltds.append(td.get_text().strip())
+						else:
+							alltds.append(None)
+						# alltds.append(detail_enter_port_dict)
+					allths.insert(2,u'详情')
+					self.test_print_head_ths_tds(head, allths, alltds)
+					self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
+					pass
+				elif head == u'行政许可信息' or head == u'股权变更信息':
+					self.do_with_nonext(mydict, head, table, tables[i+1])
+					pass
+				elif head == u'股东及出资信息':
+					allths = allths[:3]+allths[5:]
+					print '******', head
+					self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
+					pass
+				else:
+					self.do_with_nonext(mydict, head, table, tables[i+1])
+					pass
 
 		pass
 
 	def get_json_three(self, mydict, tables):
 		count_table = len(tables)
 		print count_table
-		self.test_print_table(tables)
+		for table in tables:
+			if table.find_all('th') and not table.find_all('a'):
+				head = table.find_all('th')[0].get_text().split('\n')[0].strip()
+				print head
+				allths = [th.get_text().strip() for th in table.find_all('th')[1:] if th.get_text()]
+				alltds = [td.get_text().strip() if td.get_text() else None for td in table.find_all('td')]
+				# if len(alltds) == 0:
+				# 	alltds = [None for th in allths]
+				self.test_print_head_ths_tds(head, allths, alltds)
+				if head != '':
+					self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
 		pass
 
 	def get_json_four(self, mydict, tables):
 		count_table = len(tables)
 		print count_table
-		self.test_print_table(tables)
+		for table in tables:
+			if table.find_all('th') and not table.find_all('a'):
+				head = table.find_all('th')[0].get_text().split('\n')[0].strip()
+				print head
+				allths = [th.get_text().strip() for th in table.find_all('th')[1:] if th.get_text()]
+				alltds = [td.get_text().strip() if td.get_text() else None for td in table.find_all('td')]
+				# if len(alltds) == 0:
+				# 	alltds = [None for th in allths]
+				self.test_print_head_ths_tds(head, allths, alltds)
+				if head != '':
+					self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
 		pass
 
 
@@ -320,25 +425,25 @@ class HenanCrawler(object):
 		self.id = self.get_id_num(findCode)
 		print self.id
 		self.result_json_dict = {}
-		# tableone = self.get_tables(self.search_dict['businessPublicity'] + 'id=' +self.id)
-		# self.get_json_one(self.one_dict, tableone)
+		tableone = self.get_tables(self.search_dict['businessPublicity'] + 'id=' +self.id)
+		self.get_json_one(self.one_dict, tableone)
 		tabletwo = self.get_tables(self.search_dict['enterprisePublicity'] + 'id=' +self.id)
 		self.get_json_two(self.two_dict, tabletwo)
-		# tablethree = self.get_tables(self.search_dict['otherDepartment'] + 'id=' +self.id)
-		# self.get_json_three(self.three_dict, tablethree)
-		# tablefour = self.get_tables(self.search_dict['justiceAssistance'] + 'id=' +self.id)
-		# self.get_json_four(self.four_dict, tablefour)
+		tablethree = self.get_tables(self.search_dict['otherDepartment'] + 'id=' +self.id)
+		self.get_json_three(self.three_dict, tablethree)
+		tablefour = self.get_tables(self.search_dict['justiceAssistance'] + 'id=' +self.id)
+		self.get_json_four(self.four_dict, tablefour)
 
-		# CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.result_json_dict})
+		CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.result_json_dict})
 
 
 
 if __name__ == '__main__':
 	henan = HenanCrawler('./enterprise_crawler/henan.json')
-	henan.run('410000100009840')
+	# henan.run('410192000013162')
 	# henan.run('410900100000342')
-	# f = open('enterprise_list/henan.txt', 'r')
-	# for line in f.readlines():
-	# 	print line.split(',')[2].strip()
-	# 	henan.run(str(line.split(',')[2]).strip())
-	# f.close()
+	f = open('enterprise_list/henan.txt', 'r')
+	for line in f.readlines():
+		print line.split(',')[2].strip()
+		henan.run(str(line.split(',')[2]).strip())
+	f.close()

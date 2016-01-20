@@ -10,7 +10,6 @@ import datetime
 
 
 def trans_time(s):
-    # s = ['2014年6月24日','2015-05-18']
     try:
         a = time.strptime(s, '%Y年%m月%d日')
         time1 = datetime.datetime(*a[:6])
@@ -24,6 +23,15 @@ def trans_time(s):
             return None
 
 
+def trans_float(s):
+    res = []
+    for c in list(s):
+        if '0' <= c and c <= '9' or c == '.':
+            res.append(c)
+    return float("".join(res))
+
+
 if __name__ == '__main__':
     trans_time('2014年6月24日')
     trans_time('2015-05-18')
+    print trans_float('15.12万元')

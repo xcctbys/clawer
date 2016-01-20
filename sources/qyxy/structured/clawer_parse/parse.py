@@ -1,26 +1,51 @@
 # -*- coding: utf-8 -*-
 
 import json
-import profiles.settings as settings
+import time
+import fileinput
+import profiles.consts as consts
+from clawer_parse import tools
 from clawer_parse.models import (
     Basic,
     IndustryCommerceAdministrativePenalty,
     IndustryCommerceBranch,
-    # IndustryCommerceChange,
-    # IndustryCommerceCheck,
-    # IndustryCommerceClear,
-    # IndustryCommerceDetailGuarantee,
-    # IndustryCommerceException,
-    # IndustryCommerceIllegal,
-    # IndustryCommerceMainperson,
-    # IndustryCommerceMortgage,
-    # IndustryCommerceMortgageDetailChange,
-    # IndustryCommerceMortgageDetailGuarantee,
-    # IndustryCommerceMortgageGuaranty,
-    # IndustryCommerceRevoke,
-    # IndustryCommerceShareholders,
-    # IndustryCommerceSharepledge,
-    # IndustryMortgageDetailMortgagee,
+    IndustryCommerceChange,
+    IndustryCommerceCheck,
+    IndustryCommerceClear,
+    IndustryCommerceDetailGuarantee,
+    IndustryCommerceException,
+    IndustryCommerceIllegal,
+    IndustryCommerceMainperson,
+    IndustryCommerceMortgage,
+    IndustryCommerceMortgageDetailChange,
+    IndustryCommerceMortgageDetailGuarantee,
+    IndustryCommerceMortgageGuaranty,
+    IndustryCommerceRevoke,
+    IndustryCommerceShareholders,
+    IndustryCommerceSharepledge,
+    IndustryMortgageDetailMortgagee,
+    EnterAdministrativeLicense,
+    EnterAdministrativePenalty,
+    EnterAnnualReport,
+    EnterIntellectualPropertyPledge,
+    EnterModification,
+    EnterSharechange,
+    EnterShareholder,
+    JudicialShareFreeze,
+    JudicialShareholderChange,
+    OtherAdministrativeChange,
+    OtherAdministrativeLicense,
+    OtherAdministrativePenalty,
+    OtherProductionSecurity,
+    YearReportAssets,
+    YearReportBasic,
+    YearReportCorrect,
+    YearReportInvestment,
+    YearReportModification,
+    YearReportOnline,
+    YearReportSharechange,
+    YearReportShareholder,
+    YearReportWarrandice,
 )
 from profiles.mappings import mappings
 
@@ -32,69 +57,235 @@ class Parse(object):
     mappings = mappings
 
     def __init__(self, clawer_file_path=''):
-        self.keys = settings.keys
+        self.keys = consts.keys
         if (clawer_file_path == ''):
-            raise Exception('must have clawer_file_path and mappings_file_path')
+            raise Exception('Must give clawer json file path.')
 
         else:
-            with open(clawer_file_path) as clawer_file:
-                self.companies = json.load(clawer_file)
+            self.companies = {}
+            for line in fileinput.input(clawer_file_path):
+                company = json.loads(line)
+                for key in company:
+                    self.companies[key] = company[key]
 
-    def handle_companies(self):
-        for enter_id in self.companies:
-            company = self.companies[enter_id]
-            print u"\n公司注册Id: %s\n" % enter_id
-            self.handle_company(company)
+    def parse_companies(self):
+        handled_num = 0
+        begin = time.time()
 
-    def handle_company(self, company={}):
+        for register_num in self.companies:
+            company = self.companies[register_num]
+            print u"\n公司注册Id: %s" % register_num
+            self.parse_company(company, register_num)
+            handled_num = handled_num + 1
+
+        end = time.time()
+        secs = int(round((end - begin) * 1000))
+        print u"\n=== 共导入%d个公司的数据，耗时%dms ===" % (handled_num, secs)
+
+    def parse_company(self, company={}, register_num=0):
         keys = self.keys
+
         self.company_result = {}
+
         for key in company:
             if type(company[key]) == dict:
                 if key in keys and key in mappings:
-                    self.handle_dict(company[key], mappings[key])
-                else:
-                    pass
+                    self.parse_dict(company[key], mappings[key])
             elif type(company[key] == list):
                 if key in keys and key in mappings:
-                    self.handle_list()
-                else:
-                    pass
-            else:
-                pass
+                    self.parse_list(key, company[key], mappings[key])
 
+        credit_code = self.company_result.get('credit_code')
+        if credit_code is None:
+            credit_code = register_num
+        if self.company_result.get('register_num') is None:
+            self.company_result['register_num'] = register_num
+
+        self.conversion_type()
         self.write_to_mysql()
+        self.company_result = {}
 
-    def handle_dict(self, dict_in_company, mapping):
-        for key in dict_in_company:
-            if key != u"详情":
-                self.company_result[mapping[key]] = dict_in_company[key]
-            else:
-                pass
+    def parse_dict(self, dict_in_company, mapping):
+        for field in dict_in_company:
+            if field in mapping:
+                self.company_result[mapping[field]] = dict_in_company[field]
 
-    def handle_list(self):
+    def parse_list(self, key, list_in_company, mapping):
+        keys_to_tables = consts.keys_to_tables
+        special_parse_keys = consts.special_parse_keys
+        name = keys_to_tables.get(key)
+        parse_func = self.key_to_parse_function(key)
+        if key not in special_parse_keys:
+            for d in list_in_company:
+                value = parse_func(d, mapping)
+                if name is not None and value is not None:
+                    if self.company_result.get(name) is None:
+                        self.company_result[name] = []
+                    self.company_result[name].append(value)
+        else:
+            pass
+
+    def key_to_parse_function(self, key):
+        keys_to_functions = {
+            "ind_comm_pub_reg_shareholder": self.parse_ind_shareholder,
+            "ind_comm_pub_reg_modify": self.parse_ind_modify,
+            "ind_comm_pub_arch_key_persons": self.parse_ind_key_persons,
+            "ind_comm_pub_arch_branch": self.parse_ind_branch,
+            "ind_comm_pub_movable_property_reg": self.parse_ind_property_reg,
+            "ind_comm_pub_equity_ownership_reg": self.parse_ind_ownership_reg,
+            "ind_comm_pub_administration_sanction": self.parse_ind_sanction,
+            "ind_comm_pub_business_exception": self.parse_ind_exception,
+            "ind_comm_pub_serious_violate_law": self.parse_ind_violate_law,
+            "ind_comm_pub_spot_check": self.parse_ind_check,
+
+            "ent_pub_ent_annual_report": self.parse_ent_report,
+            "ent_pub_shareholder_capital_contribution": self.parse_ent_contribution,
+            "ent_pub_equity_change": self.parse_ent_change,
+            "ent_pub_administration_license": self.parse_ent_license,
+            "ent_pub_knowledge_property": self.parse_ent_property,
+            "ent_pub_administration_sanction": self.parse_ent_sanction,
+
+            "other_dept_pub_administration_license": self.parse_other_license,
+            "other_dept_pub_administration_sanction": self.parse_other_sanction,
+
+            "judical_assist_pub_equity_freeze": self.parse_judical_freeze,
+            "judical_assist_pub_shareholder_modify": self.parse_judical_modify,
+        }
+        return keys_to_functions.get(key, lambda: "noting")
+
+    def parse_ind_shareholder(self, dict_in_company, mapping):
+        pass
+
+    def parse_ind_modify(self, dict_in_company, mapping):
+        inner = {}
+        for d in dict_in_company:
+            d_map = mapping[d]
+            if d in mapping and dict_in_company[d] is not None:
+                inner[d_map] = dict_in_company[d]
+        return inner 
+
+    def parse_ind_key_persons(self, dict_in_company, mapping):
+        result = {}
+        for field in dict_in_company:
+            if field in mapping and dict_in_company[field] is not None:
+                result[mapping[field]] = dict_in_company[field]
+        return result
+
+    def parse_ind_branch(self, dict_in_company, mapping):
+        pass
+
+    def parse_ind_property_reg(self, dict_in_company, mapping):
+        pass
+
+    def parse_ind_ownership_reg(self, dict_in_company, mapping):
+        pass
+
+    def parse_ind_sanction(self, dict_in_company, mapping):
+        pass
+
+    def parse_ind_exception(self, dict_in_company, mapping):
+        pass
+
+    def parse_ind_violate_law(self, dict_in_company, mapping):
+        pass
+
+    def parse_ind_check(self, dict_in_company, mapping):
+        pass
+
+    def parse_ent_report(self, dict_in_company, mapping):
+        pass
+
+    def parse_ent_contribution(self, dict_in_company, mapping):
+        pass
+
+    def parse_ent_change(self, dict_in_company, mapping):
+        pass
+
+    def parse_ent_license(self, dict_in_company, mapping):
+        pass
+
+    def parse_ent_property(self, dict_in_company, mapping):
+        pass
+
+    def parse_ent_sanction(self, dict_in_company, mapping):
+        pass
+
+    def parse_other_license(self, dict_in_company, mapping):
+        pass
+
+    def parse_other_sanction(self, dict_in_company, mapping):
+        pass
+
+    def parse_judical_freeze(self, dict_in_company, mapping):
+        pass
+
+    def parse_judical_modify(self, dict_in_company, mapping):
         pass
 
     def write_to_mysql(self):
         self.update(Basic)
         self.update(IndustryCommerceAdministrativePenalty)
         self.update(IndustryCommerceBranch)
-        # self.update(IndustryCommerceChange)
-        # self.update(IndustryCommerceCheck)
-        # self.update(IndustryCommerceClear)
-        # self.update(IndustryCommerceDetailGuarantee)
-        # self.update(IndustryCommerceException)
-        # self.update(IndustryCommerceIllegal)
-        # self.update(IndustryCommerceMainperson)
-        # self.update(IndustryCommerceMortgage)
-        # self.update(IndustryCommerceMortgageDetailChange)
-        # self.update(IndustryCommerceMortgageDetailGuarantee)
-        # self.update(IndustryCommerceMortgageGuaranty)
-        # self.update(IndustryCommerceRevoke)
-        # self.update(IndustryCommerceShareholders)
-        # self.update(IndustryCommerceSharepledge)
-        # self.update(IndustryMortgageDetailMortgagee)
+        self.update(IndustryCommerceChange)
+        self.update(IndustryCommerceCheck)
+        self.update(IndustryCommerceClear)
+        self.update(IndustryCommerceDetailGuarantee)
+        self.update(IndustryCommerceException)
+        self.update(IndustryCommerceIllegal)
+        self.update(IndustryCommerceMainperson)
+        self.update(IndustryCommerceMortgage)
+        self.update(IndustryCommerceMortgageDetailChange)
+        self.update(IndustryCommerceMortgageDetailGuarantee)
+        self.update(IndustryCommerceMortgageGuaranty)
+        self.update(IndustryCommerceRevoke)
+        self.update(IndustryCommerceShareholders)
+        self.update(IndustryCommerceSharepledge)
+        self.update(IndustryMortgageDetailMortgagee)
+        self.update(EnterAdministrativeLicense)
+        self.update(EnterAdministrativePenalty)
+        self.update(EnterAnnualReport)
+        self.update(EnterIntellectualPropertyPledge)
+        self.update(EnterModification)
+        self.update(EnterSharechange)
+        self.update(EnterShareholder)
+        self.update(JudicialShareFreeze)
+        self.update(JudicialShareholderChange)
+        self.update(OtherAdministrativeChange)
+        self.update(OtherAdministrativeLicense)
+        self.update(OtherAdministrativePenalty)
+        self.update(OtherProductionSecurity)
+        self.update(YearReportAssets)
+        self.update(YearReportBasic)
+        self.update(YearReportCorrect)
+        self.update(YearReportInvestment)
+        self.update(YearReportModification)
+        self.update(YearReportOnline)
+        self.update(YearReportSharechange)
+        self.update(YearReportShareholder)
+        self.update(YearReportWarrandice)
 
     def update(self, model):
         company_result = self.company_result
-        model().update(model, company_result)
+        model().update_by_dict(model, company_result)
+
+    def conversion_type(self):
+        type_date = consts.type_date
+        type_float = consts.type_float
+        to_date = tools.trans_time
+        to_float = tools.trans_float
+        company_result = self.company_result
+
+        for field in company_result:
+            value = company_result[field]
+            if field in type_date and value is not None:
+                company_result[field] = to_date(value.encode('utf-8'))
+            elif field in type_float and value is not None:
+                company_result[field] = to_float(value.encode('utf-8'))
+            elif type(value) == list:
+                for d in value:
+                    for d_field in d:
+                        d_value = d[d_field]
+                        if d_field in type_date and d_value is not None:
+                            d[d_field] = to_date(d_value.encode('utf-8'))
+                        elif d_field in type_float and d_value is not None:
+                            d[d_field] = to_float(d_value.encode('utf-8'))

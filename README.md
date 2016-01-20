@@ -26,7 +26,8 @@
       # master
       ## for root
       */5    *    *    *    * cd /home/webapps/nice-clawer/confs/production;./bg_cmd.sh task_generator_install
-      20    *    *    *    * cd /home/webapps/nice-clawer/confs/production;./bg_cmd.sh clawer_monitor
+      20    *    *    *    * cd /home/webapps/nice-clawer/confs/production;./bg_cmd.sh clawer_monitor_hour
+      40    3    *    *    * cd /home/webapps/nice-clawer/confs/production;./bg_cmd.sh clawer_monitor_day
       ## for nginx user
       */5    *    *    *    * cd /home/webapps/nice-clawer/confs/production;./bg_cmd.sh task_dispatch
       30     *    *    *    * cd /home/webapps/nice-clawer/confs/production;./bg_cmd.sh task_analysis_merge
@@ -41,6 +42,11 @@
       ## must run with root
       */5    *    *    *    * cd /home/webapps/nice-clawer/confs/production;./foreign_bg_cmd.sh task_generator_install --foreign
       30     *    *    *    * cd /home/webapps/nice-clawer/confs/production;./shrink_tmp.sh
+      
+      
+      #工商数据
+      30 2 * * * cd /home/webapps/nice-clawer/sources/qyxy; ENT_CRAWLER_SETTINGS='settings_pro' sh run.sh 14400 all
+      
       
      
 # Supervisor for Clawer worker

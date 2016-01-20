@@ -6,7 +6,8 @@ import raven
 import gzip
 import random
 import time
-from datetime import datetime, timedelta
+import datetime
+import stat
 
 import logging
 import Queue
@@ -35,6 +36,8 @@ from fujian_crawler import FujianCrawler
 from sichuan_crawler import SichuanCrawler
 from shandong_crawler import ShandongCrawler
 from hebei_crawler import HebeiCrawler
+from shaanxi_crawler import ShaanxiCrawler
+from henan_crawler import HenanCrawler
 
 failed_ent = {}
 province_crawler = {
@@ -52,6 +55,8 @@ province_crawler = {
     'sichuan': SichuanCrawler,
     'shandong' : ShandongCrawler,
     'hebei' : HebeiCrawler,
+    'shaanxi': ShaanxiCrawler,
+    'henan' : HenanCrawler,
 }
 
 max_crawl_time = 0
@@ -70,7 +75,7 @@ def config_logging():
     ch = logging.StreamHandler()
     ch.setLevel(settings.log_level)
 
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(pathname)s:%(lineno)d:: %(message)s')
     fh.setFormatter(formatter)
     ch.setFormatter(formatter)
     settings.logger.addHandler(fh)
@@ -79,28 +84,23 @@ def config_logging():
 
 def crawl_work(n, province, json_restore_path, ent_queue):
     crawler = province_crawler[province](json_restore_path)
+
     while True:
-        cur_time = datetime.now()
-        if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
-            settings.logger.info('crawl time over, exit!')
-            while not ent_queue.empty():
-                ent = ent_queue.get(timeout=3)
-                ent_queue.task_done()
-            break
 
         try:
             ent = ent_queue.get(timeout=3)
         except Exception as e:
             if ent_queue.empty():
                 settings.logger.info('ent queue is empty, crawler %d stop' % n)
-                return
+                break
 
         time.sleep(random.uniform(0.2, 1))
         settings.logger.info('crawler %d start to crawler enterprise(ent_id = %s)' % (n, ent))
         try:
             crawler.run(ent)
         except Exception as e:
-            settings.logger.error('crawler %d failed to crawl enterprise(id = %s), with exception %s' %(n, ent, e))
+            settings.logger.error('crawler %s failed to get enterprise(id = %s), with exception %s' % (province, ent, e))
+            """
             if failed_ent.get(ent, 0) > 3:
                 settings.logger.error('Failed to crawl and parse enterprise %s' % ent)
                 #report to sentry
@@ -111,24 +111,10 @@ def crawl_work(n, province, json_restore_path, ent_queue):
                 failed_ent[ent] = failed_ent.get(ent, 0) + 1
                 settings.logger.warn('failed to crawl enterprise(id = %s) %d times!' % (ent, failed_ent[ent]))
                 ent_queue.put(ent)
+            """
         finally:
             ent_queue.task_done()
 
-
-"""
-def run(province, enterprise_list, json_restore_path):
-    ent_queue = Queue.Queue()
-    for x in enterprise_list:
-        ent_queue.put(x)
-
-    for i in range(settings.crawler_num):
-        worker = threading.Thread(target=crawl_work,args=(i, province, json_restore_path, ent_queue))
-        worker.start()
-        time.sleep(random.uniform(1, 2))
-
-    ent_queue.join()
-    settings.logger.info('All crawlers work over')
-"""
 
 def crawl_province(province, cur_date):
     #创建存储路径
@@ -157,17 +143,10 @@ def crawl_province(province, cur_date):
     ent_queue.join()
     settings.logger.info('All %s crawlers work over' % province)
 
-#    #压缩保存
-#    with open(json_restore_path, 'r') as f:
-#        compressed_data = zlib.compress(f.read())
-#        compressed_json_restore_path = json_restore_path + '.gz'
-#        with open(compressed_json_restore_path, 'wb') as cf:
-#            cf.write(compressed_data)
-
-
     #压缩保存
     if not os.path.exists(json_restore_path):
-        settings.logger.warn('json restore path %s does not exist!'%json_restore_path)
+        settings.logger.warn('json restore path %s does not exist!' % json_restore_path)
+        os._exit(1)
         return
 
     with open(json_restore_path, 'r') as f:
@@ -178,11 +157,46 @@ def crawl_province(province, cur_date):
 
     #删除json文件，只保留  .gz 文件
     os.remove(json_restore_path)
+    os._exit(0)
 
 
 def force_exit():
     settings.logger.error("run timeout")
     os._exit(1)
+
+
+class Checker(object):
+    """ Is obtain data from province enterprise site today ?
+    """
+    def __init__(self):
+        self.yesterday = datetime.datetime.now() - datetime.timedelta(1)
+        self.parent = settings.json_restore_path
+        self.success = [] # {'name':'', "size':0}
+        self.failed = [] # string list
+
+    def run(self):
+        for province in sorted(province_crawler.keys()):
+            path = self._json_path(province)
+            if os.path.exists(path) is False:
+                self.failed.append(province)
+                continue
+
+            st = os.stat(path)
+            self.success.append({"name": province, "size": st[stat.ST_SIZE]})
+
+        #output
+        settings.logger.error("success %d, failed %d", len(self.success), len(self.failed))
+        for item in self.success:
+            settings.logger.error("\t%s: %d bytes", item['name'], item['size'])
+
+        settings.logger.error("Failed province")
+        for item in self.failed:
+            settings.logger.error("\t%s", item)
+
+    def _json_path(self, province):
+        path = os.path.join(self.parent, province, self.yesterday.strftime("%Y/%m/%d.json.gz"))
+        return path
+
 
 
 if __name__ == '__main__':
@@ -199,28 +213,33 @@ if __name__ == '__main__':
     set_codecracker()
     cur_date = CrawlerUtils.get_cur_y_m_d()
 
-    if len(sys.argv) < 3:
-        print 'usage: run.py max_crawl_time(minutes) province... \n\tmax_crawl_time 最大爬取时间，以秒计;\n\tprovince 是所要爬取的省份列表 用空格分开, all表示爬取全部)'
+    if len(sys.argv) == 2 and sys.argv[1] == "check":
+        checker = Checker()
+        checker.run()
+        exit(0)
+    elif len(sys.argv) < 3:
+        print 'usage: run.py [check] [max_crawl_time(minutes) province...] \n\tmax_crawl_time 最大爬取时间，以秒计;\n\tprovince 是所要爬取的省份列表 用空格分开, all表示爬取全部)'
         exit(1)
 
     try:
         max_crawl_time = int(sys.argv[1])
-        settings.max_crawl_time = timedelta(minutes=max_crawl_time)
+        settings.max_crawl_time = datetime.timedelta(minutes=max_crawl_time)
     except ValueError as e:
         settings.logger.error('invalid max_crawl_time, should be a integer')
-        exit(1)
+        os._exit(1)
 
     timer = threading.Timer(max_crawl_time, force_exit)
     timer.start()
 
     settings.logger.info(u'即将开始爬取，最长爬取时间为 %s 秒' % settings.max_crawl_time)
-    settings.start_crawl_time = datetime.now()
+    settings.start_crawl_time = datetime.datetime.now()
 
     if sys.argv[2] == 'all':
-        for p in province_crawler.keys():
+        for p in sorted(province_crawler.keys()):
             process = multiprocessing.Process(target=crawl_province, args=(p, cur_date))
+            process.daemon = True
             process.start()
-            process.join(max_crawl_time)
+            process.join(max_crawl_time/2)
     else:
         provinces = sys.argv[2:]
         for p in provinces:
@@ -228,6 +247,10 @@ if __name__ == '__main__':
                 settings.logger.warn('province %s is not supported currently' % p)
             else:
                 process = multiprocessing.Process(target=crawl_province, args=(p, cur_date))
+                process.daemon = True
                 process.start()
                 process.join(max_crawl_time)
+                settings.logger.info("child process exit code %d", process.exitcode)
+
+    os._exit(0)
 
