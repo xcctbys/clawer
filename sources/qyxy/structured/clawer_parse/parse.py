@@ -129,6 +129,11 @@ class Parse(object):
                     if self.company_result.get(name) is None:
                         self.company_result[name] = []
                     self.company_result[name] = value
+        elif key == special_parse_keys[1]:
+            for d in list_in_company:
+                value = parse_func(d, mapping)
+                if name is not None and value is not None:
+                    self.company_result[name] = value
         else:
             for d in list_in_company:
                 parse_func(d, mapping)
@@ -168,7 +173,6 @@ class Parse(object):
     def parse_ind_shareholder(self, dict_in_company, mapping):
         result = []
         dict_inner = {}
-        print "parse_ind_shareholder"
         for field, value in dict_in_company.iteritems():
             if field == u"详情":
                 if value is not None:
@@ -212,12 +216,45 @@ class Parse(object):
                 else:
                     for result_dict in result:
                         result_dict[mapping.get(field)] = dict_in_company[field]
+        for d in result:
+            print "###"
+            for key, val in d.iteritems():
+                print key, ": ", val
+            print "###"
 
+        print "---"
         print result
+        print "---"
         return result
 
     def parse_ent_report(self, dict_in_company, mapping):
         pass
+        # ent_report = {}
+        # for key, value in dict_in_company.iteritems():
+        #     type_value = type(value)
+        #     if type_value == unicode or type_value == str:
+        #         ent_report[mapping[key]] = value
+        #     else:
+        #         year_report_id = ent_report.get('year_report_id')
+        #         self.parse_report_details(year_report_id, value, mapping[key])
+
+        # name = keys_to_tables.get('ent_pub_ent_annual_report')
+        # if not self.company_result[name]:
+        #     self.company_result[name] = []
+        # self.company_result[name].append(ent_report)
+
+    def parse_report_details(self, year_report_id, details, mapping):
+        keys_to_tables = consts.keys_to_tables
+
+        for key, value in details.iteritems():
+            name = keys_to_tables.get(key)
+            if type(value) == list:
+                pass
+            else:
+                report = {}
+                for field, value in details.iteritems():
+                    report[mapping[key]] = value
+
 
     def write_to_mysql(self):
         self.update(Basic)
