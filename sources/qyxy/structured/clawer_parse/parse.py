@@ -214,7 +214,8 @@ class Parse(object):
                     dict_inner = {}
                     #print field
                 else:
-                    pass
+                    for result_dict in result:
+                        result_dict[mapping.get(field)] = dict_in_company[field]
         for d in result:
             print "###"
             for key, val in d.iteritems():
