@@ -19,6 +19,27 @@ import requests
 import re
 from crawler import CrawlerUtils
 
+PDF_CRAWLER_SETTINGS=os.getenv('PDF_CRAWLER_SETTINGS')
+if PDF_CRAWLER_SETTINGS and PDF_CRAWLER_SETTINGS.find('settings_pro') >= 0:
+    import settings_pro as settings
+else:
+    import settings
+
+
+def config_logging():
+    settings.logger = logging.getLogger('pdf_crawler')
+    settings.logger.setLevel(settings.log_level)
+    fh = logging.FileHandler(settings.log_file)
+    fh.setLevel(settings.log_level)
+    ch = logging.StreamHandler()
+    ch.setLevel(settings.log_level)
+
+    formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(pathname)s:%(lineno)d:: %(message)s')
+    fh.setFormatter(formatter)
+    ch.setFormatter(formatter)
+    settings.logger.addHandler(fh)
+    settings.logger.addHandler(ch)
+
 max_crawl_time = 0
 
 reqst = requests.Session()
@@ -49,8 +70,10 @@ def get_json_file(yesterday):
 				get_json('%s/%s/%s/%s/%s/%s' % (settings.host, settings.ID, yesterday[:4], yesterday[4:6], yesterday[6:], m.group(1)), yesterday)
 			else:
 				print '-------error-------re.search----'
+				# settings.logger.warn('-------error-------re.search----')
 		else:
 			print '---------error----------reqst.get------'
+			# settings.logger.warn('---------error----------reqst.get------')
 
 def get_pdf(save_path, list_dict):
 
@@ -71,9 +94,12 @@ def get_pdf(save_path, list_dict):
 				count += 1
 				if count == 10:
 					print '%s,get-error' % pdf_url
+					# settings.logger.info('%s,get-error' % pdf_url)
 				continue
 
 if __name__ == '__main__':
+
+	config_logging()
 
 	yesterday = (datetime.datetime.now() - datetime.timedelta(1)).strftime('%Y%m%d')
 	# yesterday = '20160118'
@@ -93,6 +119,10 @@ if __name__ == '__main__':
 			if not os.path.exists(abs_json_path):
 				get_json_file(json_file_item)
 				# print '-----------error------------'
+			if not os.path.exists(abs_json_path):
+				print '--------error--nothave--%s-' % abs_json_path
+				# settings.logger.info('--------error--nothave--%s-' % abs_json_path)
+				continue
 			f = open(abs_json_path, 'r')
 			for line in f.readlines():
 				# print type(json.loads(line)['list'])
@@ -101,6 +131,7 @@ if __name__ == '__main__':
 				process.start()
 				process.join(max_crawl_time)
 				print 'child process exit'
+				# settings.logger.info('child process exit')
 			f.close()
 
 

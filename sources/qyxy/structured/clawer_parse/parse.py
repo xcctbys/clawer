@@ -129,6 +129,11 @@ class Parse(object):
                     if self.company_result.get(name) is None:
                         self.company_result[name] = []
                     self.company_result[name] = value
+        elif key == special_parse_keys[1]:
+            for d in list_in_company:
+                value = parse_func(d, mapping)
+                if name is not None and value is not None:
+                    self.company_result[name] = value
         else:
             for d in list_in_company:
                 parse_func(d, mapping)
@@ -167,38 +172,57 @@ class Parse(object):
 
     def parse_ind_shareholder(self, dict_in_company, mapping):
         result = []
-        # dict_inner = {}
-        # print "parse_ind_shareholder"
-        # for field in dict_in_company:
-        #     if field == u"详情":
-        #         if not dict_in_company[field]:
-        #             for dic in dict_in_company[field]:
-        #                 for key_add in dic:
-        #                     list_in = dic[key_add]
-        #                     if not list_in:
-        #                         for dict_in in list_in:
-        #                             for key_in in dict_in:
-        #                                 if key_in ==u"list":
-        #                                     for dict_fuck in dict_in[key_in]:
-        #                                         for key_fuck in dict_fuck:
-        #                                             dict_inner[mapping.get(key_fuck)] = dict_fuck[key_fuck]
-        #                                         result.append(dict_inner)
-        #                                         dict_inner = {}
-        #                                 else:
-        #                                     for result_dict in result:
-        #                                         result_dict[mapping.get(key_in)] = dict_in[key_in]
-        # for field in dict_in_company:
-        #     if field != u"详情":
-        #         try:
-        #             for result_dict in result:
-        #                 result_dict[mapping.get(field)] = dict_in_company[field]
+        dict_inner = {}
+        print "parse_ind_shareholder"
+        for field, value in dict_in_company.iteritems():
+            if field == u"详情":
+                if value is not None:
+                    # for dic in value:
+                    #     print dic
+                    for key_add in value:
+                        #print key_add
+                        if key_add is not None:
+                            list_in = value[key_add]
+                            for dict_in in list_in:
+                                for key_in in dict_in:
+                                    if key_in ==u"list":
+                                        for dict_fuck in dict_in[key_in]:
+                                            for key_fuck in dict_fuck:
+                                                dict_inner[mapping.get(key_fuck)] = dict_fuck[key_fuck]
+                                            result.append(dict_inner)
+                                            dict_inner = {}
+                                    else:
+                                        if result is None:
+                                            dict_inner[mapping.get(key_in)] = dict_in[key_in]
+                                            result.append(dict_inner)
+                                            dict_inner = None
+                                        else:
+                                            for result_dict in result: 
+                                                result_dict[mapping.get(key_in)] = dict_in[key_in]
+                        else:
+                            result.append(dict_inner)
+                            dict_inner = {}
+        for field, value in dict_in_company.iteritems():
+            #print field, value
+            if field == u"详情":
+                pass
+            else:
+                #print field, value
+                if not result:
+                    #print field, value
+                    dict_inner[mapping.get(field)] = value
+                    result.append(dict_inner)
+                    dict_inner = {}
+                    #print field
+                else:
         #         except:
         #             pass
 
+        print result
         return result
 
     def parse_ent_report(self, dict_in_company, mapping):
-        keys_to_tables = consts.keys_to_tables
+        pass
         ent_report = {}
         for key, value in dict_in_company.iteritems():
             type_value = type(value)

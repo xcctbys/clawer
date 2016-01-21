@@ -599,7 +599,7 @@ class YearReportAssets(models.Model, UpdateByDict):
     tax = models.FloatField(null=True)
     debts = models.FloatField(null=True)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
-    ent_id = models.IntegerField(null=True)
+    enter_id = models.IntegerField(null=True)
 
     class Meta:
         db_table = "year_report_assets"
@@ -623,7 +623,7 @@ class YearReportBasic(models.Model, UpdateByDict):
     is_warrandice = models.CharField(max_length=10, null=True, blank=True)
     is_invest = models.BooleanField(default=False)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
-    ent_id = models.IntegerField(null=True)
+    enter_id = models.IntegerField(null=True)
 
     class Meta:
         db_table = "year_report_basic"
@@ -637,7 +637,7 @@ class YearReportCorrect(models.Model, UpdateByDict):
     correct_reason = models.CharField(max_length=50, null=True, blank=True)
     correct_time = models.DateField(null=True)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
-    ent_id = models.IntegerField(null=True)
+    enter_id = models.IntegerField(null=True)
 
     class Meta:
         db_table = "year_report_correct"
@@ -650,7 +650,7 @@ class YearReportInvestment(models.Model, UpdateByDict):
     invest_enter_name = models.CharField(max_length=50, null=True, blank=True)
     enter_code = models.CharField(max_length=20, null=True, blank=True)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
-    ent_id = models.IntegerField(null=True)
+    enter_id = models.IntegerField(null=True)
 
     class Meta:
         db_table = "year_report_investment"
@@ -665,7 +665,7 @@ class YearReportModification(models.Model, UpdateByDict):
     modify_after = models.CharField(max_length=50, null=True, blank=True)
     modify_date = models.DateField(null=True)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
-    ent_id = models.IntegerField(null=True)
+    enter_id = models.IntegerField(null=True)
 
     class Meta:
         db_table = "year_report_modification"
@@ -679,7 +679,7 @@ class YearReportOnline(models.Model, UpdateByDict):
     enter_name = models.CharField(max_length=50, null=True, blank=True)
     enter_url = models.CharField(max_length=50, null=True, blank=True)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
-    ent_id = models.IntegerField(null=True)
+    enter_id = models.IntegerField(null=True)
 
     class Meta:
         db_table = "year_report_online"
@@ -693,7 +693,7 @@ class YearReportSharechange(models.Model, UpdateByDict):
     shares_before = models.FloatField(null=True)
     shares_after = models.FloatField(null=True)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
-    ent_id = models.IntegerField(null=True)
+    enter_id = models.IntegerField(null=True)
 
     class Meta:
         db_table = "year_report_sharechange"
@@ -711,7 +711,7 @@ class YearReportShareholder(models.Model, UpdateByDict):
     paid_time = models.DateField(null=True)
     paid_type = models.CharField(max_length=20, null=True, blank=True)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
-    ent_id = models.IntegerField(null=True)
+    enter_id = models.IntegerField(null=True)
 
     class Meta:
         db_table = "year_report_shareholder"
@@ -730,7 +730,7 @@ class YearReportWarrandice(models.Model, UpdateByDict):
     guarantee_type = models.CharField(max_length=30, null=True, blank=True)
     warrandice_scope = models.CharField(max_length=100, null=True, blank=True)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
-    ent_id = models.IntegerField(null=True)
+    enter_id = models.IntegerField(null=True)
 
     class Meta:
         db_table = "year_report_warrandice"
