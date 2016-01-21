@@ -215,27 +215,24 @@ class Parse(object):
                     dict_inner = {}
                     #print field
                 else:
-        #         except:
-        #             pass
-
-        print result
+                    pass
         return result
 
     def parse_ent_report(self, dict_in_company, mapping):
         pass
-        ent_report = {}
-        for key, value in dict_in_company.iteritems():
-            type_value = type(value)
-            if type_value == unicode or type_value == str:
-                ent_report[mapping[key]] = value
-            else:
-                year_report_id = ent_report.get('year_report_id')
-                self.parse_report_details(year_report_id, value, mapping[key])
+        # ent_report = {}
+        # for key, value in dict_in_company.iteritems():
+        #     type_value = type(value)
+        #     if type_value == unicode or type_value == str:
+        #         ent_report[mapping[key]] = value
+        #     else:
+        #         year_report_id = ent_report.get('year_report_id')
+        #         self.parse_report_details(year_report_id, value, mapping[key])
 
-        name = keys_to_tables.get('ent_pub_ent_annual_report')
-        if not self.company_result[name]:
-            self.company_result[name] = []
-        self.company_result[name].append(ent_report)
+        # name = keys_to_tables.get('ent_pub_ent_annual_report')
+        # if not self.company_result[name]:
+        #     self.company_result[name] = []
+        # self.company_result[name].append(ent_report)
 
     def parse_report_details(self, year_report_id, details, mapping):
         keys_to_tables = consts.keys_to_tables
@@ -247,7 +244,7 @@ class Parse(object):
             else:
                 report = {}
                 for field, value in details.iteritems():
-                    report(mapping[key]) = value
+                    report[mapping[key]] = value
 
 
     def write_to_mysql(self):
