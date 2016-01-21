@@ -177,39 +177,14 @@ class Parse(object):
         result = []
         dict_inner = {}
         for field, value in dict_in_company.iteritems():
-            if field == u"详情":
-                if value is not None:
-                    # for dic in value:
-                    #     print dic
-                    for key_add in value:
-                        #print key_add
-                        if key_add is not None:
-                            list_in = value[key_add]
-                            for dict_in in list_in:
-                                for key_in in dict_in:
-                                    if key_in ==u"list":
-                                        for dict_fuck in dict_in[key_in]:
-                                            for key_fuck in dict_fuck:
-                                                dict_inner[mapping.get(key_fuck)] = dict_fuck[key_fuck]
-                                            result.append(dict_inner)
-                                            dict_inner = {}
-                                    else:
-                                        if result is None:
-                                            dict_inner[mapping.get(key_in)] = dict_in[key_in]
-                                            result.append(dict_inner)
-                                            dict_inner = None
-                                        else:
-                                            for result_dict in result:
-                                                result_dict[mapping.get(key_in)] = dict_in[key_in]
-                        else:
-                            result.append(dict_inner)
-                            dict_inner = {}
+            if field == u"详情"and value is not None:
+                result = self.handle_ind_shareholder_xiangqing(value,result,mapping)
+
         for field, value in dict_in_company.iteritems():
             #print field, value
             if field == u"详情":
                 pass
             else:
-                #print field, value
                 if not result:
                     #print field, value
                     dict_inner[mapping.get(field)] = value
@@ -219,6 +194,31 @@ class Parse(object):
                 else:
                     for result_dict in result:
                         result_dict[mapping.get(field)] = dict_in_company[field]
+    def handle_ind_shareholder_xiangqing(self,dict_xq,result,mapping):
+        return result
+        dict_inner = {}
+        for key_add in dict_xq:
+            if key_add is not None:
+                list_in = dict_xq.get(key_add)
+                for dict_in in list_in:
+                    for key_in in dict_in:
+                        if key_in ==u"list":
+                            for dict_fuck in dict_in[key_in]:
+                                for key_fuck in dict_fuck:
+                                    dict_inner[mapping.get(key_fuck)] = dict_fuck[key_fuck]
+                                result.append(dict_inner)
+                                dict_inner = {}
+                        else:
+                            if result is None:
+                                dict_inner[mapping.get(key_in)] = dict_in[key_in]
+                                result.append(dict_inner)
+                                dict_inner = None
+                            else:
+                                for result_dict in result: 
+                                    result_dict[mapping.get(key_in)] = dict_in[key_in]
+            else:
+                result.append(dict_inner)
+                dict_inner = {}
         return result
 
     def parse_ent_report(self, dict_in_company, mapping):

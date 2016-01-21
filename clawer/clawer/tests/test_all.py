@@ -14,8 +14,7 @@ from clawer.models import MenuPermission, Clawer, ClawerTask,\
     ClawerDownloadLog, RealTimeMonitor, ClawerSetting, ClawerGenerateLog,\
     ClawerHourMonitor
 from clawer.management.commands import task_generator_run, task_analysis, task_analysis_merge, task_dispatch
-from clawer.management.commands import task_generator_install
-from clawer.utils import UrlCache, Download, MonitorClawer
+from clawer.utils import UrlCache, Download, MonitorClawerHour
 from django.conf import settings
 
 
@@ -573,7 +572,7 @@ class TestDownload(TestCase):
         self.assertIsNotNone(downloader.content)
     
     
-class TestMonitorClawer(TestCase):
+class TestMonitorClawerHour(TestCase):
     def setUp(self):
         TestCase.setUp(self)
         self.user = DjangoUser.objects.create_user(username="xxx", password="xxx")
@@ -595,7 +594,7 @@ class TestMonitorClawer(TestCase):
         with open(path, "w") as f:
             f.write("hello world")
         
-        monitor = MonitorClawer()
+        monitor = MonitorClawerHour()
         monitor._do_check(clawer)
         
         clawer_hour_monitors = ClawerHourMonitor.objects.filter(clawer=clawer, hour=hour).all()
@@ -615,7 +614,7 @@ class TestMonitorClawer(TestCase):
         clawer_hour_monitor = ClawerHourMonitor.objects.create(clawer=clawer, hour=hour, bytes=300)
         last_clawer_hour_monitor = ClawerHourMonitor.objects.create(clawer=clawer, hour=last_hour, bytes=300*10)
         
-        monitor = MonitorClawer()
+        monitor = MonitorClawerHour()
         monitor._do_report(clawer)
         
         clawer_hour_monitors = ClawerHourMonitor.objects.filter(clawer=clawer).all()
