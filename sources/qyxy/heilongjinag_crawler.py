@@ -389,12 +389,11 @@ class HeilongjiangParser(Parser):
                 table_td1.append(table_td_text.text.strip())
             for i in range(0, len(table_th1)):
                 table_ts[table_th1[i]] = table_td1[i]
-            table_detail = []
+            table_detail = {}
             a = qiyenianbao.find_all("a")
             if a:
-
                 for a1 in a:
-                    table_detail = []
+                    # table_detail = []
                     re1 = '.*?'  # Non-greedy match on filler
                     re2 = '(\\d+)'  # Integer Number 1
                     re3 = '((?:[a-z][a-z]*[0-9]+[a-z0-9]*))'  # Alphanum 1
@@ -408,7 +407,7 @@ class HeilongjiangParser(Parser):
                     rep = requests.get(url)
                     soup = BeautifulSoup(rep.content, 'html5lib')
 
-                    wrap = {}
+                    # wrap = {}
                     tables = soup.find_all("table")
                     for table in tables:
                         table_tiiles = table.find("th")
@@ -418,8 +417,8 @@ class HeilongjiangParser(Parser):
 
                         name_table_map2 = [u'企业资产状况信息', u'企业基本信息', u'基本信息']
                         if table_tiiles.text in name_table_map2:
-                            wrap[table_tiiles.text] = self.parse_table1(table)
-                    table_detail.append(wrap)
+                            table_detail[table_tiiles.text] = self.parse_table1(table)
+                    # table_detail.append(wrap)
 
 
                     # 四类表
@@ -442,11 +441,11 @@ class HeilongjiangParser(Parser):
                                 for i in range(0, len(table_td)):
                                     table_save[table_th[i]] = table_td[i]
                                 table_c.append(table_save)
-                            wrap[list_table_title.text] = table_c
-                            table_detail.append(wrap)
+                            table_detail[list_table_title.text] = table_c
+                            # table_detail.append(wrap)
 
                 # cont = table_ts[u'报送年度']
-                table_ts[u'报送年度'] = table_detail
+                table_ts[u'详情'] = table_detail
 
             table_save_all.append(table_ts)
 
@@ -617,8 +616,10 @@ class HeilongjiangParser(Parser):
         soupn = BeautifulSoup(rep1.text, "html5lib")
 
         table = soupn.find("table")
-
-        detail = self.coarse_page_table(table)
+        table_title1 = table.find("th").text  # 获取表头
+        detail = {}
+        # detail[table_title1] = total
+        detail[table_title1] = self.coarse_page_table(table)
 
         return detail
 
@@ -686,9 +687,10 @@ class HeilongjiangParser(Parser):
     def coarse_page_table(self, table):
 
         colspan_list = []  # 跨列的列数
-        colspan_th = []  # 跨列的列名
+        # colspan_th = []  # 跨列的列名
         list_title_th = []  # 第一行不跨列的列名
         list_th = []  # 第二行的列名
+
 
         table_trs = table.find_all("tr")
         list_tr = [tr for tr in table_trs]
@@ -698,13 +700,16 @@ class HeilongjiangParser(Parser):
             if 'colspan' in title_wrap.attrs:
                 for colspan in title_wrap['colspan']:
                     colspan_list.append(int(colspan))
-                    colspan_th.append(title_wrap.text)
+                    # colspan_th.append(title_wrap.text)
             else:
                 list_title_th.append(title_wrap.text)
 
         table_title = list_tr[2].find_all("th")
         for title_wrap in table_title:
             list_th.append(title_wrap.text)
+        sum = 0
+        for i in colspan_list:
+            sum = sum + i
 
         total = []  # 若有多行td
 
@@ -717,21 +722,25 @@ class HeilongjiangParser(Parser):
 
             del list_td[0:len(list_title_th)]
             list_test = []
+            table_test = {}
+            for i in range(0, sum):
 
-            for i in colspan_list:
-                table_test = {}
-                for j in range(0, i):
-                    table_test[list_th[j]] = list_td[j]
-                list_test.append(table_test)
-                del list_td[0:i]
-                del list_th[0:i]
-            for i in range(0, len(colspan_th)):
-                 table_save[colspan_th[i]] = list_test[i]
+                # for j in range(0, i):
+                table_test[list_th[i]] = list_td[i]
+            list_test.append(table_test)
+                # del list_td[0:i]
+                # del list_th[0:i]
+            table_save["list"] = list_test
+            # for i in range(0, len(colspan_th)):
+            #      table_save[colspan_th[i]] = list_test[i]
+            # total.append(table_save)
+
+            # table_title = list_tr[2].find_all("th")
+            # for title_wrap in table_title:
+            #     list_th.append(title_wrap.text)
+
             total.append(table_save)
-
-            table_title = list_tr[2].find_all("th")
-            for title_wrap in table_title:
-                list_th.append(title_wrap.text)
+        # faill[table_title1] = total
 
         return total
 
