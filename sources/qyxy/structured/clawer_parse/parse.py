@@ -173,7 +173,6 @@ class Parse(object):
     def parse_ind_shareholder(self, dict_in_company, mapping):
         result = []
         dict_inner = {}
-        print "parse_ind_shareholder"
         for field, value in dict_in_company.iteritems():
             if field == u"详情":
                 if value is not None:
@@ -216,6 +215,15 @@ class Parse(object):
                     #print field
                 else:
                     pass
+        for d in result:
+            print "###"
+            for key, val in d.iteritems():
+                print key, ": ", val
+            print "###"
+
+        print "---"
+        print result
+        print "---"
         return result
 
     def parse_ent_report(self, dict_in_company, mapping):
