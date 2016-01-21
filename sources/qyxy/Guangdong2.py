@@ -55,6 +55,7 @@ class Crawler(object):
         sub_json_dict={}
         try:
 
+
             tabs = (
                     'entInfo',          # 登记信息
                     'curStoPleInfo',    #股权出质
@@ -82,53 +83,66 @@ class Crawler(object):
                 page = self.crawl_page_by_url_post(url, post_data)['page']
                 if div_name == 'jibenxinxi':
                     dict_jiben = self.analysis.parse_page_2(page, div_name, post_data)
-                    sub_json_dict['ind_comm_pub_reg_modify'] = {u'变更信息':dict_jiben[u'变更信息'] if dict_jiben.has_key(u"变更信息") else []}
-                    sub_json_dict['ind_comm_pub_reg_basic'] =  {u'基本信息': dict_jiben[u'基本信息'] if dict_jiben.has_key(u"基本信息") else []}
-                    sub_json_dict['ind_comm_pub_reg_shareholder']= {u'股东信息': dict_jiben[u'股东信息'] if dict_jiben.has_key(u"股东信息") else [] }#,
+                    sub_json_dict['ind_comm_pub_reg_modify'] = dict_jiben[u'变更信息'] if dict_jiben.has_key(u"变更信息") else {}
+                    sub_json_dict['ind_comm_pub_reg_basic'] =  dict_jiben[u'基本信息'] if dict_jiben.has_key(u"基本信息") else []
+                    sub_json_dict['ind_comm_pub_reg_shareholder']= dict_jiben[u'股东信息'] if dict_jiben.has_key(u"股东信息") else []
                 elif div_name == 'beian':
                     dict_beian = self.analysis.parse_page_2(page, div_name, post_data)
-                    sub_json_dict['ind_comm_pub_arch_key_persons']= {u'主要人员信息': dict_beian[u'主要人员信息'] if dict_beian.has_key(u"主要人员信息") else []}
-                    sub_json_dict['ind_comm_pub_arch_branch'] = {u'分支机构信息': dict_beian[u'分支机构信息'] if dict_beian.has_key(u"分支机构信息") else [] }
-                    sub_json_dict['ind_comm_pub_arch_liquidation'] = {u'清算信息': dict_beian[u"清算信息"] if dict_beian.has_key(u'清算信息') else [] }
+                    sub_json_dict['ind_comm_pub_arch_key_persons']=  dict_beian[u'主要人员信息'] if dict_beian.has_key(u"主要人员信息") else []
+                    sub_json_dict['ind_comm_pub_arch_branch'] = dict_beian[u'分支机构信息'] if dict_beian.has_key(u"分支机构信息") else []
+                    sub_json_dict['ind_comm_pub_arch_liquidation'] = dict_beian[u"清算信息"] if dict_beian.has_key(u'清算信息') else []
                 elif div_name == 'guquanchuzhi':
-                    sub_json_dict['ind_comm_pub_equity_ownership_reg'] = self.analysis.parse_page_2(page, div_name, post_data)
+                    dj = self.analysis.parse_page_2(page, div_name, post_data)
+                    sub_json_dict['ind_comm_pub_equity_ownership_reg'] = dj[u'股权出质登记信息'] if dj.has_key(u'股权出质登记信息') else []
                 elif div_name == 'dongchandiya':
-                    sub_json_dict['ind_comm_pub_movable_property_reg'] = self.analysis.parse_page_2(page, div_name, post_data)
+                    dj = self.analysis.parse_page_2(page, div_name, post_data)
+                    sub_json_dict['ind_comm_pub_movable_property_reg'] = dj[u'动产抵押信息'] if dj.has_key(u'动产抵押信息') else []
                 elif div_name == 'xingzhengchufa':
-                    sub_json_dict['ind_comm_pub_administration_sanction'] = self.analysis.parse_page_2(page, div_name, post_data)
+                    dj = self.analysis.parse_page_2(page, div_name, post_data)
+                    sub_json_dict['ind_comm_pub_administration_sanction'] = dj[u'行政处罚信息'] if dj.has_key(u'行政处罚信息') else []
                 elif div_name == 'jingyingyichang':
-                    sub_json_dict['ind_comm_pub_business_exception'] = self.analysis.parse_page_2(page, div_name, post_data)
+                    dj = self.analysis.parse_page_2(page, div_name, post_data)
+                    sub_json_dict['ind_comm_pub_business_exception'] = dj[u'经营异常信息'] if dj.has_key(u'经营异常信息') else []
                 elif div_name == 'yanzhongweifa':
-                    sub_json_dict['ind_comm_pub_serious_violate_law'] = self.analysis.parse_page_2(page, div_name, post_data)
+                    dj = self.analysis.parse_page_2(page, div_name, post_data)
+                    sub_json_dict['ind_comm_pub_serious_violate_law'] =  dj[u'严重违法信息'] if dj.has_key(u'严重违法信息') else []
                 elif div_name == 'chouchajiancha':
-                    sub_json_dict['ind_comm_pub_spot_check'] = self.analysis.parse_page_2(page, div_name, post_data)
-                #json_dump_to_file("com_pub_2.json", sub_json_dict)
+                    dj = self.analysis.parse_page_2(page, div_name, post_data)
+                    sub_json_dict['ind_comm_pub_spot_check'] = dj[u'抽查检查信息'] if dj.has_key(u'抽查检查信息') else []
 
         except Exception as e:
             settings.logger.debug(u"An error ocurred in crawl_ind_comm_pub_pages: %s, type is %d"% (type(e), types))
             raise e
         finally:
             return sub_json_dict
-        #json_dump_to_file("json_dict.json", self.json_dict)
-
-
     #爬取 企业公示信息 页面
     def crawl_ent_pub_pages(self, url, types, post_data={}):
         sub_json_dict = {}
         try:
-            ent_urls= {
-                'ent_pub_administration_sanction' : ["xzpun" ,  "http://gsxt.gdgs.gov.cn/aiccips/XZPunishmentMsg.html"], # 行政处罚
-                'ent_pub_ent_annual_report': ["qiyenianbao" , "http://gsxt.gdgs.gov.cn/aiccips/BusinessAnnals/BusinessAnnalsList.html"],  #企业年报
-                'ent_pub_shareholder_capital_contribution' : ["sifapanding", "http://gsxt.gdgs.gov.cn/aiccips/ContributionCapitalMsg.html"] ,  #股东及出资信息
-                'ent_pub_equity_change': ["guquanbiangeng",   "http://gsxt.gdgs.gov.cn/aiccips/GDGQTransferMsg/shareholderTransferMsg.html"],#股权变更信息
-                'ent_pub_administration_license' : ["appPer"    ,   "http://gsxt.gdgs.gov.cn/aiccips/AppPerInformation.html"] ,  #行政许可信息
-                'ent_pub_knowledge_property' : ["inproper"  ,   "http://gsxt.gdgs.gov.cn/aiccips/intPropertyMsg.html" ]  ,       #知识产}权出质登记信息
-            }
+            page = self.crawl_page_by_url_post("http://gsxt.gdgs.gov.cn/aiccips/BusinessAnnals/BusinessAnnalsList.html", post_data)['page']
+            p = self.analysis.parse_page_2(page, 'qiyenianbao', post_data)
+            sub_json_dict['ent_pub_ent_annual_report'] = p[u'qiyenianbao'] if p.has_key(u'qiyenianbao') else []
 
-            for (title, item) in  ent_urls.items():
-                ids, url = item
-                page = self.crawl_page_by_url_post(url, post_data)['page']
-                sub_json_dict[title] = self.analysis.parse_page_2(page, ids, post_data)
+            page = self.crawl_page_by_url_post("http://gsxt.gdgs.gov.cn/aiccips/AppPerInformation.html", post_data)['page']
+            p = self.analysis.parse_page_2(page, 'appPer', post_data)
+            sub_json_dict['ent_pub_administration_license'] = p[u'行政许可情况'] if p.has_key(u'行政许可情况') else []
+
+            page = self.crawl_page_by_url_post("http://gsxt.gdgs.gov.cn/aiccips/XZPunishmentMsg.html", post_data)['page']
+            p = self.analysis.parse_page_2(page, 'xzpun', post_data)
+            sub_json_dict['ent_pub_administration_sanction'] = p[u'行政处罚情况'] if p.has_key(u'行政处罚情况') else []
+
+            page = self.crawl_page_by_url_post("http://gsxt.gdgs.gov.cn/aiccips/ContributionCapitalMsg.html", post_data)['page']
+            p = self.analysis.parse_page_2(page, 'sifapanding', post_data)
+            sub_json_dict['ent_pub_shareholder_capital_contribution'] = p[u'股东及出资信息'] if p.has_key(u'股东及出资信息') else []
+            sub_json_dict['ent_pub_reg_modify'] = p[u'变更信息'] if p.has_key(u'变更信息') else []
+
+            page = self.crawl_page_by_url_post("http://gsxt.gdgs.gov.cn/aiccips/GDGQTransferMsg/shareholderTransferMsg.html", post_data)['page']
+            p = self.analysis.parse_page_2(page, 'guquanbiangeng', post_data)
+            sub_json_dict['ent_pub_equity_change'] = p[u'股权变更信息'] if p.has_key(u'股权变更信息') else []
+
+            page = self.crawl_page_by_url_post("http://gsxt.gdgs.gov.cn/aiccips/intPropertyMsg.html", post_data)['page']
+            p = self.analysis.parse_page_2(page, 'inproper', post_data)
+            sub_json_dict['ent_pub_knowledge_property'] = p[u'知识产权出质登记信息'] if p.has_key(u'知识产权出质登记信息') else []
         except Exception as e:
             settings.logger.debug(u"An error ocurred in crawl_ent_pub_pages: %s, types = %d"% (type(e), types))
             raise e
@@ -139,43 +153,52 @@ class Crawler(object):
     #爬取 其他部门公示信息 页面
     def crawl_other_dept_pub_pages(self, url, types, post_data={}):
         sub_json_dict={}
-        titles =(   'other_dept_pub_administration_license',#行政许可信息
-                    'other_dept_pub_administration_sanction',#行政处罚信息
-                )
+        # titles =(   'other_dept_pub_administration_license',#行政许可信息
+        #             'other_dept_pub_administration_sanction',#行政处罚信息
+        #         )
         try:
-            other_dept_urls = {
-                "xzxk"  :   "http://gsxt.gdgs.gov.cn/aiccips/OtherPublicity/environmentalProtection.html",
-                "czcf"  :   "http://gsxt.gdgs.gov.cn/aiccips/OtherPublicity/environmentalProtection.html",
-                }
-            for title, ids in zip(titles, other_dept_urls):
-                url = other_dept_urls[ids]
-                page = self.crawl_page_by_url_post(url, post_data)['page']
-                sub_json_dict[title] = self.analysis.parse_page_2(page, ids, post_data)
-            pass
+            # other_dept_urls = {
+            #     "xzxk"  :   "http://gsxt.gdgs.gov.cn/aiccips/OtherPublicity/environmentalProtection.html",
+            #     "czcf"  :   "http://gsxt.gdgs.gov.cn/aiccips/OtherPublicity/environmentalProtection.html",
+            #     }
+            # for title, ids in zip(titles, other_dept_urls):
+            #     url = other_dept_urls[ids]
+            #     page = self.crawl_page_by_url_post(url, post_data)['page']
+            #     sub_json_dict[title] = self.analysis.parse_page_2(page, ids, post_data)
+            page = self.crawl_page_by_url_post("http://gsxt.gdgs.gov.cn/aiccips/OtherPublicity/environmentalProtection.html", post_data)['page']
+            xk = self.analysis.parse_page_2(page, "xzxk", post_data)
+            sub_json_dict["other_dept_pub_administration_license"] =  xk[u'行政许可信息'] if xk.has_key(u'行政许可信息') else []
+            page = self.crawl_page_by_url_post("http://gsxt.gdgs.gov.cn/aiccips/OtherPublicity/environmentalProtection.html", post_data)['page']
+            xk = self.analysis.parse_page_2(page, "czcf", post_data)
+            sub_json_dict["other_dept_pub_administration_sanction"] = xk[u'行政处罚信息'] if xk.has_key(u'行政处罚信息') else []  # 行政处罚信息
         except Exception as e:
             settings.logger.debug(u"An error ocurred in crawl_other_dept_pub_pages: %s, types = %d"% (type(e), types))
             raise e
         finally:
             return sub_json_dict
-        #json_dump_to_file("json_dict.json", self.json_dict)
-
     #judical assist pub informations
     def crawl_judical_assist_pub_pages(self, url, types, post_data= {}):
         sub_json_dict={}
-        titles = (  'judical_assist_pub_equity_freeze', # 股权冻结信息
-                    'judical_assist_pub_shareholder_modify', #股东变更信息
-                    )
+        # titles = (  'judical_assist_pub_equity_freeze', # 股权冻结信息
+        #             'judical_assist_pub_shareholder_modify', #股东变更信息
+        #             )
         try:
 
-            judical_assist_url = {
-                "guquandongjie"   :   "http://gsxt.gdgs.gov.cn/aiccips/judiciaryAssist/judiciaryAssistInit.html",
-                "gudongbiangeng"  :   "http://gsxt.gdgs.gov.cn/aiccips/sfGuQuanChange/guQuanChange.html",
-                }
+            # judical_assist_url = {
+            #     "guquandongjie"   :   "http://gsxt.gdgs.gov.cn/aiccips/judiciaryAssist/judiciaryAssistInit.html",
+            #     "gudongbiangeng"  :   "http://gsxt.gdgs.gov.cn/aiccips/sfGuQuanChange/guQuanChange.html",
+            #     }
 
-            for (title, ids) in zip(titles, judical_assist_url):
-                url = judical_assist_url[ids]
-                page = self.crawl_page_by_url_post(url, post_data)['page']
-                sub_json_dict[title] = self.analysis.parse_page_2(page, ids, post_data)
+            # for (title, ids) in zip(titles, judical_assist_url):
+            #     url = judical_assist_url[ids]
+            #     page = self.crawl_page_by_url_post(url, post_data)['page']
+            #     sub_json_dict[title] = self.analysis.parse_page_2(page, ids, post_data)
+            page = self.crawl_page_by_url_post('http://gsxt.gdgs.gov.cn/aiccips/judiciaryAssist/judiciaryAssistInit.html', post_data)['page']
+            xz  = self.analysis.parse_page_2(page, 'guquandongjie', post_data)
+            sub_json_dict['judical_assist_pub_equity_freeze'] = xz[u'司法股权冻结信息'] if xz.has_key(u'司法股权冻结信息') else []
+            page = self.crawl_page_by_url_post('http://gsxt.gdgs.gov.cn/aiccips/sfGuQuanChange/guQuanChange.html', post_data)['page']
+            xz  = self.analysis.parse_page_2(page, 'gudongbiangeng', post_data)
+            sub_json_dict['judical_assist_pub_shareholder_modify'] = xz[u'司法股东变更登记信息'] if xz.has_key(u'司法股东变更登记信息') else []
         except Exception as e:
             settings.logger.debug(u"An error ocurred in crawl_other_dept_pub_pages: %s, types = %d"% (type(e), types))
             raise e
@@ -605,14 +628,17 @@ class Analyze(object):
                                         if table_name == u'企业年报':
                                             #settings.logger.debug(u"next_url = %s, table_name= %s\n", detail_page['url'], table_name)
                                             page_data = self.parse_ent_pub_annual_report_page(detail_page['page'], table_name + '_detail')
-
+                                            item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
+                                            item[u'详情'] = page_data
                                             #item[columns[col_count][0]] = page_data #this may be a detail page data
                                         elif table_name == u'qiyenianbao':
                                             print "in table_name"
                                             page_data = self.parse_ent_pub_annual_report_page_2(detail_page['page'], table_name+ '_detail')
+                                            item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
+                                            item[u'详情'] = page_data
                                         else:
                                             page_data = self.parse_page_2(detail_page['page'], table_name + '_detail')
-                                        item[columns[col_count][0]] = page_data #this may be a detail page data
+                                            item[columns[col_count][0]] = page_data #this may be a detail page data
                                     else:
                                         item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
                                 else:
@@ -640,12 +666,15 @@ class Analyze(object):
                                             #settings.logger.debug(u"2next_url = %s, table_name= %s\n", next_url, table_name)
 
                                             page_data = self.parse_ent_pub_annual_report_page(detail_page['page'], table_name + '_detail')
-                                            item[columns[col_count][0]] = page_data #this may be a detail page data
+                                            item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
+                                            item[u'详情'] = page_data
                                         elif table_name == 'qiyenianbao':
                                             page_data = self.parse_ent_pub_annual_report_page_2(detail_page['page'], table_name+ '_detail')
+                                            item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
+                                            item[u'详情'] = page_data
                                         else:
                                             page_data = self.parse_page_2(detail_page['page'], table_name + '_detail')
-                                        item[columns[col_count][0]] = page_data #this may be a detail page data
+                                            item[columns[col_count][0]] = page_data #this may be a detail page data
                                     else:
                                         #item[columns[col_count]] = CrawlerUtils.get_raw_text_in_bstag(td)
                                         item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
