@@ -189,7 +189,7 @@ class HenanCrawler(object):
 		for key, value in zip(allths[1:4], alltds[:3]):
 			need_dict[key] = value
 		need_dict['list'] = [son_need_dict]
-		return [{head:[need_dict]}]
+		return {head:[need_dict]}
 		# if len(alltds) == 0:
 		# 	alltds = [None for th in allths]
 		# return self.get_one_to_one_dict(allths, alltds)
