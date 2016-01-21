@@ -1165,7 +1165,7 @@ class ZhejiangCrawler(object):
         self.crawl_page_captcha(urls['page_search'], urls['page_Captcha'], urls['checkcode'], urls['page_showinfo'], ent_num)
         data = self.crawl_page_main()
         json_dict[ent_num] = data
-        json_dump_to_file(self.json_restore_path , self.json_dict)
+        json_dump_to_file(self.json_restore_path , json_dict)
 
     def work(self, ent_num):
         if not os.path.exists(self.html_restore_path):
