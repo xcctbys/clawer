@@ -47,9 +47,9 @@ CLAWER_RESULT = "/data/clawer_result/"
 CLAWER_RESULT_URL = "http://clawer.princetechs.com/media/clawer_result/"
 
 
-REDIS = "redis://:heR!_003344#@10.171.34.147/0"
-URL_REDIS = "redis://:heR!_003344#@10.172.241.155/0"
-MONITOR_REDIS = "redis://:heR!_003344#@10.171.34.147/0"
+REDIS = "redis://10.171.34.147/0"
+URL_REDIS = "redis://10.172.241.155/0"
+MONITOR_REDIS = "redis://10.171.34.147/0"
 
 
 CRONTAB_HOME = "/home/webapps/nice-clawer/confs/production"
