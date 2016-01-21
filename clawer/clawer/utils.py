@@ -434,13 +434,17 @@ class AnalysisClawerTask(object):
         
         path = self.runing_analysis.product_path()
         
+        out_f = open(self.analysis_log.result_path(), "w+b")
+        safe_process = SafeProcess([settings.PYTHON, path], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=out_f)
         try:
-            out_f = open(self.analysis_log.result_path(), "w+b")
-            
-            safe_process = SafeProcess([settings.PYTHON, path], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=out_f)
-            p = safe_process.run(30)
+            p = safe_process.run(300)
+        except Exception, e:
+            self.analysis_log.status = ClawerAnalysisLog.STATUS_FAIL
+            self.analysis_log.failed_reason = e.child_traceback
+        
+        try:
             p.stdin.write(json.dumps({"path":self.clawer_task.store, "url":self.clawer_task.uri, "args":self.clawer_task.args}))
-            p.stdin.close()
+            p.stdin.close()    
             
             err = p.stderr.read()
             retcode = safe_process.wait()
@@ -503,8 +507,12 @@ class GenerateClawerTask(object):
         out_f = open(self.out_path, "w")
         
         safe_process = SafeProcess([settings.PYTHON, path], stdout=out_f, stderr=subprocess.PIPE)
+        try:
+            p = safe_process.run(1800)
+        except Exception, e:
+            self.failed(e.child_traceback)
+            return False
         
-        p = safe_process.run(1800)
         err = p.stderr.read()
         status = safe_process.wait()
         if status != 0:
