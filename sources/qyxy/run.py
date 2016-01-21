@@ -45,6 +45,7 @@ from neimenggu_crawler import NeimengguClawer
 from chongqing_crawler import ChongqingClawer
 #from xinjiang_crawler import XinjiangClawer
 from zhejiang_crawler import ZhejiangCrawler
+from liaoning_crawler import LiaoningCrawler
 
 failed_ent = {}
 province_crawler = {
@@ -68,6 +69,7 @@ province_crawler = {
     #'xinjiang':XinjiangClawer,
     'chongqing':ChongqingClawer,
     'zhejiang' : ZhejiangCrawler,
+    'liaoning': LiaoningCrawler
 }
 
 max_crawl_time = 0
