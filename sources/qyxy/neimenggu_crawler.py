@@ -879,7 +879,7 @@ class NeimengguParser(Parser):
     def parse_ent_pub_ent_annual_report_pages(self, page):
         soup = BeautifulSoup(page, 'html5lib')
         # 企业年报
-        qiyenianbao_table = soup.find('table', {'class': 'detailsList'})
+        qiyenianbao_table = soup.find('table', {'id': 'detailsList'})
         ck_string = '暂无数据'
         if ck_string in qiyenianbao_table.get_text():
             return
