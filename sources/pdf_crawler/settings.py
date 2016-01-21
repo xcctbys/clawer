@@ -1,5 +1,9 @@
 import logging
 
+log_level = logging.WARN
+log_file = './result_pdf/crawler.log'
+logger = None
+
 pdf_restore_dir = './result_pdf'
 json_list_dir = './json_list/'
 
