@@ -442,11 +442,10 @@ class AnalysisClawerTask(object):
             self.analysis_log.status = ClawerAnalysisLog.STATUS_FAIL
             self.analysis_log.failed_reason = e.child_traceback
         
-        if p.returncode == 0:
+        try:
             p.stdin.write(json.dumps({"path":self.clawer_task.store, "url":self.clawer_task.uri, "args":self.clawer_task.args}))
-            p.stdin.close()
-        
-        try:    
+            p.stdin.close()    
+            
             err = p.stderr.read()
             retcode = safe_process.wait()
             if retcode == 0:
