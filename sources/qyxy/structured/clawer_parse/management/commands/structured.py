@@ -9,5 +9,5 @@ class Command(BaseCommand):
         worker_henan = Parse('profiles/henan.json')
         worker_henan.parse_companies()
 
-        worker_hebei = Parse('profiles/hebei.json')
-        worker_hebei.parse_companies()
+        # worker_hebei = Parse('profiles/hebei.json')
+        # worker_hebei.parse_companies()
