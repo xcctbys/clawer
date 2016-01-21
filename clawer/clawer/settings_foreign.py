@@ -39,17 +39,9 @@ CRONTAB_HOME = "/home/webapps/nice-clawer/confs/production"
 CLAWER_SOURCE = "/data/clawer/"
 CLAWER_RESULT = "/data/clawer_result/"
 
-#for celeryd
-BROKER_URL = 'redis://10.171.34.147:6379/0'
-CELERY_RESULT_BACKEND='djcelery.backends.cache:CacheBackend'
-CELERYD_TIMER_PRECISION = 1
-TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
-CELERYD_MAX_TASKS_PER_CHILD = 1024
-CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
-
 
 REDIS = "redis://123.57.141.157:6699/0"
-URL_REDIS = "redis://123.57.22.110:6699/0"
+URL_REDIS = "redis://123.57.22.110:6799/0"
 MONITOR_REDIS = "redis://123.57.141.157:6699/0"
 
 
