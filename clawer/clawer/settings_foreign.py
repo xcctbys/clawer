@@ -47,9 +47,10 @@ TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
 CELERYD_MAX_TASKS_PER_CHILD = 1024
 CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
 
-REDIS = "redis://123.57.141.157/0"
-URL_REDIS = "redis://123.57.22.110/0"
-MONITOR_REDIS = "redis://123.57.141.157/0"
+
+REDIS = "redis://123.57.141.157:6699/0"
+URL_REDIS = "redis://123.57.22.110:6699/0"
+MONITOR_REDIS = "redis://123.57.141.157:6699/0"
 
 
 #captcha
