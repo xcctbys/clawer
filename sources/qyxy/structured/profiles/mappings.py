@@ -229,75 +229,84 @@ mappings["judical_assist_pub_shareholder_modify"] = {
 }
 
 mappings["ent_pub_ent_annual_report"] = {
-    u"序号": None,
+    u"序号": "year_report_id",
     u"报送年度": "report_year",
     u"年报日期": "publicity_date",
     u"网站或网店信息": {
-        "网址": "enter_url",
-        "名称": "enter_name",
-        "类型": "online_type"
+        u"网址": "enter_url",
+        u"名称": "enter_name",
+        u"类型": "online_type"
     },
     u"对外投资信息": {
-        "注册号/统一社会信用代码": "enter_code",
-        "投资设立企业或购买股权企业名称": "invest_enter_name"
+        u"注册号/统一社会信用代码": "enter_code",
+        u"投资设立企业或购买股权企业名称": "invest_enter_name"
     },
     u"修改记录": {
-        "修改前": "modify_before",
-        "修改事项": "modify_item",
-        "修改后": "modify_after",
-        "修改日期": "modify_date"
+        u"修改前": "modify_before",
+        u"修改事项": "modify_item",
+        u"修改后": "modify_after",
+        u"修改日期": "modify_date"
     },
     u"企业资产状况信息": {
-        "所有者权益合计": "owner_asset",
-        "营业总收入": "business_income",
-        "营业总收入中主营业务收入": "main_business_income",
-        "负债总额": "debts",
-        "利润总额": "profit",
-        "净利润": "net_income",
-        "资产总额": "asset_all",
-        "纳税总额": "tax"
+        u"所有者权益合计": "owner_asset",
+        u"营业总收入": "business_income",
+        u"营业总收入中主营业务收入": "main_business_income",
+        u"负债总额": "debts",
+        u"利润总额": "profit",
+        u"净利润": "net_income",
+        u"资产总额": "asset_all",
+        u"纳税总额": "tax"
     },
     u"股权变更信息": {
-        "股权变更日期": "",
-        "变更前股权比例": "shares_before",
-        "变更后股权比例": "shares_after",
-        "股东": "shareholder"
+        u"股权变更日期": "",
+        u"变更前股权比例": "shares_before",
+        u"变更后股权比例": "shares_after",
+        u"股东": "shareholder"
     },
     u"对外提供保证担保信息": {
-        "履行债务的期限": "fullfill_debt_duration",
-        "保证的方式": "guarantee_type",
-        "债务人": "debtor",
-        "保证的期间": "guarantee_duration",
-        "主债权数额": "main_creditor_right_amount",
-        "主债权种类": "main_creditor_right",
-        "债权人": "creditor",
-        "保证担保的范围": "warrandice_scope"
+        u"履行债务的期限": "fullfill_debt_duration",
+        u"保证的方式": "guarantee_type",
+        u"债务人": "debtor",
+        u"保证的期间": "guarantee_duration",
+        u"主债权数额": "main_creditor_right_amount",
+        u"主债权种类": "main_creditor_right",
+        u"债权人": "creditor",
+        u"保证担保的范围": "warrandice_scope"
     },
     u"企业基本信息": {
-        "企业经营状态": "status",
-        "企业名称": "enter_name",
-        "企业电子邮箱": "email",
-        "从业人数": "staff_number",
-        "企业联系电话": "enter_phone",
-        "企业是否有投资信息或购买其他公司股权": "is_invest",
-        "企业通信地址": "enter_place",
-        "是否有网站或网店": "web_onlinestore",
-        "邮政编码": "zipcode",
-        "有限责任公司本年度是否发生股东股权转让": "shareholder_change",
-        "注册号/统一社会信用代码": "credit_code",
-        "登记编号": "register_num",
-        "是否有对外担保信息": "is_warrandice"
+        u"企业经营状态": "status",
+        u"企业名称": "enter_name",
+        u"企业电子邮箱": "email",
+        u"从业人数": "staff_number",
+        u"企业联系电话": "enter_phone",
+        u"企业是否有投资信息或购买其他公司股权": "is_invest",
+        u"企业通信地址": "enter_place",
+        u"是否有网站或网店": "web_onlinestore",
+        u"邮政编码": "zipcode",
+        u"有限责任公司本年度是否发生股东股权转让": "shareholder_change",
+        u"注册号/统一社会信用代码": "credit_code",
+        u"登记编号": "register_num",
+        u"是否有对外担保信息": "is_warrandice"
     },
     u"股东（发起人）及出资信息": {
-        "认缴出资方式": "subscription_type",
-        "认缴出资额（万元）": "subscription_money_amount",
-        "出资时间": "paid_time",
-        "认缴出资时间": "subscription_time",
-        "实缴出资额（万元）": "paid_money_amount",
-        "出资方式": "paid_type",
-        "股东": "shareholder"
+        u"认缴出资方式": "subscription_type",
+        u"认缴出资额（万元）": "subscription_money_amount",
+        u"出资时间": "paid_time",
+        u"认缴出资时间": "subscription_time",
+        u"实缴出资额（万元）": "paid_money_amount",
+        u"出资方式": "paid_type",
+        u"股东": "shareholder"
     },
-    u"发布日期": "publicity_date"
+    u"股东及出资信息": {
+        u"认缴出资方式": "subscription_type",
+        u"认缴出资额（万元）": "subscription_money_amount",
+        u"出资时间": "paid_time",
+        u"认缴出资时间": "subscription_time",
+        u"实缴出资额（万元）": "paid_money_amount",
+        u"出资方式": "paid_type",
+        u"股东": "shareholder"
+    },
+    u"发布日期": "publicity_date",
 }
 
 mappings["ent_pub_shareholder_modify"] = {

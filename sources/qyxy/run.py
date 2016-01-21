@@ -20,7 +20,7 @@ if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
     import settings_pro as settings
 else:
     import settings
-    
+
 from mail import SendMail
 
 from CaptchaRecognition import CaptchaRecognition
@@ -43,7 +43,8 @@ from shaanxi_crawler import ShaanxiCrawler
 from henan_crawler import HenanCrawler
 from neimenggu_crawler import NeimengguClawer
 from chongqing_crawler import ChongqingClawer
-from xinjiang_crawler import XinjiangClawer
+#from xinjiang_crawler import XinjiangClawer
+from zhejiang_crawler import ZhejiangCrawler
 
 failed_ent = {}
 province_crawler = {
@@ -64,8 +65,9 @@ province_crawler = {
     'neimenggu':NeimengguClawer,
     'shaanxi': ShaanxiCrawler,
     'henan' : HenanCrawler,
-    'xinjiang':XinjiangClawer,
+    #'xinjiang':XinjiangClawer,
     'chongqing':ChongqingClawer,
+    'zhejiang' : ZhejiangCrawler,
 }
 
 max_crawl_time = 0
@@ -202,34 +204,34 @@ class Checker(object):
         settings.logger.error("Failed province")
         for item in self.failed:
             settings.logger.error("\t%s", item)
-            
+
         self._report()
 
     def _json_path(self, province):
         path = os.path.join(self.parent, province, self.yesterday.strftime("%Y/%m/%d.json.gz"))
         return path
-    
+
     def _report(self):
-        title = u"%s 企业信用爬取情况" % (self.yesterday.strftime("%Y-%m-%d")) 
+        title = u"%s 企业信用爬取情况" % (self.yesterday.strftime("%Y-%m-%d"))
         content = u"Stat Info. Success %d, failed %d\r\n" % (len(self.success), len(self.failed))
-        
+
         content += u"Success province:\n"
         for item in self.success:
             content += u"\t%s: %d bytes\n" % (item["name"], item['size'])
-        
+
         content += u"Failed province:\n"
         for item in self.failed:
             content += u"\t%s\n" % (item)
-            
+
         content += u"\r\n -- from %s" % socket.gethostname()
-            
+
         to_admins = [x[1] for x in settings.ADMINS]
-        
+
         self.send_mail.send(settings.EMAIL_HOST_USER, to_admins, title, content)
-            
-            
-            
-        
+
+
+
+
 
 
 
