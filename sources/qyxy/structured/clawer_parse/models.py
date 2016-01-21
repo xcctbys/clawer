@@ -1,32 +1,43 @@
 # -*- coding: utf-8 -*-
 
 from django.db import models
+from django.db.models import Max
+import profiles.consts as consts
 
 
 class UpdateByDict(object):
-    """数据库操作基本类
-    """
 
     def update_by_dict(self, model, data):
+        special_tables = consts.special_tables
         fields = model._meta.get_all_field_names()
         name = model._meta.db_table
+        enter_id = Basic.objects.all().aggregate(Max('id')).get('id__max')
+
         if name in data:
             for row in data[name]:
                 query = model()
                 for field in fields:
                     value = row.get(field) or data.get(field)
-
                     if value is not None:
                         setattr(query, field, value)
+                query.enter_id = enter_id
                 query.save()
                 del query
 
-        else:
+        elif name in special_tables:
+            is_null = True
             for field in fields:
                 value = data.get(field)
-                if value is not None:
+                if value is not None and value != u"":
+                    is_null = False
                     setattr(self, field, value)
-            self.save()
+            if not is_null:
+                if hasattr(self, 'enter_id'):
+                    self.enter_id = enter_id + 1
+                self.save()
+
+        else:
+            pass
 
 
 class Basic(models.Model, UpdateByDict):
@@ -324,7 +335,6 @@ class IndustryMortgageDetailMortgagee(models.Model, UpdateByDict):
     mortgagee_certificate_type = models.CharField(max_length=20, null=True, blank=True)
     pledgor_certificate_code = models.CharField(max_length=20, null=True, blank=True)
     register_id = models.CharField(max_length=20, null=True, blank=True)
-    ind_id = models.IntegerField(null=True)
 
     class Meta:
         db_table = "industry_mortgage_detail_mortgagee"
@@ -334,14 +344,14 @@ class EnterAdministrativeLicense(models.Model, UpdateByDict):
     """企业-行政许可
     """
 
-    license_num = models.IntegerField(null=True)
+    license_num = models.CharField(max_length=100, null=True, blank=True)
     license_filename = models.CharField(max_length=50, null=True, blank=True)
     license_begien_date = models.DateField(null=True)
     license_end_date = models.DateField(null=True)
     license_authority = models.CharField(max_length=30, null=True, blank=True)
     license_content = models.CharField(max_length=50, null=True, blank=True)
     license_status = models.CharField(max_length=20, null=True, blank=True)
-    license_detail = models.CharField(max_length=10, null=True, blank=True)
+    license_detail = models.TextField(null=True, blank=True)
     license_register_time = models.DateField(null=True)
     license_publicity_time = models.DateField(null=True)
     license_change_item = models.CharField(max_length=20, null=True, blank=True)
@@ -476,7 +486,7 @@ class JudicialShareFreeze(models.Model, UpdateByDict):
     excute_court = models.CharField(max_length=30, null=True, blank=True)
     notice_num = models.IntegerField(null=True)
     freeze_status = models.CharField(max_length=30, null=True, blank=True)
-    freeze_detail = models.CharField(max_length=30, null=True, blank=True)
+    freeze_detail = models.TextField(null=True, blank=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
 
@@ -526,7 +536,7 @@ class OtherAdministrativeLicense(models.Model, UpdateByDict):
     license_content = models.CharField(max_length=50, null=True, blank=True)
     license_authority_gov = models.CharField(max_length=50, null=True, blank=True)
     license_status = models.CharField(max_length=20, null=True, blank=True)
-    license_detail = models.CharField(max_length=20, null=True, blank=True)
+    license_detail = models.TextField(null=True, blank=True)
     license_valid_date = models.DateField(null=True)
     source = models.CharField(max_length=10, null=True, blank=True)
     update_date = models.DateField(null=True)
@@ -605,13 +615,13 @@ class YearReportBasic(models.Model, UpdateByDict):
     zipcode = models.CharField(max_length=10, null=True, blank=True)
     enter_place = models.CharField(max_length=50, null=True, blank=True)
     email = models.CharField(max_length=20, null=True, blank=True)
-    shareholder_change = models.BooleanField()
+    shareholder_change = models.BooleanField(default=False)
     status = models.CharField(max_length=20, null=True, blank=True)
-    web_onlinestore = models.BooleanField()
+    web_onlinestore = models.BooleanField(default=False)
     staff_number = models.IntegerField(null=True)
     register_num = models.CharField(max_length=20, null=True, blank=True)
     is_warrandice = models.CharField(max_length=10, null=True, blank=True)
-    is_invest = models.BooleanField()
+    is_invest = models.BooleanField(default=False)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
     ent_id = models.IntegerField(null=True)
 

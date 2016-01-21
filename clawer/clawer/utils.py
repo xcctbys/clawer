@@ -604,36 +604,44 @@ class MonitorClawerHour(object):
         
         need_report = False
         
-        last_hour = self.hour - datetime.timedelta(minutes=360)
-        clawer_hour_monitors = list(ClawerHourMonitor.objects.filter(hour__gt=last_hour).order_by("hour"))
-        if len(clawer_hour_monitors) < 2:
+        try:
+            current = ClawerHourMonitor.objects.get(hour = self.hour, clawer = clawer)
+        except:
             return
-        current = clawer_hour_monitors[-1]
-        
-        for item in clawer_hour_monitors:
-            if current == item:
-                continue
-            delta = current.bytes - item.bytes
-            if delta < 0 and abs(delta)*4 < item.bytes:
-                need_report = True
-                current.is_exception = True
-                current.save()
-                break
+            
+        if need_report == False:
+            clawer_hour_monitors = ClawerHourMonitor.objects.filter(hour__lt=self.hour, clawer=clawer).order_by("hour")[:3]
+            for item in clawer_hour_monitors:
+                variance = current.bytes - item.bytes
+                if variance < 0 and abs(variance) < item.bytes*0.1:
+                    need_report = True
+                    current.is_exception = True
+                    current.save()
+                    break
             
         if need_report is False:
             return
         
         #send mail
         report_mails = clawer.settings().valid_report_mails()
-        if not report_mails:
-            report_mails = [ x[1] for x in settings.ADMINS ]
-        title = u'爬虫 %s 在 %s，数据异常' % (clawer.name, current.hour.strftime("%Y-%m-%d %H时"))
-        content = u'当前归并数据大小 %d bytes, Host: %s' % (current.bytes, socket.gethostname())
+        title = u'爬虫ID:%d(%s) 在 %s，数据异常' % (clawer.id, clawer.name, current.hour.strftime("%Y-%m-%d %Hh"))
+        content = u'%s - 当前归并数据大小 %d bytes\r\n' % (socket.gethostname(), current.bytes)
         self.reports.append({'title': title, 'content': content, 'to': report_mails})
         
     def _send_mail(self):
+        if len(self.reports) <= 0:
+            return
+        
         for report in self.reports:
-            send_mail(report['title'], report['content'], settings.EMAIL_HOST_USER, report['to'], fail_silently=False)
+            if report["to"]:
+                send_mail(report['title'], report['content'], settings.EMAIL_HOST_USER, report['to'], fail_silently=False)
+                
+        #send to admin
+        title = u"%d条报警，%s" % (len(self.reports), self.reports[0]["title"])
+        content = u"\n".join([u"%s\n\t%s" % (x['title'], x['content']) for x in self.reports])
+        admins = [x[1] for x in settings.ADMINS]
+        send_mail(title, content, settings.EMAIL_HOST_USER, admins, fail_silently=False)
+        
         
         
 class MonitorClawerDay(MonitorClawerHour):
@@ -679,9 +687,7 @@ class MonitorClawerDay(MonitorClawerHour):
         
         #add to reports
         report_mails = clawer.settings().valid_report_mails()
-        if not report_mails:
-            report_mails = [ x[1] for x in settings.ADMINS ]
-        title = u'爬虫 %s 在 %s，数据异常' % (clawer.name, last_day_monitor.day.strftime("%Y-%m-%d"))
+        title = u'爬虫ID:%d(%s) 在 %s，数据异常' % (clawer.id, clawer.name, last_day_monitor.day.strftime("%Y-%m-%d"))
         content = u'%s 当前归并数据大小 %d bytes' % (socket.gethostname(), last_day_monitor.bytes)
         self.reports.append({'title': title, 'content': content, 'to': report_mails})
         
