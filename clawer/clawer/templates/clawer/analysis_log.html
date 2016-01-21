@@ -31,7 +31,7 @@
     <thead data-options="frozen:true">
         <tr>
             <th data-options="field:'id',width:80" sortable="true">ID</th>
-            <th data-options="field:'status_name',">状态</th>
+            <th data-options="field:'status'," formatter="formatStatus">状态</th>
         </tr>
     </thead>
     <thead>
@@ -93,6 +93,18 @@ function formatFailedReason(val, row) {
 	var row_index = $("#grid").datagrid("getRowIndex", row);
 	
 	return "<a href='#' onclick='javascript:showFailedReasonWin("+row_index+")'>"+row.failed_reason.substring(0, 50)+"</a>"
+}
+
+function formatStatus(val) {
+	if(val == null) {
+		return "";
+	}
+	
+	if(val == 1) {
+		return "×";
+	} else if(val == 2)) {
+		return "√";
+	}
 }
 
 function showFailedReasonWin(row_index) {
