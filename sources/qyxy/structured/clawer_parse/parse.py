@@ -167,38 +167,64 @@ class Parse(object):
 
     def parse_ind_shareholder(self, dict_in_company, mapping):
         result = []
-        dict_inner = {}
-        print "parse_ind_shareholder"
-        for field in dict_in_company:
-            if field == u"详情":
-                if not dict_in_company[field]:
-                    for dic in dict_in_company[field]:
-                        for key_add in dic:
-                            list_in = dic[key_add]
-                            if not list_in:
-                                for dict_in in list_in:
-                                    for key_in in dict_in:
-                                        if key_in ==u"list":
-                                            for dict_fuck in dict_in[key_in]:
-                                                for key_fuck in dict_fuck:
-                                                    dict_inner[mapping.get(key_fuck)] = dict_fuck[key_fuck]
-                                                result.append(dict_inner)
-                                                dict_inner = {}
-                                        else:
-                                            for result_dict in result: 
-                                                result_dict[mapping.get(key_in)] = dict_in[key_in]
-        for field in dict_in_company:
-            if field != u"详情":
-                try:
-                    for result_dict in result:
-                        result_dict[mapping.get(field)] = dict_in_company[field]
-                except:
-                    pass
+        # dict_inner = {}
+        # print "parse_ind_shareholder"
+        # for field in dict_in_company:
+        #     if field == u"详情":
+        #         if not dict_in_company[field]:
+        #             for dic in dict_in_company[field]:
+        #                 for key_add in dic:
+        #                     list_in = dic[key_add]
+        #                     if not list_in:
+        #                         for dict_in in list_in:
+        #                             for key_in in dict_in:
+        #                                 if key_in ==u"list":
+        #                                     for dict_fuck in dict_in[key_in]:
+        #                                         for key_fuck in dict_fuck:
+        #                                             dict_inner[mapping.get(key_fuck)] = dict_fuck[key_fuck]
+        #                                         result.append(dict_inner)
+        #                                         dict_inner = {}
+        #                                 else:
+        #                                     for result_dict in result:
+        #                                         result_dict[mapping.get(key_in)] = dict_in[key_in]
+        # for field in dict_in_company:
+        #     if field != u"详情":
+        #         try:
+        #             for result_dict in result:
+        #                 result_dict[mapping.get(field)] = dict_in_company[field]
+        #         except:
+        #             pass
 
         return result
 
     def parse_ent_report(self, dict_in_company, mapping):
-        pass
+        keys_to_tables = consts.keys_to_tables
+        ent_report = {}
+        for key, value in dict_in_company.iteritems():
+            type_value = type(value)
+            if type_value == unicode or type_value == str:
+                ent_report[mapping[key]] = value
+            else:
+                year_report_id = ent_report.get('year_report_id')
+                self.parse_report_details(year_report_id, value, mapping[key])
+
+        name = keys_to_tables.get('ent_pub_ent_annual_report')
+        if not self.company_result[name]:
+            self.company_result[name] = []
+        self.company_result[name].append(ent_report)
+
+    def parse_report_details(self, year_report_id, details, mapping):
+        keys_to_tables = consts.keys_to_tables
+
+        for key, value in details.iteritems():
+            name = keys_to_tables.get(key)
+            if type(value) == list:
+                pass
+            else:
+                report = {}
+                for field, value in details.iteritems():
+                    report(mapping[key]) = value
+
 
     def write_to_mysql(self):
         self.update(Basic)
