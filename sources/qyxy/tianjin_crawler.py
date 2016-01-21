@@ -97,7 +97,6 @@ class TianjinCrawler(object):
             self.Captcha = r.content
             #settings.logger.debug("Captcha page html :\n  %s", self.Captcha)
             if self.save_captcha():
-                settings.logger.debug("Captcha is saved successfully \n" )
                 result = self.crack_captcha()
                 print result
                 datas= {
@@ -151,11 +150,6 @@ class TianjinCrawler(object):
             f.close
         self.write_file_mutex.release()
         return True
-    """
-    The following enterprises in ents
-       2. for each ent: decide host so that choose e urls
-        4. for eah url, iterate item in tabs
-    """
     def crawl_page_main(self ):
         sub_json_dict= {}
         if not self.ents:
@@ -185,35 +179,34 @@ class TianjinCrawler(object):
             page = self.crawl_page_by_url(url%'dj')['page']
             dj = self.parse_page(page) # class= result-table
 
-            sub_json_dict['ind_comm_pub_reg_basic'] = {u'基本信息' : dj[u'基本信息'] if dj.has_key(u'基本信息') else []}        # 登记信息-基本信息
-            sub_json_dict['ind_comm_pub_reg_shareholder'] = {u'股东信息': dj[u'股东信息'] if dj.has_key(u'股东信息') else [] }  # 股东信息
-            sub_json_dict['ind_comm_pub_reg_modify'] = { u'变更信息' : dj[u'变更信息'] if dj.has_key(u'变更信息') else [] }      # 变更信息
+            sub_json_dict['ind_comm_pub_reg_basic'] = dj[u'基本信息'] if dj.has_key(u'基本信息') else {}       # 登记信息-基本信息
+            sub_json_dict['ind_comm_pub_reg_shareholder'] = dj[u'股东信息'] if dj.has_key(u'股东信息') else []   # 股东信息
+            sub_json_dict['ind_comm_pub_reg_modify'] = dj[u'变更信息'] if dj.has_key(u'变更信息') else []       # 变更信息
             page = self.crawl_page_by_url(url%'ba')['page']
 
-            ba = self.parse_page(page) # class= result-table
-            sub_json_dict['ind_comm_pub_arch_key_persons'] = { u'主要人员信息' : ba[u'主要人员信息'] if ba.has_key(u'主要人员信息') else [] }  # 备案信息-主要人员信息
-            sub_json_dict['ind_comm_pub_arch_branch'] = { u'分支机构信息' : ba[u'分支机构信息'] if ba.has_key(u'分支机构信息') else [] }      # 备案信息-分支机构信息
-            sub_json_dict['ind_comm_pub_arch_liquidation'] = { u'清算信息': ba[u'清算信息'] if ba.has_key(u'清算信息') else [] }  # 备案信息-清算信息
+            ba = self.parse_page(page)
+            sub_json_dict['ind_comm_pub_arch_key_persons'] = ba[u'主要人员信息'] if ba.has_key(u'主要人员信息') else []   # 备案信息-主要人员信息
+            sub_json_dict['ind_comm_pub_arch_branch'] = ba[u'分支机构信息'] if ba.has_key(u'分支机构信息') else []       # 备案信息-分支机构信息
+            sub_json_dict['ind_comm_pub_arch_liquidation'] = ba[u'清算信息'] if ba.has_key(u'清算信息') else []   # 备案信息-清算信息
+            page = self.crawl_page_by_url(url%'dcdydjxx')['page']
+            dcdy = self.parse_page(page)
+            sub_json_dict['ind_comm_pub_movable_property_reg'] = dcdy[u'动产抵押登记信息'] if dcdy.has_key(u'动产抵押登记信息') else []
+            page = self.crawl_page_by_url(url % 'gqczdjxx')['page']
+            gqcz = self.parse_page(page)
+            sub_json_dict['ind_comm_pub_equity_ownership_reg'] = gqcz[u'股权出质登记信息'] if gqcz.has_key(u'股权出质登记信息') else []
+            page = self.crawl_page_by_url(url % 'xzcf')['page']
+            xzcf = self.parse_page(page)
+            sub_json_dict['ind_comm_pub_administration_sanction'] = xzcf[u'行政处罚信息'] if xzcf.has_key(u'行政处罚信息') else []
+            page = self.crawl_page_by_url(url % 'qyjyycmlxx')['page']
+            jyyc = self.parse_page(page)
+            sub_json_dict['ind_comm_pub_business_exception'] = jyyc[u'经营异常信息'] if jyyc.has_key(u'经营异常信息') else []
+            page = self.crawl_page_by_url(url % 'yzwfqyxx')['page']
+            yzwf = self.parse_page(page)
+            sub_json_dict['ind_comm_pub_serious_violate_law'] = yzwf[u'严重违法信息'] if yzwf.has_key(u'严重违法信息') else []
+            page = self.crawl_page_by_url(url % 'ccjcxx')['page']
+            cyjc = self.parse_page(page)
+            sub_json_dict['ind_comm_pub_spot_check'] = cyjc[u'抽查检查信息'] if cyjc.has_key(u'抽查检查信息') else []
 
-            titles = ('ind_comm_pub_movable_property_reg',  # 动产抵押登记信息
-                     'ind_comm_pub_equity_ownership_reg',  # 股权出置登记信息
-                     'ind_comm_pub_administration_sanction',  # 行政处罚信息
-                     'ind_comm_pub_business_exception',  # 经营异常信息
-                     'ind_comm_pub_serious_violate_law',  # 严重违法信息
-                     'ind_comm_pub_spot_check'        # 抽查检查信息
-                     )
-            tabs = (
-                        'dcdydjxx',#动产抵押
-                        'gqczdjxx'  ,# 股权出质登记信息
-                        'xzcf' ,#行政处罚
-                        'qyjyycmlxx' , # 企业经营异常
-                        'yzwfqyxx' , # 严重违法
-                        'ccjcxx' ,#抽样检查
-                    )
-            for title, tab in zip(titles, tabs):
-                page = self.crawl_page_by_url(url%tab)['page']
-
-                sub_json_dict[title] = self.parse_page(page)
         except Exception as e:
             logging.debug(u"An error ocurred in crawl_ind_comm_pub_pages: %s"% type(e))
             raise e
@@ -223,23 +216,23 @@ class TianjinCrawler(object):
     def crawl_ent_pub_pages(self, url):
         sub_json_dict = {}
         try:
+            settings.logger.info( u"crawl the ent_pub_pages %s."%(url))
             sub_json_dict['ent_pub_administration_license'] = []    #行政许可信息
             sub_json_dict['ent_pub_administration_sanction'] = []   #行政许可信息
-            titles= (   'ent_pub_ent_annual_report',
-                        'ent_pub_shareholder_capital_contribution', #企业投资人出资比例
-                        'ent_pub_equity_change', #股权变更信息
-                        'ent_pub_knowledge_property', #知识产权出资登记
-                    )
-            items = (
-                        'nblist', #企业年报
-                        'gdcz', #股东及出资
-                        'gqbg', #股权变更信息
-                        'zscq', #知识产权出质登记信息
-                    )
-            for title, item in zip(titles, items):
-                page = self.crawl_page_by_url(url%item)['page']
-                #html_to_file('tianjin_dj.html', page)
-                sub_json_dict[title] = self.parse_page(page)
+            sub_json_dict['ent_pub_reg_modify'] = []   #变更信息
+            page = self.crawl_page_by_url(url%'nblist')['page']
+            nb = self.parse_page(page)
+            sub_json_dict['ent_pub_ent_annual_report'] = nb[u'年报信息'] if nb.has_key(u'年报信息') else []
+            page = self.crawl_page_by_url(url%'gdcz')['page']
+            p = self.parse_page(page)
+            sub_json_dict['ent_pub_shareholder_capital_contribution'] = p[u'股东及出资'] if p.has_key(u'股东及出资') else []
+            page = self.crawl_page_by_url(url%'gqbg')['page']
+            p = self.parse_page(page)
+            sub_json_dict['ent_pub_equity_change'] = p[u'股权变更信息'] if p.has_key(u'股权变更信息') else []
+            page = self.crawl_page_by_url(url%'zscq')['page']
+            p = self.parse_page(page)
+            sub_json_dict['ent_pub_knowledge_property'] = p[u'知识产权出质登记信息'] if p.has_key(u'知识产权出质登记信息') else []
+
         except Exception as e:
             logging.debug(u"An error ocurred in crawl_ent_pub_pages: %s"% type(e))
             raise e
@@ -249,15 +242,13 @@ class TianjinCrawler(object):
     def crawl_judical_assist_pub_pages(self, url):
         sub_json_dict = {}
         try:
-            titles =(   'judical_assist_pub_equity_freeze',     # 股权冻结信息
-                        'judical_assist_pub_shareholder_modify', # 股东变更信息
-                    )
-            tabs=(  "gddjlist", # 股权冻结信息
-                    "gdbglist", # 股东变更信息
-                )
-            for title, tab in zip(titles, tabs):
-                page = self.crawl_page_by_url(url%tab)['page']
-                sub_json_dict[title] = self.parse_page(page)
+            settings.logger.info( u"crawl the judical_assist_pub page %s."%(url))
+            page = self.crawl_page_by_url(url%'gddjlist')['page']
+            xz = self.parse_page(page)
+            sub_json_dict['judical_assist_pub_equity_freeze'] = xz[u'司法股权冻结信息'] if xz.has_key(u'司法股权冻结信息') else []
+            page = self.crawl_page_by_url(url%'gdbglist')['page']
+            xz = self.parse_page(page)
+            sub_json_dict['judical_assist_pub_shareholder_modify'] = xz[u'司法股东变更登记信息'] if xz.has_key(u'司法股东变更登记信息') else []
         except Exception as e:
             settings.logger.debug(u"An error ocurred in crawl_judical_assist_pub_pages: %s"% (type(e)))
             raise e
@@ -269,6 +260,7 @@ class TianjinCrawler(object):
         return tag.get_text().strip()
 
     def get_table_title(self, table_tag):
+        """
         # if table_tag.find('tr'):
         #     if table_tag.find('tr').find('th'):
         #         return self.get_raw_text_by_tag(table_tag.find('tr').th)
@@ -276,6 +268,7 @@ class TianjinCrawler(object):
         #         return self.get_raw_text_by_tag(table_tag.find('tr').td)
         # return ''
         #会出现 class= bg title 的td作为表头
+        """
         if table_tag.find('tr'):
             if table_tag.find('tr').find_all('th')  :
                 if len(table_tag.find('tr').find_all('th')) > 1 :
@@ -442,7 +435,6 @@ class TianjinCrawler(object):
                     #    pass
                     else:
                         tr = None
-
                 else:
                     pass
         else:
@@ -555,9 +547,7 @@ class TianjinCrawler(object):
     def parse_page(self, page):
         soup = BeautifulSoup(page, 'html5lib')
         page_data = {}
-
         try:
-
             table = soup.find('table')
             #print table
             while table:
@@ -683,7 +673,8 @@ class TianjinCrawler(object):
                                     sub_item[sub_key] = self.get_raw_text_by_tag(td)
                                     sub_col_index += 1
                                     if sub_col_index == len(columns[col_count][1]):
-                                        t_item[columns[col_count][0]] = sub_item.copy()
+                                        #t_item[columns[col_count][0]] = sub_item.copy()
+                                        t_item.update(sub_item.copy())
                                         sub_item = {}
                                         col_count += 1
                                         sub_col_index = 0
@@ -809,7 +800,7 @@ def read_ent_from_file(path):
         lines = f.readlines()
     lines = [ line.split(',') for line in lines ]
     return lines
-"""
+
 if __name__ == "__main__":
     reload (sys)
     sys.setdefaultencoding('utf8')
@@ -818,8 +809,8 @@ if __name__ == "__main__":
     if not os.path.exists("./enterprise_crawler"):
         os.makedirs("./enterprise_crawler")
     tianjin = TianjinCrawler('./enterprise_crawler/tianjin.json')
-    tianjin.work()
-    #tianjin.work('120000000000165')
+    #tianjin.work()
+    tianjin.work('120000000000165')
 
 """
 if __name__ == "__main__":
@@ -836,4 +827,4 @@ if __name__ == "__main__":
         settings.logger.info(u'###################   Start to crawl enterprise with id %s   ###################\n' % ent_str[2])
         tianjin.run(ent_num = ent_str[2])
         settings.logger.info(u'###################   Enterprise with id  %s Finished!  ###################\n' % ent_str[2])
-
+"""
