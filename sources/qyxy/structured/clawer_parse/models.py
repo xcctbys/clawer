@@ -614,7 +614,7 @@ class YearReportBasic(models.Model, UpdateByDict):
     enter_phone = models.CharField(max_length=15, null=True, blank=True)
     zipcode = models.CharField(max_length=10, null=True, blank=True)
     enter_place = models.CharField(max_length=50, null=True, blank=True)
-    email = models.CharField(max_length=20, null=True, blank=True)
+    email = models.CharField(max_length=100, null=True, blank=True)
     shareholder_change = models.BooleanField(default=False)
     status = models.CharField(max_length=20, null=True, blank=True)
     web_onlinestore = models.BooleanField(default=False)
@@ -648,7 +648,7 @@ class YearReportInvestment(models.Model, UpdateByDict):
     """
 
     invest_enter_name = models.CharField(max_length=50, null=True, blank=True)
-    enter_code = models.CharField(max_length=20, null=True, blank=True)
+    enter_code = models.CharField(max_length=100, null=True, blank=True)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
     enter_id = models.IntegerField(null=True)
 
@@ -661,8 +661,8 @@ class YearReportModification(models.Model, UpdateByDict):
     """
 
     modify_item = models.CharField(max_length=30, null=True, blank=True)
-    modify_before = models.CharField(max_length=50, null=True, blank=True)
-    modify_after = models.CharField(max_length=50, null=True, blank=True)
+    modify_before = models.TextField(max_length=50, null=True, blank=True)
+    modify_after = models.TextField(max_length=50, null=True, blank=True)
     modify_date = models.DateField(null=True)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
     enter_id = models.IntegerField(null=True)

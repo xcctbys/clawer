@@ -61,15 +61,15 @@ keys_to_tables["other_dept_pub_administration_sanction"] = "other_administrative
 keys_to_tables["judical_assist_pub_equity_freeze"] = "judicial_share_freeze"
 keys_to_tables["judical_assist_pub_shareholder_modify"] = "judicial_shareholder_change"
 keys_to_tables["ent_pub_ent_annual_report"] = "enter_annual_report"
-keys_to_tables["股权变更信息"] = "year_report_sharechange"
-keys_to_tables["网站或网店信息"] = "year_report_online"
-keys_to_tables["对外投资信息"] = "year_report_investment"
-keys_to_tables["修改记录"] = "year_report_modification"
-keys_to_tables["企业资产状况信息"] = "year_report_assets"
-keys_to_tables["股东及出资信息"] = "year_report_shareholder"
-keys_to_tables["对外提供保证担保信息"] = "year_report_warrandice"
-keys_to_tables["企业基本信息"] = "year_report_basic"
-keys_to_tables["信息更正声明"] = "year_report_correct"
+keys_to_tables[u"股权变更信息"] = "year_report_sharechange"
+keys_to_tables[u"网站或网店信息"] = "year_report_online"
+keys_to_tables[u"对外投资信息"] = "year_report_investment"
+keys_to_tables[u"修改记录"] = "year_report_modification"
+keys_to_tables[u"企业资产状况信息"] = "year_report_assets"
+keys_to_tables[u"股东及出资信息"] = "year_report_shareholder"
+keys_to_tables[u"对外提供保证担保信息"] = "year_report_warrandice"
+keys_to_tables[u"企业基本信息"] = "year_report_basic"
+keys_to_tables[u"信息更正声明"] = "year_report_correct"
 
 type_date = (
     "check_date",
@@ -91,6 +91,9 @@ type_date = (
     "time_end",
     "publicity_time",
     "license_publicity_time",
+    "publicity_date",
+    "paid_time",
+    "subscription_time",
 )
 
 type_float = (
@@ -106,4 +109,17 @@ type_float = (
     "share_ratio_after",
     "share_num",
     "notice_num",
+    "report_year",
+    "asset_all",
+    "owner_asset",
+    "business_income",
+    "profit",
+    "main_business_income",
+    "net_income",
+    "tax",
+    "debts",
+    "staff_number",
+    "main_creditor_right_amount",
+    "shares_before",
+    "shares_after",
 )
