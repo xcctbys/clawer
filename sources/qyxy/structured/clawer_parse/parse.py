@@ -5,6 +5,7 @@ import time
 import fileinput
 import profiles.consts as consts
 from clawer_parse import tools
+from profiles.mappings import mappings
 from clawer_parse.models import (
     Basic,
     IndustryCommerceAdministrativePenalty,
@@ -46,8 +47,11 @@ from clawer_parse.models import (
     YearReportSharechange,
     YearReportShareholder,
     YearReportWarrandice,
-)
-from profiles.mappings import mappings
+    )
+
+from clawer_parse.models import clsmembers
+
+print clsmembers
 
 
 class Parse(object):
@@ -195,7 +199,7 @@ class Parse(object):
                                             result.append(dict_inner)
                                             dict_inner = None
                                         else:
-                                            for result_dict in result: 
+                                            for result_dict in result:
                                                 result_dict[mapping.get(key_in)] = dict_in[key_in]
                         else:
                             result.append(dict_inner)
@@ -254,6 +258,14 @@ class Parse(object):
                 self.company_result[name].append(report)
 
     def write_to_mysql(self):
+        enter_name = self.company_result.get('enter_name')
+        register_num = self.company_result.get('register_num')
+
+        if self.is_company_in_db(enter_name, register_num):
+            self.insert(model, data)
+        else:
+            print "Company is exist!!!"
+
         self.update(Basic)
         self.update(IndustryCommerceAdministrativePenalty)
         self.update(IndustryCommerceBranch)
@@ -295,9 +307,13 @@ class Parse(object):
         self.update(YearReportShareholder)
         self.update(YearReportWarrandice)
 
+    def is_company_in_db(self, enter_name, register_num):
+        query = Basic.objects.filter(enter_name=enter_name, register_num=register_num)
+        return not query
+
     def update(self, model):
         company_result = self.company_result
-        model().update_by_dict(model, company_result)
+        model().write_db_by_dict(model, company_result)
 
     def conversion_type(self):
         type_date = consts.type_date
