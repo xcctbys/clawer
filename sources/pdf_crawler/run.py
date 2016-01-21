@@ -41,7 +41,6 @@ def config_logging():
     settings.logger.addHandler(ch)
 
 max_crawl_time = 0
-
 reqst = requests.Session()
 reqst.headers.update(
 			{'Accept': 'text/html, application/xhtml+xml, */*',
@@ -100,11 +99,9 @@ def get_pdf(save_path, list_dict):
 if __name__ == '__main__':
 
 	config_logging()
-
 	yesterday = (datetime.datetime.now() - datetime.timedelta(1)).strftime('%Y%m%d')
 	# yesterday = '20160118'
 	get_json_file(yesterday)
-
 	max_crawl_time = int(sys.argv[1])
 	if len(sys.argv) >= 3 and sys.argv[2] == 'all':
 		pass
@@ -133,6 +130,14 @@ if __name__ == '__main__':
 				print 'child process exit'
 				# settings.logger.info('child process exit')
 			f.close()
+			need_dict = {}
+			for pdf_item in os.listdir('%s/%s/%s/%s/' % (settings.pdf_restore_dir, json_file_item[:4], json_file_item[4:6], json_file_item[6:])):
+				# print pdf_item
+				if pdf_item.split('.')[1] == 'pdf':
+					need_dict['http://rmfygg.court.gov.cn/psca/lgnot/bulletin/download/'+pdf_item] = '%s/%s/%s/%s/%s' % (os.path.abspath(os.curdir), json_file_item[:4], json_file_item[4:6], json_file_item[6:], pdf_item)
+					# print pdf_item
+			CrawlerUtils.json_dump_to_file('%s/%s/%s/%s/%s%s' % (settings.pdf_restore_dir, json_file_item[:4], json_file_item[4:6], json_file_item[6:], json_file_item, '_pdf.json'), need_dict)
+			# need_dict = {}
 
 
 
