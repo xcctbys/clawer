@@ -51,7 +51,7 @@ class Parse(object):
                 if key in keys and key in mappings:
                     self.parse_dict(company[key], mappings[key])
             elif type(company[key] == list):
-                if key in keys and key in mappings:
+                if key in keys and key in mappings and company[key] is not None:
                     self.parse_list(key, company[key], mappings[key])
 
         credit_code = self.company_result.get('credit_code')
@@ -76,6 +76,7 @@ class Parse(object):
         ind_shareholder = special_parse_keys[1]
         name = keys_to_tables.get(key)
         parse_func = self.key_to_parse_function(key)
+
         if key not in special_parse_keys:
             for d in list_in_company:
                 value = parse_func(d, mapping)
@@ -132,7 +133,7 @@ class Parse(object):
         result = []
         dict_inner = {}
         for field, value in dict_in_company.iteritems():
-            if field == u"详情"and value is not None:
+            if type(value) == dict:
                 result = self.handle_ind_shareholder_detail(value,result,mapping)
 
         for field, value in dict_in_company.iteritems():
@@ -183,6 +184,13 @@ class Parse(object):
                     dict_inner = {}
                 else:
                     for result_dict in result: 
+                        print "$$$$$$$$$$$$$$"
+                        print result_dict
+                        print "##########"
+                        print dict_in
+                        print "##########"
+                        print key_in
+                        print "============="
                         result_dict[mapping.get(key_in)] = dict_in[key_in]
         return result
 
@@ -243,7 +251,7 @@ class Parse(object):
                 for d in value:
                     for d_field in d:
                         d_value = d[d_field]
-                        if d_field in type_date and d_value is not None:
+                        if d_field in type_date and d_value is not None and type(d_value) == unicode:
                             d[d_field] = to_date(d_value.encode('utf-8'))
                         elif d_field in type_float and d_value is not None and type(d_value) == unicode:
                             d[d_field] = to_float(d_value.encode('utf-8'))
