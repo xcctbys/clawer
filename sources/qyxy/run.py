@@ -49,6 +49,7 @@ from chongqing_crawler import ChongqingClawer
 #from xinjiang_crawler import XinjiangClawer
 from zhejiang_crawler import ZhejiangCrawler
 from liaoning_crawler import LiaoningCrawler
+from guangxi_crawler import GuangxiCrawler
 
 
 province_crawler = {
@@ -72,7 +73,8 @@ province_crawler = {
     #'xinjiang':XinjiangClawer,
     'chongqing':ChongqingClawer,
     'zhejiang' : ZhejiangCrawler,
-    'liaoning': LiaoningCrawler
+    'liaoning': LiaoningCrawler,
+    'guangxi': GuangxiClawer
 }
 
 process_pool = multiprocessing.Pool(processes=4)
