@@ -180,7 +180,7 @@ class IndustryCommerceBranch(models.Model):
     """
 
     enter_code = models.CharField(max_length=20, null=True, blank=True)
-    branch_name = models.CharField(max_length=30, null=True, blank=True)
+    branch_name = models.CharField(max_length=100, null=True, blank=True)
     register_gov = models.CharField(max_length=50, null=True, blank=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
@@ -195,7 +195,7 @@ class IndustryCommerceChange(models.Model):
     """工商-变更
     """
 
-    modify_item = models.CharField(max_length=30, null=True, blank=True)
+    modify_item = models.CharField(max_length=100, null=True, blank=True)
     modify_before = models.TextField(null=True, blank=True)
     modify_after = models.TextField(max_length=50, null=True, blank=True)
     modify_date = models.DateField(null=True)
@@ -402,15 +402,15 @@ class IndustryCommerceShareholders(models.Model):
     """
 
     shareholder_type = models.CharField(max_length=20, null=True, blank=True)
-    shareholder_name = models.CharField(max_length=30, null=True, blank=True)
+    shareholder_name = models.CharField(max_length=100, null=True, blank=True)
     certificate_type = models.CharField(max_length=20, null=True, blank=True)
     certificate_number = models.CharField(max_length=20, null=True, blank=True)
     subscription_amount = models.FloatField(null=True)
     paid_amount = models.FloatField(null=True)
-    subscription_type = models.CharField(max_length=30, null=True, blank=True)
+    subscription_type = models.CharField(max_length=100, null=True, blank=True)
     subscription_date = models.DateField(null=True)
     subscription_money_amount = models.FloatField(null=True)
-    paid_type = models.CharField(max_length=20, null=True, blank=True)
+    paid_type = models.CharField(max_length=100, null=True, blank=True)
     paid_money_amount = models.FloatField(null=True)
     paid_date = models.DateField(null=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
@@ -472,7 +472,7 @@ class EnterAdministrativeLicense(models.Model):
     license_begien_date = models.DateField(null=True)
     license_end_date = models.DateField(null=True)
     license_authority = models.CharField(max_length=30, null=True, blank=True)
-    license_content = models.CharField(max_length=50, null=True, blank=True)
+    license_content = models.TextField(null=True, blank=True)
     license_status = models.CharField(max_length=20, null=True, blank=True)
     license_detail = models.TextField(null=True, blank=True)
     license_register_time = models.DateField(null=True)
@@ -554,7 +554,7 @@ class EnterModification(models.Model):
     """企业-变更
     """
 
-    modify_item = models.CharField(max_length=30, null=True, blank=True)
+    modify_item = models.CharField(max_length=100, null=True, blank=True)
     modify_before = models.CharField(max_length=50, null=True, blank=True)
     modify_after = models.CharField(max_length=50, null=True, blank=True)
     modify_date = models.DateField(null=True)
@@ -571,7 +571,7 @@ class EnterSharechange(models.Model):
     """企业-股权变更
     """
 
-    shareholder = models.CharField(max_length=30, null=True, blank=True)
+    shareholder = models.CharField(max_length=100, null=True, blank=True)
     share_ratio_before = models.FloatField(null=True)
     share_ratio_after = models.FloatField(null=True)
     share_change_date = models.DateField(null=True)
@@ -590,13 +590,13 @@ class EnterShareholder(models.Model):
     """企业-股东及出资
     """
 
-    shareholder_name = models.CharField(max_length=30, null=True, blank=True)
+    shareholder_name = models.CharField(max_length=100, null=True, blank=True)
     subscription_amount = models.FloatField(null=True)
     paid_amount = models.FloatField(null=True)
-    subscription_type = models.CharField(max_length=20, null=True, blank=True)
+    subscription_type = models.CharField(max_length=100, null=True, blank=True)
     subscription_date = models.DateField(null=True)
     subscription_money_amount = models.FloatField(null=True)
-    paid_type = models.CharField(max_length=20, null=True, blank=True)
+    paid_type = models.CharField(max_length=100, null=True, blank=True)
     paid_money_amount = models.FloatField(null=True)
     paid_date = models.DateField(null=True)
     shareholder_type = models.CharField(max_length=20, null=True, blank=True)
@@ -676,7 +676,7 @@ class OtherAdministrativeLicense(models.Model):
     license_filename = models.CharField(max_length=50, null=True, blank=True)
     license_begin_date = models.DateField(null=True)
     license_end_date = models.DateField(null=True)
-    license_content = models.CharField(max_length=50, null=True, blank=True)
+    license_content = models.TextField(null=True, blank=True)
     license_authority_gov = models.CharField(max_length=50, null=True, blank=True)
     license_status = models.CharField(max_length=20, null=True, blank=True)
     license_detail = models.TextField(null=True, blank=True)
@@ -762,9 +762,9 @@ class YearReportBasic(models.Model):
 
     credit_code = models.CharField(max_length=20, null=True, blank=True)
     enter_name = models.CharField(max_length=50, null=True, blank=True)
-    enter_phone = models.CharField(max_length=15, null=True, blank=True)
+    enter_phone = models.CharField(max_length=50, null=True, blank=True)
     zipcode = models.CharField(max_length=10, null=True, blank=True)
-    enter_place = models.CharField(max_length=50, null=True, blank=True)
+    enter_place = models.CharField(max_length=100, null=True, blank=True)
     email = models.CharField(max_length=100, null=True, blank=True)
     shareholder_change = models.BooleanField(default=False)
     status = models.CharField(max_length=20, null=True, blank=True)
@@ -817,7 +817,7 @@ class YearReportModification(models.Model):
     """年报-修改记录
     """
 
-    modify_item = models.CharField(max_length=30, null=True, blank=True)
+    modify_item = models.CharField(max_length=100, null=True, blank=True)
     modify_before = models.TextField(max_length=50, null=True, blank=True)
     modify_after = models.TextField(max_length=50, null=True, blank=True)
     modify_date = models.DateField(null=True)
@@ -836,7 +836,7 @@ class YearReportOnline(models.Model):
 
     online_type = models.CharField(max_length=20, null=True, blank=True)
     enter_name = models.CharField(max_length=50, null=True, blank=True)
-    enter_url = models.CharField(max_length=50, null=True, blank=True)
+    enter_url = models.TextField(null=True, blank=True)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
     enter_id = models.IntegerField(null=True)
     version = models.IntegerField(default=1)
@@ -850,7 +850,7 @@ class YearReportSharechange(models.Model):
     """年报-股权变更
     """
 
-    shareholder = models.CharField(max_length=20, null=True, blank=True)
+    shareholder = models.CharField(max_length=100, null=True, blank=True)
     shares_before = models.FloatField(null=True)
     shares_after = models.FloatField(null=True)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
@@ -866,13 +866,13 @@ class YearReportShareholder(models.Model):
     """年报-股东及出资
     """
 
-    shareholder = models.CharField(max_length=30, null=True, blank=True)
+    shareholder = models.CharField(max_length=100, null=True, blank=True)
     subscription_money_amount = models.FloatField(null=True)
     subscription_time = models.DateField(null=True)
-    subscription_type = models.CharField(max_length=20, null=True, blank=True)
+    subscription_type = models.CharField(max_length=100, null=True, blank=True)
     paid_money_amount = models.FloatField(null=True)
     paid_time = models.DateField(null=True)
-    paid_type = models.CharField(max_length=20, null=True, blank=True)
+    paid_type = models.CharField(max_length=100, null=True, blank=True)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
     enter_id = models.IntegerField(null=True)
     version = models.IntegerField(default=1)
@@ -890,7 +890,7 @@ class YearReportWarrandice(models.Model):
     debtor = models.CharField(max_length=30, null=True, blank=True)
     main_creditor_right = models.CharField(max_length=30, null=True, blank=True)
     main_creditor_right_amount = models.FloatField(null=True)
-    fullfill_debt_duration = models.CharField(max_length=30, null=True, blank=True)
+    fullfill_debt_duration = models.CharField(max_length=100, null=True, blank=True)
     guarantee_duration = models.CharField(max_length=30, null=True, blank=True)
     guarantee_type = models.CharField(max_length=30, null=True, blank=True)
     warrandice_scope = models.CharField(max_length=100, null=True, blank=True)
