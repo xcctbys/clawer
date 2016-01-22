@@ -14,6 +14,7 @@ import Queue
 import threading
 import multiprocessing
 import socket
+import raven
 
 ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
 if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
@@ -113,18 +114,7 @@ def crawl_work(n, province, json_restore_path, ent_queue):
             crawler.run(ent)
         except Exception as e:
             settings.logger.error('crawler %s failed to get enterprise(id = %s), with exception %s' % (province, ent, e))
-            """
-            if failed_ent.get(ent, 0) > 3:
-                settings.logger.error('Failed to crawl and parse enterprise %s' % ent)
-                #report to sentry
-                if settings.sentry_open:
-                    settings.sentry_client.captureException()
-                return  #end this thread
-            else:
-                failed_ent[ent] = failed_ent.get(ent, 0) + 1
-                settings.logger.warn('failed to crawl enterprise(id = %s) %d times!' % (ent, failed_ent[ent]))
-                ent_queue.put(ent)
-            """
+            send_sentry_report()
         finally:
             ent_queue.task_done()
 
@@ -181,8 +171,10 @@ def force_exit():
 class Checker(object):
     """ Is obtain data from province enterprise site today ?
     """
-    def __init__(self):
+    def __init__(self, dt=None):
         self.yesterday = datetime.datetime.now() - datetime.timedelta(1)
+        if dt:
+            self.yesterday = dt
         self.parent = settings.json_restore_path
         self.success = [] # {'name':'', "size':0}
         self.failed = [] # string list
@@ -232,33 +224,27 @@ class Checker(object):
         self.send_mail.send(settings.EMAIL_HOST_USER, to_admins, title, content)
 
 
-
-
-
-
-
-if __name__ == '__main__':
+def main():
     config_logging()
 
     if not os.path.exists(settings.json_restore_path):
         CrawlerUtils.make_dir(settings.json_restore_path)
 
-    if settings.sentry_open:
-        settings.sentry_client = raven.Client(
-            dsn=settings.sentry_dns,
-        )
-
     set_codecracker()
     cur_date = CrawlerUtils.get_cur_y_m_d()
 
-    if len(sys.argv) == 2 and sys.argv[1] == "check":
-        checker = Checker()
+    if len(sys.argv) >= 2 and sys.argv[1] == "check":
+        dt = None
+        if len(sys.argv) == 3:
+            dt = datetime.datetime.strptime(sys.argv[2], "%Y-%m-%d")
+        checker = Checker(dt)
         checker.run()
-        exit(0)
-    elif len(sys.argv) < 3:
-        print 'usage: run.py [check] [max_crawl_time(minutes) province...] \n\tmax_crawl_time 最大爬取时间，以秒计;\n\tprovince 是所要爬取的省份列表 用空格分开, all表示爬取全部)'
-        exit(1)
+        return
 
+    if len(sys.argv) < 3:
+        print 'usage: run.py [check] [max_crawl_time(minutes) province...] \n\tmax_crawl_time 最大爬取时间，以秒计;\n\tprovince 是所要爬取的省份列表 用空格分开, all表示爬取全部)'
+        return
+        
     try:
         max_crawl_time = int(sys.argv[1])
         settings.max_crawl_time = datetime.timedelta(minutes=max_crawl_time)
@@ -277,7 +263,7 @@ if __name__ == '__main__':
             process = multiprocessing.Process(target=crawl_province, args=(p, cur_date))
             process.daemon = True
             process.start()
-            process.join(max_crawl_time/2)
+            process.join(max_crawl_time/len(province_crawler.keys()))
     else:
         provinces = sys.argv[2:]
         for p in provinces:
@@ -289,6 +275,17 @@ if __name__ == '__main__':
                 process.start()
                 process.join(max_crawl_time)
                 settings.logger.info("child process exit code %d", process.exitcode)
+    
+    
+def send_sentry_report():
+    if settings.sentry_client:
+        settings.sentry_client.captureException()
 
-    os._exit(0)
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except:
+        send_sentry_report()
 
