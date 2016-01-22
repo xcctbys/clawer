@@ -213,8 +213,8 @@ class Parse(object):
                 self.company_result[name].append(report)
 
     def write_to_mysql(self, data):
-        operation = Operation()
-        operation.write_db_by_dict(data)
+        operation = Operation(data)
+        operation.write_db_by_dict()
 
     def conversion_type(self):
         type_date = consts.type_date

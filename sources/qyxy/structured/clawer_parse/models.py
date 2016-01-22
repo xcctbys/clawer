@@ -11,45 +11,98 @@ import inspect
 class Operation(object):
     "数据库多个表操作方法"
 
-    def write_db_by_dict(self, data):
-        enter_name = data.get('enter_name')
-        register_num = data.get('register_num')
-        models = self.get_all_clawer_db_models()
+    def __init__(self, data):
+        self.data = data
+        self.enter_name = data.get('enter_name')
+        self.register_num = data.get('register_num')
+        self.models = models = self.get_all_clawer_db_models()
 
-        if self.is_company_in_db(enter_name, register_num):
+    def write_db_by_dict(self):
+        data = self.data
+        models = self.models
+
+        if self.is_company_in_db():
             print "insert /////////////////////"
             for model in models:
-                self.insert(model, data)
+                self.insert(model)
         else:
             print "update ++++++++++++++++++++"
             for model in models:
-                self.update(model, data)
+                self.update(model)
 
-    def is_company_in_db(self, enter_name, register_num):
+    def is_company_in_db(self):
+        enter_name = self.enter_name
+        register_num = self.register_num
+
         query = Basic.objects.filter(enter_name=enter_name, register_num=register_num)
+
         return not query
 
-    def insert(self, model, data):
+    def insert(self, model):
+        data = self.data
         special_tables = consts.special_tables
         fields = model._meta.get_all_field_names()
         name = model._meta.db_table
         enter_id = Basic.objects.all().aggregate(Max('id')).get('id__max') or consts.DEFAULT_ENTER_ID
-        enter_name = data.get('enter_name')
-        register_num = data.get('register_num')
+        enter_name = self.enter_name
+        register_num = self.register_num
 
         try:
-            version = Basic.objects.get(enter_name=enter_name, register_num=register_num).version + 1
+            version = Basic.objects.get(enter_name=enter_name, register_num=register_num).version
         except:
             version = consts.DEFAULT_VERSION
 
         if name in special_tables:
-            self.insert_one_row(model, name, fields, enter_id, version, {}, data)
+            self.insert_one_row(model, name, fields, enter_id, version, {})
         elif name in data:
             for row in data[name]:
-                self.insert_one_row(model, name, fields, enter_id, version, row, data)
+                self.insert_one_row(model, name, fields, enter_id, version, row)
 
-    def insert_one_row(self, model, name, fields, enter_id, version, row, data):
+    def update(self, model):
+        data = self.data
+        basic = consts.special_tables[0]
+        fields = model._meta.get_all_field_names()
+        name = model._meta.db_table
+        enter_name = data.get('enter_name')
+        register_num = data.get('register_num')
+        version = Basic.objects.get(enter_name=enter_name, register_num=register_num).version
+        enter_id = Basic.objects.get(enter_name=enter_name, register_num=register_num).id
+
+        if name == basic:
+            query = Basic.objects.get(enter_name=enter_name, register_num=register_num)
+            for field in fields:
+                value = data.get(field)
+                if value is not None:
+                    setattr(query, field, value)
+            query.version = version + 1
+            query.timestamp = timezone.now()
+            query.save()
+
+        else:
+            self.update_rows(model, name, fields, enter_id, version)
+
+    def update_rows(self, model, name, fields, enter_id, version):
+        data = self.data
+        clear = consts.special_tables[1]
+
+        querys = model.objects.filter(enter_id=enter_id, invalidation=False)
+
+        for query in querys:
+            query.invalidation = True
+            query.save()
+
+        if data.get(name) is not None:
+            for row in data[name]:
+                self.insert_one_row(model, name, fields, enter_id, version, row)
+        elif name == clear:
+            self.insert_one_row(model, name, fields, enter_id, version, {})
+        else:
+            pass
+
+    def insert_one_row(self, model, name, fields, enter_id, version, row):
+        data = self.data
         query = model()
+
         for field in fields:
             if row is not None:
                 value = row.get(field) or data.get(field)
@@ -63,49 +116,6 @@ class Operation(object):
         query.version = version
         query.invalidation = False
         query.save()
-        del query
-
-    def update(self, model, data):
-        special_tables = consts.special_tables
-        basic = special_tables[0]
-        clear = special_tables[1]
-        fields = model._meta.get_all_field_names()
-        name = model._meta.db_table
-        enter_name = data.get('enter_name')
-        register_num = data.get('register_num')
-        version = Basic.objects.get(enter_name=enter_name, register_num=register_num).version + 1
-        enter_id = Basic.objects.get(enter_name=enter_name, register_num=register_num).id
-
-        if name == basic:
-            query = Basic.objects.get(enter_name=enter_name, register_num=register_num)
-            for field in fields:
-                value = data.get(field)
-                if value is not None:
-                    setattr(query, field, value)
-            query.version = version
-            query.timestamp = timezone.now()
-            query.save()
-
-        elif name == clear:
-            self.update_rows(model, name, fields, enter_id, version, {}, data)
-
-        else:
-            if data.get(name) is not None:
-                for row in data[name]:
-                    self.update_rows(model, name, fields, enter_id, version, row, data)
-
-    def update_rows(self, model, name, fields, enter_id, version, row, data):
-        enter_name = data.get('enter_name')
-        register_num = data.get('register_num')
-        querys = model.objects.filter(enter_id=enter_id)
-
-        for query in querys:
-            query.invalidation = True
-            query.save()
-
-        del query
-
-        self.insert_one_row(model, name, fields, enter_id, version, row, data)
 
     def get_all_clawer_db_models(self):
         clsmembers = inspect.getmembers(sys.modules[__name__], inspect.isclass)
