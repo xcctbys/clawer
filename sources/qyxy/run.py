@@ -192,12 +192,14 @@ class Checker(object):
                 continue
 
             st = os.stat(path)
-            self.success.append({"name": province, "size": st[stat.ST_SIZE], "rows": self._get_rows(path)})
+            enterprise_count = self._get_enterprise_count(province)
+            done = self._get_rows(path)
+            self.success.append({"name": province, "size": st[stat.ST_SIZE], "done": done, "enterprise_count": enterprise_count})
 
         #output
         settings.logger.error("success %d, failed %d", len(self.success), len(self.failed))
         for item in self.success:
-            settings.logger.error("\t%s: %d bytes, rows %d", item['name'], item['size'], item["rows"])
+            settings.logger.error("\t%s: %d bytes, rows %d, count %d", item['name'], item['size'], item["rows"], item["enterprise_count"])
 
         settings.logger.error("Failed province")
         for item in self.failed:
@@ -217,6 +219,15 @@ class Checker(object):
                 rows += 1
         
         return rows
+    
+    def _get_enterprise_count(self, province):
+        path = os.path.join(settings.enterprise_list_path, "%s.txt" % province)
+        count = 0
+        with open(path) as f:
+            for _ in f:
+                count += 1
+        
+        return count
 
     def _report(self):
         title = u"%s 企业信用爬取情况" % (self.yesterday.strftime("%Y-%m-%d"))
@@ -224,7 +235,9 @@ class Checker(object):
 
         content += u"Success province:\n"
         for item in self.success:
-            content += u"\t%s: %d bytes, rows %d\n" % (item["name"], item['size'], item["rows"])
+            ratio = float(item(rows))/item["enterprise_count"]
+            content += u"\t%s\tbytes:%d\tdone:%d\tenterprise count:%d\tdone ratio:%.2f" % (item["name"], item['size'], item["rows"], \
+                                                                            item['enterprise_count'], ratio)
 
         content += u"\r\n"
         content += u"Failed province:\n"
