@@ -3,11 +3,12 @@
 import logging
 
 log_level = logging.WARN
-log_file = '/data/pdf_crawler/result_pdf/crawler.log'
+log_file = '/data/clawer_result/bankrupt/crawler.log'
 logger = None
 
-pdf_restore_dir = '/data/pdf_crawler/result_pdf'
-json_list_dir = '/data/pdf_crawler/json_list/'
+pdf_restore_dir = '/data/clawer_result/bankrupt/pdf/'
+json_list_dir = '/data/clawer_result/bankrupt/'
 
-host = 'http://clawer.princetechs.com:8080/media/clawer_result'
-ID = '29'
+#host = 'http://clawer.princetechs.com:8080/media/clawer_result'
+host = 'http://10.100.90.51:8080/media/clawer_result'
+ID = '4'
