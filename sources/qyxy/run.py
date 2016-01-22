@@ -199,7 +199,7 @@ class Checker(object):
         #output
         settings.logger.error("success %d, failed %d", len(self.success), len(self.failed))
         for item in self.success:
-            settings.logger.error("\t%s: %d bytes, rows %d, count %d", item['name'], item['size'], item["rows"], item["enterprise_count"])
+            settings.logger.error("\t%s: %d bytes, rows %d, count %d", item['name'], item['size'], item["done"], item["enterprise_count"])
 
         settings.logger.error("Failed province")
         for item in self.failed:
@@ -235,8 +235,8 @@ class Checker(object):
 
         content += u"Success province:\n"
         for item in self.success:
-            ratio = float(item(rows))/item["enterprise_count"]
-            content += u"\t%s\tbytes:%d\tdone:%d\tenterprise count:%d\tdone ratio:%.2f" % (item["name"], item['size'], item["rows"], \
+            ratio = float(item['done'])/item["enterprise_count"]
+            content += u"\t%s\tbytes:%d\tdone:%d\tenterprise count:%d\tdone ratio:%.2f" % (item["name"], item['size'], item["done"], \
                                                                             item['enterprise_count'], ratio)
 
         content += u"\r\n"
