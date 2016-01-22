@@ -20,8 +20,10 @@ import re
 from crawler import CrawlerUtils
 
 PDF_CRAWLER_SETTINGS=os.getenv('PDF_CRAWLER_SETTINGS')
-if PDF_CRAWLER_SETTINGS and PDF_CRAWLER_SETTINGS.find('settings_pro') >= 0:
+if PDF_CRAWLER_SETTINGS == 'settings_pro':
     import settings_pro as settings
+elif PDF_CRAWLER_SETTINGS == 'settings_all':
+    import settings_all as settings
 else:
     import settings
 
