@@ -171,8 +171,10 @@ def force_exit():
 class Checker(object):
     """ Is obtain data from province enterprise site today ?
     """
-    def __init__(self):
+    def __init__(self, dt=None):
         self.yesterday = datetime.datetime.now() - datetime.timedelta(1)
+        if dt:
+            self.yesterday = dt
         self.parent = settings.json_restore_path
         self.success = [] # {'name':'', "size':0}
         self.failed = [] # string list
@@ -231,14 +233,18 @@ def main():
     set_codecracker()
     cur_date = CrawlerUtils.get_cur_y_m_d()
 
-    if len(sys.argv) == 2 and sys.argv[1] == "check":
-        checker = Checker()
+    if len(sys.argv) >= 2 and sys.argv[1] == "check":
+        dt = None
+        if len(sys.argv) == 3:
+            dt = datetime.datetime.strptime(sys.argv[2], "%Y-%m-%d")
+        checker = Checker(dt)
         checker.run()
         exit(0)
-    elif len(sys.argv) < 3:
+
+    if len(sys.argv) < 3:
         print 'usage: run.py [check] [max_crawl_time(minutes) province...] \n\tmax_crawl_time 最大爬取时间，以秒计;\n\tprovince 是所要爬取的省份列表 用空格分开, all表示爬取全部)'
         exit(1)
-
+        
     try:
         max_crawl_time = int(sys.argv[1])
         settings.max_crawl_time = datetime.timedelta(minutes=max_crawl_time)
