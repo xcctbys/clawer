@@ -141,7 +141,7 @@ def crawl_province(province):
 
     #开启多个线程，每个线程均执行 函数 crawl_work
     for i in range(settings.crawler_num):
-        worker = threading.Thread(target=crawl_work,args=(i, province, json_restore_path, ent_queue))
+        worker = threading.Thread(target = crawl_work, args = (i, province, json_restore_path, ent_queue))
         worker.start()
         time.sleep(random.uniform(1, 2))
 
