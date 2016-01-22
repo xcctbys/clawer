@@ -151,7 +151,7 @@ class Parse(object):
         dict_inner = {}
         if type(dict_xq) == str:
             pass
-        else:    
+        else:
             for key_add in dict_xq:
                 if key_add:
                     list_in = dict_xq.get(key_add)
@@ -179,7 +179,7 @@ class Parse(object):
                     result.append(dict_inner)
                     dict_inner = {}
                 else:
-                    for result_dict in result: 
+                    for result_dict in result:
                         result_dict[mapping.get(key_in)] = dict_in[key_in]
         return result
 
