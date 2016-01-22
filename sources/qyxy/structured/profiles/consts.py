@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# to handle one company's json keys
+DEFAULT_ENTER_ID = 1
+DEFAULT_VERSION = 1
+
 keys = (
     "ind_comm_pub_reg_basic",
     "ind_comm_pub_reg_shareholder",
