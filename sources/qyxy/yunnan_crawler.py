@@ -130,12 +130,12 @@ class YunnanCrawler(object):
 	def get_tables(self, url):
 		resp = self.reqst.get(url)
 		if resp.status_code == 200:
-			return BeautifulSoup(resp.content, 'html5lib').find_all('table')
+			return BeautifulSoup(resp.content).find_all('table')
 			#return [table for table in tables] #if (table.find_all('th') or table.find_all('a')) ]
 	def get_head_ths_tds(self, table):
 		head = table.find_all('th')[0].get_text().strip().split('\n')[0].strip()
 		allths = [th.get_text().strip() for th in table.find_all('th')[1:] if th.get_text()]
-		if head == u'股东信息' or head == u'发起人信息' or head == u'股东（发起人）信息' or head == u'行政许可信息':
+		if head == u'股东信息' or head == u'发起人信息' or head == u'股东（发起人）信息' or head == u'行政许可信息' or head == u'股权出质登记信息':
 			tdlist = []
 			for td in table.find_all('td'):
 				if td.find_all('a'):
@@ -145,8 +145,21 @@ class YunnanCrawler(object):
 						detail_content = self.reqst.get(td.a['href']).content
 						detail_alltds = self.get_re_list_from_content(detail_content)
 					#print '---------------------------', len(detail_allths[:3]+detail_allths[5:]), len(detail_alltds)
-					tddict = self.get_one_to_one_dict(detail_allths[:3]+detail_allths[5:], detail_alltds)
-					tdlist.append(tddict)
+						# tddict = self.get_one_to_one_dict(detail_allths[:3]+detail_allths[5:], detail_alltds)
+						self.test_print_all_ths_tds(detail_head, detail_allths, detail_alltds)
+						son_need_dict = {}
+						for key, value in zip(detail_allths[6:], detail_alltds[3:]):
+							son_need_dict[key] = value
+						need_dict = {}
+						for key, value in zip(detail_allths[1:4], detail_alltds[:3]):
+							need_dict[key] = value
+						need_dict['list'] = [son_need_dict]
+						tdlist.append( {detail_head:[need_dict]} )
+
+						# tdlist.append(tddict)
+					else:
+						tddict = self.get_one_to_one_dict(detail_allths, detail_alltds)
+						tdlist.append(tddict)
 				elif td.get_text():
 					tdlist.append(td.get_text().strip())
 				else:
@@ -168,11 +181,15 @@ class YunnanCrawler(object):
 							enter_allths = enter_allths[1:]
 						#self.test_print_all_ths_tds(enter_head, enter_allths, enter_alltds)
 						tddict[enter_head] = self.get_one_to_one_dict(enter_allths, enter_alltds)
+						if enter_head == u'企业基本信息' or enter_head == u'企业资产状况信息':
+							tddict[enter_head] = self.get_one_to_one_dict(enter_allths, enter_alltds)[0]
+					tdlist.append(td.get_text().strip())
 					tdlist.append(tddict)
 				elif td.get_text():
 					tdlist.append(td.get_text().strip())
 				else:
 					tdlist.append(None)
+				allths.insert(2, u'详情')
 			return head, allths, tdlist			
 			pass
 		else:
@@ -180,6 +197,7 @@ class YunnanCrawler(object):
 				alltds = [td.get_text().strip() if td.get_text() else None for td in table.find_all('td')]
 			else:
 				alltds = [None for th in allths]
+				# alltds = []
 			if head == u'主要人员信息':
 				return head, allths[:int(len(allths)/2)], alltds
 			else:
@@ -187,10 +205,13 @@ class YunnanCrawler(object):
 		#return (table.find_all('th')[0].get_text().strip().split('\n')[0].strip(), [th.get_text().strip() for th in table.find_all('th')[1:] if th.get_text()], [td.get_text().strip() if td.get_text() else None for td in table.find_all('td')])
 	def get_one_to_one_dict(self, allths, alltds):
 		if len(allths) == len(alltds):
-			one_to_one_dict = {}
-			for key, value in zip(allths, alltds):
-				one_to_one_dict[key] = value
-			return one_to_one_dict
+			if any(alltds):
+				one_to_one_dict = {}
+				for key, value in zip(allths, alltds):
+					one_to_one_dict[key] = value
+				return [one_to_one_dict]
+			else:
+				return []
 		else:
 			templist = []
 			x = 0
@@ -204,6 +225,7 @@ class YunnanCrawler(object):
 				y = x + len(allths)
 				templist.append(tempdict)
 			return templist
+
 
 	def test_print_table(self, tables):
 		for table in tables:
@@ -224,6 +246,13 @@ class YunnanCrawler(object):
 			head, allths, alltds = self.get_head_ths_tds(table)
 			#print head
 			self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
+			if head == u'基本信息':
+				self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)[0]
+			if head == u'清算信息':
+				if allths:
+					self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)[0]
+				else:
+					self.result_json_dict[mydict[head]] = []
 			#self.test_print_all_ths_tds(head, allths, alltds)
 		pass			
 	def get_json_two(self, mydict, tables):
@@ -274,9 +303,9 @@ class YunnanCrawler(object):
 
 if __name__ == '__main__':
 	yunnan = YunnanCrawler('./enterprise_crawler/yunnan.json')
-	#yunnan.run('530111000002966')
-	f = open('enterprise_list/yunnan.txt', 'r')
-	for line in f.readlines():
-		print line.split(',')[2].strip()
-		yunnan.run(str(line.split(',')[2]).strip())
-	f.close()
+	yunnan.run('530000000006503')
+	# f = open('enterprise_list/yunnan.txt', 'r')
+	# for line in f.readlines():
+	# 	print line.split(',')[2].strip()
+	# 	yunnan.run(str(line.split(',')[2]).strip())
+	# f.close()
