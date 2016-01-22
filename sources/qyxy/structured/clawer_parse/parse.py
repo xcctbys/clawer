@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import json
-import time
 import fileinput
 import profiles.consts as consts
 from clawer_parse import tools
@@ -28,18 +27,13 @@ class Parse(object):
                     self.companies[key] = company[key]
 
     def parse_companies(self):
-        handled_num = 0
-        begin = time.time()
-
         for register_num in self.companies:
             company = self.companies[register_num]
-            print u"\n公司注册Id: %s" % register_num
-            self.parse_company(company, register_num)
-            handled_num = handled_num + 1
-
-        end = time.time()
-        secs = int(round((end - begin) * 1000))
-        print u"\n=== 共导入%d个公司的数据，耗时%dms ===" % (handled_num, secs)
+            try:
+                self.parse_company(company, register_num)
+            except Exception as e:
+                print "❌  %s解析错误: ❌ " % register_num
+                print e
 
     def parse_company(self, company={}, register_num=0):
         keys = self.keys
@@ -54,9 +48,8 @@ class Parse(object):
                 if key in keys and key in mappings and company[key] is not None:
                     self.parse_list(key, company[key], mappings[key])
 
-        credit_code = self.company_result.get('credit_code')
-        if credit_code is None:
-            credit_code = register_num
+        if self.company_result.get('credit_code') is None:
+            self.company_result['credit_code'] = register_num
         if self.company_result.get('register_num') is None:
             self.company_result['register_num'] = register_num
 
@@ -187,13 +180,6 @@ class Parse(object):
                     dict_inner = {}
                 else:
                     for result_dict in result: 
-                        print "$$$$$$$$$$$$$$"
-                        print result_dict
-                        print "##########"
-                        print dict_in
-                        print "##########"
-                        print key_in
-                        print "============="
                         result_dict[mapping.get(key_in)] = dict_in[key_in]
         return result
 
