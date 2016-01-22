@@ -2,45 +2,131 @@
 
 from django.db import models
 from django.db.models import Max
+from django.utils import timezone
 import profiles.consts as consts
+import sys
+import inspect
 
 
-class UpdateByDict(object):
+class Operation(object):
+    "数据库多个表操作方法"
 
-    def update_by_dict(self, model, data):
+    def __init__(self, data):
+        self.data = data
+        self.enter_name = data.get('enter_name')
+        self.register_num = data.get('register_num')
+        self.models = models = self.get_all_clawer_db_models()
+
+    def write_db_by_dict(self):
+        data = self.data
+        models = self.models
+
+        if self.is_company_in_db():
+            print "insert /////////////////////"
+            for model in models:
+                self.insert(model)
+        else:
+            print "update ++++++++++++++++++++"
+            for model in models:
+                self.update(model)
+
+    def is_company_in_db(self):
+        enter_name = self.enter_name
+        register_num = self.register_num
+
+        query = Basic.objects.filter(enter_name=enter_name, register_num=register_num)
+
+        return not query
+
+    def insert(self, model):
+        data = self.data
         special_tables = consts.special_tables
         fields = model._meta.get_all_field_names()
         name = model._meta.db_table
-        enter_id = Basic.objects.all().aggregate(Max('id')).get('id__max')
+        enter_id = Basic.objects.all().aggregate(Max('id')).get('id__max') or consts.DEFAULT_ENTER_ID
+        enter_name = self.enter_name
+        register_num = self.register_num
 
-        if name in data:
+        try:
+            version = Basic.objects.get(enter_name=enter_name, register_num=register_num).version
+        except:
+            version = consts.DEFAULT_VERSION
+
+        if name in special_tables:
+            self.insert_one_row(model, name, fields, enter_id, version, {})
+        elif name in data:
             for row in data[name]:
-                query = model()
-                for field in fields:
-                    value = row.get(field) or data.get(field)
-                    if value is not None:
-                        setattr(query, field, value)
-                query.enter_id = enter_id
-                query.save()
-                del query
+                self.insert_one_row(model, name, fields, enter_id, version, row)
 
-        elif name in special_tables:
-            is_null = True
+    def update(self, model):
+        data = self.data
+        basic = consts.special_tables[0]
+        fields = model._meta.get_all_field_names()
+        name = model._meta.db_table
+        enter_name = data.get('enter_name')
+        register_num = data.get('register_num')
+        version = Basic.objects.get(enter_name=enter_name, register_num=register_num).version
+        enter_id = Basic.objects.get(enter_name=enter_name, register_num=register_num).id
+
+        if name == basic:
+            query = Basic.objects.get(enter_name=enter_name, register_num=register_num)
             for field in fields:
                 value = data.get(field)
-                if value is not None and value != u"":
-                    is_null = False
-                    setattr(self, field, value)
-            if not is_null:
-                if hasattr(self, 'enter_id'):
-                    self.enter_id = enter_id + 1
-                self.save()
+                if value is not None:
+                    setattr(query, field, value)
+            query.version = version + 1
+            query.timestamp = timezone.now()
+            query.save()
 
+        else:
+            self.update_rows(model, name, fields, enter_id, version)
+
+    def update_rows(self, model, name, fields, enter_id, version):
+        data = self.data
+        clear = consts.special_tables[1]
+
+        querys = model.objects.filter(enter_id=enter_id, invalidation=False)
+
+        for query in querys:
+            query.invalidation = True
+            query.save()
+
+        if data.get(name) is not None:
+            for row in data[name]:
+                self.insert_one_row(model, name, fields, enter_id, version, row)
+        elif name == clear:
+            self.insert_one_row(model, name, fields, enter_id, version, {})
         else:
             pass
 
+    def insert_one_row(self, model, name, fields, enter_id, version, row):
+        data = self.data
+        query = model()
 
-class Basic(models.Model, UpdateByDict):
+        for field in fields:
+            if row is not None:
+                value = row.get(field) or data.get(field)
+            else:
+                value = data.get(field)
+
+            if value is not None:
+                setattr(query, field, value)
+
+        query.enter_id = enter_id
+        query.version = version
+        query.invalidation = False
+        query.save()
+
+    def get_all_clawer_db_models(self):
+        clsmembers = inspect.getmembers(sys.modules[__name__], inspect.isclass)
+        all_clawer_db_models = []
+        for (key, val) in clsmembers:
+            if key != "Operation" and key != "Max":
+                all_clawer_db_models.append(val)
+        return all_clawer_db_models
+
+
+class Basic(models.Model):
     """公司基本类
     """
 
@@ -58,12 +144,14 @@ class Basic(models.Model, UpdateByDict):
     check_date = models.DateField(null=True)
     register_status = models.CharField(max_length=20, null=True, blank=True)
     register_num = models.CharField(max_length=20, null=True, blank=True)
+    version = models.IntegerField(default=1)
+    timestamp = models.DateTimeField(default=timezone.now)
 
     class Meta:
         db_table = "basic"
 
 
-class IndustryCommerceAdministrativePenalty(models.Model, UpdateByDict):
+class IndustryCommerceAdministrativePenalty(models.Model):
     """工商-行政处罚
     """
 
@@ -80,12 +168,14 @@ class IndustryCommerceAdministrativePenalty(models.Model, UpdateByDict):
     penalty_publicity_time = models.DateField(null=True)
     enter_id = models.CharField(max_length=30, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "industrycommerce_administrative_penalty"
 
 
-class IndustryCommerceBranch(models.Model, UpdateByDict):
+class IndustryCommerceBranch(models.Model):
     """工商-分支机构
     """
 
@@ -94,12 +184,14 @@ class IndustryCommerceBranch(models.Model, UpdateByDict):
     register_gov = models.CharField(max_length=50, null=True, blank=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "industry_commerce_branch"
 
 
-class IndustryCommerceChange(models.Model, UpdateByDict):
+class IndustryCommerceChange(models.Model):
     """工商-变更
     """
 
@@ -109,12 +201,14 @@ class IndustryCommerceChange(models.Model, UpdateByDict):
     modify_date = models.DateField(null=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "industry_commerce_change"
 
 
-class IndustryCommerceCheck(models.Model, UpdateByDict):
+class IndustryCommerceCheck(models.Model):
     """工商-抽查检查
     """
 
@@ -125,12 +219,14 @@ class IndustryCommerceCheck(models.Model, UpdateByDict):
     check_comment = models.CharField(max_length=50, null=True, blank=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "industry_commerce_check"
 
 
-class IndustryCommerceClear(models.Model, UpdateByDict):
+class IndustryCommerceClear(models.Model):
     """工商-清算
     """
 
@@ -138,12 +234,14 @@ class IndustryCommerceClear(models.Model, UpdateByDict):
     persons = models.CharField(max_length=100, null=True, blank=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "industry_commerce_clear"
 
 
-class IndustryCommerceDetailGuarantee(models.Model, UpdateByDict):
+class IndustryCommerceDetailGuarantee(models.Model):
     """工商-动产抵押-详情-动产抵押
     """
 
@@ -151,13 +249,15 @@ class IndustryCommerceDetailGuarantee(models.Model, UpdateByDict):
     sharechange_register_date = models.DateField(null=True)
     register_gov = models.CharField(max_length=50, null=True, blank=True)
     register_id = models.CharField(max_length=20, null=True, blank=True)
-    ind_id = models.IntegerField(null=True)
+    enter_id = models.CharField(max_length=20, null=True, blank=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "industry_commerce_detail_guarantee"
 
 
-class IndustryCommerceException(models.Model, UpdateByDict):
+class IndustryCommerceException(models.Model):
     """工商-经营异常
     """
 
@@ -170,12 +270,14 @@ class IndustryCommerceException(models.Model, UpdateByDict):
     list_out_gov = models.CharField(max_length=50, null=True, blank=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "industry_commerce_exception"
 
 
-class IndustryCommerceIllegal(models.Model, UpdateByDict):
+class IndustryCommerceIllegal(models.Model):
     """工商-严重违法
     """
 
@@ -186,12 +288,14 @@ class IndustryCommerceIllegal(models.Model, UpdateByDict):
     decision_gov = models.CharField(max_length=30, null=True, blank=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "industry_commerce_illegal"
 
 
-class IndustryCommerceMainperson(models.Model, UpdateByDict):
+class IndustryCommerceMainperson(models.Model):
     """工商-主要人员
     """
 
@@ -199,12 +303,14 @@ class IndustryCommerceMainperson(models.Model, UpdateByDict):
     position = models.CharField(max_length=20, null=True, blank=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "industry_commerce_mainperson"
 
 
-class IndustryCommerceMortgage(models.Model, UpdateByDict):
+class IndustryCommerceMortgage(models.Model):
     """工商-动产抵押登记
     """
 
@@ -217,25 +323,29 @@ class IndustryCommerceMortgage(models.Model, UpdateByDict):
     details = models.TextField(null=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "industry_commerce_mortgage"
 
 
-class IndustryCommerceMortgageDetailChange(models.Model, UpdateByDict):
+class IndustryCommerceMortgageDetailChange(models.Model):
     """工商-抵押-详情-变更
     """
 
     modify_date = models.DateField(null=True)
     modify_content = models.TextField(null=True)
     register_id = models.CharField(max_length=20, null=True, blank=True)
-    ind_id = models.IntegerField(null=True)
+    enter_id = models.CharField(max_length=20, null=True, blank=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "industry_commerce_mortgage_detail_change"
 
 
-class IndustryCommerceMortgageDetailGuarantee(models.Model, UpdateByDict):
+class IndustryCommerceMortgageDetailGuarantee(models.Model):
     """工商-抵押-详情-抵押权人
     """
 
@@ -245,13 +355,15 @@ class IndustryCommerceMortgageDetailGuarantee(models.Model, UpdateByDict):
     debtor_duration = models.CharField(max_length=20, null=True, blank=True)
     comment = models.CharField(max_length=100, null=True, blank=True)
     register_id = models.CharField(max_length=20, null=True, blank=True)
-    ind_id = models.IntegerField(null=True)
+    enter_id = models.CharField(max_length=20, null=True, blank=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "industry_commerce_cortgage_detail_guarantee"
 
 
-class IndustryCommerceMortgageGuaranty(models.Model, UpdateByDict):
+class IndustryCommerceMortgageGuaranty(models.Model):
     """工商-抵押-详情-抵押物
     """
 
@@ -260,13 +372,15 @@ class IndustryCommerceMortgageGuaranty(models.Model, UpdateByDict):
     details = models.TextField(null=True)
     coments = models.CharField(max_length=100, null=True, blank=True)
     register_id = models.CharField(max_length=20, null=True, blank=True)
-    ind_id = models.IntegerField(null=True)
+    enter_id = models.CharField(max_length=20, null=True, blank=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "industry_commerce_mortgage_guaranty"
 
 
-class IndustryCommerceRevoke(models.Model, UpdateByDict):
+class IndustryCommerceRevoke(models.Model):
     """工商-撤销
     """
 
@@ -276,12 +390,14 @@ class IndustryCommerceRevoke(models.Model, UpdateByDict):
     revoke_date = models.DateField(null=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "industry_commerce_revoke"
 
 
-class IndustryCommerceShareholders(models.Model, UpdateByDict):
+class IndustryCommerceShareholders(models.Model):
     """工商-股东
     """
 
@@ -299,12 +415,14 @@ class IndustryCommerceShareholders(models.Model, UpdateByDict):
     paid_date = models.DateField(null=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "industry_commerce_shareholders"
 
 
-class IndustryCommerceSharepledge(models.Model, UpdateByDict):
+class IndustryCommerceSharepledge(models.Model):
     """
     """
 
@@ -322,25 +440,30 @@ class IndustryCommerceSharepledge(models.Model, UpdateByDict):
     modify_content = models.TextField(null=True)
     register_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
+    enter_id = models.CharField(max_length=20, null=True, blank=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "industry_commerce_sharepledge"
 
 
-class IndustryMortgageDetailMortgagee(models.Model, UpdateByDict):
+class IndustryMortgageDetailMortgagee(models.Model):
     """工商-抵押-详情-抵押权人
     """
 
     mortgagee_name = models.CharField(max_length=30, null=True, blank=True)
     mortgagee_certificate_type = models.CharField(max_length=20, null=True, blank=True)
     pledgor_certificate_code = models.CharField(max_length=20, null=True, blank=True)
-    register_id = models.CharField(max_length=20, null=True, blank=True)
+    enter_id = models.CharField(max_length=20, null=True, blank=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "industry_mortgage_detail_mortgagee"
 
 
-class EnterAdministrativeLicense(models.Model, UpdateByDict):
+class EnterAdministrativeLicense(models.Model):
     """企业-行政许可
     """
 
@@ -360,12 +483,14 @@ class EnterAdministrativeLicense(models.Model, UpdateByDict):
     license_content_after = models.CharField(max_length=50, null=True, blank=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "enter_administrative_license"
 
 
-class EnterAdministrativePenalty(models.Model, UpdateByDict):
+class EnterAdministrativePenalty(models.Model):
     """企业-行政处罚
     """
 
@@ -378,12 +503,14 @@ class EnterAdministrativePenalty(models.Model, UpdateByDict):
     penalty_publicit_date = models.DateField(null=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "enter_administrative_penalty"
 
 
-class EnterAnnualReport(models.Model, UpdateByDict):
+class EnterAnnualReport(models.Model):
     """企业年报
     """
 
@@ -392,12 +519,14 @@ class EnterAnnualReport(models.Model, UpdateByDict):
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
     primary = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "enter_annual_report"
 
 
-class EnterIntellectualPropertyPledge(models.Model, UpdateByDict):
+class EnterIntellectualPropertyPledge(models.Model):
     """企业-知识产权出质
     """
 
@@ -414,12 +543,14 @@ class EnterIntellectualPropertyPledge(models.Model, UpdateByDict):
     property_pledge_publicity_time = models.DateField(null=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "enter_intellectual_property_pledge"
 
 
-class EnterModification(models.Model, UpdateByDict):
+class EnterModification(models.Model):
     """企业-变更
     """
 
@@ -429,12 +560,14 @@ class EnterModification(models.Model, UpdateByDict):
     modify_date = models.DateField(null=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "enter_modification"
 
 
-class EnterSharechange(models.Model, UpdateByDict):
+class EnterSharechange(models.Model):
     """企业-股权变更
     """
 
@@ -446,12 +579,14 @@ class EnterSharechange(models.Model, UpdateByDict):
     sharechange_publicity_date = models.DateField(null=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "enter_sharechange"
 
 
-class EnterShareholder(models.Model, UpdateByDict):
+class EnterShareholder(models.Model):
     """企业-股东及出资
     """
 
@@ -472,12 +607,14 @@ class EnterShareholder(models.Model, UpdateByDict):
     detals = models.CharField(max_length=256, null=True, blank=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "enter_shareholder"
 
 
-class JudicialShareFreeze(models.Model, UpdateByDict):
+class JudicialShareFreeze(models.Model):
     """司法股权冻结
     """
 
@@ -489,12 +626,14 @@ class JudicialShareFreeze(models.Model, UpdateByDict):
     freeze_detail = models.TextField(null=True, blank=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "judicial_share_freeze"
 
 
-class JudicialShareholderChange(models.Model, UpdateByDict):
+class JudicialShareholderChange(models.Model):
     """司法-司法股东变更登记
     """
 
@@ -505,12 +644,14 @@ class JudicialShareholderChange(models.Model, UpdateByDict):
     detail = models.CharField(max_length=30, null=True, blank=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "judicial_shareholder_change"
 
 
-class OtherAdministrativeChange(models.Model, UpdateByDict):
+class OtherAdministrativeChange(models.Model):
     """其他-行政许可变更
     """
 
@@ -520,12 +661,14 @@ class OtherAdministrativeChange(models.Model, UpdateByDict):
     administrative_change_after = models.CharField(max_length=50, null=True, blank=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "other_administrative_change"
 
 
-class OtherAdministrativeLicense(models.Model, UpdateByDict):
+class OtherAdministrativeLicense(models.Model):
     """其他部门-行政许可
     """
 
@@ -542,12 +685,14 @@ class OtherAdministrativeLicense(models.Model, UpdateByDict):
     update_date = models.DateField(null=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "other_administrative_license"
 
 
-class OtherAdministrativePenalty(models.Model, UpdateByDict):
+class OtherAdministrativePenalty(models.Model):
     """其他部门-行政处罚
     """
 
@@ -564,12 +709,14 @@ class OtherAdministrativePenalty(models.Model, UpdateByDict):
     update_date = models.DateField(null=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "other_administrative_penalty"
 
 
-class OtherProductionSecurity(models.Model, UpdateByDict):
+class OtherProductionSecurity(models.Model):
     """其他-生产安全事故
     """
 
@@ -581,12 +728,14 @@ class OtherProductionSecurity(models.Model, UpdateByDict):
     info_publish_gov = models.CharField(max_length=30, null=True, blank=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "other_production_security"
 
 
-class YearReportAssets(models.Model, UpdateByDict):
+class YearReportAssets(models.Model):
     """年报-企业资产状况
     """
 
@@ -600,12 +749,14 @@ class YearReportAssets(models.Model, UpdateByDict):
     debts = models.FloatField(null=True)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
     enter_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "year_report_assets"
 
 
-class YearReportBasic(models.Model, UpdateByDict):
+class YearReportBasic(models.Model):
     """年报-基本
     """
 
@@ -624,12 +775,14 @@ class YearReportBasic(models.Model, UpdateByDict):
     is_invest = models.BooleanField(default=False)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
     enter_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "year_report_basic"
 
 
-class YearReportCorrect(models.Model, UpdateByDict):
+class YearReportCorrect(models.Model):
     """年报-年报信息更正声明
     """
 
@@ -638,12 +791,14 @@ class YearReportCorrect(models.Model, UpdateByDict):
     correct_time = models.DateField(null=True)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
     enter_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "year_report_correct"
 
 
-class YearReportInvestment(models.Model, UpdateByDict):
+class YearReportInvestment(models.Model):
     """年报-对外投资
     """
 
@@ -651,12 +806,14 @@ class YearReportInvestment(models.Model, UpdateByDict):
     enter_code = models.CharField(max_length=100, null=True, blank=True)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
     enter_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "year_report_investment"
 
 
-class YearReportModification(models.Model, UpdateByDict):
+class YearReportModification(models.Model):
     """年报-修改记录
     """
 
@@ -666,12 +823,14 @@ class YearReportModification(models.Model, UpdateByDict):
     modify_date = models.DateField(null=True)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
     enter_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "year_report_modification"
 
 
-class YearReportOnline(models.Model, UpdateByDict):
+class YearReportOnline(models.Model):
     """年报-网站或网店
     """
 
@@ -680,12 +839,14 @@ class YearReportOnline(models.Model, UpdateByDict):
     enter_url = models.CharField(max_length=50, null=True, blank=True)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
     enter_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "year_report_online"
 
 
-class YearReportSharechange(models.Model, UpdateByDict):
+class YearReportSharechange(models.Model):
     """年报-股权变更
     """
 
@@ -694,12 +855,14 @@ class YearReportSharechange(models.Model, UpdateByDict):
     shares_after = models.FloatField(null=True)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
     enter_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "year_report_sharechange"
 
 
-class YearReportShareholder(models.Model, UpdateByDict):
+class YearReportShareholder(models.Model):
     """年报-股东及出资
     """
 
@@ -712,12 +875,14 @@ class YearReportShareholder(models.Model, UpdateByDict):
     paid_type = models.CharField(max_length=20, null=True, blank=True)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
     enter_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "year_report_shareholder"
 
 
-class YearReportWarrandice(models.Model, UpdateByDict):
+class YearReportWarrandice(models.Model):
     """年报-对外提供保证担保
     """
 
@@ -731,6 +896,8 @@ class YearReportWarrandice(models.Model, UpdateByDict):
     warrandice_scope = models.CharField(max_length=100, null=True, blank=True)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
     enter_id = models.IntegerField(null=True)
+    version = models.IntegerField(default=1)
+    invalidation = models.BooleanField(default=False)
 
     class Meta:
         db_table = "year_report_warrandice"

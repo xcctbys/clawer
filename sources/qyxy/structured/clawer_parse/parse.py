@@ -6,52 +6,7 @@ import fileinput
 import profiles.consts as consts
 from clawer_parse import tools
 from profiles.mappings import mappings
-from clawer_parse.models import (
-    Basic,
-    IndustryCommerceAdministrativePenalty,
-    IndustryCommerceBranch,
-    IndustryCommerceChange,
-    IndustryCommerceCheck,
-    IndustryCommerceClear,
-    IndustryCommerceDetailGuarantee,
-    IndustryCommerceException,
-    IndustryCommerceIllegal,
-    IndustryCommerceMainperson,
-    IndustryCommerceMortgage,
-    IndustryCommerceMortgageDetailChange,
-    IndustryCommerceMortgageDetailGuarantee,
-    IndustryCommerceMortgageGuaranty,
-    IndustryCommerceRevoke,
-    IndustryCommerceShareholders,
-    IndustryCommerceSharepledge,
-    IndustryMortgageDetailMortgagee,
-    EnterAdministrativeLicense,
-    EnterAdministrativePenalty,
-    EnterAnnualReport,
-    EnterIntellectualPropertyPledge,
-    EnterModification,
-    EnterSharechange,
-    EnterShareholder,
-    JudicialShareFreeze,
-    JudicialShareholderChange,
-    OtherAdministrativeChange,
-    OtherAdministrativeLicense,
-    OtherAdministrativePenalty,
-    OtherProductionSecurity,
-    YearReportAssets,
-    YearReportBasic,
-    YearReportCorrect,
-    YearReportInvestment,
-    YearReportModification,
-    YearReportOnline,
-    YearReportSharechange,
-    YearReportShareholder,
-    YearReportWarrandice,
-    )
-
-from clawer_parse.models import clsmembers
-
-print clsmembers
+from clawer_parse.models import Operation
 
 
 class Parse(object):
@@ -106,7 +61,7 @@ class Parse(object):
             self.company_result['register_num'] = register_num
 
         self.conversion_type()
-        self.write_to_mysql()
+        self.write_to_mysql(self.company_result)
         self.company_result = {}
 
     def parse_dict(self, dict_in_company, mapping):
@@ -178,7 +133,7 @@ class Parse(object):
         dict_inner = {}
         for field, value in dict_in_company.iteritems():
             if field == u"详情"and value is not None:
-                result = self.handle_ind_shareholder_xiangqing(value,result,mapping)
+                result = self.handle_ind_shareholder_detail(value,result,mapping)
 
         for field, value in dict_in_company.iteritems():
             #print field, value
@@ -194,31 +149,41 @@ class Parse(object):
                 else:
                     for result_dict in result:
                         result_dict[mapping.get(field)] = dict_in_company[field]
-    def handle_ind_shareholder_xiangqing(self,dict_xq,result,mapping):
         return result
+
+    def handle_ind_shareholder_detail(self,dict_xq,result,mapping):
+        """处理ind_shareholder中"详情"
+        """
         dict_inner = {}
         for key_add in dict_xq:
-            if key_add is not None:
+            if key_add:
                 list_in = dict_xq.get(key_add)
                 for dict_in in list_in:
-                    for key_in in dict_in:
-                        if key_in ==u"list":
-                            for dict_fuck in dict_in[key_in]:
-                                for key_fuck in dict_fuck:
-                                    dict_inner[mapping.get(key_fuck)] = dict_fuck[key_fuck]
-                                result.append(dict_inner)
-                                dict_inner = {}
-                        else:
-                            if result is None:
-                                dict_inner[mapping.get(key_in)] = dict_in[key_in]
-                                result.append(dict_inner)
-                                dict_inner = None
-                            else:
-                                for result_dict in result: 
-                                    result_dict[mapping.get(key_in)] = dict_in[key_in]
+                    result = self.handle_ind_shareholder_detail_dict(result,mapping,dict_in)
+        return result
+
+    def handle_ind_shareholder_detail_dict(self,result,mapping,dict_in):
+        """处理ind_shareholder中"详情中"股东（发起人）及出资信息"的value中的字典
+        """
+        dict_inner = {}
+        for key_in in dict_in:
+            if key_in == u"list":
+                for dict_fuck in dict_in[key_in]:
+                    for key_fuck in dict_fuck:
+                        dict_inner[mapping.get(key_fuck)] = dict_fuck[key_fuck]
+                    result.append(dict_inner)
+                    dict_inner = {}
+        for key_in in dict_in:
+            if key_in == u"list":
+                pass
             else:
-                result.append(dict_inner)
-                dict_inner = {}
+                if not result:
+                    dict_inner[mapping.get(key_in)] = dict_in[key_in]
+                    result.append(dict_inner)
+                    dict_inner = {}
+                else:
+                    for result_dict in result: 
+                        result_dict[mapping.get(key_in)] = dict_in[key_in]
         return result
 
     def parse_ent_report(self, dict_in_company, mapping):
@@ -257,63 +222,9 @@ class Parse(object):
                     self.company_result[name] = []
                 self.company_result[name].append(report)
 
-    def write_to_mysql(self):
-        enter_name = self.company_result.get('enter_name')
-        register_num = self.company_result.get('register_num')
-
-        if self.is_company_in_db(enter_name, register_num):
-            self.insert(model, data)
-        else:
-            print "Company is exist!!!"
-
-        self.update(Basic)
-        self.update(IndustryCommerceAdministrativePenalty)
-        self.update(IndustryCommerceBranch)
-        self.update(IndustryCommerceChange)
-        self.update(IndustryCommerceCheck)
-        self.update(IndustryCommerceClear)
-        self.update(IndustryCommerceDetailGuarantee)
-        self.update(IndustryCommerceException)
-        self.update(IndustryCommerceIllegal)
-        self.update(IndustryCommerceMainperson)
-        self.update(IndustryCommerceMortgage)
-        self.update(IndustryCommerceMortgageDetailChange)
-        self.update(IndustryCommerceMortgageDetailGuarantee)
-        self.update(IndustryCommerceMortgageGuaranty)
-        self.update(IndustryCommerceRevoke)
-        self.update(IndustryCommerceShareholders)
-        self.update(IndustryCommerceSharepledge)
-        self.update(IndustryMortgageDetailMortgagee)
-        self.update(EnterAdministrativeLicense)
-        self.update(EnterAdministrativePenalty)
-        self.update(EnterAnnualReport)
-        self.update(EnterIntellectualPropertyPledge)
-        self.update(EnterModification)
-        self.update(EnterSharechange)
-        self.update(EnterShareholder)
-        self.update(JudicialShareFreeze)
-        self.update(JudicialShareholderChange)
-        self.update(OtherAdministrativeChange)
-        self.update(OtherAdministrativeLicense)
-        self.update(OtherAdministrativePenalty)
-        self.update(OtherProductionSecurity)
-        self.update(YearReportAssets)
-        self.update(YearReportBasic)
-        self.update(YearReportCorrect)
-        self.update(YearReportInvestment)
-        self.update(YearReportModification)
-        self.update(YearReportOnline)
-        self.update(YearReportSharechange)
-        self.update(YearReportShareholder)
-        self.update(YearReportWarrandice)
-
-    def is_company_in_db(self, enter_name, register_num):
-        query = Basic.objects.filter(enter_name=enter_name, register_num=register_num)
-        return not query
-
-    def update(self, model):
-        company_result = self.company_result
-        model().write_db_by_dict(model, company_result)
+    def write_to_mysql(self, data):
+        operation = Operation(data)
+        operation.write_db_by_dict()
 
     def conversion_type(self):
         type_date = consts.type_date
