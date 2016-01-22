@@ -151,18 +151,21 @@ class Parse(object):
                         result_dict[mapping.get(field)] = dict_in_company[field]
         return result
 
-    def handle_ind_shareholder_detail(self,dict_xq,result,mapping):
+    def handle_ind_shareholder_detail(self, dict_xq, result, mapping):
         """处理ind_shareholder中"详情"
         """
         dict_inner = {}
-        for key_add in dict_xq:
-            if key_add:
-                list_in = dict_xq.get(key_add)
-                for dict_in in list_in:
-                    result = self.handle_ind_shareholder_detail_dict(result,mapping,dict_in)
+        if type(dict_xq) == str:
+            pass
+        else:    
+            for key_add in dict_xq:
+                if key_add:
+                    list_in = dict_xq.get(key_add)
+                    for dict_in in list_in:
+                        result = self.handle_ind_shareholder_detail_dict(result,mapping,dict_in)
         return result
 
-    def handle_ind_shareholder_detail_dict(self,result,mapping,dict_in):
+    def handle_ind_shareholder_detail_dict(self, result, mapping, dict_in):
         """处理ind_shareholder中"详情中"股东（发起人）及出资信息"的value中的字典
         """
         dict_inner = {}
