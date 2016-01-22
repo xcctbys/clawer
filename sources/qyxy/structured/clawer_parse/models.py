@@ -22,11 +22,11 @@ class Operation(object):
         models = self.models
 
         if self.is_company_in_db():
-            print "insert /////////////////////"
+            print "新增公司ID: %s 的数据！" % self.register_num.encode('utf-8')
             for model in models:
                 self.insert(model)
         else:
-            print "update ++++++++++++++++++++"
+            print "更新公司ID: %s 的数据！" % self.register_num.encode('utf-8')
             for model in models:
                 self.update(model)
 
@@ -43,9 +43,13 @@ class Operation(object):
         special_tables = consts.special_tables
         fields = model._meta.get_all_field_names()
         name = model._meta.db_table
-        enter_id = Basic.objects.all().aggregate(Max('id')).get('id__max') or consts.DEFAULT_ENTER_ID
         enter_name = self.enter_name
         register_num = self.register_num
+
+        try:
+            enter_id = Basic.objects.filter(enter_name=enter_name, register_num=register_num).id
+        except:
+            enter_id = consts.DEFAULT_ENTER_ID
 
         try:
             version = Basic.objects.get(enter_name=enter_name, register_num=register_num).version

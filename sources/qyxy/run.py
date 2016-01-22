@@ -141,7 +141,8 @@ def crawl_province(province):
 
     #开启多个线程，每个线程均执行 函数 crawl_work
     for i in range(settings.crawler_num):
-        worker = threading.Thread(target=crawl_work,args=(i, province, json_restore_path, ent_queue))
+        worker = threading.Thread(target = crawl_work, args = (i, province, json_restore_path, ent_queue))
+        worker.daemon = True
         worker.start()
         time.sleep(random.uniform(1, 2))
 
@@ -236,7 +237,7 @@ class Checker(object):
         content += u"Success province:\n"
         for item in self.success:
             ratio = float(item['done'])/item["enterprise_count"]
-            content += u"\t%s\tbytes:%d\tdone:%d\tenterprise count:%d\tdone ratio:%.2f" % (item["name"], item['size'], item["done"], \
+            content += u"\t%s\tbytes:%d\tdone:%d\tenterprise count:%d\tdone ratio:%.2f\n" % (item["name"], item['size'], item["done"], \
                                                                             item['enterprise_count'], ratio)
 
         content += u"\r\n"
