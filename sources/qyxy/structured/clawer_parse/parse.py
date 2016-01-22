@@ -133,7 +133,7 @@ class Parse(object):
         dict_inner = {}
         for field, value in dict_in_company.iteritems():
             if field == u"详情"and value is not None:
-                result = self.handle_ind_shareholder_xiangqing(value,result,mapping)
+                result = self.handle_ind_shareholder_detail(value,result,mapping)
 
         for field, value in dict_in_company.iteritems():
             #print field, value
@@ -149,31 +149,41 @@ class Parse(object):
                 else:
                     for result_dict in result:
                         result_dict[mapping.get(field)] = dict_in_company[field]
-    def handle_ind_shareholder_xiangqing(self,dict_xq,result,mapping):
         return result
+
+    def handle_ind_shareholder_detail(self,dict_xq,result,mapping):
+        """处理ind_shareholder中"详情"
+        """
         dict_inner = {}
         for key_add in dict_xq:
-            if key_add is not None:
+            if key_add:
                 list_in = dict_xq.get(key_add)
                 for dict_in in list_in:
-                    for key_in in dict_in:
-                        if key_in ==u"list":
-                            for dict_fuck in dict_in[key_in]:
-                                for key_fuck in dict_fuck:
-                                    dict_inner[mapping.get(key_fuck)] = dict_fuck[key_fuck]
-                                result.append(dict_inner)
-                                dict_inner = {}
-                        else:
-                            if result is None:
-                                dict_inner[mapping.get(key_in)] = dict_in[key_in]
-                                result.append(dict_inner)
-                                dict_inner = None
-                            else:
-                                for result_dict in result: 
-                                    result_dict[mapping.get(key_in)] = dict_in[key_in]
+                    result = self.handle_ind_shareholder_detail_dict(result,mapping,dict_in)
+        return result
+
+    def handle_ind_shareholder_detail_dict(self,result,mapping,dict_in):
+        """处理ind_shareholder中"详情中"股东（发起人）及出资信息"的value中的字典
+        """
+        dict_inner = {}
+        for key_in in dict_in:
+            if key_in == u"list":
+                for dict_fuck in dict_in[key_in]:
+                    for key_fuck in dict_fuck:
+                        dict_inner[mapping.get(key_fuck)] = dict_fuck[key_fuck]
+                    result.append(dict_inner)
+                    dict_inner = {}
+        for key_in in dict_in:
+            if key_in == u"list":
+                pass
             else:
-                result.append(dict_inner)
-                dict_inner = {}
+                if not result:
+                    dict_inner[mapping.get(key_in)] = dict_in[key_in]
+                    result.append(dict_inner)
+                    dict_inner = {}
+                else:
+                    for result_dict in result: 
+                        result_dict[mapping.get(key_in)] = dict_in[key_in]
         return result
 
     def parse_ent_report(self, dict_in_company, mapping):
