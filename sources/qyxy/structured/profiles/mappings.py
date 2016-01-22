@@ -28,7 +28,7 @@ mappings["ind_comm_pub_reg_shareholder"] = {
     u"认缴出资方式": "subscription_type",
     u"认缴出资额（万元）": "subscription_money_amount",
     u"实缴出资方式": "paid_type",
-    u"实缴明细": "paid_date",
+    u"实缴明细": None,
     u"实缴额（万元）": "paid_amount",
     u"实缴出资日期": "paid_date",
     u"实缴出资额（万元）": "paid_money_amount",
