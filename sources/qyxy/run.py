@@ -281,7 +281,7 @@ def main():
     
 def send_sentry_report():
     if settings.sentry_client:
-        settings.sentry_client.captureExceptions()
+        settings.sentry_client.captureException()
 
 
 
