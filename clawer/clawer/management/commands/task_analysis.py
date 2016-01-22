@@ -35,7 +35,7 @@ def run(runtime, thread_count):
 
 
 def force_exit():
-    sys.exit(1)
+    os._exit(1)
 
 
 def do_run():
