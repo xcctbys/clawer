@@ -25,12 +25,13 @@ class Command(BaseCommand):
         p.join()
 
         end = time.time()
-        secs = int(round((end - begin) * 1000))
+        secs = int(round(end - begin))
         m, s = divmod(secs, 60)
         h, m = divmod(m, 60)
         print "⌚️  耗时 %d小时%02d分%02d秒 ⌚️ " % (h, m, s)
 
         print "✅  All subprocesses done. ✅ "
+
 
 def parse(json_path):
     print "\n正在解析 %s，进程ID：%s..." % (json_path, os.getpid())
