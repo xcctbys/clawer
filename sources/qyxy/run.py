@@ -239,11 +239,11 @@ def main():
             dt = datetime.datetime.strptime(sys.argv[2], "%Y-%m-%d")
         checker = Checker(dt)
         checker.run()
-        exit(0)
+        return
 
     if len(sys.argv) < 3:
         print 'usage: run.py [check] [max_crawl_time(minutes) province...] \n\tmax_crawl_time 最大爬取时间，以秒计;\n\tprovince 是所要爬取的省份列表 用空格分开, all表示爬取全部)'
-        exit(1)
+        return
         
     try:
         max_crawl_time = int(sys.argv[1])
@@ -275,8 +275,6 @@ def main():
                 process.start()
                 process.join(max_crawl_time)
                 settings.logger.info("child process exit code %d", process.exitcode)
-
-    os._exit(0)
     
     
 def send_sentry_report():
