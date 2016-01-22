@@ -236,7 +236,7 @@ class Checker(object):
         content += u"Success province:\n"
         for item in self.success:
             ratio = float(item['done'])/item["enterprise_count"]
-            content += u"\t%s\tbytes:%d\tdone:%d\tenterprise count:%d\tdone ratio:%.2f" % (item["name"], item['size'], item["done"], \
+            content += u"\t%s\tbytes:%d\tdone:%d\tenterprise count:%d\tdone ratio:%.2f\n" % (item["name"], item['size'], item["done"], \
                                                                             item['enterprise_count'], ratio)
 
         content += u"\r\n"
