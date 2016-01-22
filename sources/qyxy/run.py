@@ -15,6 +15,8 @@ import threading
 import multiprocessing
 import socket
 import raven
+from encodings import zlib_codec
+import zlib
 
 ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
 if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
@@ -48,7 +50,7 @@ from chongqing_crawler import ChongqingClawer
 from zhejiang_crawler import ZhejiangCrawler
 from liaoning_crawler import LiaoningCrawler
 
-failed_ent = {}
+
 province_crawler = {
     'beijing': BeijingCrawler,
     'jiangsu': JiangsuCrawler,
@@ -73,7 +75,8 @@ province_crawler = {
     'liaoning': LiaoningCrawler
 }
 
-max_crawl_time = 0
+process_pool = multiprocessing.Pool(processes=4)
+cur_date = CrawlerUtils.get_cur_y_m_d()
 
 
 def set_codecracker():
@@ -119,7 +122,7 @@ def crawl_work(n, province, json_restore_path, ent_queue):
             ent_queue.task_done()
 
 
-def crawl_province(province, cur_date):
+def crawl_province(province):
     #创建存储路径
     json_restore_dir = '%s/%s/%s/%s' % (settings.json_restore_path, province, cur_date[0], cur_date[1])
     if not os.path.exists(json_restore_dir):
@@ -165,6 +168,7 @@ def crawl_province(province, cur_date):
 
 def force_exit():
     settings.logger.error("run timeout")
+    process_pool.terminate()
     os._exit(1)
 
 
@@ -176,7 +180,7 @@ class Checker(object):
         if dt:
             self.yesterday = dt
         self.parent = settings.json_restore_path
-        self.success = [] # {'name':'', "size':0}
+        self.success = [] # {'name':'', "size':0, "rows":0}
         self.failed = [] # string list
         self.send_mail = SendMail(settings.EMAIL_HOST, settings.EMAIL_PORT, settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD, ssl=True)
 
@@ -188,12 +192,12 @@ class Checker(object):
                 continue
 
             st = os.stat(path)
-            self.success.append({"name": province, "size": st[stat.ST_SIZE]})
+            self.success.append({"name": province, "size": st[stat.ST_SIZE], "rows": self._get_rows(path)})
 
         #output
         settings.logger.error("success %d, failed %d", len(self.success), len(self.failed))
         for item in self.success:
-            settings.logger.error("\t%s: %d bytes", item['name'], item['size'])
+            settings.logger.error("\t%s: %d bytes, rows %d", item['name'], item['size'], item["rows"])
 
         settings.logger.error("Failed province")
         for item in self.failed:
@@ -204,19 +208,30 @@ class Checker(object):
     def _json_path(self, province):
         path = os.path.join(self.parent, province, self.yesterday.strftime("%Y/%m/%d.json.gz"))
         return path
+    
+    def _get_rows(self, path):
+        rows = 0
+        
+        with gzip.open(path) as f:
+            for _ in f:
+                rows += 1
+        
+        return rows
 
     def _report(self):
         title = u"%s 企业信用爬取情况" % (self.yesterday.strftime("%Y-%m-%d"))
-        content = u"Stat Info. Success %d, failed %d\r\n" % (len(self.success), len(self.failed))
+        content = u"Stat Info. Success %d, failed %d\r\n\r\n" % (len(self.success), len(self.failed))
 
         content += u"Success province:\n"
         for item in self.success:
             content += u"\t%s: %d bytes\n" % (item["name"], item['size'])
 
+        content += u"\r\n"
         content += u"Failed province:\n"
         for item in self.failed:
             content += u"\t%s\n" % (item)
-
+        
+        content += u"\r\n"
         content += u"\r\n -- from %s" % socket.gethostname()
 
         to_admins = [x[1] for x in settings.ADMINS]
@@ -242,7 +257,7 @@ def main():
         return
 
     if len(sys.argv) < 3:
-        print 'usage: run.py [check] [max_crawl_time(minutes) province...] \n\tmax_crawl_time 最大爬取时间，以秒计;\n\tprovince 是所要爬取的省份列表 用空格分开, all表示爬取全部)'
+        print 'usage: run.py [check] [max_crawl_time(minutes) province...] \n\tmax_crawl_time 最大爬取秒数，以秒计;\n\tprovince 是所要爬取的省份列表 用空格分开, all表示爬取全部)'
         return
         
     try:
@@ -257,30 +272,25 @@ def main():
 
     settings.logger.info(u'即将开始爬取，最长爬取时间为 %s 秒' % settings.max_crawl_time)
     settings.start_crawl_time = datetime.datetime.now()
-
+    
+    args = []
     if sys.argv[2] == 'all':
-        for p in sorted(province_crawler.keys()):
-            process = multiprocessing.Process(target=crawl_province, args=(p, cur_date))
-            process.daemon = True
-            process.start()
-            process.join(max_crawl_time/len(province_crawler.keys()))
+        args = [p for p in sorted(province_crawler.keys())]
     else:
         provinces = sys.argv[2:]
         for p in provinces:
             if not p in province_crawler.keys():
                 settings.logger.warn('province %s is not supported currently' % p)
             else:
-                process = multiprocessing.Process(target=crawl_province, args=(p, cur_date))
-                process.daemon = True
-                process.start()
-                process.join(max_crawl_time)
-                settings.logger.info("child process exit code %d", process.exitcode)
+                args.append(p)
+    
+    process_pool.map(crawl_province, args)
+    process_pool.join()
     
     
 def send_sentry_report():
     if settings.sentry_client:
         settings.sentry_client.captureException()
-
 
 
 if __name__ == '__main__':
