@@ -224,7 +224,7 @@ class Checker(object):
 
         content += u"Success province:\n"
         for item in self.success:
-            content += u"\t%s: %d bytes\n" % (item["name"], item['size'])
+            content += u"\t%s: %d bytes, rows %d\n" % (item["name"], item['size'], item["rows"])
 
         content += u"\r\n"
         content += u"Failed province:\n"
