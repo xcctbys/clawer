@@ -301,6 +301,8 @@ def main():
                 args.append(p)
     
     process_pool.map(crawl_province, args)
+    process_pool.close()
+    settings.logger.info("wait processes....")
     process_pool.join()
     
     
