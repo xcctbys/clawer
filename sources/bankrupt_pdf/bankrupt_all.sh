@@ -24,6 +24,6 @@ do
     i=`expr $i + 1`
     dt=`expr $start + $i`
     echo "$i $dt"
-    time safe_run ${dt}
+    time safe_run 3600 ${dt}
 done
 
