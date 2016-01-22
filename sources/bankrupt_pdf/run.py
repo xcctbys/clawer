@@ -20,8 +20,10 @@ import re
 from crawler import CrawlerUtils
 
 PDF_CRAWLER_SETTINGS=os.getenv('PDF_CRAWLER_SETTINGS')
-if PDF_CRAWLER_SETTINGS and PDF_CRAWLER_SETTINGS.find('settings_pro') >= 0:
+if PDF_CRAWLER_SETTINGS == 'settings_pro':
     import settings_pro as settings
+elif PDF_CRAWLER_SETTINGS == 'settings_all':
+    import settings_all as settings
 else:
     import settings
 
@@ -137,6 +139,11 @@ if __name__ == '__main__':
 					need_dict['http://rmfygg.court.gov.cn/psca/lgnot/bulletin/download/'+pdf_item] = '%s/%s/%s/%s/%s' % (os.path.abspath(os.curdir), json_file_item[:4], json_file_item[4:6], json_file_item[6:], pdf_item)
 					# print pdf_item
 			CrawlerUtils.json_dump_to_file('%s/%s/%s/%s/%s%s' % (settings.pdf_restore_dir, json_file_item[:4], json_file_item[4:6], json_file_item[6:], json_file_item, '_pdf.json'), need_dict)
+
+			if os.path.isfiles(abs_json_path+'.gz'):
+				os.remove(abs_json_path+'.gz')
+			if os.path.isfiles(abs_json_path):
+				os.remove(abs_json_path)
 			# need_dict = {}
 
 

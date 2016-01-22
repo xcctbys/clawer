@@ -49,6 +49,7 @@ from chongqing_crawler import ChongqingClawer
 from xinjiang_crawler import XinjiangClawer
 from zhejiang_crawler import ZhejiangCrawler
 from liaoning_crawler import LiaoningCrawler
+from guangxi_crawler import GuangxiCrawler
 
 
 province_crawler = {
@@ -72,7 +73,8 @@ province_crawler = {
     #'xinjiang':XinjiangClawer,
     'chongqing':ChongqingClawer,
     'zhejiang' : ZhejiangCrawler,
-    'liaoning': LiaoningCrawler
+    'liaoning': LiaoningCrawler,
+    'guangxi': GuangxiClawer
 }
 
 process_pool = multiprocessing.Pool(processes=4)
@@ -141,7 +143,8 @@ def crawl_province(province):
 
     #开启多个线程，每个线程均执行 函数 crawl_work
     for i in range(settings.crawler_num):
-        worker = threading.Thread(target=crawl_work,args=(i, province, json_restore_path, ent_queue))
+        worker = threading.Thread(target = crawl_work, args = (i, province, json_restore_path, ent_queue))
+        worker.daemon = True
         worker.start()
         time.sleep(random.uniform(1, 2))
 
