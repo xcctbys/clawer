@@ -50,7 +50,9 @@ from xinjiang_crawler import XinjiangClawer
 from zhejiang_crawler import ZhejiangCrawler
 from liaoning_crawler import LiaoningCrawler
 from guangxi_crawler import GuangxiCrawler
-
+from gansu_crawler import GansuClawer
+from shanxi_crawler import ShanxiCrawler
+from qinghai_crawler import QinghaiCrawler
 
 province_crawler = {
     'beijing': BeijingCrawler,
@@ -74,7 +76,10 @@ province_crawler = {
     'chongqing':ChongqingClawer,
     'zhejiang' : ZhejiangCrawler,
     'liaoning': LiaoningCrawler,
-    'guangxi': GuangxiCrawler,
+    'gansu':GansuClawer,
+    # 'guangxi': GuangxiClawer,
+    'shanxi':ShanxiCrawler,
+    'qinghai':QinghaiCrawler,
 }
 
 process_pool = multiprocessing.Pool(processes=4)
@@ -302,7 +307,6 @@ def main():
     
     process_pool.map('crawl_province', args)
     process_pool.close()
-    
     settings.logger.info("wait processes....")
     process_pool.join()
     

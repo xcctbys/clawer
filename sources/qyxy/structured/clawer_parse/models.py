@@ -181,7 +181,7 @@ class IndustryCommerceAdministrativePenalty(models.Model):
     invalidation = models.BooleanField(default=False)
 
     class Meta:
-        db_table = "industrycommerce_administrative_penalty"
+        db_table = "industry_commerce_administrative_penalty"
 
 
 class IndustryCommerceBranch(models.Model):
@@ -192,7 +192,6 @@ class IndustryCommerceBranch(models.Model):
     branch_name = models.CharField(max_length=100, null=True, blank=True)
     register_gov = models.CharField(max_length=50, null=True, blank=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
-    bas_id = models.IntegerField(null=True)
     version = models.IntegerField(default=1)
     invalidation = models.BooleanField(default=False)
 
@@ -209,7 +208,6 @@ class IndustryCommerceChange(models.Model):
     modify_after = models.TextField(max_length=50, null=True, blank=True)
     modify_date = models.DateField(null=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
-    bas_id = models.IntegerField(null=True)
     version = models.IntegerField(default=1)
     invalidation = models.BooleanField(default=False)
 
@@ -227,7 +225,6 @@ class IndustryCommerceCheck(models.Model):
     check_result = models.CharField(max_length=50, null=True, blank=True)
     check_comment = models.CharField(max_length=50, null=True, blank=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
-    bas_id = models.IntegerField(null=True)
     version = models.IntegerField(default=1)
     invalidation = models.BooleanField(default=False)
 
@@ -242,7 +239,6 @@ class IndustryCommerceClear(models.Model):
     person_in_charge = models.CharField(max_length=30, null=True, blank=True)
     persons = models.CharField(max_length=100, null=True, blank=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
-    bas_id = models.IntegerField(null=True)
     version = models.IntegerField(default=1)
     invalidation = models.BooleanField(default=False)
 
@@ -278,7 +274,6 @@ class IndustryCommerceException(models.Model):
     list_on_gov = models.CharField(max_length=50, null=True, blank=True)
     list_out_gov = models.CharField(max_length=50, null=True, blank=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
-    bas_id = models.IntegerField(null=True)
     version = models.IntegerField(default=1)
     invalidation = models.BooleanField(default=False)
 
@@ -423,7 +418,6 @@ class IndustryCommerceShareholders(models.Model):
     paid_money_amount = models.FloatField(null=True)
     paid_date = models.DateField(null=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
-    bas_id = models.IntegerField(null=True)
     version = models.IntegerField(default=1)
     invalidation = models.BooleanField(default=False)
 
@@ -526,8 +520,6 @@ class EnterAnnualReport(models.Model):
     report_year = models.IntegerField(null=True)
     publicity_date = models.DateField(null=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
-    bas_id = models.IntegerField(null=True)
-    primary = models.IntegerField(null=True)
     version = models.IntegerField(default=1)
     invalidation = models.BooleanField(default=False)
 
@@ -587,7 +579,6 @@ class EnterSharechange(models.Model):
     sharechange_register_date = models.DateField(null=True)
     sharechange_publicity_date = models.DateField(null=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
-    bas_id = models.IntegerField(null=True)
     version = models.IntegerField(default=1)
     invalidation = models.BooleanField(default=False)
 

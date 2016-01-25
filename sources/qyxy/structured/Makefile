@@ -6,7 +6,13 @@ DROP_DATABASE=profiles/mysql/clear.sql
 all:
 	python manage.py structured
 
-db:drop_database create_database
+db:sql
+	python manage.py migrate
+
+sql:
+	python manage.py makemigrations
+
+db_init:drop_database create_database
 	python manage.py migrate
 
 drop_database:

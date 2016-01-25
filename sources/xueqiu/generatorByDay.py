@@ -27,6 +27,7 @@ logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: 
 
 
 keywords = [
+
         u'3D打印',
         u'三维打印',
         u'3D医疗打印',
@@ -147,7 +148,6 @@ keywords = [
         u'智能生产',
         u'智能制造',
         u'工业自动化'
-
 ]
 
 
@@ -157,6 +157,7 @@ class History(object):
         self.date_now = datetime.datetime.now()
         self.current_page_num = 1
         self.current_keyword_num = 0
+        self.keywords_len = len(keywords)
         self.path = "/tmp/xueqiuByDay"
         try:
             pwname = pwd.getpwnam("nginx")
@@ -197,10 +198,17 @@ class Generator(object):
         self.history.load()
 
     def search_url(self):
+
+        if self.history.current_keyword_num >= self.history.keywords_len:
+            return
+
         if self.history.current_page_num > self.MAXPAGE:
             self.history.current_page_num = 1
             self.history.current_keyword_num += 1
+            # if self.history.current_keyword_num
             self.history.save()
+
+
         self.page_url(keywords[self.history.current_keyword_num])
 
     def page_url(self, keyword):

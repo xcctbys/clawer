@@ -23,17 +23,17 @@ else:
     import settings
 
 
-class NingxiaClawer(Crawler):
+class JiangxiClawer(Crawler):
     """甘肃工商公示信息网页爬虫
     """
     # html数据的存储路径
-    html_restore_path = settings.html_restore_path + '/ningxia/'
+    html_restore_path = settings.html_restore_path + '/jiangxi/'
 
     # 验证码图片的存储路径
-    ckcode_image_path = settings.json_restore_path + '/ningxia/ckcode.jpg'
+    ckcode_image_path = settings.json_restore_path + '/jiangxi/ckcode.jpg'
 
     # 验证码文件夹
-    ckcode_image_dir_path = settings.json_restore_path + '/ningxia/'
+    ckcode_image_dir_path = settings.json_restore_path + '/jiangxi/'
 
     # 查询页面
     search_page = html_restore_path + 'search_page.html'
@@ -41,11 +41,33 @@ class NingxiaClawer(Crawler):
     # 多线程爬取时往最后的json文件中写时的加锁保护
     write_file_mutex = threading.Lock()
 
-    urls = {'host': 'http://www.nmgs.gov.cn:7001/aiccips',
-            'get_checkcode': 'http://gsxt.ngsh.gov.cn/ECPS/verificationCode.jsp?',
-            'post_checkCode': 'http://gsxt.ngsh.gov.cn/ECPS/qyxxgsAction_checkVerificationCode.action',
-            'post_checkCode2': 'http://gsxt.ngsh.gov.cn/ECPS/qyxxgsAction_queryXyxx.action',
-
+    urls = {'host': 'http://gsxt.jxaic.gov.cn',
+            'get_checkcode': 'http://gsxt.jxaic.gov.cn/ECPS/verificationCode.jsp?',
+            'post_checkCode': 'http://gsxt.jxaic.gov.cn/ECPS/qyxxgsAction_checkVerificationCode.action',
+            'post_checkCode2': 'http://gsxt.jxaic.gov.cn/ECPS/qyxxgsAction_queryXyxx.action',
+            'ind_comm_pub_reg_basic':'http://gsxt.jxaic.gov.cn/ECPS/qyxxgsAction_initQyjbqk.action?nbxh=3600006000037652&qylx=1213',
+            'ind_comm_pub_reg_shareholder':'http://gsxt.jxaic.gov.cn/ECPS/tzrczxxAction_init.action?nbxh=3600006000037652&&qylx=1213',
+            'ind_comm_pub_reg_modify':'http://gsxt.jxaic.gov.cn/ECPS/qybgxxAction_init.action?nbxh=3600006000037652&qylx=1213',
+            'ind_comm_pub_arch_key_persons':'http://gsxt.jxaic.gov.cn/ECPS/qybaxxAction_zyryxx.action?nbxh=3600006000037652&qylx=1213',
+            'ind_comm_pub_arch_branch':'http://gsxt.jxaic.gov.cn/ECPS/qybaxxAction_zyryxx.action?nbxh=3600006000037652&qylx=1213',
+            'ind_comm_pub_arch_liquidation':'http://gsxt.jxaic.gov.cn/ECPS/qybaxxAction_qsxx.action?nbxh=3600006000037652&qylx=1213',
+            'ind_comm_pub_movable_property_reg':'http://gsxt.jxaic.gov.cn/ECPS/dcdyxxAction_init.action?nbxh=3600006000037652&qymc=%E5%AE%89%E6%BA%90%E7%85%A4%E4%B8%9A%E9%9B%86%E5%9B%A2%E8%82%A1%E4%BB%BD%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8&zch=913603007165007488',
+            'ind_comm_pub_equity_ownership_reg':'http://gsxt.jxaic.gov.cn/ECPS/gqczdjxxAction_gqczdjxx.action?nbxh=3600006000037652',
+            'ind_comm_pub_administration_sanction':'http://gsxt.jxaic.gov.cn/ECPS/xzcfxxAction_initXzcfxx.action?nbxh=3600006000037652',
+            'ind_comm_pub_business_exception':'http://gsxt.jxaic.gov.cn/ECPS/jyycxxAction_init.action?nbxh=3600006000037652',
+            'ind_comm_pub_serious_violate_law':'http://gsxt.jxaic.gov.cn/ECPS/yzwfxxAction_init.action',
+            'ind_comm_pub_spot_check':'http://gsxt.jxaic.gov.cn/ECPS/ccjcxxAction_init.action?nbxh=3600006000037652',
+            'ent_pub_ent_annual_report':'http://gsxt.jxaic.gov.cn/ECPS/qyNbxxAction_init.action?nbxh=3600006000037652&qymc=%E5%AE%89%E6%BA%90%E7%85%A4%E4%B8%9A%E9%9B%86%E5%9B%A2%E8%82%A1%E4%BB%BD%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8&zch=913603007165007488',
+            'ent_pub_shareholder_capital_contribution':'http://gsxt.jxaic.gov.cn/ECPS/qyTzrxxAction_init.action?nbxh=3600006000037652',
+            'ent_pub_equity_change':'http://gsxt.jxaic.gov.cn/ECPS/qyGqbgxxAction_init.action?nbxh=3600006000037652',
+            'ent_pub_administration_license':'http://gsxt.jxaic.gov.cn/ECPS/qyZzxkxxAction_init.action?nbxh=3600006000037652&zch=913603007165007488',
+            'ent_pub_knowledge_property':'http://gsxt.jxaic.gov.cn/ECPS/qyZscqczxxAction_init.action?nbxh=3600006000037652',
+            'ent_pub_administration_sanction':'http://gsxt.jxaic.gov.cn/ECPS/qyXzcfxxAction_initXzcfxx.action?nbxh=3600006000037652',
+            'ent_pub_reg_modify':'http://gsxt.jxaic.gov.cn/ECPS/qyTzrxxAction_init.action?nbxh=3600006000037652',
+            'other_dept_pub_administration_license':'http://gsxt.jxaic.gov.cn/ECPS/otherZzxkAction_init.action?nbxh=3600006000037652',
+            'other_dept_pub_administration_sanction':'http://gsxt.jxaic.gov.cn/ECPS/otherXzcfAction_initXzcfxx.action?nbxh=3600006000037652',
+            'judical_assist_pub_equity_freeze':'http://gsxt.jxaic.gov.cn/ECPS/sfxzAction_initSfxzMain.action?nbxh=3600006000037652&qylxFlag=1',
+            'judical_assist_pub_shareholder_modify':'http://gsxt.jxaic.gov.cn/ECPS/sfxzAction_initSfxzMain.action?nbxh=3600006000037652&qylxFlag=1',
             'post_all_page': 'http://xygs.gsaic.gov.cn/gsxygs/pub!view.do',
             'ind_comm_pub_skeleton': 'http://www.nmgs.gov.cn:7001/aiccips/GSpublicity/GSpublicityList.html',
             }
@@ -59,7 +81,7 @@ class NingxiaClawer(Crawler):
         Returns:
         """
         self.json_restore_path = json_restore_path
-        self.parser = GansuClawer(self)
+        self.parser = JiangxiParser(self)
 
         self.reqst = requests.Session()
         self.reqst.headers.update({
@@ -71,7 +93,7 @@ class NingxiaClawer(Crawler):
         self.ent_number = None
 
     def run(self, ent_number=0):
-        crawler = NingxiaClawer('./enterprise_crawler/ningxia/ningxia.json')
+        crawler = JiangxiClawer('./enterprise_crawler/jiangxi/jiangxi.json')
 
         crawler.ent_number = str(ent_number)
         # 对每个企业都指定一个html的存储目录
@@ -124,7 +146,7 @@ class NingxiaClawer(Crawler):
         while count < 300:
             ck_code = self.crack_check_code(count)
             data = {'password': ck_code}
-            resp = self.reqst.post(NingxiaClawer.urls['post_checkCode'], data=data)
+            resp = self.reqst.post(JiangxiClawer.urls['post_checkCode'], data=data)
             if resp.status_code != 200:
                 settings.logger.error("crawl post check page failed!")
                 count += 1
@@ -147,7 +169,7 @@ class NingxiaClawer(Crawler):
             search_data['otherLoginInfo.password'] = ''
             search_data['otherLoginInfo.verificationCode'] = ''
             search_data['selectValue'] = self.ent_number
-            resp = self.reqst.post(NingxiaClawer.urls['post_checkCode2'], data=search_data)
+            resp = self.reqst.post(JiangxiClawer.urls['post_checkCode2'], data=search_data)
             if resp.status_code != 200:
                 count -= 1
                 continue
@@ -162,7 +184,7 @@ class NingxiaClawer(Crawler):
         params = {}
         params['_'] = times
 
-        resp = self.reqst.get(NingxiaClawer.urls['get_checkcode'], params=params)
+        resp = self.reqst.get(JiangxiClawer.urls['get_checkcode'], params=params)
         if resp.status_code != 200:
             settings.logger.error('failed to get get_checkcode')
             return None
@@ -196,11 +218,11 @@ class NingxiaClawer(Crawler):
         通过传入不同的参数获得不同的页面
         """
         if url is None:
-            resp = self.reqst.post(NingxiaClawer.urls['post_all_page'], data=data)
+            resp = self.reqst.post(JiangxiClawer.urls['post_all_page'], data=data)
         else:
             resp = self.reqst.post(url, data=data)
         if resp.status_code != 200:
-            settings.logger.error('crawl page by url failed! url = %s' % NingxiaClawer.urls['post_all_page'])
+            settings.logger.error('crawl page by url failed! url = %s' % JiangxiClawer.urls['post_all_page'])
         page = resp.content
         time.sleep(random.uniform(0.1, 0.3))
         if settings.save_html:
@@ -241,7 +263,7 @@ class NingxiaClawer(Crawler):
         return page
 
 
-class GansuClawer(Parser):
+class JiangxiParser(Parser):
     """甘肃工商页面的解析类
     """
 
@@ -1176,7 +1198,7 @@ class GansuClawer(Parser):
 class TestParser(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
-        self.crawler = NingxiaClawer('./enterprise_crawler/ningxia.json')
+        self.crawler = JiangxiClawer('./enterprise_crawler/jiangxi.json')
         self.parser = self.crawler.parser
         self.crawler.json_dict = {}
         self.crawler.ent_number = '152704000000508'
@@ -1191,9 +1213,9 @@ if __name__ == '__main__':
     import run
 
     run.config_logging()
-    NingxiaClawer.code_cracker = CaptchaRecognition('ningxia')
-    crawler = NingxiaClawer('./enterprise_crawler/ningxia/ningxia.json')
-    enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/ningxia.txt')
+    JiangxiClawer.code_cracker = CaptchaRecognition('jiangxi')
+    crawler = JiangxiClawer('./enterprise_crawler/jiangxi/jiangxi.json')
+    enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/jiangxi.txt')
     i = 0
     for ent_number in enterprise_list:
         ent_number = ent_number.rstrip('\n')
