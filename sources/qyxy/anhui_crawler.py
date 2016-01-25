@@ -116,7 +116,7 @@ class AnhuiCrawler(object):
 					print 'error...post'
 					count += 1
 					continue
-				soup = BeautifulSoup(resp.content,'html5lib')
+				soup = BeautifulSoup(resp.content)
 				divs = soup.find(class_='list')
 				if divs == None:continue
 				mainId = divs.ul.li.a['href'][divs.ul.li.a['href'].find('id=')+3:]
@@ -126,7 +126,7 @@ class AnhuiCrawler(object):
 	def get_tables(self, url):
 		resp = self.reqst.get(url, timeout = 120)
 		if resp.status_code == 200:
-			tables = BeautifulSoup(resp.content, 'html5lib').find_all('table')
+			tables = BeautifulSoup(resp.content).find_all('table')
 			return [table for table in tables] #if (table.find_all('th') or table.find_all('a')) ]
 	def get_one_to_one_dict(self, allths, alltds):
 		one_to_one_dict = {}
