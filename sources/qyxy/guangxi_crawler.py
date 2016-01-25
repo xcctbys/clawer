@@ -89,12 +89,12 @@ class GuangxiCrawler(object):
 
 	def get_check_num(self):
 		print self.mydict['search']
-		resp = self.reqst.get(self.mydict['search'])
+		resp = self.reqst.get(self.mydict['search'], timeout = 120)
 		if resp.status_code != 200:
 			print resp.status_code
 			return None
 		# print BeautifulSoup(resp.content).prettify
-		resp = self.reqst.get(self.mydict['validateCode'])
+		resp = self.reqst.get(self.mydict['validateCode'], timeout = 120)
 		if resp.status_code != 200:
 			print 'no validateCode'
 			return None
@@ -103,7 +103,10 @@ class GuangxiCrawler(object):
 		from CaptchaRecognition import CaptchaRecognition
 		code_cracker = CaptchaRecognition('guangxi')
 		ck_code = code_cracker.predict_result(self.ckcode_image_path)
-		return ck_code[1]
+		if ck_code is None:
+			return None
+		else:
+			return ck_code[1]
 
 		
 
@@ -117,7 +120,7 @@ class GuangxiCrawler(object):
 				count += 1
 				continue
 			data = {'checkNo':yzm, 'entName':findCode}
-			resp = self.reqst.post(self.mydict['searchList'], data=data)
+			resp = self.reqst.post(self.mydict['searchList'], data=data, timeout = 120)
 			print resp.status_code
 			# print BeautifulSoup(resp.content).prettify()
 			if resp.status_code == 200:
@@ -171,7 +174,7 @@ class GuangxiCrawler(object):
 		for key,value in mydict.items():
 			print key,':',value
 	def get_tables(self, url):
-		resp = self.reqst.get(url)
+		resp = self.reqst.get(url, timeout = 120)
 		if resp.status_code == 200:
 			return BeautifulSoup(resp.content).find_all('table')
 		else:
@@ -264,7 +267,7 @@ class GuangxiCrawler(object):
 			for i in range(1, count_a+1):
 				urls = self.search_dict['next_head'] + where + 'List.jspx?pno=' + str(i) + '&mainId=' + self.id[3:]
 				print urls
-				resp = self.reqst.get(urls)
+				resp = self.reqst.get(urls, timeout = 120)
 				if resp.status_code == 200:
 					next_table = self.get_tables(urls)[0]
 					# next_table = BeautifulSoup(self.reqst.get(urls).content).find_all('table')[0]
@@ -454,19 +457,19 @@ class GuangxiCrawler(object):
 		self.result_json_dict = {}
 		self.id = self.get_id_num(findCode)
 		print self.id
-		resp = self.reqst.get('http://gxqyxygs.gov.cn/businessPublicity.jspx?' + self.id)
+		resp = self.reqst.get('http://gxqyxygs.gov.cn/businessPublicity.jspx?' + self.id, timeout = 120)
 		soup = BeautifulSoup(resp.content)
 		self.get_json_one(self.one_dict, soup.find_all('table'))
 
-		resp = self.reqst.get('http://gxqyxygs.gov.cn/enterprisePublicity.jspx?' + self.id)
+		resp = self.reqst.get('http://gxqyxygs.gov.cn/enterprisePublicity.jspx?' + self.id, timeout = 120)
 		soup = BeautifulSoup(resp.content)
 		self.get_json_two(self.two_dict, soup.find_all('table'))
 
-		resp = self.reqst.get('http://gxqyxygs.gov.cn/otherDepartment.jspx?' + self.id)
+		resp = self.reqst.get('http://gxqyxygs.gov.cn/otherDepartment.jspx?' + self.id, timeout = 120)
 		soup = BeautifulSoup(resp.content)
 		self.get_json_three(self.three_dict, soup.find_all('table'))
 
-		resp = self.reqst.get('http://gxqyxygs.gov.cn/justiceAssistance.jspx?' + self.id)
+		resp = self.reqst.get('http://gxqyxygs.gov.cn/justiceAssistance.jspx?' + self.id, timeout = 120)
 		soup = BeautifulSoup(resp.content)
 		self.get_json_four(self.four_dict, soup.find_all('table'))
 

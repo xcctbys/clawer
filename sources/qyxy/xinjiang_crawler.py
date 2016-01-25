@@ -70,26 +70,27 @@ class XinjiangClawer(Crawler):
         self.maent_pripid = None
         self.maent_entbigtype = None
         self.json_dict = {}
+        self.ent_number = None
 
     def run(self, ent_number=0):
-        self.ent_number = str(ent_number)
+        crawler = XinjiangClawer('./enterprise_crawler/xinjiang/xinjiang.json')
+        crawler.ent_number = str(ent_number)
         # 对每个企业都指定一个html的存储目录
-        self.html_restore_path = self.html_restore_path + self.ent_number + '/'
+        self.html_restore_path = self.html_restore_path + crawler.ent_number + '/'
         if settings.save_html and not os.path.exists(self.html_restore_path):
             CrawlerUtils.make_dir(self.html_restore_path)
 
-        self.json_dict = {}
 
-        result_ID = self.crawl_check_page()
-
-        if result_ID == "Flase":
-            settings.logger.error('crack check code failed, stop to crawl enterprise %s' % self.ent_number)
-            return False
-        if result_ID == "None":
+        page = self.crawl_check_page()
+        #
+        # if result_ID == "Flase":
+        #     settings.logger.error('crack check code failed, stop to crawl enterprise %s' % self.ent_number)
+        #     return False
+        if page is None:
             settings.logger.error(
                     'According to the registration number does not search to the company %s' % self.ent_number)
             return False
-        page = crawler.crawl_ind_comm_pub_basic_pages()
+        page = crawler.crawl_ind_comm_pub_basic_pages(page)
         if page is None:
             return False
         crawler.parser.parse_ind_comm_pub_basic_pages(page)
@@ -130,7 +131,7 @@ class XinjiangClawer(Crawler):
 
         # 采用多线程，在写入文件时需要注意加锁
         self.write_file_mutex.acquire()
-        CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.json_dict})
+        CrawlerUtils.json_dump_to_file(self.json_restore_path, {crawler.ent_number: crawler.json_dict})
         self.write_file_mutex.release()
         return True
 
@@ -153,11 +154,9 @@ class XinjiangClawer(Crawler):
                 settings.logger.error("crawl post check page failed!")
                 count += 1
                 continue
-            with open(self.search_page, 'wb') as f:
-                f.write(resp.content)
-                # print(count)
-            return True
-        return False
+
+            return resp.content
+        return None
 
     def crack_check_code(self):
         """破解验证码
@@ -209,14 +208,14 @@ class XinjiangClawer(Crawler):
             CrawlerUtils.save_page_to_file(self.html_restore_path + name, page)
         return page
 
-    def crawl_ind_comm_pub_basic_pages(self):
+    def crawl_ind_comm_pub_basic_pages(self,page):
         """爬取工商基本公示信息
         """
-        isOk = self.parser.parse_search_page(self.search_page)
+        isOk = self.parser.parse_search_page(page)
         count = 0
         while not isOk:
-            self.crawl_check_page()
-            isOk = self.parser.parse_search_page(self.search_page)
+            page = self.crawl_check_page()
+            isOk = self.parser.parse_search_page(page)
             count += 1
             if count > 10:
                 return None
@@ -441,7 +440,7 @@ class XinjiangParser(Parser):
         self.crawler = crawler
 
     def parse_search_page(self, page):
-        soup = BeautifulSoup(open(page), "html5lib")
+        soup = BeautifulSoup(page, "html5lib")
         a_li = soup.find('li', {'class', 'font16'})
         if a_li is None:
             return False
@@ -462,6 +461,8 @@ class XinjiangParser(Parser):
 
         # 基本信息
         base_info = soup.find('div', {'id': 'jibenxinxi'})
+        if base_info is None:
+            return
         base_info_table = base_info.find('table', {'class': 'detailsList'})
         base_trs = base_info_table.find_all('tr')
         ind_comm_pub_reg_basic = {}
@@ -1344,6 +1345,8 @@ class XinjiangParser(Parser):
         """
         soup = BeautifulSoup(page, 'html5lib')
         administration_sanction_info = soup.find('table', {'id': 'table_qtxzcf'})
+        if administration_sanction_info is None:
+            return
         administration_sanction_trs = administration_sanction_info.find_all('tr')
         detail_administration_sanction_infoes = []
         if len(administration_sanction_trs) > 2:
