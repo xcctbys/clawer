@@ -31,9 +31,8 @@ class Parse(object):
             company = self.companies[register_num]
             try:
                 self.parse_company(company, register_num)
-            except Exception as e:
-                print "❌  %s解析错误: ❌ " % register_num
-                print e
+            except:
+                print "❌  公司ID: %s 解析错误: ❌ " % register_num.encode('utf-8')
 
     def parse_company(self, company={}, register_num=0):
         keys = self.keys
