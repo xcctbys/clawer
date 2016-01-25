@@ -1,16 +1,16 @@
 USER=root
 PASSWORD=poiuytre
-SQL_CREATE=profiles/mysql/create.sql
-SQL_DROP=profiles/mysql/clear.sql
+CREATE_DATABASE=profiles/mysql/create.sql
+DROP_DATABASE=profiles/mysql/clear.sql
 
 all:
 	python manage.py structured
 
-db:drop_db create_db
+db:drop_database create_database
 	python manage.py migrate
 
-drop_db:
-	mysql -u$(USER) -p$(PASSWORD) < $(SQL_DROP)
+drop_database:
+	mysql -u$(USER) -p$(PASSWORD) < $(DROP_DATABASE)
 
-create_db:
-	mysql -u$(USER) -p$(PASSWORD) < $(SQL_CREATE)
+create_database:
+	mysql -u$(USER) -p$(PASSWORD) < $(CREATE_DATABASE)
