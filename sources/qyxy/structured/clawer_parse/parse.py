@@ -9,7 +9,7 @@ from clawer_parse.models import Operation
 
 
 class Parse(object):
-    """解析爬虫生成的json结构
+    """解析爬虫生成的json结构，写入数据库
     """
 
     mappings = mappings
@@ -127,19 +127,16 @@ class Parse(object):
         dict_inner = {}
         for field, value in dict_in_company.iteritems():
             if type(value) == dict:
-                result = self.handle_ind_shareholder_detail(value,result,mapping)
+                result = self.handle_ind_shareholder_detail(value, result, mapping)
 
         for field, value in dict_in_company.iteritems():
-            #print field, value
             if field == u"详情":
                 pass
             else:
                 if not result:
-                    #print field, value
                     dict_inner[mapping.get(field)] = value
                     result.append(dict_inner)
                     dict_inner = {}
-                    #print field
                 else:
                     for result_dict in result:
                         result_dict[mapping.get(field)] = dict_in_company[field]
@@ -148,7 +145,6 @@ class Parse(object):
     def handle_ind_shareholder_detail(self, dict_xq, result, mapping):
         """处理ind_shareholder中"详情"
         """
-        dict_inner = {}
         if type(dict_xq) == str:
             pass
         else:
@@ -156,7 +152,7 @@ class Parse(object):
                 if key_add:
                     list_in = dict_xq.get(key_add)
                     for dict_in in list_in:
-                        result = self.handle_ind_shareholder_detail_dict(result,mapping,dict_in)
+                        result = self.handle_ind_shareholder_detail_dict(result, mapping, dict_in)
         return result
 
     def handle_ind_shareholder_detail_dict(self, result, mapping, dict_in):
@@ -224,23 +220,36 @@ class Parse(object):
         operation.write_db_by_dict()
 
     def conversion_type(self):
-        type_date = consts.type_date
-        type_float = consts.type_float
         to_date = tools.trans_time
         to_float = tools.trans_float
         company_result = self.company_result
 
         for field in company_result:
             value = company_result[field]
-            if field in type_date and value is not None:
+
+            if self.is_type_date(field, value):
                 company_result[field] = to_date(value.encode('utf-8'))
-            elif field in type_float and value is not None:
+
+            elif self.is_type_float(field, value):
                 company_result[field] = to_float(value.encode('utf-8'))
+
             elif type(value) == list:
                 for d in value:
                     for d_field in d:
                         d_value = d[d_field]
-                        if d_field in type_date and d_value is not None and type(d_value) == unicode:
+
+                        if self.is_type_date(d_field, d_value):
                             d[d_field] = to_date(d_value.encode('utf-8'))
-                        elif d_field in type_float and d_value is not None and type(d_value) == unicode:
+
+                        elif self.is_type_float(d_field, d_value):
                             d[d_field] = to_float(d_value.encode('utf-8'))
+
+    def is_type_date(self, field, value):
+        type_date = consts.type_date
+
+        return field in type_date and value is not None and type(value) == unicode
+
+    def is_type_float(self, field, value):
+        type_float = consts.type_float
+
+        return field in type_float and value is not None and type(value) == unicode

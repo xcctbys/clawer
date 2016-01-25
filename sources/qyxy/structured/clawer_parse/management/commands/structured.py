@@ -9,11 +9,7 @@ import time
 
 
 class Command(BaseCommand):
-    help = 'Closes the specified poll for voting'
 
-#    def handle(self, *args, **options):
-#        for json_path in json_paths:
-#            Parse(json_path).parse_companies()
     def handle(self, *args, **options):
         begin = time.time()
         p = Pool()
