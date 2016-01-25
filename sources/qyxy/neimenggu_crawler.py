@@ -35,8 +35,8 @@ class NeimengguClawer(Crawler):
     # 验证码文件夹
     ckcode_image_dir_path = settings.json_restore_path + '/neimenggu/'
 
-    # 查询页面
-    search_page = html_restore_path + 'search_page.html'
+    # # 查询页面
+    # search_page = html_restore_path + 'search_page.html'
 
     # 多线程爬取时往最后的json文件中写时的加锁保护
     write_file_mutex = threading.Lock()
@@ -112,24 +112,19 @@ class NeimengguClawer(Crawler):
         self.json_dict = {}
 
     def run(self, ent_number=0):
-        self.ent_number = str(ent_number)
+
+        crawler = NeimengguClawer('./enterprise_crawler/neimenggu/neimenggu.json')
+        crawler.ent_number = str(ent_number)
         # 对每个企业都指定一个html的存储目录
-        self.html_restore_path = self.html_restore_path + self.ent_number + '/'
+        self.html_restore_path = self.html_restore_path + crawler.ent_number + '/'
         if settings.save_html and not os.path.exists(self.html_restore_path):
             CrawlerUtils.make_dir(self.html_restore_path)
-
-        self.json_dict = {}
-
-        result_ID = self.crawl_check_page()
-
-        if result_ID == "Flase":
-            settings.logger.error('crack check code failed, stop to crawl enterprise %s' % self.ent_number)
-            return False
-        if result_ID == "None":
+        page = crawler.crawl_check_page()
+        if page is None:
             settings.logger.error(
                     'According to the registration number does not search to the company %s' % self.ent_number)
             return False
-        page = crawler.crawl_ind_comm_pub_basic_pages()
+        page = crawler.crawl_ind_comm_pub_basic_pages(page)
         crawler.parser.parse_ind_comm_pub_basic_pages(page)
         page = crawler.crawl_ind_comm_pub_arch_pages()
         crawler.parser.parse_ind_comm_pub_arch_pages(page)
@@ -164,7 +159,7 @@ class NeimengguClawer(Crawler):
 
         # 采用多线程，在写入文件时需要注意加锁
         self.write_file_mutex.acquire()
-        CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.json_dict})
+        CrawlerUtils.json_dump_to_file(self.json_restore_path, {crawler.ent_number: crawler.json_dict})
         self.write_file_mutex.release()
         return True
 
@@ -194,11 +189,8 @@ class NeimengguClawer(Crawler):
                 settings.logger.error("crawl post check page failed!")
                 count += 1
                 continue
-            with open(self.search_page, 'wb') as f:
-                f.write(resp.content)
-                # print(count)
-            return True
-        return False
+            return resp.content
+        return None
 
     def crack_check_code(self):
         """破解验证码
@@ -257,10 +249,10 @@ class NeimengguClawer(Crawler):
             CrawlerUtils.save_page_to_file(self.html_restore_path + name, page)
         return page
 
-    def crawl_ind_comm_pub_basic_pages(self):
+    def crawl_ind_comm_pub_basic_pages(self,page):
         """爬取工商基本公示信息
         """
-        url = self.parser.parse_search_page(self.search_page)
+        url = self.parser.parse_search_page(page)
         page = self.crawl_page_by_url(url)
         return page
 
@@ -406,7 +398,7 @@ class NeimengguParser(Parser):
         self.crawler = crawler
 
     def parse_search_page(self, page):
-        soup = BeautifulSoup(open(page), "html5lib")
+        soup = BeautifulSoup(page, "html5lib")
         list = soup.find('div', {'class', 'list'})
         href = list.find('li', {'class', 'font16'})
         a = href.find('a')
@@ -881,7 +873,7 @@ class NeimengguParser(Parser):
         # 企业年报
         qiyenianbao_table = soup.find('table', {'id': 'detailsList'})
         ck_string = '暂无数据'
-        if ck_string in qiyenianbao_table.get_text():
+        if qiyenianbao_table is None or ck_string in qiyenianbao_table.get_text():
             return
         report_trs = qiyenianbao_table.find_all('tr')
         ent_pub_ent_annual_reportes = []

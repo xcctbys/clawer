@@ -29,7 +29,7 @@ def trans_float(s):
         if '0' <= c and c <= '9' or c == '.':
             res.append(c)
     if res == []:
-        return 0
+        return 0.0
     else:
         return float("".join(res))
 

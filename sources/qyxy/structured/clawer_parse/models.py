@@ -45,7 +45,7 @@ class Operation(object):
         register_num = self.register_num
 
         try:
-            enter_id = Basic.objects.filter(enter_name=enter_name, register_num=register_num).id
+            enter_id = Basic.objects.get(enter_name=enter_name, register_num=register_num).id
         except:
             enter_id = consts.DEFAULT_ENTER_ID
 
@@ -87,11 +87,7 @@ class Operation(object):
         data = self.data
         clear = consts.special_tables[1]
 
-        querys = model.objects.filter(enter_id=enter_id, invalidation=False)
-
-        for query in querys:
-            query.invalidation = True
-            query.save()
+        querys = model.objects.filter(enter_id=enter_id, invalidation=False).update(invalidation=True)
 
         if data.get(name) is not None:
             for row in data[name]:
@@ -113,8 +109,10 @@ class Operation(object):
                 value = data.get(field)
 
             if value is not None:
-                is_all_fields_null = False
                 setattr(query, field, value)
+
+                if field != "year_report_id" and field != "enter_id":
+                    is_all_fields_null = False
 
         query.enter_id = enter_id
         query.version = version
@@ -164,12 +162,12 @@ class IndustryCommerceAdministrativePenalty(models.Model):
     """工商-行政处罚
     """
 
-    penalty_decision_num = models.IntegerField(null=True)
-    illegal_type = models.CharField(max_length=30, null=True, blank=True)
+    penalty_decision_num = models.CharField(max_length=30, null=True, blank=True)
+    illegal_type = models.CharField(max_length=100, null=True, blank=True)
     penalty_content = models.CharField(max_length=50, null=True, blank=True)
     penalty_decision_gov = models.CharField(max_length=50, null=True, blank=True)
     penalty_decision_date = models.DateField(null=True)
-    detail = models.CharField(max_length=30, null=True, blank=True)
+    detail = models.TextField(null=True, blank=True)
     penalty_register_date = models.DateField(null=True)
     enter_name = models.CharField(max_length=50, null=True, blank=True)
     creidit_code = models.CharField(max_length=20, null=True, blank=True)
@@ -497,8 +495,8 @@ class EnterAdministrativePenalty(models.Model):
     """企业-行政处罚
     """
 
-    penalty_decision_num = models.IntegerField(null=True)
-    illegal_type = models.CharField(max_length=30, null=True, blank=True)
+    penalty_decision_num = models.CharField(max_length=30, null=True, blank=True)
+    illegal_type = models.CharField(max_length=100, null=True, blank=True)
     administrative_penalty_content = models.CharField(max_length=30, null=True, blank=True)
     decision_gov = models.CharField(max_length=30, null=True, blank=True)
     decision_date = models.DateField(null=True)
@@ -641,7 +639,7 @@ class JudicialShareholderChange(models.Model):
     share_num = models.IntegerField(null=True)
     excute_court = models.CharField(max_length=30, null=True, blank=True)
     assignee = models.CharField(max_length=30, null=True, blank=True)
-    detail = models.CharField(max_length=30, null=True, blank=True)
+    detail = models.TextField(null=True, blank=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
     version = models.IntegerField(default=1)
@@ -697,11 +695,11 @@ class OtherAdministrativePenalty(models.Model):
     """
 
     penalty_decision_num = models.IntegerField(null=True)
-    illegal_type = models.CharField(max_length=30, null=True, blank=True)
+    illegal_type = models.CharField(max_length=100, null=True, blank=True)
     penalty_content = models.CharField(max_length=50, null=True, blank=True)
     penalty_decision_gov = models.CharField(max_length=50, null=True, blank=True)
     penalty_decision_date = models.DateField(null=True)
-    detail = models.CharField(max_length=30, null=True, blank=True)
+    detail = models.TextField(null=True, blank=True)
     penalty_type = models.CharField(max_length=30, null=True, blank=True)
     forfeiture_money = models.FloatField(null=True)
     confiscate_money = models.FloatField(null=True)
@@ -886,7 +884,7 @@ class YearReportWarrandice(models.Model):
     """年报-对外提供保证担保
     """
 
-    creditor = models.CharField(max_length=30, null=True, blank=True)
+    creditor = models.CharField(max_length=200, null=True, blank=True)
     debtor = models.CharField(max_length=30, null=True, blank=True)
     main_creditor_right = models.CharField(max_length=30, null=True, blank=True)
     main_creditor_right_amount = models.FloatField(null=True)
