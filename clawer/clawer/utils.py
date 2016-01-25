@@ -260,16 +260,23 @@ class SafeProcess(object):
 class UrlCache(object):
     
     def __init__(self, redis_url=settings.URL_REDIS):
-        self.connection = redis.Redis.from_url(redis_url)
-        self.cache_time = 3600*24
+        self.redis_url = redis_url
+        self.connection = None
+        self.max_url_count = 10000
+        self.key_name = "urlcache"
         
     def check_url(self, url):
-        key = "urlcache_%s" % hashlib.md5(url).hexdigest()
+        if not self.connection:
+            self.connection = redis.Redis.from_url(self.redis_url)
         
-        if self.connection.get(key) > 0:
+        if self.connection.sismember(self.key_name, url):
             return True
         
-        self.connection.setex(key, 1, self.cache_time)
+        if self.connection.scard(self.key_name) >= self.max_url_count:
+            self.connection.spop(self.key_name)
+        
+        self.connection.sadd(self.key_name, url)
+        
         return False
         
     def flush(self):
