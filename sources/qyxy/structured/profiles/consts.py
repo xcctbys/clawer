@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-DEFAULT_ENTER_ID = 1
+DEFAULT_ENTER_ID = 0
 DEFAULT_VERSION = 1
 
 keys = (
@@ -57,7 +57,7 @@ keys_to_tables["ent_pub_shareholder_capital_contribution"] = "enter_shareholder"
 keys_to_tables["ent_pub_equity_change"] = "enter_sharechange"
 keys_to_tables["ent_pub_administration_license"] = "enter_administrative_license"
 keys_to_tables["ent_pub_knowledge_property"] = "enter_intellectual_property_pledge"
-keys_to_tables["ent_pub_administration_sanction"] = "enter_administrative_license"
+keys_to_tables["ent_pub_administration_sanction"] = "enter_administrative_penalty"
 keys_to_tables["ent_pub_ent_annual_report"] = "enter_annual_report"
 
 keys_to_tables["other_dept_pub_administration_license"] = "other_administrative_license"

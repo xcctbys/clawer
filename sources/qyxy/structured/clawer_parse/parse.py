@@ -29,10 +29,12 @@ class Parse(object):
     def parse_companies(self):
         for register_num in self.companies:
             company = self.companies[register_num]
+            # self.parse_company(company, register_num)
             try:
                 self.parse_company(company, register_num)
-            except:
+            except Exception as e:
                 print "❌  公司ID: %s 解析错误: ❌ " % register_num.encode('utf-8')
+                print e
 
     def parse_company(self, company={}, register_num=0):
         keys = self.keys
@@ -254,8 +256,6 @@ class Parse(object):
 
     def parse_report_details_dict(self, d, name, mapping):
         report = self.parse_general(d, mapping)
-        if name == u"year_report_assets":
-            print report
 
         if self.company_result.get(name) is None:
             self.company_result[name] = []

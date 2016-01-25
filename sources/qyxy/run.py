@@ -51,6 +51,8 @@ from zhejiang_crawler import ZhejiangCrawler
 from liaoning_crawler import LiaoningCrawler
 from guangxi_crawler import GuangxiCrawler
 from gansu_crawler import GansuClawer
+from shanxi_crawler import ShanxiCrawler
+from qinghai_crawler import QinghaiCrawler
 
 province_crawler = {
     'beijing': BeijingCrawler,
@@ -76,9 +78,11 @@ province_crawler = {
     'liaoning': LiaoningCrawler,
     'gansu':GansuClawer,
     # 'guangxi': GuangxiClawer,
+    'shanxi':ShanxiCrawler,
+    'qinghai':QinghaiCrawler,
 }
 
-process_pool = multiprocessing.Pool(processes=4)
+process_pool = None
 cur_date = CrawlerUtils.get_cur_y_m_d()
 
 
@@ -126,6 +130,7 @@ def crawl_work(n, province, json_restore_path, ent_queue):
 
 
 def crawl_province(province):
+    settings.logger.info('ready to clawer %s' % province)
     #创建存储路径
     json_restore_dir = '%s/%s/%s/%s' % (settings.json_restore_path, province, cur_date[0], cur_date[1])
     if not os.path.exists(json_restore_dir):
@@ -171,8 +176,14 @@ def crawl_province(province):
 
 
 def force_exit():
-    settings.logger.error("run timeout")
-    process_pool.terminate()
+    pgid = os.getpgid(0)
+    
+    settings.logger.error("PID %d run timeout", pgid)
+    
+    if process_pool != None:
+        process_pool.terminate()
+    
+    os.killpg(pgid, 9)
     os._exit(1)
 
 
@@ -290,21 +301,22 @@ def main():
     settings.logger.info(u'即将开始爬取，最长爬取时间为 %s 秒' % settings.max_crawl_time)
     settings.start_crawl_time = datetime.datetime.now()
     
-    args = []
     if sys.argv[2] == 'all':
         args = [p for p in sorted(province_crawler.keys())]
+        process_pool = multiprocessing.Pool(processes=4)
+        process_pool.map(crawl_province, args)
+        process_pool.close()
+        settings.logger.info("wait processes....")
+        process_pool.join()
     else:
         provinces = sys.argv[2:]
         for p in provinces:
             if not p in province_crawler.keys():
                 settings.logger.warn('province %s is not supported currently' % p)
-            else:
-                args.append(p)
+                continue
+            
+            crawl_province(p)
     
-    process_pool.map(crawl_province, args)
-    process_pool.close()
-    settings.logger.info("wait processes....")
-    process_pool.join()
     
     
 def send_sentry_report():

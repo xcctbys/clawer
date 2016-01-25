@@ -133,6 +133,7 @@ mappings["ent_pub_shareholder_capital_contribution"] = {
     u"公示日期": "publicity_time",
     u"实缴额（万元）": "paid_amount",
     u"股东（发起人）": "shareholder_name",
+    u"股东": "shareholder_name",
     u"实缴明细": None,
     u"认缴明细": None,
     u"实缴出资日期": "paid_date",
@@ -143,6 +144,7 @@ mappings["ent_pub_shareholder_capital_contribution"] = {
 mappings["ent_pub_equity_change"] = {
     u"变更前股权比例": "share_ratio_before",
     u"公示日期": "sharechange_publicity_date",
+    u"登记日期": "sharechange_register_date",
     u"股权变更日期": "share_change_date",
     u"变更后股权比例": "share_ratio_after",
     u"序号": None,
