@@ -34,6 +34,7 @@ from zongju_crawler import ZongjuCrawler
 from shanghai_crawler import ShanghaiCrawler
 from guangdong_crawler import GuangdongClawer
 from heilongjinag_crawler import HeilongjiangClawer
+from shanxijinag_crawler import ShanxiClawer
 from anhui_crawler import AnhuiCrawler
 from yunnan_crawler import YunnanCrawler
 from tianjin_crawler import TianjinCrawler
@@ -76,6 +77,7 @@ province_crawler = {
     'liaoning': LiaoningCrawler,
     'gansu':GansuClawer,
     # 'guangxi': GuangxiClawer,
+    'shanxi':ShanxiClawer,
 }
 
 process_pool = multiprocessing.Pool(processes=4)
