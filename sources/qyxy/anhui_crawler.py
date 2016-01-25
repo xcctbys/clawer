@@ -78,10 +78,10 @@ class AnhuiCrawler(object):
 		self.result_json_dict = {}
 
 	def get_check_num(self):
-		resp = self.reqst.get(self.mydict['search'])
+		resp = self.reqst.get(self.mydict['search'], timeout = 120)
 		if resp.status_code != 200:
 			return None
-		resp = self.reqst.get(self.mydict['validateCode'])
+		resp = self.reqst.get(self.mydict['validateCode'], timeout = 120)
 		if resp.status_code != 200:
 			return None
 		with open(self.ckcode_image_path, 'wb') as f:
@@ -91,21 +91,27 @@ class AnhuiCrawler(object):
 		code_cracker = CaptchaRecognition('qinghai')
 		#code_cracker = CaptchaRecognition('guangdong')
 		ck_code = code_cracker.predict_result(self.ckcode_image_path)
-		return ck_code[1]
+		if not ck_code is None:
+			return ck_code[1]
+		else:
+			return None
 
 	def get_id_num(self, findCode):
 		count = 0
-		while count < 3:
+		while count < 20:
 			check_num = self.get_check_num()
 			print check_num
+			if check_num is None:
+				count += 1
+				continue
 			data = {'name':findCode,'verifyCode':check_num}
-			resp = self.reqst.post(self.mydict['search'],data=data)
+			resp = self.reqst.post(self.mydict['search'],data=data, timeout = 120)
 			if resp.status_code != 200:
 				print 'error...(get_id_num)'
 				continue
 			if resp.content.find('true')>=0:
 				temp={'checkNo':check_num,'entName':findCode}
-				resp = self.reqst.post(self.mydict['searchList'],data=temp)
+				resp = self.reqst.post(self.mydict['searchList'],data=temp, timeout = 120)
 				if resp.status_code != 200:
 					print 'error...post'
 					count += 1
@@ -118,7 +124,7 @@ class AnhuiCrawler(object):
 		return mainId
 
 	def get_tables(self, url):
-		resp = self.reqst.get(url)
+		resp = self.reqst.get(url, timeout = 120)
 		if resp.status_code == 200:
 			tables = BeautifulSoup(resp.content, 'html5lib').find_all('table')
 			return [table for table in tables] #if (table.find_all('th') or table.find_all('a')) ]
@@ -181,7 +187,7 @@ class AnhuiCrawler(object):
 						for td in tr.find_all('td'):
 							if td.find('a'):
 								#print self.mydict['eareName'] + td.a['onclick'][13:-2]
-								temp = self.reqst.get( self.mydict['eareName'] + td.a['onclick'][13:-2])
+								temp = self.reqst.get( self.mydict['eareName'] + td.a['onclick'][13:-2], timeout = 120)
 								if temp.status_code == 200:
 									detail_soup = BeautifulSoup(temp.content)
 									specially_dict = self.do_with_specially(mydict, head, detail_soup.find_all('table')[0])
@@ -207,7 +213,7 @@ class AnhuiCrawler(object):
 			#print a_count
 			for i in range(1, a_count+1):
 				try:
-					tempresp = self.reqst.get(self.mydict['eareName'] + self.jsp_one_dict[head] + 'pno='+str(i) + '&mainId='+self.id)
+					tempresp = self.reqst.get(self.mydict['eareName'] + self.jsp_one_dict[head] + 'pno='+str(i) + '&mainId='+self.id, timeout = 120)
 				except TypeError:
 					break
 				if tempresp.status_code == 200:
@@ -240,7 +246,7 @@ class AnhuiCrawler(object):
 				for td in tr.find_all('td'):
 					if td.find('a'):
 						#print self.mydict['eareName'] + td.a['onclick'][13:-2]
-						temp = self.reqst.get( self.mydict['eareName'] + td.a['onclick'][13:-2])
+						temp = self.reqst.get( self.mydict['eareName'] + td.a['onclick'][13:-2], timeout = 120)
 						if temp.status_code == 200:
 							detail_soup = BeautifulSoup(temp.content)
 							specially_dict = self.do_with_specially(mydict, head, detail_soup.find_all('table')[0])
