@@ -137,5 +137,5 @@
 #### enter_administrative_penalty enter_modification
     无对应的Key
 
-#### enter_shareholder
+#### enter_shareholder industry_commerce_administrative_penalty
     详情解析
