@@ -50,7 +50,7 @@ from xinjiang_crawler import XinjiangClawer
 from zhejiang_crawler import ZhejiangCrawler
 from liaoning_crawler import LiaoningCrawler
 from guangxi_crawler import GuangxiCrawler
-
+from gansu_crawler import GansuClawer
 
 province_crawler = {
     'beijing': BeijingCrawler,
@@ -74,6 +74,7 @@ province_crawler = {
     'chongqing':ChongqingClawer,
     'zhejiang' : ZhejiangCrawler,
     'liaoning': LiaoningCrawler,
+    'gansu':GansuClawer,
     # 'guangxi': GuangxiClawer,
 }
 
