@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from django.db import models
-from django.db.models import Max
 from django.utils import timezone
 import profiles.consts as consts
 import sys
@@ -15,10 +14,9 @@ class Operation(object):
         self.data = data
         self.enter_name = data.get('enter_name')
         self.register_num = data.get('register_num')
-        self.models = models = self.get_all_clawer_db_models()
+        self.models = self.get_all_clawer_db_models()
 
     def write_db_by_dict(self):
-        data = self.data
         models = self.models
 
         if self.is_company_in_db():
@@ -106,6 +104,7 @@ class Operation(object):
     def insert_one_row(self, model, name, fields, enter_id, version, row):
         data = self.data
         query = model()
+        is_all_fields_null = True
 
         for field in fields:
             if row is not None:
@@ -114,19 +113,25 @@ class Operation(object):
                 value = data.get(field)
 
             if value is not None:
+                is_all_fields_null = False
                 setattr(query, field, value)
 
         query.enter_id = enter_id
         query.version = version
         query.invalidation = False
-        query.save()
+        if not is_all_fields_null:
+            query.save()
+        else:
+            del query
 
     def get_all_clawer_db_models(self):
         clsmembers = inspect.getmembers(sys.modules[__name__], inspect.isclass)
         all_clawer_db_models = []
+
         for (key, val) in clsmembers:
             if key != "Operation" and key != "Max":
                 all_clawer_db_models.append(val)
+
         return all_clawer_db_models
 
 

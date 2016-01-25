@@ -74,7 +74,7 @@ province_crawler = {
     'chongqing':ChongqingClawer,
     'zhejiang' : ZhejiangCrawler,
     'liaoning': LiaoningCrawler,
-    # 'guangxi': GuangxiClawer,
+    'guangxi': GuangxiCrawler,
 }
 
 process_pool = multiprocessing.Pool(processes=4)
