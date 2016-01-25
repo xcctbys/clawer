@@ -10,8 +10,13 @@
     <a href="#" class="easyui-menubutton" menu="#analysis">分析器</a> 
     <a href="#" class="easyui-menubutton" data-options="menu:'#operate',">操作</a>
     
-    <input type="number" id="id_input" name="id" prompt="ID" />
-    
+    <select id="status_select" class="easyui-combobox" name="status" style="width:200px;">
+	    <option value="">全部</option>
+	    <option value="1">在线</option>
+	    <option value="2">下线</option>
+	</select>
+	
+    <input type="number" id="id_input" name="id" prompt="ID" class="easyui-textbox" />
     <a href="javascript:void(0)" id="search_btn" class="easyui-linkbutton" data-options="iconCls:'icon-search'">搜索</a>
 </div>
 
@@ -464,6 +469,16 @@ $(document).ready(function(){
 		     }
 		     
 		 });
+	});
+	
+	
+	$("#status_select").combobox({
+		onSelect: function(record) {
+			console.debug(record);
+			$("#grid").datagrid("load", {
+	            status: record.value
+	        });
+		}
 	});
 	
 	
