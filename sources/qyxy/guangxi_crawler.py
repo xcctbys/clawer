@@ -109,10 +109,13 @@ class GuangxiCrawler(object):
 
 	def get_id_num(self, findCode):
 		count = 0
-		while count < 10:
+		while count < 20:
 			# print self.cur_time
 			yzm = self.get_check_num()
 			print yzm
+			if yzm is None:
+				count += 1
+				continue
 			data = {'checkNo':yzm, 'entName':findCode}
 			resp = self.reqst.post(self.mydict['searchList'], data=data)
 			print resp.status_code
@@ -171,6 +174,8 @@ class GuangxiCrawler(object):
 		resp = self.reqst.get(url)
 		if resp.status_code == 200:
 			return BeautifulSoup(resp.content).find_all('table')
+		else:
+			return None
 	def get_head_allths_alltds(self, table):
 		if table.find_all('th'):
 			head = table.find_all('th')[0].get_text().strip().split('\n')[0].strip()
@@ -371,7 +376,18 @@ class GuangxiCrawler(object):
 							if td.find('a'):
 								alltds.append(td.get_text().strip())
 								print 'a-----:', td.get_text().strip()
-								alltds.append( self.get_dict_from_enter(self.get_tables(self.search_dict['eareName'] + td.a['href'])) )
+								get_count = 0
+								enter_tables = None
+								while get_count < 10:
+									enter_tables = self.get_tables(self.search_dict['eareName'] + td.a['href'])
+									if enter_tables is None:
+										get_count += 1
+										continue
+									else: break
+								if enter_tables:
+									alltds.append( self.get_dict_from_enter(enter_tables ) )
+								else:
+									alltds.append( None)
 								#alltds.append(None)
 							else:
 								alltds.append(td.get_text().strip())
