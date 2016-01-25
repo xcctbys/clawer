@@ -15,7 +15,7 @@ json_restore_path = '/data/clawer_result/enterprise/json'
 #our enterprise list to be crawled
 enterprise_list_path = './enterprise_list/'
 
-crawler_num = 3
+crawler_num = 2
 
 
 #for sentry

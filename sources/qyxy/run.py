@@ -15,6 +15,8 @@ import threading
 import multiprocessing
 import socket
 import raven
+from encodings import zlib_codec
+import zlib
 
 ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
 if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
@@ -36,7 +38,7 @@ from anhui_crawler import AnhuiCrawler
 from yunnan_crawler import YunnanCrawler
 from tianjin_crawler import TianjinCrawler
 from hunan_crawler import HunanCrawler
-from fujian_crawler import FujianCrawler
+# from fujian_crawler import FujianCrawler
 from sichuan_crawler import SichuanCrawler
 from shandong_crawler import ShandongCrawler
 from hebei_crawler import HebeiCrawler
@@ -44,9 +46,10 @@ from shaanxi_crawler import ShaanxiCrawler
 from henan_crawler import HenanCrawler
 from neimenggu_crawler import NeimengguClawer
 from chongqing_crawler import ChongqingClawer
-#from xinjiang_crawler import XinjiangClawer
+from xinjiang_crawler import XinjiangClawer
 from zhejiang_crawler import ZhejiangCrawler
 from liaoning_crawler import LiaoningCrawler
+from guangxi_crawler import GuangxiCrawler
 
 
 province_crawler = {
@@ -60,17 +63,18 @@ province_crawler = {
     'yunnan':YunnanCrawler,
     'tianjin' : TianjinCrawler,
     'hunan' : HunanCrawler,
-    'fujian' : FujianCrawler,
+    # 'fujian' : FujianCrawler,
     'sichuan': SichuanCrawler,
     'shandong' : ShandongCrawler,
     'hebei' : HebeiCrawler,
     'neimenggu':NeimengguClawer,
     'shaanxi': ShaanxiCrawler,
     'henan' : HenanCrawler,
-    #'xinjiang':XinjiangClawer,
+    'xinjiang':XinjiangClawer,
     'chongqing':ChongqingClawer,
     'zhejiang' : ZhejiangCrawler,
-    'liaoning': LiaoningCrawler
+    'liaoning': LiaoningCrawler,
+    # 'guangxi': GuangxiClawer,
 }
 
 process_pool = multiprocessing.Pool(processes=4)
@@ -139,7 +143,8 @@ def crawl_province(province):
 
     #开启多个线程，每个线程均执行 函数 crawl_work
     for i in range(settings.crawler_num):
-        worker = threading.Thread(target=crawl_work,args=(i, province, json_restore_path, ent_queue))
+        worker = threading.Thread(target = crawl_work, args = (i, province, json_restore_path, ent_queue))
+        worker.daemon = True
         worker.start()
         time.sleep(random.uniform(1, 2))
 
@@ -178,7 +183,7 @@ class Checker(object):
         if dt:
             self.yesterday = dt
         self.parent = settings.json_restore_path
-        self.success = [] # {'name':'', "size':0}
+        self.success = [] # {'name':'', "size':0, "rows":0}
         self.failed = [] # string list
         self.send_mail = SendMail(settings.EMAIL_HOST, settings.EMAIL_PORT, settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD, ssl=True)
 
@@ -190,12 +195,14 @@ class Checker(object):
                 continue
 
             st = os.stat(path)
-            self.success.append({"name": province, "size": st[stat.ST_SIZE]})
+            enterprise_count = self._get_enterprise_count(province)
+            done = self._get_rows(path)
+            self.success.append({"name": province, "size": st[stat.ST_SIZE], "done": done, "enterprise_count": enterprise_count})
 
         #output
         settings.logger.error("success %d, failed %d", len(self.success), len(self.failed))
         for item in self.success:
-            settings.logger.error("\t%s: %d bytes", item['name'], item['size'])
+            settings.logger.error("\t%s: %d bytes, rows %d, count %d", item['name'], item['size'], item["done"], item["enterprise_count"])
 
         settings.logger.error("Failed province")
         for item in self.failed:
@@ -206,19 +213,41 @@ class Checker(object):
     def _json_path(self, province):
         path = os.path.join(self.parent, province, self.yesterday.strftime("%Y/%m/%d.json.gz"))
         return path
+    
+    def _get_rows(self, path):
+        rows = 0
+        
+        with gzip.open(path) as f:
+            for _ in f:
+                rows += 1
+        
+        return rows
+    
+    def _get_enterprise_count(self, province):
+        path = os.path.join(settings.enterprise_list_path, "%s.txt" % province)
+        count = 0
+        with open(path) as f:
+            for _ in f:
+                count += 1
+        
+        return count
 
     def _report(self):
         title = u"%s 企业信用爬取情况" % (self.yesterday.strftime("%Y-%m-%d"))
-        content = u"Stat Info. Success %d, failed %d\r\n" % (len(self.success), len(self.failed))
+        content = u"Stat Info. Success %d, failed %d\r\n\r\n" % (len(self.success), len(self.failed))
 
         content += u"Success province:\n"
         for item in self.success:
-            content += u"\t%s: %d bytes\n" % (item["name"], item['size'])
+            ratio = float(item['done'])/item["enterprise_count"]
+            content += u"\t%s\tbytes:%d\tdone:%d\tenterprise count:%d\tdone ratio:%.2f\n" % (item["name"], item['size'], item["done"], \
+                                                                            item['enterprise_count'], ratio)
 
+        content += u"\r\n"
         content += u"Failed province:\n"
         for item in self.failed:
             content += u"\t%s\n" % (item)
-
+        
+        content += u"\r\n"
         content += u"\r\n -- from %s" % socket.gethostname()
 
         to_admins = [x[1] for x in settings.ADMINS]
@@ -244,7 +273,7 @@ def main():
         return
 
     if len(sys.argv) < 3:
-        print 'usage: run.py [check] [max_crawl_time(minutes) province...] \n\tmax_crawl_time 最大爬取时间，以秒计;\n\tprovince 是所要爬取的省份列表 用空格分开, all表示爬取全部)'
+        print 'usage: run.py [check] [max_crawl_time(minutes) province...] \n\tmax_crawl_time 最大爬取秒数，以秒计;\n\tprovince 是所要爬取的省份列表 用空格分开, all表示爬取全部)'
         return
         
     try:
@@ -272,6 +301,8 @@ def main():
                 args.append(p)
     
     process_pool.map(crawl_province, args)
+    process_pool.close()
+    settings.logger.info("wait processes....")
     process_pool.join()
     
     

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import json
-import time
 import fileinput
 import profiles.consts as consts
 from clawer_parse import tools
@@ -10,7 +9,7 @@ from clawer_parse.models import Operation
 
 
 class Parse(object):
-    """解析爬虫生成的json结构
+    """解析爬虫生成的json结构，写入数据库
     """
 
     mappings = mappings
@@ -28,18 +27,13 @@ class Parse(object):
                     self.companies[key] = company[key]
 
     def parse_companies(self):
-        handled_num = 0
-        begin = time.time()
-
         for register_num in self.companies:
             company = self.companies[register_num]
-            print u"\n公司注册Id: %s" % register_num
-            self.parse_company(company, register_num)
-            handled_num = handled_num + 1
-
-        end = time.time()
-        secs = int(round((end - begin) * 1000))
-        print u"\n=== 共导入%d个公司的数据，耗时%dms ===" % (handled_num, secs)
+            try:
+                self.parse_company(company, register_num)
+            except Exception as e:
+                print "❌  %s解析错误: ❌ " % register_num
+                print e
 
     def parse_company(self, company={}, register_num=0):
         keys = self.keys
@@ -51,12 +45,11 @@ class Parse(object):
                 if key in keys and key in mappings:
                     self.parse_dict(company[key], mappings[key])
             elif type(company[key] == list):
-                if key in keys and key in mappings:
+                if key in keys and key in mappings and company[key] is not None:
                     self.parse_list(key, company[key], mappings[key])
 
-        credit_code = self.company_result.get('credit_code')
-        if credit_code is None:
-            credit_code = register_num
+        if self.company_result.get('credit_code') is None:
+            self.company_result['credit_code'] = register_num
         if self.company_result.get('register_num') is None:
             self.company_result['register_num'] = register_num
 
@@ -76,6 +69,7 @@ class Parse(object):
         ind_shareholder = special_parse_keys[1]
         name = keys_to_tables.get(key)
         parse_func = self.key_to_parse_function(key)
+
         if key not in special_parse_keys:
             for d in list_in_company:
                 value = parse_func(d, mapping)
@@ -132,37 +126,36 @@ class Parse(object):
         result = []
         dict_inner = {}
         for field, value in dict_in_company.iteritems():
-            if field == u"详情"and value is not None:
-                result = self.handle_ind_shareholder_detail(value,result,mapping)
+            if type(value) == dict:
+                result = self.handle_ind_shareholder_detail(value, result, mapping)
 
         for field, value in dict_in_company.iteritems():
-            #print field, value
             if field == u"详情":
                 pass
             else:
                 if not result:
-                    #print field, value
                     dict_inner[mapping.get(field)] = value
                     result.append(dict_inner)
                     dict_inner = {}
-                    #print field
                 else:
                     for result_dict in result:
                         result_dict[mapping.get(field)] = dict_in_company[field]
         return result
 
-    def handle_ind_shareholder_detail(self,dict_xq,result,mapping):
+    def handle_ind_shareholder_detail(self, dict_xq, result, mapping):
         """处理ind_shareholder中"详情"
         """
-        dict_inner = {}
-        for key_add in dict_xq:
-            if key_add:
-                list_in = dict_xq.get(key_add)
-                for dict_in in list_in:
-                    result = self.handle_ind_shareholder_detail_dict(result,mapping,dict_in)
+        if type(dict_xq) == str:
+            pass
+        else:
+            for key_add in dict_xq:
+                if key_add:
+                    list_in = dict_xq.get(key_add)
+                    for dict_in in list_in:
+                        result = self.handle_ind_shareholder_detail_dict(result, mapping, dict_in)
         return result
 
-    def handle_ind_shareholder_detail_dict(self,result,mapping,dict_in):
+    def handle_ind_shareholder_detail_dict(self, result, mapping, dict_in):
         """处理ind_shareholder中"详情中"股东（发起人）及出资信息"的value中的字典
         """
         dict_inner = {}
@@ -182,7 +175,7 @@ class Parse(object):
                     result.append(dict_inner)
                     dict_inner = {}
                 else:
-                    for result_dict in result: 
+                    for result_dict in result:
                         result_dict[mapping.get(key_in)] = dict_in[key_in]
         return result
 
@@ -227,23 +220,36 @@ class Parse(object):
         operation.write_db_by_dict()
 
     def conversion_type(self):
-        type_date = consts.type_date
-        type_float = consts.type_float
         to_date = tools.trans_time
         to_float = tools.trans_float
         company_result = self.company_result
 
         for field in company_result:
             value = company_result[field]
-            if field in type_date and value is not None:
+
+            if self.is_type_date(field, value):
                 company_result[field] = to_date(value.encode('utf-8'))
-            elif field in type_float and value is not None:
+
+            elif self.is_type_float(field, value):
                 company_result[field] = to_float(value.encode('utf-8'))
+
             elif type(value) == list:
                 for d in value:
                     for d_field in d:
                         d_value = d[d_field]
-                        if d_field in type_date and d_value is not None:
+
+                        if self.is_type_date(d_field, d_value):
                             d[d_field] = to_date(d_value.encode('utf-8'))
-                        elif d_field in type_float and d_value is not None and type(d_value) == unicode:
+
+                        elif self.is_type_float(d_field, d_value):
                             d[d_field] = to_float(d_value.encode('utf-8'))
+
+    def is_type_date(self, field, value):
+        type_date = consts.type_date
+
+        return field in type_date and value is not None and type(value) == unicode
+
+    def is_type_float(self, field, value):
+        type_float = consts.type_float
+
+        return field in type_float and value is not None and type(value) == unicode
