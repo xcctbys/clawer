@@ -90,9 +90,11 @@ class YunnanCrawler(object):
 
 	def get_id_num(self, findCode):
 		count = 0
-		while count < 10:
+		while count < 20:
 			check_num,session_token = self.get_check_num()
 			print check_num
+			if check_num is None:
+				continue
 			data = {'searchType':'1','captcha':check_num, "session.token": session_token, 'condition.keyword':findCode}
 			resp = self.reqst.post(self.mydict['searchList'],data=data)
 			if resp.status_code != 200:
@@ -146,12 +148,13 @@ class YunnanCrawler(object):
 						detail_alltds = self.get_re_list_from_content(detail_content)
 					#print '---------------------------', len(detail_allths[:3]+detail_allths[5:]), len(detail_alltds)
 						# tddict = self.get_one_to_one_dict(detail_allths[:3]+detail_allths[5:], detail_alltds)
+						detail_allths = detail_allths[:3] + detail_allths[5:]
 						self.test_print_all_ths_tds(detail_head, detail_allths, detail_alltds)
 						son_need_dict = {}
-						for key, value in zip(detail_allths[6:], detail_alltds[3:]):
+						for key, value in zip(detail_allths[3:], detail_alltds[3:]):
 							son_need_dict[key] = value
 						need_dict = {}
-						for key, value in zip(detail_allths[1:4], detail_alltds[:3]):
+						for key, value in zip(detail_allths[:3], detail_alltds[:3]):
 							need_dict[key] = value
 						need_dict['list'] = [son_need_dict]
 						tdlist.append( {detail_head:[need_dict]} )
@@ -189,7 +192,8 @@ class YunnanCrawler(object):
 					tdlist.append(td.get_text().strip())
 				else:
 					tdlist.append(None)
-				allths.insert(2, u'详情')
+			allths.insert(2, u'详情')
+			self.test_print_all_ths_tds(head, allths, tdlist)
 			return head, allths, tdlist			
 			pass
 		else:
@@ -303,9 +307,9 @@ class YunnanCrawler(object):
 
 if __name__ == '__main__':
 	yunnan = YunnanCrawler('./enterprise_crawler/yunnan.json')
-	yunnan.run('530000000006503')
-	# f = open('enterprise_list/yunnan.txt', 'r')
-	# for line in f.readlines():
-	# 	print line.split(',')[2].strip()
-	# 	yunnan.run(str(line.split(',')[2]).strip())
-	# f.close()
+	# yunnan.run('530000000006503')
+	f = open('enterprise_list/yunnan.txt', 'r')
+	for line in f.readlines():
+		print line.split(',')[2].strip()
+		yunnan.run(str(line.split(',')[2]).strip())
+	f.close()

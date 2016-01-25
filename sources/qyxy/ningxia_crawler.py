@@ -42,8 +42,10 @@ class NingxiaClawer(Crawler):
     write_file_mutex = threading.Lock()
 
     urls = {'host': 'http://www.nmgs.gov.cn:7001/aiccips',
-            'get_checkcode': 'http://xygs.gsaic.gov.cn/gsxygs/securitycode.jpg?',
-            'post_checkCode': 'http://xygs.gsaic.gov.cn/gsxygs/pub!list.do',
+            'get_checkcode': 'http://gsxt.ngsh.gov.cn/ECPS/verificationCode.jsp?',
+            'post_checkCode': 'http://gsxt.ngsh.gov.cn/ECPS/qyxxgsAction_checkVerificationCode.action',
+            'post_checkCode2': 'http://gsxt.ngsh.gov.cn/ECPS/qyxxgsAction_queryXyxx.action',
+
             'post_all_page': 'http://xygs.gsaic.gov.cn/gsxygs/pub!view.do',
             'ind_comm_pub_skeleton': 'http://www.nmgs.gov.cn:7001/aiccips/GSpublicity/GSpublicityList.html',
             }
@@ -65,9 +67,8 @@ class NingxiaClawer(Crawler):
             'Accept-Encoding': 'gzip, deflate',
             'Accept-Language': 'en-US, en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:39.0) Gecko/20100101 Firefox/39.0'})
-        self.method = None
-        self.pripid = None
         self.json_dict = {}
+        self.ent_number = None
 
     def run(self, ent_number=0):
         crawler = NingxiaClawer('./enterprise_crawler/ningxia/ningxia.json')
@@ -120,27 +121,48 @@ class NingxiaClawer(Crawler):
         :return true or false
         """
         count = 0
-        while count < 30:
-            ck_code = self.crack_check_code()
-            data = {'browse':'','loginName':'输入注册号/统一代码点击搜索','cerNo':'','authCode':'','authCodeQuery':ck_code,'queryVal':self.ent_number}
+        while count < 300:
+            ck_code = self.crack_check_code(count)
+            data = {'password': ck_code}
             resp = self.reqst.post(NingxiaClawer.urls['post_checkCode'], data=data)
-
             if resp.status_code != 200:
                 settings.logger.error("crawl post check page failed!")
                 count += 1
                 continue
+            message_json = resp.content
+            message = json.loads(str(message_json))
+            if message.get('message') not in 'ok':
+                count += 1
+                continue
+            search_data = {}
+            search_data['isEntRecord'] = ''
+            search_data['password'] = ck_code
+            search_data['loginInfo.regno'] = ''
+            search_data['loginInfo.entname'] = ''
+            search_data['loginInfo.idNo'] = ''
+            search_data['loginInfo.mobile'] = ''
+            search_data['loginInfo.password'] = ''
+            search_data['loginInfo.verificationCode'] = ''
+            search_data['otherLoginInfo.name'] = ''
+            search_data['otherLoginInfo.password'] = ''
+            search_data['otherLoginInfo.verificationCode'] = ''
+            search_data['selectValue'] = self.ent_number
+            resp = self.reqst.post(NingxiaClawer.urls['post_checkCode2'], data=search_data)
+            if resp.status_code != 200:
+                count -= 1
+                continue
             return resp.content
         return None
 
-    def crack_check_code(self):
+    def crack_check_code(self, count=None):
         """破解验证码
         :return 破解后的验证码
         """
         times = long(time.time())
         params = {}
-        params['v']= times
+        params['_'] = times
 
-        resp = self.reqst.get(NingxiaClawer.urls['get_checkcode'],params=params)
+        resp = self.reqst.get(NingxiaClawer.urls['get_checkcode'], params=params)
         if resp.status_code != 200:
             settings.logger.error('failed to get get_checkcode')
             return None
@@ -150,7 +172,9 @@ class NingxiaClawer(Crawler):
             os.makedirs(self.ckcode_image_dir_path)
         with open(self.ckcode_image_path, 'wb') as f:
             f.write(resp.content)
-
+        if count is not None:
+            with open(self.ckcode_image_dir_path + 'ckcode' + str(count) + '.jpg', 'wb') as f:
+                f.write(resp.content)
         # Test
         # with open(self.ckcode_image_dir_path + 'image' + str(i) + '.jpg', 'wb') as f:
         #     f.write(resp.content)
@@ -167,7 +191,7 @@ class NingxiaClawer(Crawler):
 
         return ckcode[1]
 
-    def crawl_page_by_post_data(self, data, name='detail.html',url=None):
+    def crawl_page_by_post_data(self, data, name='detail.html', url=None):
         """
         通过传入不同的参数获得不同的页面
         """
@@ -201,7 +225,7 @@ class NingxiaClawer(Crawler):
         data['pripid'] = self.pripid
         data['entcate'] = 'compan'
         url = 'http://xygs.gsaic.gov.cn/gsxygs/pub!viewE.do'
-        page = self.crawl_page_by_post_data(data=data,url=url)
+        page = self.crawl_page_by_post_data(data=data, url=url)
         return page
 
     def crawl_judical_assist_pub_pages(self):
@@ -213,9 +237,8 @@ class NingxiaClawer(Crawler):
         data['pripid'] = self.pripid
         data['entcate'] = 'compan'
         url = 'http://xygs.gsaic.gov.cn/gsxygs/pub!viewS.do'
-        page = self.crawl_page_by_post_data(data=data,url=url)
+        page = self.crawl_page_by_post_data(data=data, url=url)
         return page
-
 
 
 class GansuClawer(Parser):
@@ -227,7 +250,7 @@ class GansuClawer(Parser):
 
     def parse_search_page(self, page):
         soup = BeautifulSoup(page, "html5lib")
-        li_div = soup.find('div',{'id':'leftTabs'})
+        li_div = soup.find('div', {'id': 'leftTabs'})
         li = li_div.find_all('li')[2]
         if li is None:
             return False
@@ -301,7 +324,7 @@ class GansuClawer(Parser):
                         i += 1
                         continue
                     a_click = a_link.get('onclick')
-                    id  = str(a_click)[57:89]
+                    id = str(a_click)[57:89]
                     detail_data = {}
                     detail_data['entcate'] = 'compan'
                     detail_data['id'] = id
@@ -309,7 +332,7 @@ class GansuClawer(Parser):
                     detail_data['pripid'] = self.crawler.pripid
                     detail_data['regno'] = self.crawler.ent_number
                     detail_url = 'http://xygs.gsaic.gov.cn/gsxygs/pub!getDetails.do'
-                    detail_page = self.crawler.reqst.get(detail_url,params=detail_data)
+                    detail_page = self.crawler.reqst.get(detail_url, params=detail_data)
                     if detail_page.status_code != 200:
                         i += 1
                         continue
@@ -323,7 +346,6 @@ class GansuClawer(Parser):
                     list_detail = []
                     detail = {}
                     if len(detail_tds) >= 8:
-
                         detail[u'股东'] = self.wipe_off_newline_and_blank(detail_tds[0].get_text())
                         detail[u'认缴额（万元)'] = self.wipe_off_newline_and_blank(detail_tds[1].get_text())
                         detail[u'实缴额（万元)'] = self.wipe_off_newline_and_blank(detail_tds[2].get_text())
@@ -610,7 +632,7 @@ class GansuClawer(Parser):
         soup = BeautifulSoup(page, 'html5lib')
         # 股东出资
         shareholder_capital_contributiones = []
-        toziren_div = soup.find('div',{'id':'touziren'})
+        toziren_div = soup.find('div', {'id': 'touziren'})
         equity_table = toziren_div.find('table', {'class': 'detailsList'})
         equity_trs = equity_table.find_all('tr')
         if len(equity_trs) > 3:
@@ -662,7 +684,7 @@ class GansuClawer(Parser):
     def parse_ent_pub_ent_annual_report_pages(self, page):
         soup = BeautifulSoup(page, 'html5lib')
         # 企业年报
-        qiyenianbao_div = soup.find('div',{'id':'qiyenianbao'})
+        qiyenianbao_div = soup.find('div', {'id': 'qiyenianbao'})
         qiyenianbao_table = qiyenianbao_div.find('table', {'class': 'detailsList'})
         report_trs = qiyenianbao_table.find_all('tr')
         ent_pub_ent_annual_reportes = []
@@ -682,7 +704,7 @@ class GansuClawer(Parser):
                     j += 1
                     continue
                 a_click = a_link.get('onclick')
-                id  = str(a_click)[57:89]
+                id = str(a_click)[57:89]
                 reportYear = str(a_click)[112:116]
                 detail_data = {}
                 detail_data['entcate'] = 'compan'
@@ -692,7 +714,7 @@ class GansuClawer(Parser):
                 detail_data['pripid'] = self.crawler.pripid
                 detail_data['regno'] = self.crawler.ent_number
                 detail_url = 'http://xygs.gsaic.gov.cn/gsxygs/pub!getDetails.do'
-                detail_page = self.crawler.reqst.get(detail_url,params=detail_data)
+                detail_page = self.crawler.reqst.get(detail_url, params=detail_data)
                 if detail_page.status_code != 200:
                     j += 1
                     continue
@@ -803,7 +825,7 @@ class GansuClawer(Parser):
 
                 detail[u'对外投资信息'] = detail_outbound_investment_infoes
 
-                state_of_enterprise_assets_info = soup_reoprt.find_all('table',{'class':'detailsList'})[4]
+                state_of_enterprise_assets_info = soup_reoprt.find_all('table', {'class': 'detailsList'})[4]
                 state_of_enterprise_assets_trs = state_of_enterprise_assets_info.find_all('tr')
                 detail_state_of_enterprise_assets_infoes = {}
                 detail_state_of_enterprise_assets_infoes[state_of_enterprise_assets_trs[1].find_all('th')[
@@ -922,7 +944,7 @@ class GansuClawer(Parser):
         """
         soup = BeautifulSoup(page, 'html5lib')
         ck_string = '暂无数据'
-        administration_license_div = soup.find('div',{'id':'xingzhengxuke'})
+        administration_license_div = soup.find('div', {'id': 'xingzhengxuke'})
         administration_license_info = administration_license_div.find('table', {'class': 'detailsList'})
         administration_license_trs = administration_license_info.find_all('tr')
         detail_administration_license_infoes = []
@@ -965,7 +987,7 @@ class GansuClawer(Parser):
         """
         soup = BeautifulSoup(page, 'html5lib')
         ck_string = '暂无数据'
-        administration_sanction_div = soup.find('div',{'id':'xingzhengchufa'})
+        administration_sanction_div = soup.find('div', {'id': 'xingzhengchufa'})
         administration_sanction_info = administration_sanction_div.find('table', {'class': 'detailsList'})
         if administration_sanction_info is None:
             return
@@ -1006,7 +1028,7 @@ class GansuClawer(Parser):
         """
         soup = BeautifulSoup(page, 'html5lib')
         ck_string = '暂无数据'
-        equity_change_div = soup.find('div',{'id':'gudongguquan'})
+        equity_change_div = soup.find('div', {'id': 'gudongguquan'})
         equity_change_info = equity_change_div.find('table', {'class': 'detailsList'})
         equity_change_trs = equity_change_info.find_all('tr')
         detail_equity_change_infoes = []
@@ -1041,7 +1063,7 @@ class GansuClawer(Parser):
         """
         soup = BeautifulSoup(page, 'html5lib')
         ck_string = '暂无数据'
-        knowledge_property_div = soup.find('div',{'id':'zhishichanquan'})
+        knowledge_property_div = soup.find('div', {'id': 'zhishichanquan'})
         knowledge_property_info = knowledge_property_div.find('class', {'id': 'detailsList'})
         if knowledge_property_info is None:
             return
@@ -1080,16 +1102,15 @@ class GansuClawer(Parser):
                 i += 1
         self.crawler.json_dict['ind_comm_pub_knowledge_property'] = detail_knowledge_property_infoes
 
-
     def parse_judical_assist_pub_equity_freeze_pages(self, page):
         """
         司法
         """
         soup = BeautifulSoup(page, 'html5lib')
-        equity_freeze_div = soup.find('div',{'id':'gqdj'})
+        equity_freeze_div = soup.find('div', {'id': 'gqdj'})
         equity_freeze_info = equity_freeze_div.find('table', {'id': 'frzeTab'})
         equity_freeze_trs = equity_freeze_info.find_all('tr')
-        if equity_freeze_trs is None :
+        if equity_freeze_trs is None:
             return
         detail_equity_freeze_infoes = []
         if len(equity_freeze_trs) > 2:
@@ -1123,7 +1144,7 @@ class GansuClawer(Parser):
         司法
         """
         soup = BeautifulSoup(page, 'html5lib')
-        shareholder_modify_div = soup.find('div',{'id':'gqbg'})
+        shareholder_modify_div = soup.find('div', {'id': 'gqbg'})
         shareholder_modify_info = shareholder_modify_div.find('table', {'id': 'equAltTab'})
         shareholder_modify_trs = shareholder_modify_info.find_all('tr')
         detail_shareholder_modify_infoes = []
