@@ -71,13 +71,13 @@ class YunnanCrawler(object):
 		self.result_json_dict = {}
 
 	def get_check_num(self):
-		resp = self.reqst.get(self.mydict['search'])
+		resp = self.reqst.get(self.mydict['search'], timeout = 120)
 		if resp.status_code != 200:
 			return None
 		first = resp.content.find('session.token":')
 		session_token = resp.content[first+17:first+53]
 
-		resp = self.reqst.get(self.mydict['validateCode'])
+		resp = self.reqst.get(self.mydict['validateCode'], timeout = 120)
 		if resp.status_code != 200:
 			print 'no validateCode'
 			return None
@@ -86,7 +86,10 @@ class YunnanCrawler(object):
 		from CaptchaRecognition import CaptchaRecognition
 		code_cracker = CaptchaRecognition('yunnan')
 		ck_code = code_cracker.predict_result(self.ckcode_image_path)
-		return ck_code[1],session_token
+		if ck_code is None:
+			return None,None
+		else:
+			return ck_code[1],session_token
 
 	def get_id_num(self, findCode):
 		count = 0
@@ -94,9 +97,10 @@ class YunnanCrawler(object):
 			check_num,session_token = self.get_check_num()
 			print check_num
 			if check_num is None:
+				count += 1
 				continue
 			data = {'searchType':'1','captcha':check_num, "session.token": session_token, 'condition.keyword':findCode}
-			resp = self.reqst.post(self.mydict['searchList'],data=data)
+			resp = self.reqst.post(self.mydict['searchList'],data=data, timeout = 120)
 			if resp.status_code != 200:
 				print resp.status_code
 				print 'error...(get_id_num)'
@@ -130,7 +134,7 @@ class YunnanCrawler(object):
 		pass
 
 	def get_tables(self, url):
-		resp = self.reqst.get(url)
+		resp = self.reqst.get(url, timeout = 120)
 		if resp.status_code == 200:
 			return BeautifulSoup(resp.content).find_all('table')
 			#return [table for table in tables] #if (table.find_all('th') or table.find_all('a')) ]
@@ -144,7 +148,7 @@ class YunnanCrawler(object):
 					tddict = {}
 					detail_head, detail_allths, detail_alltds = self.get_head_ths_tds(self.get_tables(td.a['href'])[0])
 					if detail_head == u'股东及出资信息':
-						detail_content = self.reqst.get(td.a['href']).content
+						detail_content = self.reqst.get(td.a['href'], timeout = 120).content
 						detail_alltds = self.get_re_list_from_content(detail_content)
 					#print '---------------------------', len(detail_allths[:3]+detail_allths[5:]), len(detail_alltds)
 						# tddict = self.get_one_to_one_dict(detail_allths[:3]+detail_allths[5:], detail_alltds)
