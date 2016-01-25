@@ -204,15 +204,27 @@ class Parse(object):
                 pass
             elif type(value) == list:
                 for d in value:
-                    report = self.parse_general(d, mapping[key])
-                    if self.company_result.get(name) is None:
-                        self.company_result[name] = []
-                    self.company_result[name].append(report)
+                    self.parse_report_details_dict(d, name, mapping[key])
+
             elif type(value) == dict:
-                report = self.parse_general(value, mapping[key])
-                if self.company_result.get(name) is None:
-                    self.company_result[name] = []
-                self.company_result[name].append(report)
+                self.parse_report_details_dict(value, name, mapping[key])
+
+    def parse_report_details_dict(self, d, name, mapping):
+        report = self.parse_general(d, mapping)
+        if name == u"year_report_assets":
+            print report
+
+        if self.company_result.get(name) is None:
+            self.company_result[name] = []
+
+        if not self.is_null(report):
+            self.company_result[name].append(report)
+
+    def is_null(self, d):
+        for key, value in d.iteritems():
+            if value:
+                return False
+        return True
 
     def write_to_mysql(self, data):
         operation = Operation(data)
