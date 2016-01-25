@@ -52,7 +52,7 @@ from liaoning_crawler import LiaoningCrawler
 from guangxi_crawler import GuangxiCrawler
 from gansu_crawler import GansuClawer
 from shanxi_crawler import ShanxiCrawler
-from qinghai_crawler import QainghaiCrawler
+from qinghai_crawler import QinghaiCrawler
 
 province_crawler = {
     'beijing': BeijingCrawler,
@@ -79,7 +79,7 @@ province_crawler = {
     'gansu':GansuClawer,
     # 'guangxi': GuangxiClawer,
     'shanxi':ShanxiCrawler,
-    'qinghai':QainghaiCrawler,
+    'qinghai':QinghaiCrawler,
 }
 
 process_pool = multiprocessing.Pool(processes=4)
