@@ -35,6 +35,8 @@ class Parse(object):
             except Exception as e:
                 print "❌  公司ID: %s 解析错误: ❌ " % register_num.encode('utf-8')
                 print e
+                import traceback
+                traceback.print_exc()
 
     def parse_company(self, company={}, register_num=0):
         keys = self.keys
@@ -66,9 +68,6 @@ class Parse(object):
     def parse_list(self, key, list_in_company, mapping):
         keys_to_tables = consts.keys_to_tables
         special_parse_keys = consts.special_parse_keys
-        ent_report = special_parse_keys[0]
-        ind_shareholder = special_parse_keys[1]
-        ent_license = special_parse_keys[2]
         name = keys_to_tables.get(key)
         parse_func = self.key_to_parse_function(key)
 
@@ -79,19 +78,7 @@ class Parse(object):
                     if self.company_result.get(name) is None:
                         self.company_result[name] = []
                     self.company_result[name].append(value)
-        elif key == ent_report:
-            for d in list_in_company:
-                value = parse_func(d, mapping)
-                if name is not None and value is not None:
-                    if self.company_result.get(name) is None:
-                        self.company_result[name] = []
-                    self.company_result[name] = value
-        elif key == ind_shareholder:
-            for d in list_in_company:
-                value = parse_func(d, mapping)
-                if name is not None and value is not None:
-                    self.company_result[name] = value
-        elif key == ent_license:
+        else:
             for d in list_in_company:
                 value = parse_func(d, mapping)
                 if name is not None and value is not None:
@@ -115,6 +102,7 @@ class Parse(object):
             "ent_pub_administration_license": self.parse_enter_license,
             "ent_pub_knowledge_property": self.parse_general,
             "ent_pub_administration_sanction": self.parse_general,
+            "ent_pub_shareholder_modify": self.parse_general,
             "other_dept_pub_administration_license": self.parse_general,
             "other_dept_pub_administration_sanction": self.parse_general,
             "judical_assist_pub_equity_freeze": self.parse_general,
@@ -204,26 +192,25 @@ class Parse(object):
                 else:
                     for result_dict in result:
                         result_dict[mapping.get(field)] = dict_in_company[field]
-        print "########################"
-        print result
+
         return result
 
     def parse_enter_license_detail(self, value, result, mapping):
         dict_inner = {}
+
         for dict_in in value:
             for key_in, value_in in dict_in.iteritems():
-                # print key_in, value_in
                 dict_inner[mapping.get(key_in)] = value_in
+
             result.append(dict_inner)
             dict_inner = {}
-        # print "this is license detail"
-        # print result
-        # print "#########################"
+
         return result
 
     def parse_ent_report(self, dict_in_company, mapping):
         keys_to_tables = consts.keys_to_tables
         ent_report = {}
+
         for key, value in dict_in_company.iteritems():
             type_value = type(value)
             if type_value == unicode or type_value == str:
@@ -237,6 +224,8 @@ class Parse(object):
         if self.company_result.get(name) is None:
             self.company_result[name] = []
         self.company_result[name].append(ent_report)
+
+        return None
 
     def parse_report_details(self, year_report_id, details, mapping):
         keys_to_tables = consts.keys_to_tables

@@ -11,7 +11,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         begin = time.time()
-        p = Pool()
+        p = Pool(processes=16)
 
         for json_path in json_paths:
             p.apply_async(parse, args=(json_path,))
