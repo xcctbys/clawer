@@ -54,6 +54,7 @@ from gansu_crawler import GansuClawer
 from shanxi_crawler import ShanxiCrawler
 from qinghai_crawler import QinghaiCrawler
 from hubei_crawler import HubeiCrawler
+from guizhou_crawler import GuizhouCrawler
 
 province_crawler = {
     'beijing': BeijingCrawler,
@@ -78,10 +79,11 @@ province_crawler = {
     'zhejiang' : ZhejiangCrawler,
     'liaoning': LiaoningCrawler,
     'gansu':GansuClawer,
-    # 'guangxi': GuangxiClawer,
+    'guangxi': GuangxiClawer,
     'shanxi':ShanxiCrawler,
     'qinghai':QinghaiCrawler,
     'hubei':HubeiCrawler,
+    'guizhou' : GuizhouCrawler,
 }
 
 process_pool = None
