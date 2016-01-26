@@ -305,7 +305,7 @@ def main():
     
     if sys.argv[2] == 'all':
         args = [p for p in sorted(province_crawler.keys())]
-        process_pool = multiprocessing.Pool(processes=4)
+        process_pool = multiprocessing.Pool()
         process_pool.map(crawl_province, args)
         process_pool.close()
         settings.logger.info("wait processes....")

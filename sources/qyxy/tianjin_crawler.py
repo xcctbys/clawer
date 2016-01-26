@@ -21,8 +21,6 @@ import CaptchaRecognition as CR
 
 urls = {
     'host': 'http://tjcredit.gov.cn',
-    #'prefix_url_0':'http://www.szcredit.com.cn/web/GSZJGSPT/',
-    #'prefix_url_1':'http://121.8.226.101:7001/search/',
     'page_search': 'http://tjcredit.gov.cn/platform/saic/index.ftl',
     'page_Captcha': 'http://tjcredit.gov.cn/verifycode',
     'page_showinfo': 'http://tjcredit.gov.cn/platform/saic/search.ftl',
@@ -111,6 +109,8 @@ class TianjinCrawler(object):
                     break
                 else:
                     settings.logger.debug(u"crack Captcha failed, the %d time(s)", count)
+                    if count> 5:
+                        break
         return
 
     # 判断是否成功搜索页面

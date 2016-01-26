@@ -73,9 +73,10 @@ class ZhejiangCrawler(object):
         Ent = []
         soup = BeautifulSoup(r.text, "html5lib")
         divs = soup.find_all("dl", {"class":"list"})
-        for div in divs:
-            #settings.logger.debug(u"div.ul.li.a['href'] = %s\n", div.ul.li.a['href'])
-            Ent.append(div.dt.a['href'])
+        if divs:
+            for div in divs:
+                if div.find('a') and div.find('a').has_attr('href'):
+                    Ent.append(div.find('a').has_attr('href'))
         self.ents = Ent
 
     # 破解验证码页面
@@ -105,6 +106,8 @@ class ZhejiangCrawler(object):
                     break
                 else:
                     settings.logger.debug(u"crack Captcha failed, the %d time(s)", count)
+                    if count> 15:
+                        break
         return
     def get_check_response(self, url, datas):
         """获得验证的结果信息"""
@@ -1211,7 +1214,7 @@ if __name__ == "__main__":
     zhejiang = ZhejiangCrawler('./enterprise_crawler/zhejiang.json')
     #zhejiang.work('330000000050426')
     #zhejiang.work('330000000000503')
-    zhejiang.work('330000000022291')
+    zhejiang.work('3300000000222913')
 """
 if __name__ == "__main__":
     reload (sys)

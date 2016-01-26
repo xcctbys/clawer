@@ -718,8 +718,10 @@ class HubeiParser(Parser):
                 list_test = []
                 table_test = {}
                 del list_th[0: colspan_list[0]]
-                for i in range(0, sum):
+                for i in range(0, colspan_list[1]):
+
                     if list_th[i] == "公示日期":
+                        print
                         if table_test.has_key("认缴_公示日期"):
                             table_test["实缴_公示日期"] = list_td[i]
                             continue
@@ -728,8 +730,11 @@ class HubeiParser(Parser):
                             continue
                     table_test[list_th[i]] = list_td[i]
                 list_test.append(table_test)
-                table_save["list"] = list_test
 
+                table_save["list"] = list_test
+                table_title = list_tr[2].find_all("th")
+                for title_wrap in table_title:
+                    list_th.append(title_wrap.text)
                 total.append(table_save)
 
         return total
