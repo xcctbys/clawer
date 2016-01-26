@@ -78,7 +78,6 @@ class JilinCrawler(object):
     def crawl_page_captcha(self, url_search, url_Captcha, url_CheckCode,  textfield= ''):
         """破解验证码页面"""
         page = self.crawl_page_by_url(url_search)['page']
-        print page
         robotcookieid =  re.findall(r'\|([0-9a-z]{40})\|', page)
         forms = None
         if robotcookieid:
@@ -1221,9 +1220,6 @@ class JilinCrawler(object):
 
     def crawl_page_by_url_post(self, url, data, header={}):
         try:
-            print data
-            print url
-            print header
             self.requests.headers.update(header)
             r = self.requests.post(url, data =data, cookies= {'ROBOTCOOKIEID': self.ROBOTCOOKIEID})
             if r.status_code != 200:
