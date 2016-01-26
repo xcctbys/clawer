@@ -34,11 +34,12 @@ keys = (
 special_parse_keys = (
     "ent_pub_ent_annual_report",
     "ind_comm_pub_reg_shareholder",
+    "ent_pub_administration_license",
 )
 
 special_tables = (
     "basic",
-    "industry_commerce_clear"
+    "industry_commerce_clear",
 )
 
 keys_to_tables = {}

@@ -147,9 +147,6 @@ class HeilongjiangClawer(Crawler):
             settings.logger.error('failed to get get_checkcode')
             return None
 
-
-
-
         time.sleep(random.uniform(2, 4))
 
         self.write_file_mutex.acquire()
@@ -246,7 +243,7 @@ class HeilongjiangParser(Parser):
 
             if name_table_map.has_key(list_table_title.text):
                 table_name = name_table_map[list_table_title.text]
-
+                settings.logger.info('crawler to get %s', table_name)
                 self.crawler.json_dict[table_name] = self.parse_table1(table)
 
         # 二类表
@@ -270,6 +267,7 @@ class HeilongjiangParser(Parser):
             td = table.find_all("td")
             if td:
                 id = self.crawler.company_id.split("=")[1]
+                settings.logger.info('crawler to get %s', table_name)
                 self.crawler.json_dict[table_name] = self.parse_table2(table, table_name, id, 0)[0]
             else:
                 self.crawler.json_dict[table_name] = []  # 若表格内没有td则视为空
@@ -278,6 +276,7 @@ class HeilongjiangParser(Parser):
         # 股东信息
         div = soup.find("div", {"id": "invDiv"})
         if div:
+            settings.logger.info('crawler to get ind_comm_pub_reg_shareholder')
             id = self.crawler.company_id.split("=")[1]
             return_table = self.parse_table2(div, 'ind_comm_pub_reg_shareholder', id, 1)
             if return_table[1] != "True":
@@ -290,6 +289,7 @@ class HeilongjiangParser(Parser):
         # 动产抵押登记信息
         div = soup.find("div", {"id": "mortDiv"})
         if div:
+            settings.logger.info('crawler to get ind_comm_pub_movable_property_reg')
             id = self.crawler.company_id.split("=")[1]
             return_table = self.parse_table2(div, 'ind_comm_pub_movable_property_reg', id, 1)
             if return_table[1] != "True":
@@ -302,6 +302,7 @@ class HeilongjiangParser(Parser):
          # 备案信息-主要人员信息
         div = soup.find("div", {"id": "memDiv"})
         if div:
+            settings.logger.info('crawler to get ind_comm_pub_movable_property_reg')
             table_th1 = div.previous_sibling.previous_sibling
             company_id1 = self.crawler.company_id.split("=")[1]
             table_th_trs = table_th1.find_all("tr")
@@ -361,11 +362,13 @@ class HeilongjiangParser(Parser):
                 continue
             if name_table_map.has_key(list_table_title.text):
                 table_name1 = name_table_map[list_table_title.text]
+                settings.logger.info('crawler to get %s', table_name1)
                 self.crawler.json_dict[table_name1] = self.ana_table4(table)
 
         # 股东及出资信息
         gdDiv = soup.find("div", {"id": "gdDiv"})
         if gdDiv:
+            settings.logger.info('crawler to get ent_pub_shareholder_and_investment')
             table = gdDiv.find("table")
             self.crawler.json_dict['ent_pub_shareholder_and_investment'] = self.coarse_page_table(table)
 
@@ -393,17 +396,10 @@ class HeilongjiangParser(Parser):
             a = qiyenianbao.find_all("a")
             if a:
                 for a1 in a:
-                    # table_detail = []
-                    re1 = '.*?'  # Non-greedy match on filler
-                    re2 = '(\\d+)'  # Integer Number 1
-                    re3 = '((?:[a-z][a-z]*[0-9]+[a-z0-9]*))'  # Alphanum 1
-
-                    rg = re.compile(re1+re2+re3,re.IGNORECASE|re.DOTALL)
-                    m = rg.search(str(a1))
-                    int1 = m.group(1)
-                    alphanum1 = m.group(2)
+                    m = re.search(r'id=(.*?)\"', str(a1))
+                    args = m.group(1)
                     host = 'http://gsxt.hljaic.gov.cn/QueryYearExamineDetail.jspx?id='
-                    url = '%s%s' % (host, int1+alphanum1)
+                    url = '%s%s' % (host, args)
                     rep = requests.get(url)
                     soup = BeautifulSoup(rep.content, 'html5lib')
 
@@ -532,12 +528,12 @@ class HeilongjiangParser(Parser):
             table_page_tol = table_page.find_all("a")
             if 'id' in table.next_sibling.next_sibling.attrs:
                 if table.next_sibling.next_sibling.attrs['id'] == 'invPagination':
-                   if HeilongjiangClawer.urls.has_key(table_name):
+                   if self.crawler.urls.has_key(table_name):
 
                     for j in range(1, len(table_page_tol)+1):
                         table_ts = []
                         content_tr = []
-                        url = '%s%s%s%s%s' % (HeilongjiangClawer.urls[table_name], "pno=", j, '&mainId=', company_id)
+                        url = '%s%s%s%s%s' % (self.crawler.urls[table_name], "pno=", j, '&mainId=', company_id)
                         rep = requests.get(url)
                         soup = BeautifulSoup(rep.text, "html5lib")
                         table = soup.find("table")
@@ -546,7 +542,7 @@ class HeilongjiangParser(Parser):
                         content_tr.extend(tr)
                         table_ts.extend(table_save)
 
-                    return [table_ts, content_tr]
+                        return [table_ts, content_tr]
 
         if table.next_sibling.next_sibling and str(table.next_sibling.next_sibling.name) == 'table':
             table_page = table.next_sibling.next_sibling
@@ -601,14 +597,7 @@ class HeilongjiangParser(Parser):
             return
 
         link = content_tr.find("a")
-
-        re1 = '.*?'  # Non-greedy match on filler
-        re2 = '\\d+'  # Uninteresting: int
-        re3 = '.*?'     # Non-greedy match on filler
-        re4 = '(\\d+)'   # Integer Number 1
-
-        rg = re.compile(re1+re2+re3+re4,re.IGNORECASE|re.DOTALL)
-        m = rg.search(str(link))
+        m = re.search(r'id=(.\d+)', str(link))
 
         int1 = m.group(1)
         url1 = '%s%s' %('http://gsxt.hljaic.gov.cn/queryInvDetailAction.jspx?id=', int1)
@@ -618,7 +607,6 @@ class HeilongjiangParser(Parser):
         table = soupn.find("table")
         table_title1 = table.find("th").text  # 获取表头
         detail = {}
-        # detail[table_title1] = total
         detail[table_title1] = self.coarse_page_table(table)
 
         return detail
@@ -626,14 +614,7 @@ class HeilongjiangParser(Parser):
     def get_movable_property_reg_detail(self, content_tr):
 
         link = content_tr.find("a")
-        re1 = '.*?'  # Non-greedy match on filler
-        re2 = '\\d+'  # Uninteresting: int
-        re3 = '.*?'     # Non-greedy match on filler
-        re4 = '(\\d+)'   # Integer Number 1
-
-        rg = re.compile(re1+re2+re3+re4,re.IGNORECASE|re.DOTALL)
-        m = rg.search(str(link))
-
+        m = re.search(r'id=(.\d+)', str(link))
         int1 = m.group(1)
         url1 = '%s%s' %('http://gsxt.hljaic.gov.cn/mortInfoDetail.jspx?id=', int1)
         rep1 = requests.get(url1)
@@ -642,21 +623,18 @@ class HeilongjiangParser(Parser):
         name_table_map1 = [u"抵押权人概况"]
         name_table_map2 = [u'动产抵押登记信息', u'被担保债权概况']
         table_detail = []
+        wrap = {}
         for table in soupn.find_all('table'):
-
             list_table_title = table.find("th")
-            wrap = {}
 
             if list_table_title and list_table_title.text in name_table_map2:
                 wrap[list_table_title.text] = self.parse_table1(table)
-                table_detail.append(wrap)
             if list_table_title and list_table_title.text in name_table_map1:
                 wrap[list_table_title.text] = self.ana_table4(table)
-                table_detail.append(wrap)
         table = soupn.find("div", {"id": "guaDiv"})
         if table:
-            wrap[u"抵押物概况"] = self.parse_table2(table, 1, 0, 0)
-            table_detail.append(wrap)
+            wrap[u"抵押物概况"] = self.parse_table2(table, 1, 0, 0)[0]
+        table_detail.append(wrap)
         return table_detail
 
     def ana_table4(self, table):
@@ -687,10 +665,8 @@ class HeilongjiangParser(Parser):
     def coarse_page_table(self, table):
 
         colspan_list = []  # 跨列的列数
-        # colspan_th = []  # 跨列的列名
         list_title_th = []  # 第一行不跨列的列名
         list_th = []  # 第二行的列名
-
 
         table_trs = table.find_all("tr")
         list_tr = [tr for tr in table_trs]
@@ -700,7 +676,6 @@ class HeilongjiangParser(Parser):
             if 'colspan' in title_wrap.attrs:
                 for colspan in title_wrap['colspan']:
                     colspan_list.append(int(colspan))
-                    # colspan_th.append(title_wrap.text)
             else:
                 list_title_th.append(title_wrap.text)
 
@@ -712,66 +687,68 @@ class HeilongjiangParser(Parser):
             sum = sum + i
 
         total = []  # 若有多行td
+        total_th = list_title_th + list_th  # 总列名
 
         for tr in table_trs[3:]:
             table_td = tr.find_all("td")
             list_td = [td.text.strip() for td in table_td]  # 表格内容列表
             table_save = {}  # 保存的表格
-            for i in range(0, len(list_title_th)):
-                table_save[list_title_th[i]] = list_td[i]
+            if len(list_td) == len(total_th):
+                for i in range(0, len(list_title_th)):
+                    table_save[list_title_th[i]] = list_td[i]
 
-            del list_td[0:len(list_title_th)]
-            list_test = []
-            table_test = {}
-            for i in range(0, sum):
+                del list_td[0:len(list_title_th)]
+                list_test = []
+                table_test = {}
+                for i in range(0, sum):
+                    if list_th[i] == "公示日期":
+                        if table_test.has_key("认缴_公示日期"):
+                            table_test["实缴_公示日期"] = list_td[i]
+                            continue
+                        else:
+                            table_test["认缴_公示日期"] = list_td[i]
+                            continue
+                    table_test[list_th[i]] = list_td[i]
+                list_test.append(table_test)
+                table_save["list"] = list_test
 
-                # for j in range(0, i):
-                table_test[list_th[i]] = list_td[i]
-            list_test.append(table_test)
-                # del list_td[0:i]
-                # del list_th[0:i]
-            table_save["list"] = list_test
-            # for i in range(0, len(colspan_th)):
-            #      table_save[colspan_th[i]] = list_test[i]
-            # total.append(table_save)
+                total.append(table_save)
+            elif len(list_td) == sum:
+                list_test = []
+                table_test = {}
+                for i in range(0, sum):
+                    if list_th[i] == "公示日期":
+                        if table_test.has_key("认缴_公示日期"):
+                            table_test["实缴_公示日期"] = list_td[i]
+                            continue
+                        else:
+                            table_test["认缴_公示日期"] = list_td[i]
+                            continue
+                    table_test[list_th[i]] = list_td[i]
+                list_test.append(table_test)
+                table_save["list"] = list_test
 
-            # table_title = list_tr[2].find_all("th")
-            # for title_wrap in table_title:
-            #     list_th.append(title_wrap.text)
+                total.append(table_save)
+            else:
+                list_test = []
+                table_test = {}
+                del list_th[0: colspan_list[0]]
+                for i in range(0, sum):
+                    if list_th[i] == "公示日期":
+                        if table_test.has_key("认缴_公示日期"):
+                            table_test["实缴_公示日期"] = list_td[i]
+                            continue
+                        else:
+                            table_test["认缴_公示日期"] = list_td[i]
+                            continue
+                    table_test[list_th[i]] = list_td[i]
+                list_test.append(table_test)
+                table_save["list"] = list_test
 
-            total.append(table_save)
-        # faill[table_title1] = total
+                total.append(table_save)
 
         return total
 
-
-class TestParser(unittest.TestCase):
-    def setUp(self):
-        unittest.TestCase.setUp(self)
-        self.crawler = HeilongjiangClawer('./enterprise_crawler/heilongjiang.json')
-        self.parser = self.crawler.parser
-        self.crawler.json_dict = {}
-        self.crawler.ent_number = '00000'
-
-    def test_parse_ind_comm_pub_page(self):
-        with open('./enterprise_crawler/heilongjiang/ind_comm_pub.html') as f:
-            page = f.read()
-            self.parser.parse_ind_comm_pub_pages(page)
-
-    def test_parse_ent_pub_skeleton(self):
-        with open('./enterprise_crawler/heilongjiang/ent_pub.html') as f:
-            page = f.read()
-            self.parser.parse_ent_pub_pages(page)
-
-    def test_parse_other_dept_pub_skeleton(self):
-        with open('./enterprise_crawler/heilongjiang/other_dept_pub.html') as f:
-            page = f.read()
-            self.parser.parse_other_dept_pub_pages(page)
-
-    def test_parse_judical_assist_pub_skeleton(self):
-        with open('./enterprise_crawler/heilongjiang/judical_assist_pub.html') as f:
-            page = f.read()
-            self.parser.parse_judical_assist_pub_pages(page)
 
 if __name__ == '__main__':
     from CaptchaRecognition import CaptchaRecognition

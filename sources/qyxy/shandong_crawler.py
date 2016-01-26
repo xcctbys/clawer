@@ -68,8 +68,10 @@ class ShandongCrawler(object):
         Ent = []
         soup = BeautifulSoup(page, "html5lib")
         divs = soup.find_all("div", {"class":"list"})
-        for div in divs:
-            Ent.append(div.ul.li.a['href'])
+        if divs:
+            for div in divs:
+                if div and div.ul and div.ul.li and div.ul.li.a and div.ul.li.a.has_attr('href'):
+                    Ent.append(div.ul.li.a['href'])
         self.ents = Ent
 
     # 破解验证码页面
@@ -106,6 +108,8 @@ class ShandongCrawler(object):
                     break
                 else:
                     settings.logger.debug(u"crack Captcha failed, the %d time(s)", count)
+                    if count> 5:
+                        break
         return
 
     # 判断是否成功搜索页面
@@ -1412,19 +1416,15 @@ class ShandongCrawler(object):
 
     def crawl_page_by_url_post(self, url, data, headers={}):
         try:
-            if headers:
-                self.requests.headers.update(headers)
-                r = self.requests.post(url, data)
-            else :
-                r = self.requests.post(url, data)
+            self.requests.headers.update(headers)
+            r = self.requests.post(url, data)
             if r.status_code != 200:
                 settings.logger.error(u"Getting page by url with post:%s, return status %s\n"% (url, r.status_code))
             text = r.text
             urls = r.url
         except Exception as e:
             settings.logger.error(u"Cann't post page by url:%s, exception is %s"%(url, type(e)))
-        finally:
-            return {'page': text, 'url': urls}
+        return {'page': text, 'url': urls}
 
     def run(self, ent_num):
         if not os.path.exists(self.html_restore_path):

@@ -1,6 +1,5 @@
 ### Mysql's Configs
 
-    create database clawer
     # edit structured/settings.py
     # change `db_user` and `db_password` for yours.
     DATABASES = {
@@ -16,12 +15,20 @@
 
 ### Create Mysql Tables
 
+    mysql -udb_user -p db_password
+    create database clawer;
     python manage.py makemigrations
     python manage.py migrate
+
+    # OR
+    make db_init
 
 ### Import Data to Database
 
     python manage.py structured
+
+    # OR
+    make
 
 ### Json Keys to Mysql Tables
 
