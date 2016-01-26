@@ -31,11 +31,11 @@ urls = {
 }
 
 headers = { #'Connetion': 'Keep-Alive',
+            'Host' : '211.141.74.198:8081',
             'Accept': 'text/html, application/xhtml+xml, */*',
             'Accept-Language': 'en-US, en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36",
+            "User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:43.0) Gecko/20100101 Firefox/43.0",
             'Referer': "http://211.141.74.198:8081/aiccips/",
-            'X-Requested-With': 'XMLHttpRequest',
             }
 
 class JilinCrawler(object):
@@ -62,8 +62,11 @@ class JilinCrawler(object):
         Ent = []
         soup = BeautifulSoup(page, "html5lib")
         divs = soup.find_all("div", {"class":"list"})
-        for div in divs:
-            Ent.append(div.find('a')['href'])
+        if divs:
+            for div in divs:
+                a = div.find('a')
+                if a.has_attr('href'):
+                    Ent.append(div.find('a')['href'])
         self.ents = Ent
 
     def is_search_result_page(self, page):
@@ -75,22 +78,23 @@ class JilinCrawler(object):
     def crawl_page_captcha(self, url_search, url_Captcha, url_CheckCode,  textfield= ''):
         """破解验证码页面"""
         page = self.crawl_page_by_url(url_search)['page']
-        #print page
+        print page
         robotcookieid =  re.findall(r'\|([0-9a-z]{40})\|', page)
         forms = None
-        for cookie in robotcookieid:
-            self.ROBOTCOOKIEID = cookie
-            page = self.crawl_page_by_url(url_search)['page']
-            soup = BeautifulSoup(page, 'html5lib')
-            forms = soup.find('form', {'id':'searchform'})
-            if forms:
+        if robotcookieid:
+            for cookie in robotcookieid:
                 self.ROBOTCOOKIEID = cookie
-                break
-        if forms is None:
+                page = self.crawl_page_by_url(url_search)['page']
+                soup = BeautifulSoup(page, 'html5lib')
+                forms = soup.find('form', {'id':'searchform'})
+                if forms:
+                    self.ROBOTCOOKIEID = cookie
+                    self.csrf = forms.find('input',{'name': '_csrf'})['value']
+                    break
+        else:
             soup = BeautifulSoup(page, 'html5lib')
             self.csrf = soup.find('meta', {'name': '_csrf'})['content']
-        else:
-            self.csrf = forms.find('input',{'name': '_csrf'})['value']
+
         datas= {
                 'kw' : textfield,
                 '_csrf': self.csrf,
@@ -99,7 +103,7 @@ class JilinCrawler(object):
         count = 0
         while True:
             count+= 1
-            r = self.requests.get( url_Captcha, cookies={'ROBOTCOOKIEID': self.ROBOTCOOKIEID})
+            r = self.requests.get( url_Captcha, cookies={'ROBOTCOOKIEID': self.ROBOTCOOKIEID}, headers={'Referer': "http://211.141.74.198:8081/aiccips/"})
             if r.status_code != 200:
                 settings.logger.error(u"Something wrong when getting the Captcha url:%s , status_code=%d", url_Captcha, r.status_code)
                 return
@@ -114,7 +118,7 @@ class JilinCrawler(object):
                     break
                 else:
                     settings.logger.debug(u"crack Captcha failed, the %d time(s)", count)
-                    if count >3:
+                    if count >5:
                         break;
         return
     def crack_captcha(self):
@@ -142,11 +146,6 @@ class JilinCrawler(object):
             f.close
         self.write_file_mutex.release()
         return True
-    """
-        The following enterprises in ents
-        1. for each ent: decide host so that choose e urls
-        2. for eah url, iterate item in tabs
-    """
     def crawl_page_main(self ):
         """  爬取页面信息总函数        """
         sub_json_dict= {}
@@ -166,10 +165,10 @@ class JilinCrawler(object):
                 sub_json_dict.update(self.crawl_ind_comm_pub_pages(url))
                 url = urls['host'] + "qygsdetail/"+ self.enttype+"/" + self.encrpripid
                 sub_json_dict.update(self.crawl_ent_pub_pages(url))
-                # url = urls['host'] + "qtgsdetail/"+ self.enttype+"/" + self.encrpripid
-                # sub_json_dict.update(self.crawl_other_dept_pub_pages(url))
-                # url = urls['host'] + "sfgsdetail/"+ self.enttype+"/" + self.encrpripid
-                # sub_json_dict.update(self.crawl_judical_assist_pub_pages(url))
+                url = urls['host'] + "qtgsdetail/"+ self.enttype+"/" + self.encrpripid
+                sub_json_dict.update(self.crawl_other_dept_pub_pages(url))
+                url = urls['host'] + "sfgsdetail/"+ self.enttype+"/" + self.encrpripid
+                sub_json_dict.update(self.crawl_judical_assist_pub_pages(url))
 
         except Exception as e:
             settings.logger.error(u"An error ocurred when getting the main page, error: %s"% type(e))
@@ -611,7 +610,7 @@ class JilinCrawler(object):
             columns = self.get_columns_of_record_table(bs_table, page, table_name)
             titles = [column[0] for column in columns]
             url = urls['host'] + "qygsjsxxxzcfxx"
-            res = self.crawl_page_by_url_post(url, post_data, {'X-CSRF-TOKEN': self.csrf})['page']
+            res = self.crawl_page_by_url_post(url, post_data, {'X-CSRF-TOKEN': self.csrf, 'X-Requested-With': 'XMLHttpRequest','Referer': "http://211.141.74.198:8081/aiccips/pub/qygsdetail/1219/"+self.encrpripid})['page']
             ls = json.loads(res)
             for i, l in enumerate(ls):
                 date_from = l['pendecissdate']
@@ -631,7 +630,7 @@ class JilinCrawler(object):
             columns = self.get_columns_of_record_table(bs_table, page, table_name)
             titles = [column[0] for column in columns]
             url = urls['host']+ "qygsjsxxzscqcz"
-            res = self.crawl_page_by_url_post(url, post_data, {'X-CSRF-TOKEN': self.csrf})['page']
+            res = self.crawl_page_by_url_post(url, post_data, {'X-CSRF-TOKEN': self.csrf, 'X-Requested-With': 'XMLHttpRequest','Referer': "http://211.141.74.198:8081/aiccips/pub/qygsdetail/1219/"+self.encrpripid})['page']
             ls = json.loads(res)
             for i, l in enumerate(ls):
                 date_from = l['pleregperfrom']
@@ -654,7 +653,10 @@ class JilinCrawler(object):
             columns = self.get_columns_of_record_table(bs_table, page, table_name)
             titles = [column[0] for column in columns]
             url = urls['host'] + "qygsjsxxxzxk"
-            res = self.crawl_page_by_url_post(url, post_data, {'X-CSRF-TOKEN': self.csrf})['page']
+            #print post_data
+            #print self.csrf
+            #print page
+            res = self.crawl_page_by_url_post(url, post_data, {'X-CSRF-TOKEN': self.csrf, 'X-Requested-With': 'XMLHttpRequest','Referer': "http://211.141.74.198:8081/aiccips/pub/qygsdetail/1219/"+self.encrpripid,})['page']
             ls = json.loads(res)
             for i, l in enumerate(ls):
                 date_from = l['valfrom']
@@ -681,7 +683,7 @@ class JilinCrawler(object):
             columns = self.get_columns_of_record_table(bs_table, page, table_name)
             titles = [column[0] for column in columns]
             url = urls['host']+ "/qygsJsxxgqbg"
-            res = self.crawl_page_by_url_post(url, post_data, {'X-CSRF-TOKEN': self.csrf})['page']
+            res = self.crawl_page_by_url_post(url, post_data, {'X-CSRF-TOKEN': self.csrf, 'X-Requested-With': 'XMLHttpRequest','Referer': "http://211.141.74.198:8081/aiccips/pub/qygsdetail/1219/"+self.encrpripid})['page']
             ls = json.loads(res)
             for i, l in enumerate(ls):
                 date_from = l['altdate']
@@ -701,7 +703,7 @@ class JilinCrawler(object):
             columns = self.get_columns_of_record_table(bs_table, page, table_name)
             titles = [column[0] for column in columns]
             url = urls['host'] + "/qygsjsxxczxxbgsx"
-            res = self.crawl_page_by_url_post(url, post_data, {'X-CSRF-TOKEN': self.csrf})['page']
+            res = self.crawl_page_by_url_post(url, post_data, {'X-CSRF-TOKEN': self.csrf, 'X-Requested-With': 'XMLHttpRequest','Referer': "http://211.141.74.198:8081/aiccips/pub/qygsdetail/1219/"+self.encrpripid})['page']
             ls = json.loads(res)
             for rows in ls:
                 for i, l in enumerate(rows['bgxx']):
@@ -721,7 +723,7 @@ class JilinCrawler(object):
         try:
             settings.logger.info(u"parse qygs table 股东及出资信息 ")
             url = urls['host']+ "/qygsjsxxxzczxx"
-            res = self.crawl_page_by_url_post(url, post_data, {'X-CSRF-TOKEN': self.csrf})['page']
+            res = self.crawl_page_by_url_post(url, post_data, {'X-CSRF-TOKEN': self.csrf, 'X-Requested-With': 'XMLHttpRequest','Referer': "http://211.141.74.198:8081/aiccips/pub/qygsdetail/1219/"+self.encrpripid})['page']
             ls = json.loads(res)
             for i, l in enumerate(ls):
                 czxx = l['czxx']
@@ -1204,9 +1206,9 @@ class JilinCrawler(object):
         finally:
             return table_dict
 
-    def crawl_page_by_url(self, url , cookie={}):
+    def crawl_page_by_url(self, url , cookie={}, header={}):
         try:
-            r = self.requests.get( url, cookies= {'ROBOTCOOKIEID': self.ROBOTCOOKIEID})
+            r = self.requests.get( url, cookies= {'ROBOTCOOKIEID': self.ROBOTCOOKIEID}, headers= header)
             if r.status_code != 200:
                 settings.logger.error(u"Getting page by url:%s, return status %s\n"% (url, r.status_code))
             text = r.text
@@ -1217,13 +1219,13 @@ class JilinCrawler(object):
         finally:
             return {'page' : text, 'url': urls}
 
-    def crawl_page_by_url_post(self, url, data, headers={}):
+    def crawl_page_by_url_post(self, url, data, header={}):
         try:
-            if headers:
-                self.requests.headers.update(headers)
-                r = self.requests.post(url, data, cookies= {'ROBOTCOOKIEID': self.ROBOTCOOKIEID})
-            else :
-                r = self.requests.post(url, data, cookies= {'ROBOTCOOKIEID': self.ROBOTCOOKIEID})
+            print data
+            print url
+            print header
+            self.requests.headers.update(header)
+            r = self.requests.post(url, data =data, cookies= {'ROBOTCOOKIEID': self.ROBOTCOOKIEID})
             if r.status_code != 200:
                 settings.logger.error(u"Getting page by url with post:%s, return status %s\n"% (url, r.status_code))
             text = r.text
@@ -1285,7 +1287,7 @@ def read_ent_from_file(path):
         lines = f.readlines()
     lines = [ line.split(',') for line in lines ]
     return lines
-
+"""
 if __name__ == "__main__":
     reload (sys)
     sys.setdefaultencoding('utf8')
@@ -1312,4 +1314,4 @@ if __name__ == "__main__":
         jilin.run(ent_num = ent_str[2])
         settings.logger.info(u'###################   Enterprise with id  %s Finished!  ###################\n' % ent_str[2])
 
-"""
+

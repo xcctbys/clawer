@@ -69,9 +69,11 @@ class ShaanxiCrawler(object):
         Ent = []
         soup = BeautifulSoup(page, "html5lib")
         divs = soup.find_all("div", {"style":"width:950px; padding:25px 20px 0px; overflow: hidden;float: left;"})
-        for div in divs:
-            a= div.ul.li.a
-            Ent.append(a['onclick'])
+        if divs:
+            for div in divs:
+                if div and div.ul and div.ul.li and div.ul.li.a and div.ul.li.a.has_attr('onclick'):
+                    a= div.ul.li.a
+                    Ent.append(a['onclick'])
         if not Ent:
             return False
         self.ents = Ent
@@ -107,6 +109,8 @@ class ShaanxiCrawler(object):
                     break
                 else:
                     settings.logger.debug(u"crack Captcha failed, the %d time(s)", count)
+                    if count>5:
+                        break
         return
 
 

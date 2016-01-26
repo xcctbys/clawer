@@ -73,9 +73,10 @@ class ZhejiangCrawler(object):
         Ent = []
         soup = BeautifulSoup(r.text, "html5lib")
         divs = soup.find_all("dl", {"class":"list"})
-        for div in divs:
-            #settings.logger.debug(u"div.ul.li.a['href'] = %s\n", div.ul.li.a['href'])
-            Ent.append(div.dt.a['href'])
+        if divs:
+            for div in divs:
+                if div.dt and div.dt.a and div.dt.a.has_attr('href'):
+                    Ent.append(div.dt.a['href'])
         self.ents = Ent
 
     # 破解验证码页面

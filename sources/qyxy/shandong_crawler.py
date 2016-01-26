@@ -1412,19 +1412,15 @@ class ShandongCrawler(object):
 
     def crawl_page_by_url_post(self, url, data, headers={}):
         try:
-            if headers:
-                self.requests.headers.update(headers)
-                r = self.requests.post(url, data)
-            else :
-                r = self.requests.post(url, data)
+            self.requests.headers.update(headers)
+            r = self.requests.post(url, data)
             if r.status_code != 200:
                 settings.logger.error(u"Getting page by url with post:%s, return status %s\n"% (url, r.status_code))
             text = r.text
             urls = r.url
         except Exception as e:
             settings.logger.error(u"Cann't post page by url:%s, exception is %s"%(url, type(e)))
-        finally:
-            return {'page': text, 'url': urls}
+        return {'page': text, 'url': urls}
 
     def run(self, ent_num):
         if not os.path.exists(self.html_restore_path):
