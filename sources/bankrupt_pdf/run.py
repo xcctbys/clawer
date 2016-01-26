@@ -153,6 +153,7 @@ if __name__ == '__main__':
 	
 	max_crawl_time = int(sys.argv[1])
 	if len(sys.argv) == 2:
-		down_yesterday_pdf()
+		yesterday = (datetime.datetime.now() - datetime.timedelta(1)).strftime('%Y%m%d')
+		down_yesterday_pdf(yesterday)
 	else:
 		down_argv_pdf(sys.argv[2:])
