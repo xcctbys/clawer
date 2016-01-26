@@ -61,7 +61,7 @@ def get_need_down_json_file_name(url):
 
 def get_data_json_file(abs_yesterday_json_url, abs_json_restore_dir, json_gz_file_name):
 	abs_json_restore_path = '%s/%s' % (abs_json_restore_dir, json_gz_file_name)
-	print 'abs_json_restore_path:', abs_json_restore_path
+	# print 'abs_json_restore_path:', abs_json_restore_path
 	count = 0
 	resp = None
 	while count<10:
@@ -88,8 +88,8 @@ def get_pdfs_from_data_json(abs_pdf_restore_dir, json_file_name):
 	for line in f.readlines():
 		list_dict = json.loads(line)['list']
 		for i, item in enumerate(list_dict):
-			print i,'---------'
-			print item
+			# print i,'---------'
+			# print item
 			pdf_url = item['pdf_url']
 			count = 0
 			resp = None
@@ -106,7 +106,7 @@ def get_pdfs_from_data_json(abs_pdf_restore_dir, json_file_name):
 					continue
 			if count != 10:
 				list_dict[i]['abs_path'] = '%s/%s' % (abs_pdf_restore_dir, pdf_url.rsplit('/')[-1])
-		print list_dict
+		# print list_dict
 		CrawlerUtils.json_dump_to_file('%s%s%s' %(json_file_name[:-5], '_insert', json_file_name[-5:]), {'list':list_dict})
 	f.close()
 
@@ -114,21 +114,21 @@ def get_pdfs_from_data_json(abs_pdf_restore_dir, json_file_name):
 def down_yesterday_pdf(yesterday):
 	yesterday = yesterday
 	abs_yesterday_json_url = '%s/%s/%s/%s/%s' % (settings.host, settings.ID, yesterday[:4], yesterday[4:6], yesterday[6:])
-	print 'abs_yesterday_json_url:', abs_yesterday_json_url
+	# print 'abs_yesterday_json_url:', abs_yesterday_json_url
 	need_down_json_file_name = get_need_down_json_file_name(abs_yesterday_json_url)
 	if need_down_json_file_name is None:
 		print '-error__from_%s____no_data' % abs_yesterday_json_url
 		return
 	else:
 		abs_yesterday_json_url = '%s/%s' % (abs_yesterday_json_url, need_down_json_file_name)
-		print 'abs_yesterday_json_url:',abs_yesterday_json_url
+		# print 'abs_yesterday_json_url:',abs_yesterday_json_url
 		abs_json_restore_dir = '%s/%s/%s/%s' % (settings.json_restore_dir, yesterday[:4], yesterday[4:6], yesterday[6:])
 		if not os.path.exists(abs_json_restore_dir):
 			CrawlerUtils.make_dir(abs_json_restore_dir)
 		abs_pdf_restore_dir = '%s/%s/%s/%s' % (settings.pdf_restore_dir, yesterday[:4], yesterday[4:6], yesterday[6:])
 		if not os.path.exists(abs_pdf_restore_dir):
 			CrawlerUtils.make_dir(abs_pdf_restore_dir)
-		print 'abs_json_restore_dir:', abs_json_restore_dir
+		# print 'abs_json_restore_dir:', abs_json_restore_dir
 		get_json_file_OK = get_data_json_file(abs_yesterday_json_url, abs_json_restore_dir, need_down_json_file_name)
 		if get_json_file_OK is False:
 			print '-error--nodata_from_%s%s' % (abs_json_restore_dir, need_down_json_file_name)
@@ -136,8 +136,8 @@ def down_yesterday_pdf(yesterday):
 		else:
 			abs_yesterday_json_gz_file_name = '%s/%s' %(abs_json_restore_dir, need_down_json_file_name)
 			abs_yesterday_json_file_name = '%s/%s%s' %(abs_json_restore_dir, yesterday, '.json')
-			print 'abs_yesterday_json_file_name:',abs_yesterday_json_file_name
-			print 'abs_yesterday_json_gz_file_name:', abs_yesterday_json_gz_file_name
+			# print 'abs_yesterday_json_file_name:',abs_yesterday_json_file_name
+			# print 'abs_yesterday_json_gz_file_name:', abs_yesterday_json_gz_file_name
 			g = gzip.GzipFile(mode='rb', fileobj=open(abs_yesterday_json_gz_file_name, 'rb'))
 			open(abs_yesterday_json_file_name, 'wb').write(g.read())
 			if os.path.isfile(abs_yesterday_json_gz_file_name):
