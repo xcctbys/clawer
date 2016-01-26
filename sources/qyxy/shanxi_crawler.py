@@ -695,24 +695,65 @@ class ShanxiParser(Parser):
             sum = sum + i
 
         total = []  # 若有多行td
+        total_th = list_title_th + list_th  # 总列名
 
         for tr in table_trs[3:]:
             table_td = tr.find_all("td")
             list_td = [td.text.strip() for td in table_td]  # 表格内容列表
             table_save = {}  # 保存的表格
-            for i in range(0, len(list_title_th)):
-                table_save[list_title_th[i]] = list_td[i]
+            if len(list_td) == len(total_th):
+                for i in range(0, len(list_title_th)):
+                    table_save[list_title_th[i]] = list_td[i]
 
-            del list_td[0:len(list_title_th)]
-            list_test = []
-            table_test = {}
-            for i in range(0, sum):
+                del list_td[0:len(list_title_th)]
+                list_test = []
+                table_test = {}
+                for i in range(0, sum):
+                    if list_th[i] == "公示日期":
+                        if table_test.has_key("认缴_公示日期"):
+                            table_test["实缴_公示日期"] = list_td[i]
+                            continue
+                        else:
+                            table_test["认缴_公示日期"] = list_td[i]
+                            continue
+                    table_test[list_th[i]] = list_td[i]
+                list_test.append(table_test)
+                table_save["list"] = list_test
 
-                table_test[list_th[i]] = list_td[i]
-            list_test.append(table_test)
-            table_save["list"] = list_test
+                total.append(table_save)
+            elif len(list_td) == sum:
+                list_test = []
+                table_test = {}
+                for i in range(0, sum):
+                    if list_th[i] == "公示日期":
+                        if table_test.has_key("认缴_公示日期"):
+                            table_test["实缴_公示日期"] = list_td[i]
+                            continue
+                        else:
+                            table_test["认缴_公示日期"] = list_td[i]
+                            continue
+                    table_test[list_th[i]] = list_td[i]
+                list_test.append(table_test)
+                table_save["list"] = list_test
 
-            total.append(table_save)
+                total.append(table_save)
+            else:
+                list_test = []
+                table_test = {}
+                del list_th[0: colspan_list[0]]
+                for i in range(0, sum):
+                    if list_th[i] == "公示日期":
+                        if table_test.has_key("认缴_公示日期"):
+                            table_test["实缴_公示日期"] = list_td[i]
+                            continue
+                        else:
+                            table_test["认缴_公示日期"] = list_td[i]
+                            continue
+                    table_test[list_th[i]] = list_td[i]
+                list_test.append(table_test)
+                table_save["list"] = list_test
+
+                total.append(table_save)
 
         return total
 

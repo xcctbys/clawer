@@ -140,6 +140,8 @@ class GuangdongClawer(object):
                     break
                 else:
                     settings.logger.debug(u"crack Captcha failed, the %d time(s)", count)
+                    if count > 5:
+                        break
         return
     #获得验证的结果信息
     def get_check_response(self, url, datas):

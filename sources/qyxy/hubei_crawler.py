@@ -206,19 +206,19 @@ class HubeiCrawler(Crawler):
         return resp.content
 
 class HubeiParser(Parser):
-    """山西工商页面的解析类
+    """湖北工商页面的解析类
     """
     def __init__(self, crawler):
         self.crawler = crawler
 
     def parse_ind_comm_pub_pages(self, page):
-        """解析工商公示信息-页面，在山西的页面中，工商公示信息所有信息都通过一个http get返回
+        """解析工商公示信息-页面，在湖北的页面中，工商公示信息所有信息都通过一个http get返回
         """
         soup = BeautifulSoup(page, "html5lib")
         # 一类表
         name_table_map = {
-            u'基本信息': 'ind_comm_pub_reg_basic', # 登记信息-基本信息
-            u'清算信息': 'ind_comm_pub_arch_liquidation', # 备案信息-清算信息
+            u'基本信息': 'ind_comm_pub_reg_basic',  # 登记信息-基本信息
+            u'清算信息': 'ind_comm_pub_arch_liquidation',  # 备案信息-清算信息
         }
 
         for table in soup.find_all('table'):
@@ -228,7 +228,7 @@ class HubeiParser(Parser):
 
             if name_table_map.has_key(list_table_title.text):
                 table_name = name_table_map[list_table_title.text]
-
+                settings.logger.info('crawler to get %s', table_name)
                 self.crawler.json_dict[table_name] = self.parse_table1(table)
 
         # 二类表
@@ -236,34 +236,32 @@ class HubeiParser(Parser):
             'altDiv': 'ind_comm_pub_reg_modify',  # 登记信息-变更信息
             # 'memDiv': 'ind_comm_pub_arch_key_persons',  # 备案信息-主要人员信息
             "childDiv": 'ind_comm_pub_arch_branch',  # 备案信息-分支机构信息
-            "pledgeDiv": 'ind_comm_pub_equity_ownership_reg',  # 股权出质登记信息
+            "pledgeDiv": 'ind_comm_pub_equity_ownership_reg',  # 股权出置登记信息
             "punDiv": 'ind_comm_pub_administration_sanction',  # 行政处罚信息
             "excDiv": 'ind_comm_pub_business_exception',  # 经营异常信息
             "serillDiv": 'ind_comm_pub_serious_violate_law',  # 严重违法信息
             "spotCheckDiv": 'ind_comm_pub_spot_check',  # 抽查检查信息
         }
         table_ids = id_table_map.keys()
-        id = self.crawler.company_id.split("=")[1]
         for table_id in table_ids:
             table_name = id_table_map[table_id]
 
             table = soup.find("div", {"id": table_id})
-            if table:
-
-                td = table.find_all("td")
-                if td:
-
-                    settings.logger.info('get %s' % table_name)
-                    self.crawler.json_dict[table_name] = self.parse_table2(table, table_name, id, 0)[0]
-                else:
-                    self.crawler.json_dict[table_name] = []  # 若表格内没有td则视为空
-                    continue
+            if not table:
+                continue
+            td = table.find_all("td")
+            if td:
+                id = self.crawler.company_id.split("=")[1]
+                settings.logger.info('crawler to get %s', table_name)
+                self.crawler.json_dict[table_name] = self.parse_table2(table, table_name, id, 0)[0]
             else:
+                self.crawler.json_dict[table_name] = []  # 若表格内没有td则视为空
                 continue
 
         # 股东信息
         div = soup.find("div", {"id": "invDiv"})
         if div:
+            settings.logger.info('crawler to get ind_comm_pub_reg_shareholder')
             id = self.crawler.company_id.split("=")[1]
             return_table = self.parse_table2(div, 'ind_comm_pub_reg_shareholder', id, 1)
             if return_table[1] != "True":
@@ -276,6 +274,7 @@ class HubeiParser(Parser):
         # 动产抵押登记信息
         div = soup.find("div", {"id": "mortDiv"})
         if div:
+            settings.logger.info('crawler to get ind_comm_pub_movable_property_reg')
             id = self.crawler.company_id.split("=")[1]
             return_table = self.parse_table2(div, 'ind_comm_pub_movable_property_reg', id, 1)
             if return_table[1] != "True":
@@ -288,6 +287,7 @@ class HubeiParser(Parser):
          # 备案信息-主要人员信息
         div = soup.find("div", {"id": "memDiv"})
         if div:
+            settings.logger.info('crawler to get ind_comm_pub_movable_property_reg')
             table_th1 = div.previous_sibling.previous_sibling
             company_id1 = self.crawler.company_id.split("=")[1]
             table_th_trs = table_th1.find_all("tr")
@@ -299,11 +299,12 @@ class HubeiParser(Parser):
 
                 for i in range(1, len(table_page_tol)+1):
                     url = '%s%s%s%s%s' % (self.crawler.urls['ind_comm_pub_arch_key_persons'], "pno=", i, '&mainId=', company_id1)
-
+                    # print "url", url
                     rep = requests.get(url)
                     soup = BeautifulSoup(rep.text, "html5lib")
 
                     table = soup.find("table")
+                    # print "主要人员", table
 
                     trs = table.find_all("tr")
 
@@ -327,7 +328,6 @@ class HubeiParser(Parser):
                 self.crawler.json_dict['ind_comm_pub_arch_key_persons'] = []
         else:
             self.crawler.json_dict['ind_comm_pub_arch_key_persons'] = []
-        
 
     def parse_ent_pub_pages(self, page):
         soup = BeautifulSoup(page, "html5lib")
@@ -347,11 +347,13 @@ class HubeiParser(Parser):
                 continue
             if name_table_map.has_key(list_table_title.text):
                 table_name1 = name_table_map[list_table_title.text]
+                settings.logger.info('crawler to get %s', table_name1)
                 self.crawler.json_dict[table_name1] = self.ana_table4(table)
 
         # 股东及出资信息
         gdDiv = soup.find("div", {"id": "gdDiv"})
         if gdDiv:
+            settings.logger.info('crawler to get ent_pub_shareholder_and_investment')
             table = gdDiv.find("table")
             self.crawler.json_dict['ent_pub_shareholder_and_investment'] = self.coarse_page_table(table)
 
@@ -378,19 +380,11 @@ class HubeiParser(Parser):
             table_detail = {}
             a = qiyenianbao.find_all("a")
             if a:
-
                 for a1 in a:
-                    # table_detail = []
-                    re1 = '.*?'	 # Non-greedy match on filler
-                    re2 = '(\\d+)'  # Integer Number 1
-                    re3 = '((?:[a-z][a-z]*[0-9]+[a-z0-9]*))'  # Alphanum 1
-
-                    rg = re.compile(re1+re2+re3,re.IGNORECASE|re.DOTALL)
-                    m = rg.search(str(a1))
-                    int1 = m.group(1)
-                    alphanum1 = m.group(2)
+                    m = re.search(r'id=(.*?)\"', str(a1))
+                    args = m.group(1)
                     host = 'http://xyjg.egs.gov.cn/ECPS_HB/QueryYearExamineDetail.jspx?id='
-                    url = '%s%s' % (host, int1+alphanum1)
+                    url = '%s%s' % (host, args)
                     rep = requests.get(url)
                     soup = BeautifulSoup(rep.content, 'html5lib')
 
@@ -533,7 +527,7 @@ class HubeiParser(Parser):
                         content_tr.extend(tr)
                         table_ts.extend(table_save)
 
-                    return [table_ts, content_tr]
+                        return [table_ts, content_tr]
 
         if table.next_sibling.next_sibling and str(table.next_sibling.next_sibling.name) == 'table':
             table_page = table.next_sibling.next_sibling
@@ -548,11 +542,11 @@ class HubeiParser(Parser):
                     table_ts = []
                     content_tr = []
                     for j in range(1, len(table_page_tol)+1):
+
                         url = '%s%s%s%s%s' % (self.crawler.urls[table_name], "pno=", j, '&mainId=', company_id)
                         rep = requests.get(url)
                         soup = BeautifulSoup(rep.text, "html5lib")
                         table = soup.find("table")
-                        settings.logger.info('%s' % table)
                         table_save = self.get_td(table, table_columns)
                         tr = table.find_all("tr")
                         content_tr.extend(tr)
@@ -588,38 +582,24 @@ class HubeiParser(Parser):
             return
 
         link = content_tr.find("a")
-
-        re1 = '.*?'	 # Non-greedy match on filler
-        re2 = '\\d+'  # Uninteresting: int
-        re3 = '.*?' 	# Non-greedy match on filler
-        re4 = '(\\d+)'	 # Integer Number 1
-
-        rg = re.compile(re1+re2+re3+re4,re.IGNORECASE|re.DOTALL)
-        m = rg.search(str(link))
+        m = re.search(r'id=(.\d+)', str(link))
 
         int1 = m.group(1)
         url1 = '%s%s' %('http://xyjg.egs.gov.cn/ECPS_HB/queryInvDetailAction.jspx?id=', int1)
-
         rep1 = requests.get(url1)
         soupn = BeautifulSoup(rep1.text, "html5lib")
 
         table = soupn.find("table")
-
-        detail = self.coarse_page_table(table)
+        table_title1 = table.find("th").text  # 获取表头
+        detail = {}
+        detail[table_title1] = self.coarse_page_table(table)
 
         return detail
 
     def get_movable_property_reg_detail(self, content_tr):
 
         link = content_tr.find("a")
-        re1 = '.*?'	 # Non-greedy match on filler
-        re2 = '\\d+'  # Uninteresting: int
-        re3 = '.*?' 	# Non-greedy match on filler
-        re4 = '(\\d+)'	 # Integer Number 1
-
-        rg = re.compile(re1+re2+re3+re4,re.IGNORECASE|re.DOTALL)
-        m = rg.search(str(link))
-
+        m = re.search(r'id=(.\d+)', str(link))
         int1 = m.group(1)
         url1 = '%s%s' %('http://xyjg.egs.gov.cn/ECPS_HB/mortInfoDetail.jspx?id=', int1)
         rep1 = requests.get(url1)
@@ -628,21 +608,18 @@ class HubeiParser(Parser):
         name_table_map1 = [u"抵押权人概况"]
         name_table_map2 = [u'动产抵押登记信息', u'被担保债权概况']
         table_detail = []
+        wrap = {}
         for table in soupn.find_all('table'):
-
             list_table_title = table.find("th")
-            wrap = {}
 
             if list_table_title and list_table_title.text in name_table_map2:
                 wrap[list_table_title.text] = self.parse_table1(table)
-                table_detail.append(wrap)
             if list_table_title and list_table_title.text in name_table_map1:
                 wrap[list_table_title.text] = self.ana_table4(table)
-                table_detail.append(wrap)
         table = soupn.find("div", {"id": "guaDiv"})
         if table:
-            wrap[u"抵押物概况"] = self.parse_table2(table, 1, 0, 0)
-            table_detail.append(wrap)
+            wrap[u"抵押物概况"] = self.parse_table2(table, 1, 0, 0)[0]
+        table_detail.append(wrap)
         return table_detail
 
     def ana_table4(self, table):
@@ -676,7 +653,6 @@ class HubeiParser(Parser):
         list_title_th = []  # 第一行不跨列的列名
         list_th = []  # 第二行的列名
 
-
         table_trs = table.find_all("tr")
         list_tr = [tr for tr in table_trs]
         table_title_wraps = list_tr[1].find_all("th")
@@ -696,24 +672,65 @@ class HubeiParser(Parser):
             sum = sum + i
 
         total = []  # 若有多行td
+        total_th = list_title_th + list_th  # 总列名
 
         for tr in table_trs[3:]:
             table_td = tr.find_all("td")
             list_td = [td.text.strip() for td in table_td]  # 表格内容列表
             table_save = {}  # 保存的表格
-            for i in range(0, len(list_title_th)):
-                table_save[list_title_th[i]] = list_td[i]
+            if len(list_td) == len(total_th):
+                for i in range(0, len(list_title_th)):
+                    table_save[list_title_th[i]] = list_td[i]
 
-            del list_td[0:len(list_title_th)]
-            list_test = []
-            table_test = {}
-            for i in range(0, sum):
+                del list_td[0:len(list_title_th)]
+                list_test = []
+                table_test = {}
+                for i in range(0, sum):
+                    if list_th[i] == "公示日期":
+                        if table_test.has_key("认缴_公示日期"):
+                            table_test["实缴_公示日期"] = list_td[i]
+                            continue
+                        else:
+                            table_test["认缴_公示日期"] = list_td[i]
+                            continue
+                    table_test[list_th[i]] = list_td[i]
+                list_test.append(table_test)
+                table_save["list"] = list_test
 
-                table_test[list_th[i]] = list_td[i]
-            list_test.append(table_test)
-               
-            table_save["list"] = list_test
-            total.append(table_save)
+                total.append(table_save)
+            elif len(list_td) == sum:
+                list_test = []
+                table_test = {}
+                for i in range(0, sum):
+                    if list_th[i] == "公示日期":
+                        if table_test.has_key("认缴_公示日期"):
+                            table_test["实缴_公示日期"] = list_td[i]
+                            continue
+                        else:
+                            table_test["认缴_公示日期"] = list_td[i]
+                            continue
+                    table_test[list_th[i]] = list_td[i]
+                list_test.append(table_test)
+                table_save["list"] = list_test
+
+                total.append(table_save)
+            else:
+                list_test = []
+                table_test = {}
+                del list_th[0: colspan_list[0]]
+                for i in range(0, sum):
+                    if list_th[i] == "公示日期":
+                        if table_test.has_key("认缴_公示日期"):
+                            table_test["实缴_公示日期"] = list_td[i]
+                            continue
+                        else:
+                            table_test["认缴_公示日期"] = list_td[i]
+                            continue
+                    table_test[list_th[i]] = list_td[i]
+                list_test.append(table_test)
+                table_save["list"] = list_test
+
+                total.append(table_save)
 
         return total
 
