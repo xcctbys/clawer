@@ -57,7 +57,7 @@ class GansuClawer(Crawler):
         Returns:
         """
         self.json_restore_path = json_restore_path
-        self.parser = gansuParser(self)
+        self.parser = GansuParser(self)
 
         self.reqst = requests.Session()
         self.reqst.headers.update({
@@ -68,6 +68,7 @@ class GansuClawer(Crawler):
         self.method = None
         self.pripid = None
         self.json_dict = {}
+        self.ent_number = None
 
     def run(self, ent_number=0):
         crawler = GansuClawer('./enterprise_crawler/gansu/gansu.json')
@@ -218,7 +219,7 @@ class GansuClawer(Crawler):
 
 
 
-class gansuParser(Parser):
+class GansuParser(Parser):
     """甘肃工商页面的解析类
     """
 

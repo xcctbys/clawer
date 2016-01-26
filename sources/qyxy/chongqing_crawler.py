@@ -12,10 +12,21 @@ if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
     import settings_pro as settings
 else:
     import settings
+
+import os
+from os import path
+import requests
+import time
+import re
+import random
+import threading
+import unittest
 from bs4 import BeautifulSoup
 from crawler import Crawler
 from crawler import Parser
 from crawler import CrawlerUtils
+import types
+import urlparse
 import json as my_json
 
 
@@ -27,6 +38,9 @@ class ChongqingClawer(Crawler):
 
     # 验证码图片的存储路径
     ckcode_image_path = settings.json_restore_path + '/chongqing/ckcode.jpg'
+
+    # 验证码文件夹
+    ckcode_image_dir_path = settings.json_restore_path + '/chongqing/'
 
     # 查询结果页面存储路径
     html_search_results_restore_path = html_restore_path + 'search_results.html'
@@ -90,7 +104,7 @@ class ChongqingClawer(Crawler):
         self.json_year_daily_peninfo = None
         self.json_year_daily_licinfo = None
         self.json_year_daily_pleinfo = None
-
+        self.json_dict = {}
         self.json_restore_path = json_restore_path
         self.parser = ChongqingParser(self)
         self.reqst = requests.Session()
@@ -101,74 +115,67 @@ class ChongqingClawer(Crawler):
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:39.0) Gecko/20100101 Firefox/39.0'})
 
     def run(self, ent_number=0):
-        self.ent_number = str(ent_number)
+        crawler = ChongqingClawer('./enterprise_crawler/chongqing/chongqing.json')
+
+        crawler.ent_number = str(ent_number)
         # 对每个企业都指定一个html的存储目录
-        self.html_restore_path = self.html_restore_path + self.ent_number + '/'
+        crawler.html_restore_path = self.html_restore_path + crawler.ent_number + '/'
         if settings.save_html and not os.path.exists(self.html_restore_path):
             CrawlerUtils.make_dir(self.html_restore_path)
         crawler.ent_number = str(ent_number)
-        crawler.crawl_check_page()
-        crawler.crawl_page_jsons()
+        page = crawler.crawl_check_page()
+        crawler.crawl_page_jsons(page)
         crawler.parser.parse_jsons()
-        crawler.parser.merge_jsons(crawler.json_restore_path)
+        crawler.parser.merge_jsons()
+        # 采用多线程，在写入文件时需要注意加锁
+        self.write_file_mutex.acquire()
+        CrawlerUtils.json_dump_to_file(self.json_restore_path, {crawler.ent_number: crawler.json_dict})
+        self.write_file_mutex.release()
+        return True
+
 
     def crawl_check_page(self):
         """爬取验证码页面，包括下载验证码图片以及破解验证码
         :return true or false
         """
-        # 获得验证码图片
-        while self.ckcode is None:
-            if self._get_checkcode(ChongqingClawer.urls['get_checkcode']) is True:
-                self.ckcode = self.crack_checkcode()
+        count = 0
+        while count < 30:
+            ck_code = self.crack_check_code()
+            data = {'key':self.ent_number,'code':ck_code}
+            resp = self.reqst.post(ChongqingClawer.urls['post_checkcode'], data=data)
+            if resp.status_code != 200:
+                settings.logger.error("crawl post check page failed!")
+                count += 1
+                continue
+            return resp.content
+        return None
 
-        data = {'code': self.ckcode, 'key': self.ent_number}
-        content = self._get_search_page(data)
-        # print(content)
-        check_string = '验证码不正确'
-        if check_string in str(content):
-            print(str(content) + 'null')
-            self.ckcode = None
-            self.crawl_check_page()
-
-        else:
-            self._save_results(content)
-
-    def _get_search_page(self, data):
-        resp = self.reqst.post(ChongqingClawer.urls['post_checkcode'], data)
-        if resp.status_code == 200:
-            pass
-        else:
-            while True:
-                data.append({'stype': ""})
-                resp = self.reqst.post(ChongqingClawer.urls['repost_checkcode', data])
-                if resp.status_code == 200:
-                    break
-        return resp.content
-
-    def _save_results(self, content):
-        self.write_file_mutex.acquire()
-        try:
-            with open(self.html_search_results_restore_path, 'wb') as f:
-                f.write(content)
-                f.close()
-        except Exception as e:
-            settings.logger.error('write results page file wrong ')
-        self.write_file_mutex.release()
-
-    def _get_checkcode(self, url):
-        resp = self.reqst.get(url)
+    def crack_check_code(self):
+        """破解验证码
+        :return 破解后的验证码
+        """
+        resp = self.reqst.get(ChongqingClawer.urls['get_checkcode'])
         if resp.status_code != 200:
-            resp = self.reqst.get(url)
+            settings.logger.error('failed to get get_checkcode')
+            return None
+        time.sleep(random.uniform(0.1, 0.2))
         self.write_file_mutex.acquire()
+        if not path.isdir(self.ckcode_image_dir_path):
+            os.makedirs(self.ckcode_image_dir_path)
+        with open(self.ckcode_image_path, 'wb') as f:
+            f.write(resp.content)
+
         try:
-            with open(self.ckcode_image_path, 'wb') as f:
-                f.write(resp.content)
-                f.close()
+            ckcode = self.code_cracker.predict_result(self.ckcode_image_path)
+            # ckcode = self.code_cracker.predict_result(self.ckcode_image_dir_path + 'image' + str(i) + '.jpg')
         except Exception as e:
-            settings.logger.error('write down file wrong ')
-            return False
+            settings.logger.warn('exception occured when crack checkcode')
+            ckcode = ('', '')
+        finally:
+            pass
         self.write_file_mutex.release()
-        return True
+
+        return ckcode[1]
 
     def crack_checkcode(self):
         """破解验证码
@@ -190,55 +197,50 @@ class ChongqingClawer(Crawler):
 
         try:
             ckcode = self.code_cracker.predict_result(self.ckcode_image_path)
-            print("try:", str(ckcode), self.ckcode_image_path)
         except Exception as e:
             settings.logger.warn('exception occured when crack checkcode')
             ckcode = ('', '')
-            print("except", str(ckcode), self.ckcode_image_path)
         finally:
             pass
 
         return ckcode[1]
 
-    def crawl_page_jsons(self):
+    def crawl_page_jsons(self,page):
         """获取所有界面的json数据"""
-        data = self.parser.parse_search_results_pages(self.html_search_results_restore_path)
+        data = self.parser.parse_search_results_pages(page)
         if data is not None:
             self.crawl_ent_info_json(data)
-            print(self.json_ent_info)
-            # time.sleep(0.1)
             self.crawl_year_report_json(data)
-            print(self.json_year_report)
-            # time.sleep(0.1)
+
             self.crawl_year_report_detail_json(data)
-            print(self.json_year_report_detail)
+            # print(self.json_year_report_detail)
             # time.sleep(0.1)
             self.crawl_sfxzgdbg_json(data)
-            print(self.json_sfxzgdbg)
+            # print(self.json_sfxzgdbg)
             # time.sleep(0.1)
             self.crawl_sfxz_json(data)
-            print(self.json_sfxz)
+            # print(self.json_sfxz)
             # time.sleep(0.1)
             self.crawl_year_daily_invsub_json(data)
-            print(self.json_year_daily_invsub)
+            # print(self.json_year_daily_invsub)
             # time.sleep(0.1)
             self.crawl_year_daily_licinfo_json(data)
-            print(self.json_year_daily_licinfo)
+            # print(self.json_year_daily_licinfo)
             # time.sleep(0.1)
             self.crawl_year_daily_peninfo_json(data)
-            print(self.json_year_daily_peninfo)
+            # print(self.json_year_daily_peninfo)
             # time.sleep(0.1)
             self.crawl_year_daily_transinfo_json(data)
-            print(self.json_year_daily_transinfo)
+            # print(self.json_year_daily_transinfo)
             # time.sleep(0.1)
             self.crawl_year_daily_pleinfo_json(data)
-            print(self.json_year_daily_pleinfo)
+            # print(self.json_year_daily_pleinfo)
             # time.sleep(0.1)
             self.crawl_other_qpeninfo_json(data)
-            print(self.json_other_qpeninfo)
+            # print(self.json_other_qpeninfo)
             # time.sleep(0.1)
             self.crawl_other_qlicinfo_json(data)
-            print(self.json_other_qlicinfo)
+            # print(self.json_other_qlicinfo)
         else:
             print('error')
 
@@ -387,7 +389,7 @@ class ChongqingParser(Parser):
 
     def __init__(self, crawler):
         self.crawler = crawler
-        self.json_dict = {}
+
         self.ind_comm_pub_reg_basic = {}
         self.ind_comm_pub_reg_shareholder = None
         self.ind_comm_pub_reg_modify = None
@@ -412,9 +414,7 @@ class ChongqingParser(Parser):
 
     def parse_search_results_pages(self, page):
         # 解析供查询页面, 获得工商信息页面POST值
-        page_content = open(page)
-        content = page_content.read()
-        soup = BeautifulSoup(content, "html5lib")
+        soup = BeautifulSoup(page, "html5lib")
         result = soup.find('div', {'id': 'result'})
         key_map = {}
         item = result.find('div', {'class': 'item'})
@@ -446,36 +446,29 @@ class ChongqingParser(Parser):
         self.parse_json_other_qpeninfo()
         self.parse_json_other_qlicinfo()
 
-    def merge_jsons(self,json_restore_path):
-        all_date = {}
-        all_date['ind_comm_pub_reg_basic'] = self.ind_comm_pub_reg_basic
-        all_date['ind_comm_pub_reg_shareholder'] = self.ind_comm_pub_reg_shareholder
-        all_date['ind_comm_pub_reg_modify'] = self.ind_comm_pub_reg_modify
-        all_date['ind_comm_pub_arch_key_persons'] = self.ind_comm_pub_arch_key_persons
-        all_date['ind_comm_pub_arch_branch'] = self.ind_comm_pub_arch_branch
-        all_date['ind_comm_pub_arch_liquidation'] = self.ind_comm_pub_arch_liquidation
-        all_date['ind_comm_pub_movable_property_reg'] = self.ind_comm_pub_movable_property_reg
-        all_date['ind_comm_pub_equity_ownership_reg'] = self.ind_comm_pub_equity_ownership_reg
-        all_date['ind_comm_pub_administration_sanction'] = self.ind_comm_pub_administration_sanction
-        all_date['ind_comm_pub_business_exception'] = self.ind_comm_pub_business_exception
-        all_date['ind_comm_pub_serious_violate_law'] = self.ind_comm_pub_serious_violate_law
-        all_date['ind_comm_pub_spot_check'] = self.ind_comm_pub_spot_check
-        all_date['ent_pub_shareholder_capital_contribution'] = self.ent_pub_shareholder_capital_contribution
-        all_date['ent_pub_equity_change'] = self.ent_pub_equity_change
-        all_date['ent_pub_administration_license'] = self.ent_pub_administration_license
-        all_date['ent_pub_knowledge_property'] = self.ent_pub_knowledge_property
-        all_date['ent_pub_administration_sanction'] = self.ent_pub_administration_sanction
-        all_date['other_dept_pub_administration_license'] = self.other_dept_pub_administration_license
-        all_date['other_dept_pub_administration_sanction'] = self.other_dept_pub_administration_sanction
-        all_date['judical_assist_pub_equity_freeze'] = self.judical_assist_pub_equity_freeze
-        all_date['judical_assist_pub_shareholder_modify'] = self.judical_assist_pub_shareholder_modify
-        jsones = {}
-        jsones[str(self.crawler.ent_number)] = all_date
-        my_json.dump(jsones, open(json_restore_path, 'a'))
-        with open(json_restore_path, 'a') as json_file:
-            json_file.write('\n')
+    def merge_jsons(self):
+        self.crawler.json_dict['ind_comm_pub_reg_basic'] = self.ind_comm_pub_reg_basic
+        self.crawler.json_dict['ind_comm_pub_reg_shareholder'] = self.ind_comm_pub_reg_shareholder
+        self.crawler.json_dict['ind_comm_pub_reg_modify'] = self.ind_comm_pub_reg_modify
+        self.crawler.json_dict['ind_comm_pub_arch_key_persons'] = self.ind_comm_pub_arch_key_persons
+        self.crawler.json_dict['ind_comm_pub_arch_branch'] = self.ind_comm_pub_arch_branch
+        self.crawler.json_dict['ind_comm_pub_arch_liquidation'] = self.ind_comm_pub_arch_liquidation
+        self.crawler.json_dict['ind_comm_pub_movable_property_reg'] = self.ind_comm_pub_movable_property_reg
+        self.crawler.json_dict['ind_comm_pub_equity_ownership_reg'] = self.ind_comm_pub_equity_ownership_reg
+        self.crawler.json_dict['ind_comm_pub_administration_sanction'] = self.ind_comm_pub_administration_sanction
+        self.crawler.json_dict['ind_comm_pub_business_exception'] = self.ind_comm_pub_business_exception
+        self.crawler.json_dict['ind_comm_pub_serious_violate_law'] = self.ind_comm_pub_serious_violate_law
+        self.crawler.json_dict['ind_comm_pub_spot_check'] = self.ind_comm_pub_spot_check
+        self.crawler.json_dict['ent_pub_shareholder_capital_contribution'] = self.ent_pub_shareholder_capital_contribution
+        self.crawler.json_dict['ent_pub_equity_change'] = self.ent_pub_equity_change
+        self.crawler.json_dict['ent_pub_administration_license'] = self.ent_pub_administration_license
+        self.crawler.json_dict['ent_pub_knowledge_property'] = self.ent_pub_knowledge_property
+        self.crawler.json_dict['ent_pub_administration_sanction'] = self.ent_pub_administration_sanction
+        self.crawler.json_dict['other_dept_pub_administration_license'] = self.other_dept_pub_administration_license
+        self.crawler.json_dict['other_dept_pub_administration_sanction'] = self.other_dept_pub_administration_sanction
+        self.crawler.json_dict['judical_assist_pub_equity_freeze'] = self.judical_assist_pub_equity_freeze
+        self.crawler.json_dict['judical_assist_pub_shareholder_modify'] = self.judical_assist_pub_shareholder_modify
 
-        pass
     def check_key_is_exists(self, investor, sharehodler, newkey, oldkey):
         if oldkey in investor.keys():
             sharehodler[newkey] = str(investor[oldkey]).strip(' ')
@@ -483,11 +476,11 @@ class ChongqingParser(Parser):
             sharehodler[newkey] = None
 
     def parse_json_ent_info(self):
-        print self.crawler.json_ent_info
+        # print self.crawler.json_ent_info
         json_ent_info = my_json.loads(self.crawler.json_ent_info)
         # 公司基本信息
         base_info = json_ent_info.get('base')
-        print json_ent_info.keys()
+        # print json_ent_info.keys()
         self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, 'register_capital', 'regcap')
         self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, 'business_scope', 'opscope')
         self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, 'credit_code', 'pripid')
@@ -501,16 +494,15 @@ class ChongqingParser(Parser):
         self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, 'corporation', 'lerep')
         self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, 'register_gov', 'regorg')
         self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, 'time_start', 'opfrom')
-        print(self.ind_comm_pub_reg_basic)
+        # print(self.ind_comm_pub_reg_basic)
 
         # 股东基本信息
         investors = json_ent_info.get('investors')
         sharehodlers = []
-        print(investors)
+        # print(investors)
         i = 0
         while i < len(investors):
             sharehodler = {}
-            print(investors[i])
             self.check_key_is_exists(investors[i], sharehodler, 'shareholder_type', 'invtype')
             self.check_key_is_exists(investors[i], sharehodler, 'certificate_number', 'oid')
             if len(investors[i].get('gInvaccon')) > 0:
@@ -527,10 +519,7 @@ class ChongqingParser(Parser):
             self.check_key_is_exists(investors[i], sharehodler, 'certificate_type', 'blictype')
             sharehodlers.append(sharehodler)
             i = i + 1
-        # for share in sharehodlers:
-        #     print(share)
         self.ind_comm_pub_reg_shareholder = sharehodlers
-        print ('===================================')
 
         # 变更信息
         modifies = []
@@ -543,15 +532,14 @@ class ChongqingParser(Parser):
             self.check_key_is_exists(alter, modify, 'modify_before', 'altbe')
             modifies.append(modify)
         self.ind_comm_pub_reg_modify = modifies
-        for item in modifies:
-            print item
+        # for item in modifies:
+        #     print item
 
         # 主要人物
         key_persons = []
         members = json_ent_info.get('members')
         i = 0
         while i < len(members):
-            print(members[i])
             key_person = {}
             key_person['enter_id'] = i + 1
             self.check_key_is_exists(members[i], key_person, 'name', 'name')
@@ -559,14 +547,14 @@ class ChongqingParser(Parser):
             key_persons.append(key_person)
             i += 1
         self.ind_comm_pub_arch_key_persons = key_persons
-        print key_persons
+        # print key_persons
 
         # 动产抵押
         movable_property_reges = []
         motages = json_ent_info.get('motage')
         i = 0
         while i < len(motages):
-            print(motages[i])
+            # print(motages[i])
             movable_property_reg = {}
             movable_property_reg['enter_id'] = i + 1
             self.check_key_is_exists(motages[i], movable_property_reg, 'status', '')
@@ -577,14 +565,14 @@ class ChongqingParser(Parser):
             movable_property_reges.append(movable_property_reg)
             i += 1
         self.ind_comm_pub_movable_property_reg = movable_property_reges
-        print(movable_property_reges)
+        # print(movable_property_reges)
 
         # 行政处罚
         administration_sanctions = []
         punishments = json_ent_info.get('punishments')
         i = 0
         while i < len(punishments):
-            print(punishments[i])
+            # print(punishments[i])
             administration_sanction = {}
             administration_sanction['enter_id'] = i + 1
             self.check_key_is_exists(punishments[i], administration_sanction, 'penalty_content', 'authcontent')
@@ -595,14 +583,13 @@ class ChongqingParser(Parser):
             administration_sanctions.append(administration_sanction)
             i += 1
         self.ind_comm_pub_administration_sanction = administration_sanctions
-        print(administration_sanctions)
+        # print(administration_sanctions)
 
         # 分支机构
         arch_branches = []
         brunchs = json_ent_info.get('brunchs')
         i = 0
         while i < len(brunchs):
-            print(brunchs[i])
             arch_branch = {}
             arch_branch['enter_id'] = i + 1
             self.check_key_is_exists(brunchs[i], arch_branch, 'register_gov', 'regorgname')
@@ -611,7 +598,7 @@ class ChongqingParser(Parser):
             arch_branches.append(arch_branch)
             i += 1
         self.ind_comm_pub_arch_branch = arch_branches
-        print(arch_branches)
+        # print(arch_branches)
 
         # 严重违法
         serious_violate_laws = []
@@ -629,14 +616,13 @@ class ChongqingParser(Parser):
             serious_violate_laws.append(serious_violate_law)
             i += 1
         self.ind_comm_pub_serious_violate_law = serious_violate_laws
-        print(serious_violate_laws)
+        # print(serious_violate_laws)
 
         # 抽查检查
         spot_checkes = []
         ccjces = json_ent_info.get('ccjc')
         i = 0
         while i < len(ccjces):
-            print(ccjces[i])
             spot_check = {}
             spot_check['enter_id'] = i + 1
             self.check_key_is_exists(ccjces[i], spot_check, 'check_gov', 'insauth')
@@ -646,14 +632,12 @@ class ChongqingParser(Parser):
             spot_checkes.append(spot_check)
             i += 1
         self.ind_comm_pub_spot_check = spot_checkes
-        print(spot_checkes)
 
         # 经营异常
         business_exceptiones = []
         qyjyes = json_ent_info.get('qyjy')
         i = 0
         while i < len(qyjyes):
-            # print(qyjyes[i])
             business_exception = {}
             business_exception['enter_id'] = i + 1
             self.check_key_is_exists(qyjyes[i], business_exception, 'list_out_reason', 'remexcpres')
@@ -664,14 +648,12 @@ class ChongqingParser(Parser):
             business_exceptiones.append(business_exception)
             i += 1
         self.ind_comm_pub_business_exception = business_exceptiones
-        # print '经营异常=', business_exceptiones
 
         # 清算
         arch_liquidationes = []
         accounts = json_ent_info.get('accounts')
         i = 0
         while i < len(accounts):
-            # print accounts[i]
             arch_liquidation = {}
             arch_liquidation['enter_id'] = i + 1
             self.check_key_is_exists(accounts[i], arch_liquidation, 'persons', 'persons')
@@ -679,14 +661,13 @@ class ChongqingParser(Parser):
             business_exceptiones.append(arch_liquidation)
             i += 1
         self.ind_comm_pub_arch_liquidation = arch_liquidationes
-        # print '清算==', arch_liquidationes
 
         # 股权出质
         equity_ownership_reges = []
         stockes = json_ent_info.get('stock')
         i = 0
         while i < len(stockes):
-            print stockes[i]
+            # print stockes[i]
             equity_ownership_reg = {}
             equity_ownership_reg['enter_id'] = i + 1
             self.check_key_is_exists(stockes[i], equity_ownership_reg, 'share_pledge_num', 'pripid')
@@ -699,13 +680,12 @@ class ChongqingParser(Parser):
             equity_ownership_reges.append(equity_ownership_reg)
             i += 1
         self.ind_comm_pub_equity_ownership_reg = equity_ownership_reges
-        # print '股权出质', equity_ownership_reges
 
     def parse_json_year_report(self):
         pass
 
     def parse_json_sfxzgdbg(self):
-        print self.crawler.json_sfxzgdbg
+        # print self.crawler.json_sfxzgdbg
         json_sfxzgdbg = my_json.loads(self.crawler.json_sfxzgdbg)
         shareholder_modifies = []
         self.judical_assist_pub_shareholder_modify = shareholder_modifies
@@ -721,7 +701,7 @@ class ChongqingParser(Parser):
         # print shareholder_modifies
 
     def parse_json_sfxz(self):
-        print self.crawler.json_sfxz
+        # print self.crawler.json_sfxz
         json_sfxz = my_json.loads(self.crawler.json_sfxz)
         equity_freezes = []
         i = 0
@@ -756,11 +736,11 @@ class ChongqingParser(Parser):
         pass
 
     def parse_json_other_qpeninfo(self):
-        print self.crawler.json_other_qpeninfo
+        # print self.crawler.json_other_qpeninfo
         json_other_qpeninfo = my_json.loads(self.crawler.json_other_qpeninfo)
 
     def parse_json_other_qlicinfo(self):
-        print self.crawler.json_other_qlicinfo
+        # print self.crawler.json_other_qlicinfo
         json_other_qlicinfoes = my_json.loads(self.crawler.json_other_qlicinfo)
         administration_licenses = []
         i = 0
@@ -803,10 +783,11 @@ if __name__ == '__main__':
     from CaptchaRecognition import CaptchaRecognition
 
     ChongqingClawer.code_cracker = CaptchaRecognition('chongqing')
-    crawler = ChongqingClawer('./enterprise_crawler/chongqing.json')
+    crawler = ChongqingClawer('./enterprise_crawler/chongqing/chongqing.json')
     start_time = time.localtime()
     enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/chongqing.txt')
-    for enterprise in enterprise_list:
-        print('==================%s============\n' % str(enterprise))
-        crawler.run(enterprise)
-
+    for ent_number in enterprise_list:
+        ent_number = ent_number.rstrip('\n')
+        print(
+                '############   Start to crawl enterprise with id %s   ################\n' % ent_number)
+        crawler.run(ent_number=ent_number)

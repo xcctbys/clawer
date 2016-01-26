@@ -29,10 +29,11 @@ class Parse(object):
     def parse_companies(self):
         for register_num in self.companies:
             company = self.companies[register_num]
+            # self.parse_company(company, register_num)
             try:
                 self.parse_company(company, register_num)
             except Exception as e:
-                print "❌  %s解析错误: ❌ " % register_num
+                print "❌  公司ID: %s 解析错误: ❌ " % register_num.encode('utf-8')
                 print e
 
     def parse_company(self, company={}, register_num=0):
@@ -67,6 +68,7 @@ class Parse(object):
         special_parse_keys = consts.special_parse_keys
         ent_report = special_parse_keys[0]
         ind_shareholder = special_parse_keys[1]
+        ent_license = special_parse_keys[2]
         name = keys_to_tables.get(key)
         parse_func = self.key_to_parse_function(key)
 
@@ -89,6 +91,11 @@ class Parse(object):
                 value = parse_func(d, mapping)
                 if name is not None and value is not None:
                     self.company_result[name] = value
+        elif key == ent_license:
+            for d in list_in_company:
+                value = parse_func(d, mapping)
+                if name is not None and value is not None:
+                    self.company_result[name] = value
 
     def key_to_parse_function(self, key):
         keys_to_functions = {
@@ -105,7 +112,7 @@ class Parse(object):
             "ent_pub_ent_annual_report": self.parse_ent_report,
             "ent_pub_shareholder_capital_contribution": self.parse_general,
             "ent_pub_equity_change": self.parse_general,
-            "ent_pub_administration_license": self.parse_general,
+            "ent_pub_administration_license": self.parse_enter_license,
             "ent_pub_knowledge_property": self.parse_general,
             "ent_pub_administration_sanction": self.parse_general,
             "other_dept_pub_administration_license": self.parse_general,
@@ -179,6 +186,41 @@ class Parse(object):
                         result_dict[mapping.get(key_in)] = dict_in[key_in]
         return result
 
+    def parse_enter_license(self, dict_in_company, mapping):
+        result = []
+        dict_inner = {}
+        for field, value in dict_in_company.iteritems():
+            if type(value) == list:
+                result = self.parse_enter_license_detail(value, result, mapping)
+
+        for field, value in dict_in_company.iteritems():
+            if field == u"详情":
+                pass
+            else:
+                if not result:
+                    dict_inner[mapping.get(field)] = value
+                    result.append(dict_inner)
+                    dict_inner = {}
+                else:
+                    for result_dict in result:
+                        result_dict[mapping.get(field)] = dict_in_company[field]
+        print "########################"
+        print result
+        return result
+
+    def parse_enter_license_detail(self, value, result, mapping):
+        dict_inner = {}
+        for dict_in in value:
+            for key_in, value_in in dict_in.iteritems():
+                # print key_in, value_in
+                dict_inner[mapping.get(key_in)] = value_in
+            result.append(dict_inner)
+            dict_inner = {}
+        # print "this is license detail"
+        # print result
+        # print "#########################"
+        return result
+
     def parse_ent_report(self, dict_in_company, mapping):
         keys_to_tables = consts.keys_to_tables
         ent_report = {}
@@ -205,15 +247,25 @@ class Parse(object):
                 pass
             elif type(value) == list:
                 for d in value:
-                    report = self.parse_general(d, mapping[key])
-                    if self.company_result.get(name) is None:
-                        self.company_result[name] = []
-                    self.company_result[name].append(report)
+                    self.parse_report_details_dict(d, name, mapping[key])
+
             elif type(value) == dict:
-                report = self.parse_general(value, mapping[key])
-                if self.company_result.get(name) is None:
-                    self.company_result[name] = []
-                self.company_result[name].append(report)
+                self.parse_report_details_dict(value, name, mapping[key])
+
+    def parse_report_details_dict(self, d, name, mapping):
+        report = self.parse_general(d, mapping)
+
+        if self.company_result.get(name) is None:
+            self.company_result[name] = []
+
+        if not self.is_null(report):
+            self.company_result[name].append(report)
+
+    def is_null(self, d):
+        for key, value in d.iteritems():
+            if value:
+                return False
+        return True
 
     def write_to_mysql(self, data):
         operation = Operation(data)

@@ -133,6 +133,7 @@ mappings["ent_pub_shareholder_capital_contribution"] = {
     u"公示日期": "publicity_time",
     u"实缴额（万元）": "paid_amount",
     u"股东（发起人）": "shareholder_name",
+    u"股东": "shareholder_name",
     u"实缴明细": None,
     u"认缴明细": None,
     u"实缴出资日期": "paid_date",
@@ -143,6 +144,7 @@ mappings["ent_pub_shareholder_capital_contribution"] = {
 mappings["ent_pub_equity_change"] = {
     u"变更前股权比例": "share_ratio_before",
     u"公示日期": "sharechange_publicity_date",
+    u"登记日期": "sharechange_register_date",
     u"股权变更日期": "share_change_date",
     u"变更后股权比例": "share_ratio_after",
     u"序号": None,
@@ -160,6 +162,12 @@ mappings["ent_pub_administration_license"] = {
     u"序号": None,
     u"许可机关": "license_authority",
     u"有效期自": "license_begien_date",
+    u"公示时间": "license_publicity_time",
+    u"填报时间":"license_register_time",
+    u"变更事项":"license_change_item",
+    u"变更时间":"license_change_time",
+    u"变更前内容":"license_content_before",
+    u"变更后内容":"license_content_after",
 }
 
 mappings["ent_pub_knowledge_property"] = {

@@ -78,11 +78,11 @@ class HenanCrawler(object):
 				u'司法股东变更登记信息':'judical_assist_pub_shareholder_modify'}
 
 	def get_check_num(self):
-		resp = self.reqst.get(self.search_dict['search'])
+		resp = self.reqst.get(self.search_dict['search'], timeout = 120)
 		if resp.status_code != 200:
 			print resp.status_code
 			return None
-		resp = self.reqst.get(self.search_dict['validateCode'])
+		resp = self.reqst.get(self.search_dict['validateCode'], timeout = 120)
 		if resp.status_code != 200:
 			print 'no validateCode'
 			return None
@@ -91,15 +91,20 @@ class HenanCrawler(object):
 		from CaptchaRecognition import CaptchaRecognition
 		code_cracker = CaptchaRecognition('qinghai')
 		ck_code = code_cracker.predict_result(self.ckcode_image_path)
-		return ck_code[1]
+		if ck_code is None:
+			return None
+		else:
+			return ck_code[1]
 
 	def get_id_num(self, findCode):
 		count = 0
 		while count < 30:
 			check_num = self.get_check_num()
-			if check_num is None: continue
+			if check_num is None:
+				count += 1 
+				continue
 			data = {'checkNo':check_num, 'entName':findCode}
-			resp = self.reqst.post(self.search_dict['searchList'], data=data)
+			resp = self.reqst.post(self.search_dict['searchList'], data=data, timeout = 120)
 			if resp.status_code != 200:
 				print resp.status_code
 				print 'error...(get_id_num)'
@@ -128,7 +133,7 @@ class HenanCrawler(object):
 			print table
 
 	def get_tables(self, url):
-		resp = self.reqst.get(url)
+		resp = self.reqst.get(url, timeout = 120)
 		if resp.status_code == 200:
 			return BeautifulSoup(resp.content).find_all('table')
 	def get_one_to_one_dict(self, allths, alltds):
@@ -230,7 +235,7 @@ class HenanCrawler(object):
 			for i in range(1, count_a+1):
 				urls = self.search_dict['next_head'] + where + 'List.jspx?pno=' + str(i) + '&mainId=' + self.id
 				print urls
-				resp = self.reqst.get(urls)
+				resp = self.reqst.get(urls, timeout = 120)
 				if resp.status_code == 200:
 					next_table = self.get_tables(urls)[0]
 					if head == u'股东（发起人）信息' or head == u'股东信息' or head == u'动产抵押登记信息':

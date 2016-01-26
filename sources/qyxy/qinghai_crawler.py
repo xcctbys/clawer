@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+ #!/usr/bin/env python
 # encoding=utf-8
 import os
 import requests
@@ -21,33 +21,33 @@ else:
     import settings
 
 
-class HeilongjiangClawer(Crawler):
-    """黑龙江工商公示信息网页爬虫
+class QinghaiCrawler(Crawler):
+    """青海工商公示信息网页爬虫
     """
     # html数据的存储路径
-    html_restore_path = settings.html_restore_path + '/heilongjiang/'
+    html_restore_path = settings.html_restore_path + '/qinghai/'
 
     # 验证码图片的存储路径
-    ckcode_image_path = settings.json_restore_path + '/heilongjiang/ckcode.jpg'
+    ckcode_image_path = settings.json_restore_path + '/qinghai/ckcode.jpg'
 
     # 多线程爬取时往最后的json文件中写时的加锁保护
     write_file_mutex = threading.Lock()
 
     urls = {'host': 'www.hljaic.gov.cn',
-            'get_checkcode': 'http://gsxt.hljaic.gov.cn/validateCode.jspx?type=0',
-            'post_checkCode': 'http://gsxt.hljaic.gov.cn/checkCheckNo.jspx',
-            'post_checkCode2': 'http://gsxt.hljaic.gov.cn/searchList.jspx',
-            'ind_comm_pub_skeleton': 'http://gsxt.hljaic.gov.cn/businessPublicity.jspx?',
-            'ent_pub_skeleton': 'http://gsxt.hljaic.gov.cn/enterprisePublicity.jspx?',
-            'other_dept_pub_skeleton': 'http://gsxt.hljaic.gov.cn/otherDepartment.jspx?',
-            'judical_assist_skeleton': 'http://gsxt.hljaic.gov.cn/justiceAssistance.jspx?',
+            'get_checkcode': 'http://218.95.241.36/validateCode.jspx?type=0',
+            'post_checkCode': 'http://218.95.241.36/checkCheckNo.jspx',
+            'post_checkCode2': 'http://218.95.241.36/searchList.jspx',
+            'ind_comm_pub_skeleton': 'http://218.95.241.36/businessPublicity.jspx?',
+            'ent_pub_skeleton': 'http://218.95.241.36/enterprisePublicity.jspx?',
+            'other_dept_pub_skeleton': 'http://218.95.241.36/otherDepartment.jspx?',
+            'judical_assist_skeleton': 'http://218.95.241.36/justiceAssistance.jspx?',
 
-            'ind_comm_pub_reg_shareholder': 'http://gsxt.hljaic.gov.cn/QueryInvList.jspx?',# 股东信息
-            'ind_comm_pub_reg_modify': 'http://gsxt.hljaic.gov.cn/QueryAltList.jspx?',  # 变更信息翻页
-            'ind_comm_pub_arch_key_persons': 'http://gsxt.hljaic.gov.cn/QueryMemList.jspx?',  # 主要人员信息翻页
-            'ind_comm_pub_spot_check': 'http://gsxt.hljaic.gov.cn/QuerySpotCheckList.jspx?',  # 抽样检查信息翻页
-            'ind_comm_pub_movable_property_reg': 'http://gsxt.hljaic.gov.cn/QueryMortList.jspx?',  # 动产抵押登记信息翻页
-            'ind_comm_pub_business_exception': 'http://gsxt.hljaic.gov.cn/QueryExcList.jspx?',  # 经营异常信息
+            'ind_comm_pub_reg_shareholder': 'http://218.95.241.36/QueryInvList.jspx?',# 股东信息
+            'ind_comm_pub_reg_modify': 'http://218.95.241.36/QueryAltList.jspx?',  # 变更信息翻页
+            'ind_comm_pub_arch_key_persons': 'http://218.95.241.36/QueryMemList.jspx?',  # 主要人员信息翻页
+            'ind_comm_pub_spot_check': 'http://218.95.241.36/QuerySpotCheckList.jspx?',  # 抽样检查信息翻页
+            'ind_comm_pub_movable_property_reg': 'http://218.95.241.36/QueryMortList.jspx?',  # 动产抵押登记信息翻页
+            'ind_comm_pub_business_exception': 'http://218.95.241.36/QueryExcList.jspx?',  # 经营异常信息
 
             }
 
@@ -60,7 +60,7 @@ class HeilongjiangClawer(Crawler):
         Returns:
         """
         self.json_restore_path = json_restore_path
-        self.parser = HeilongjiangParser(self)
+        self.parser = QinghaiParser(self)
 
         self.reqst = requests.Session()
         self.reqst.headers.update({
@@ -114,7 +114,7 @@ class HeilongjiangClawer(Crawler):
             ck_code = self.crack_check_code()
 
             data = {'checkNo': ck_code}
-            resp = self.reqst.post(HeilongjiangClawer.urls['post_checkCode'], data=data)
+            resp = self.reqst.post(self.urls['post_checkCode'], data=data)
 
             if resp.status_code != 200:
                 settings.logger.error("crawl post check page failed!")
@@ -122,7 +122,7 @@ class HeilongjiangClawer(Crawler):
                 continue
             if resp.content[10] == 't':
                 data = {'checkNo': ck_code, 'entName': self.ent_number}
-                resp = self.reqst.post(HeilongjiangClawer.urls['post_checkCode2'], data=data)
+                resp = self.reqst.post(self.urls['post_checkCode2'], data=data)
                 soup = BeautifulSoup(resp.text, "html5lib")
                 div = soup.find("div", {"style": "height:500px;"})
                 a = div.find("a")
@@ -142,7 +142,7 @@ class HeilongjiangClawer(Crawler):
         """破解验证码
         :return 破解后的验证码
         """
-        resp = self.reqst.get(HeilongjiangClawer.urls['get_checkcode'])
+        resp = self.reqst.get(self.urls['get_checkcode'])
         if resp.status_code != 200:
             settings.logger.error('failed to get get_checkcode')
             return None
@@ -182,9 +182,11 @@ class HeilongjiangClawer(Crawler):
         resp = self.reqst.get(url)
         if resp.status_code != 200:
             settings.logger.error('failed to get ind_comm_pub_skeleton')
+        else:
+            settings.logger.info('succcess to get ind_comm_pub_skeleton')
         self.parser.parse_ind_comm_pub_pages(resp.content)
 
-        return resp.content
+        # return resp.content
 
     def crawl_ent_pub_pages(self):
         """爬取企业公示信息
@@ -193,9 +195,11 @@ class HeilongjiangClawer(Crawler):
         resp = self.reqst.get(url)
         if resp.status_code != 200:
             settings.logger.error('failed to get ent_pub_skeleton')
+        else:
+            settings.logger.info('success to get ent_pub_skeleton')
         self.parser.parse_ent_pub_pages(resp.content)
 
-        return resp.content
+        # return resp.content
 
     def crawl_other_dept_pub_pages(self):
         """爬取其他部门公示信息
@@ -204,9 +208,11 @@ class HeilongjiangClawer(Crawler):
         resp = self.reqst.get(url)
         if resp.status_code != 200:
             settings.logger.error('failed to get other_dept_pub_skeleton')
+        else:
+            settings.logger.info('success to get other_dept_pub_skeleton')
         self.parser.crawl_other_dept_pub_pages(resp.content)
 
-        return resp.content
+        # return resp.content
 
     def crawl_judical_assist_pub_pages(self):
         """爬取司法协助信息
@@ -215,19 +221,21 @@ class HeilongjiangClawer(Crawler):
         resp = self.reqst.get(url)
         if resp.status_code != 200:
             settings.logger.error('failed to get judical_assist_skeleton')
+        else:
+            settings.logger.info('success to get judical_assist_skeleton')
         self.parser.parse_judical_assist_pub_pages(resp.content)
 
-        return resp.content
+        # return resp.content
 
 
-class HeilongjiangParser(Parser):
-    """黑龙江工商页面的解析类
+class QinghaiParser(Parser):
+    """青海工商页面的解析类
     """
     def __init__(self, crawler):
         self.crawler = crawler
 
     def parse_ind_comm_pub_pages(self, page):
-        """解析工商公示信息-页面，在黑龙江的页面中，工商公示信息所有信息都通过一个http get返回
+        """解析工商公示信息-页面，在青海的页面中，工商公示信息所有信息都通过一个http get返回
         """
         soup = BeautifulSoup(page, "html5lib")
         # 一类表
@@ -398,7 +406,7 @@ class HeilongjiangParser(Parser):
                 for a1 in a:
                     m = re.search(r'id=(.*?)\"', str(a1))
                     args = m.group(1)
-                    host = 'http://gsxt.hljaic.gov.cn/QueryYearExamineDetail.jspx?id='
+                    host = 'http://218.95.241.36/QueryYearExamineDetail.jspx?id='
                     url = '%s%s' % (host, args)
                     rep = requests.get(url)
                     soup = BeautifulSoup(rep.content, 'html5lib')
@@ -600,7 +608,7 @@ class HeilongjiangParser(Parser):
         m = re.search(r'id=(.\d+)', str(link))
 
         int1 = m.group(1)
-        url1 = '%s%s' %('http://gsxt.hljaic.gov.cn/queryInvDetailAction.jspx?id=', int1)
+        url1 = '%s%s' %('http://218.95.241.36/queryInvDetailAction.jspx?id=', int1)
         rep1 = requests.get(url1)
         soupn = BeautifulSoup(rep1.text, "html5lib")
 
@@ -616,7 +624,7 @@ class HeilongjiangParser(Parser):
         link = content_tr.find("a")
         m = re.search(r'id=(.\d+)', str(link))
         int1 = m.group(1)
-        url1 = '%s%s' %('http://gsxt.hljaic.gov.cn/mortInfoDetail.jspx?id=', int1)
+        url1 = '%s%s' %('http://218.95.241.36/mortInfoDetail.jspx?id=', int1)
         rep1 = requests.get(url1)
         soupn = BeautifulSoup(rep1.text, "html5lib")
 
@@ -749,15 +757,14 @@ class HeilongjiangParser(Parser):
 
         return total
 
-
 if __name__ == '__main__':
     from CaptchaRecognition import CaptchaRecognition
     import run
     run.config_logging()
-    HeilongjiangClawer.code_cracker = CaptchaRecognition('heilongjiang')
-    crawler = HeilongjiangClawer('./enterprise_crawler/heilongjiang.json')
-    enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/heilongjiang.txt')
-    # enterprise_list = ['230199100039345']
+    QinghaiCrawler.code_cracker = CaptchaRecognition('qinghai')
+    crawler = QinghaiCrawler('./enterprise_crawler/qinghai.json')
+    enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/qinghai.txt')
+    # enterprise_list = ['630000100008079']
 
     for ent_number in enterprise_list:
         ent_number = ent_number.rstrip('\n')

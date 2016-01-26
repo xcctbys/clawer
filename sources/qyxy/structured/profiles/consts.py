@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-DEFAULT_ENTER_ID = 1
+DEFAULT_ENTER_ID = 0
 DEFAULT_VERSION = 1
 
 keys = (
@@ -34,11 +34,12 @@ keys = (
 special_parse_keys = (
     "ent_pub_ent_annual_report",
     "ind_comm_pub_reg_shareholder",
+    "ent_pub_administration_license",
 )
 
 special_tables = (
     "basic",
-    "industry_commerce_clear"
+    "industry_commerce_clear",
 )
 
 keys_to_tables = {}
@@ -52,17 +53,20 @@ keys_to_tables["ind_comm_pub_administration_sanction"] = "industry_commerce_admi
 keys_to_tables["ind_comm_pub_business_exception"] = "industry_commerce_exception"
 keys_to_tables["ind_comm_pub_serious_violate_law"] = "industry_commerce_illegal"
 keys_to_tables["ind_comm_pub_spot_check"] = "industry_commerce_check"
-keys_to_tables["ent_pub_ent_annual_report"] = ""
+
 keys_to_tables["ent_pub_shareholder_capital_contribution"] = "enter_shareholder"
 keys_to_tables["ent_pub_equity_change"] = "enter_sharechange"
 keys_to_tables["ent_pub_administration_license"] = "enter_administrative_license"
 keys_to_tables["ent_pub_knowledge_property"] = "enter_intellectual_property_pledge"
-keys_to_tables["ent_pub_administration_sanction"] = "enter_administrative_license"
+keys_to_tables["ent_pub_administration_sanction"] = "enter_administrative_penalty"
+keys_to_tables["ent_pub_ent_annual_report"] = "enter_annual_report"
+
 keys_to_tables["other_dept_pub_administration_license"] = "other_administrative_license"
 keys_to_tables["other_dept_pub_administration_sanction"] = "other_administrative_penalty"
+
 keys_to_tables["judical_assist_pub_equity_freeze"] = "judicial_share_freeze"
 keys_to_tables["judical_assist_pub_shareholder_modify"] = "judicial_shareholder_change"
-keys_to_tables["ent_pub_ent_annual_report"] = "enter_annual_report"
+
 keys_to_tables[u"股权变更信息"] = "year_report_sharechange"
 keys_to_tables[u"网站或网店信息"] = "year_report_online"
 keys_to_tables[u"对外投资信息"] = "year_report_investment"
