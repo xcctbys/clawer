@@ -1,5 +1,5 @@
-# !/usr/bin/env python
-# encoding=utf-8
+#!/usr/bin/env python
+#encoding=utf-8
 import os
 import requests
 import time
@@ -7,46 +7,44 @@ import re
 import random
 import threading
 import unittest
-from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 from crawler import Crawler
 from crawler import Parser
 from crawler import CrawlerUtils
+from datetime import datetime, timedelta
 
-ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
+ENT_CRAWLER_SETTINGS = os.getenv('ENT_CRAWLER_SETTINGS')
 if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
     import settings_pro as settings
 else:
     import settings
 
 
-class HunanCrawler(Crawler):
-    """湖南工商爬虫
+class FujianCrawler(Crawler):
+    """福建工商爬虫
     """
     # html数据的存储路径
-    html_restore_path = settings.html_restore_path + '/hunan/'
+    html_restore_path = settings.html_restore_path + '/fujian/'
 
     # 验证码图片的存储路径
-    ckcode_image_path = settings.json_restore_path + '/hunan/ckcode.jpg'
+    ckcode_image_path = settings.json_restore_path + '/fujian/ckcode.jpg'
 
     # 多线程爬取时往最后的json文件中写时的加锁保护
     write_file_mutex = threading.Lock()
 
-    urls = {'host': 'http://www.hnaic.net.cn/visit/category/a/hnaicalllist',
-            'official_site': 'http://gsxt.hnaic.gov.cn/notice/search/ent_info_list',
-            'get_checkcode': 'http://gsxt.hnaic.gov.cn/notice/captcha?preset=',
-            'post_checkcode': 'http://gsxt.hnaic.gov.cn/notice/search/popup_captcha',
+    urls = {'host': 'http://www.fjaic.gov.cn/',
+            'official_site': 'http://wsgs.fjaic.gov.cn/creditpub/home',
+            'get_checkcode': 'http://wsgs.fjaic.gov.cn/creditpub/captcha?preset=math-01',
+            'post_checkcode': 'http://wsgs.fjaic.gov.cn/creditpub/security/verify_captcha',
+            'get_info_entry': 'http://wsgs.fjaic.gov.cn/creditpub/search/ent_info_list',
 
-            'get_info_entry': 'http://gsxt.hnaic.gov.cn/notice/search/ent_info_list',  # 获得企业入口
-            'open_info_entry': 'http://gsxt.hnaic.gov.cn/notice/notice/view?',
-            # 获得企业信息页面的url，通过指定不同的tab=1-4来选择不同的内容（工商公示，企业公示...）
+            'open_info_entry': 'http://wsgs.fjaic.gov.cn/creditpub/notice/view?',  #获得企业信息页面的url，通过指定不同的tab=1-4来选择不同的内容（工商公示，企业公示...）
             'open_detail_info_entry': ''
-            }
-
+        }
 
     def __init__(self, json_restore_path):
         self.json_restore_path = json_restore_path
-        self.parser = HunanParser(self)
+        self.parser = FujianParser(self)
         self.img_count = 1
 
     def run(self, ent_number=0):
@@ -67,17 +65,22 @@ class HunanCrawler(Crawler):
             settings.logger.error('failed to parse pre check page')
             return False
 
-        while count < 10:
+        while count < 30:
+            # cur_time = datetime.now()
+            # if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
+            #     settings.logger.info('crawl time over, exit!')
+            #     return False
+
             count += 1
             ckcode = self.crack_checkcode()
-            post_data = {'captcha': ckcode[1], 'session.token': self.session_token}
+            post_data = {'captcha': ckcode[1], 'session.token': self.session_token};
             next_url = self.urls['post_checkcode']
             resp = self.reqst.post(next_url, data=post_data, verify=False)
             if resp.status_code != 200:
                 settings.logger.warn('failed to get crackcode image by url %s, fail count = %d' % (next_url, count))
                 continue
 
-            # settings.logger.info('crack code = %s, %s, response =  %s' %(ckcode[0], ckcode[1], resp.content))
+            settings.logger.info('crack code = %s, %s, response =  %s' % (ckcode[0], ckcode[1], resp.content))
             if resp.content == '0':
                 settings.logger.error('crack checkcode failed!')
                 continue
@@ -102,7 +105,7 @@ class HunanCrawler(Crawler):
 
     def crawl_ind_comm_pub_pages(self):
         """爬取工商公示信息页面
-        在湖南的网站中，工商公示信息在一个页面中返回。页面中包含了多个表格，调用 Parser的 parse_ind_comm_page进行解析
+        在福建的网站中，工商公示信息在一个页面中返回。页面中包含了多个表格，调用 Parser的 parse_ind_comm_page进行解析
         在 Parser的ind_comm_pub_page 中，访问并设置 crawler中的 json_dict。
         """
         next_url = self.urls['open_info_entry'] + 'uuid=' + self.uuid + '&tab=01'
@@ -111,6 +114,8 @@ class HunanCrawler(Crawler):
         if resp.status_code != 200:
             settings.logger.warn('get ind comm pub info failed!')
             return False
+        else:
+            settings.logger.info('succcess to get ind comm pub info')
         self.parser.parse_ind_comm_pub_pages(resp.content)
 
     def crawl_ent_pub_pages(self):
@@ -122,6 +127,8 @@ class HunanCrawler(Crawler):
         if resp.status_code != 200:
             settings.logger.warn('get ent pub info failed!')
             return False
+        else:
+            settings.logger.info('succcess to get ent pub info')
         self.parser.parse_ent_pub_pages(resp.content)
 
     def crawl_other_dept_pub_pages(self):
@@ -133,6 +140,8 @@ class HunanCrawler(Crawler):
         if resp.status_code != 200:
             settings.logger.warn('get other dept pub info failed!')
             return False
+        else:
+            settings.logger.info('succcess to get other pub info')
         self.parser.parse_other_dept_pub_pages(resp.content)
 
     def crawl_judical_assist_pub_pages(self):
@@ -144,6 +153,8 @@ class HunanCrawler(Crawler):
         if resp.status_code != 200:
             settings.logger.warn('get judical assist info failed!')
             return False
+        else:
+            settings.logger.info('succcess to get judical assist info')
         self.parser.parse_judical_assist_pub_pages(resp.content)
 
     def parse_post_check_page(self, page):
@@ -215,14 +226,14 @@ class HunanCrawler(Crawler):
         return ckcode
 
 
-class HunanParser(Parser):
-    """湖南工商页面的解析类
+class FujianParser(Parser):
+    """北京工商页面的解析类
     """
     def __init__(self, crawler):
         self.crawler = crawler
 
     def parse_ind_comm_pub_pages(self, page):
-        """解析工商公示信息-页面，在湖南的页面中，工商公示信息所有信息都通过一个http get返回
+        """解析工商公示信息-页面，在福建的页面中，工商公示信息所有信息都通过一个http get返回
         """
         soup = BeautifulSoup(page)
         id_table_map = {
@@ -255,6 +266,7 @@ class HunanParser(Parser):
                 settings.logger.info('crawler to get %s', table_name)
                 self.crawler.json_dict[table_name] = self.parse_table1(table)
 
+        # 备案信息-主要人员信息
         table = soup.find("table", {"id": "memberTable"})
         if table:
             trs = table.find_all("tr")
@@ -385,6 +397,7 @@ class HunanParser(Parser):
                             page_data = self.parse_page(detail_page, table_name + '_detail')
                             item[columns[col_count][0]] = page_data  # this may be a detail page data
                     else:
+                        # item[columns[col_count]] = CrawlerUtils.get_raw_text_in_bstag(td)
                         item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
                 else:
                     item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
@@ -407,10 +420,10 @@ class HunanParser(Parser):
         if m:
             detail[u'认缴出资额（万元）'] = m.group(1)
 
-        m = re.search(r'invt\.conDate = \'([\w\-\.]*)\';', page)
+        m = re.search(r'invt\.conDate = \'(.+)\';', page)
         if m:
             detail[u'认缴出资日期'] = m.group(1)
-        m = re.search(r'invt\.conDate = \'(\d+年\d+月\d+日)\';', page)
+        m = re.search(r'invt\.conDate = \'([\w\-\.]*)\';', page)
         if m:
             detail[u'认缴出资日期'] = m.group(1)
 
@@ -427,21 +440,18 @@ class HunanParser(Parser):
         if m:
             detail[u'实缴出资方式'] = m.group(1)
 
+        m = re.search(r'invtActl\.conDate = \'(.+)\';', page)
+        if m:
+            detail[u'实缴出资日期'] = m.group(1)
         m = re.search(r'invtActl\.conDate = \'([\w\-\.]*)\';', page)
         if m:
             detail[u'实缴出资日期'] = m.group(1)
-        m = re.search(r'invtActl\.conDate = \'(\d+年\d+月\d+日)\';', page)
-        if m:
-            detail[u'实缴出资日期'] = m.group(1)
 
-        # detail_dict[u'认缴额（万元）'] = subscribe_detail.get(u'认缴出资额（万元）', '0')
-        # detail_dict[u'实缴额（万元）'] = paid_in_detail.get(u'实缴出资额（万元）', '0')
-        # detail_dict[u'认缴明细'] = subscribe_detail
-        # detail_dict[u'实缴明细'] = paid_in_detail
         detail_dict[u'认缴额（万元）'] = detail.get(u'认缴出资额（万元）', '0')
         detail_dict[u'实缴额（万元）'] = detail.get(u'实缴出资额（万元）', '0')
-        detail_dict["list"] = detail
-
+        # detail_dict[u'认缴明细'] = subscribe_detail
+        # detail_dict[u'实缴明细'] = paid_in_detail
+        detail_dict[u"list"] = detail
         return detail_dict
 
     def parse_ent_pub_annual_report_page(self, page):
@@ -492,11 +502,11 @@ if __name__ == '__main__':
     from CaptchaRecognition import CaptchaRecognition
     import run
     run.config_logging()
-    HunanCrawler.code_cracker = CaptchaRecognition('hunan')
+    FujianCrawler.code_cracker = CaptchaRecognition('fujian')
 
-    crawler = HunanCrawler('./enterprise_crawler/hunan.json')
-    enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/hunan.txt')
-    # enterprise_list = ['430000000011972']
+    crawler = FujianCrawler('./enterprise_crawler/fujian.json')
+    enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/fujian.txt')
+    # enterprise_list = ['100000000018305']
     for ent_number in enterprise_list:
         ent_number = ent_number.rstrip('\n')
         settings.logger.info('###############   Start to crawl enterprise with id %s   ################\n' % ent_number)

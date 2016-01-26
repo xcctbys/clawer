@@ -38,7 +38,7 @@ from anhui_crawler import AnhuiCrawler
 from yunnan_crawler import YunnanCrawler
 from tianjin_crawler import TianjinCrawler
 from hunan_crawler import HunanCrawler
-# from fujian_crawler import FujianCrawler
+from fujian_crawler import FujianCrawler
 from sichuan_crawler import SichuanCrawler
 from shandong_crawler import ShandongCrawler
 from hebei_crawler import HebeiCrawler
@@ -66,7 +66,7 @@ province_crawler = {
     'yunnan':YunnanCrawler,
     'tianjin' : TianjinCrawler,
     'hunan' : HunanCrawler,
-    # 'fujian' : FujianCrawler,
+    'fujian' : FujianCrawler,
     'sichuan': SichuanCrawler,
     'shandong' : ShandongCrawler,
     'hebei' : HebeiCrawler,
