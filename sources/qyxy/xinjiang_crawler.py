@@ -1416,7 +1416,11 @@ class XinjiangParser(Parser):
         soup = BeautifulSoup(page, 'html5lib')
 
         shareholder_modify_info = soup.find('table', {'id': 'table_gdbg'})
+        if shareholder_modify_info is None:
+            return
         shareholder_modify_trs = shareholder_modify_info.find_all('tr')
+        if shareholder_modify_trs is None:
+            return
         detail_shareholder_modify_infoes = []
         if len(shareholder_modify_trs) > 2:
             i = 2
