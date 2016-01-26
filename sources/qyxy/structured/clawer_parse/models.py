@@ -20,11 +20,11 @@ class Operation(object):
         models = self.models
 
         if self.is_company_in_db():
-            print "新增公司ID: %s 的数据！" % self.register_num.encode('utf-8')
+            print "Add %s" % self.register_num.encode('utf-8')
             for model in models:
                 self.insert(model)
         else:
-            print "更新公司ID: %s 的数据！" % self.register_num.encode('utf-8')
+            print "Update %s" % self.register_num.encode('utf-8')
             for model in models:
                 self.update(model)
 
