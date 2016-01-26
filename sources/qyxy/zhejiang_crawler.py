@@ -106,6 +106,8 @@ class ZhejiangCrawler(object):
                     break
                 else:
                     settings.logger.debug(u"crack Captcha failed, the %d time(s)", count)
+                    if count> 10:
+                        break
         return
     def get_check_response(self, url, datas):
         """获得验证的结果信息"""
