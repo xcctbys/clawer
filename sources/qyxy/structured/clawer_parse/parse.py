@@ -204,10 +204,10 @@ class Parse(object):
                 else:
                     for result_dict in result:
                         result_dict[mapping.get(field)] = dict_in_company[field]
-        print "########################"                
-        print result 
+        print "########################"
+        print result
         return result
-    
+
     def parse_enter_license_detail(self, value, result, mapping):
         dict_inner = {}
         for dict_in in value:
@@ -220,8 +220,6 @@ class Parse(object):
         # print result
         # print "#########################"
         return result
-
-
 
     def parse_ent_report(self, dict_in_company, mapping):
         keys_to_tables = consts.keys_to_tables
