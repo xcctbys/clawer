@@ -3,17 +3,19 @@ PASSWORD=poiuytre
 CREATE_DATABASE=profiles/mysql/create.sql
 DROP_DATABASE=profiles/mysql/clear.sql
 
-all:
+all: data
+
+data:
 	python manage.py structured
 
-db:sql
+db: sql
+	python manage.py migrate
+
+db_init: drop_database create_database sql
 	python manage.py migrate
 
 sql:
 	python manage.py makemigrations
-
-db_init:drop_database create_database
-	python manage.py migrate
 
 drop_database:
 	mysql -u$(USER) -p$(PASSWORD) < $(DROP_DATABASE)

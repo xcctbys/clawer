@@ -35,6 +35,8 @@ class Parse(object):
             except Exception as e:
                 print "❌  公司ID: %s 解析错误: ❌ " % register_num.encode('utf-8')
                 print e
+                import traceback
+                traceback.print_exc()
 
     def parse_company(self, company={}, register_num=0):
         keys = self.keys
@@ -100,6 +102,7 @@ class Parse(object):
             "ent_pub_administration_license": self.parse_enter_license,
             "ent_pub_knowledge_property": self.parse_general,
             "ent_pub_administration_sanction": self.parse_general,
+            "ent_pub_shareholder_modify": self.parse_general,
             "other_dept_pub_administration_license": self.parse_general,
             "other_dept_pub_administration_sanction": self.parse_general,
             "judical_assist_pub_equity_freeze": self.parse_general,
