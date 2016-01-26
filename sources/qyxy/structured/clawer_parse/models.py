@@ -87,7 +87,7 @@ class Operation(object):
         data = self.data
         clear = consts.special_tables[1]
 
-        querys = model.objects.filter(enter_id=enter_id, invalidation=False).update(invalidation=True)
+        model.objects.filter(enter_id=enter_id, invalidation=False).update(invalidation=True)
 
         if data.get(name) is not None:
             for row in data[name]:
@@ -108,7 +108,7 @@ class Operation(object):
             else:
                 value = data.get(field)
 
-            if value is not None:
+            if value is not None and value != u"":
                 setattr(query, field, value)
 
                 if field != "year_report_id" and field != "enter_id":
