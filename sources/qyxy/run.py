@@ -17,6 +17,8 @@ import socket
 import raven
 from encodings import zlib_codec
 import zlib
+import jinja2
+
 
 ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
 if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
@@ -269,6 +271,11 @@ class Checker(object):
         to_admins = [x[1] for x in settings.ADMINS]
 
         self.send_mail.send(settings.EMAIL_HOST_USER, to_admins, title, content)
+        
+    def _render_html(self):
+        template = jinja2.Template()
+        pass
+        
 
 
 def main():
