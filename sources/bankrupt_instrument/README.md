@@ -8,7 +8,7 @@
 | sys
   | Configuration.cfg
 
-其中 InstrumentParsing.py 为解析的主文件，可以添加一个argument，以定义配置文件地址。
+其中 InstrumentParsing.py 为解析的主文件，可以添加一个arguement，以定义配置文件地址。
 
 Configuration.cfg 为默认的配置文件，如果自定义新的配置文件，请仿照这个格式配置。
 
