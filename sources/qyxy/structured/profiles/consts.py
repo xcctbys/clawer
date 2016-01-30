@@ -92,7 +92,7 @@ type_date = (
     "sharechange_publicity_date",
     "share_change_date",
     "license_end_date",
-    "license_begien_date",
+    "license_begin_date",
     "mortgage_register_date",
     "decision_date",
     "time_start",
