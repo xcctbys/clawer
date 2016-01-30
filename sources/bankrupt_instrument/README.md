@@ -5,6 +5,7 @@
 | InstrumentSplit.py
 | LawPaperBase.py
 | bankrupt_instrument.sh
+| initial.sh
 | sys
   | Configuration.cfg
 
@@ -13,6 +14,8 @@
 Configuration.cfg 为默认的配置文件，如果自定义新的配置文件，请仿照这个格式配置。
 
 仅需要运行bankrupt_instrument.sh。
+
+initial.sh可用于创建数据库
 
 程序仅需要每天零时运行一次。
 
