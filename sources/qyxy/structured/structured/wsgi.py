@@ -1,5 +1,5 @@
 """
-WSGI config for structured2 project.
+WSGI config for structured project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
