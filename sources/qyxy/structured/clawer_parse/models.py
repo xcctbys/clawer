@@ -470,7 +470,7 @@ class EnterAdministrativeLicense(models.Model):
 
     license_num = models.CharField(max_length=100, null=True, blank=True)
     license_filename = models.CharField(max_length=50, null=True, blank=True)
-    license_begien_date = models.DateField(null=True)
+    license_begin_date = models.DateField(null=True)
     license_end_date = models.DateField(null=True)
     license_authority = models.CharField(max_length=30, null=True, blank=True)
     license_content = models.TextField(null=True, blank=True)
@@ -670,7 +670,7 @@ class OtherAdministrativeLicense(models.Model):
     """其他部门-行政许可
     """
 
-    license_file_num = models.IntegerField(null=True)
+    license_file_num = models.CharField(max_length=30, null=True, blank=True)
     license_filename = models.CharField(max_length=50, null=True, blank=True)
     license_begin_date = models.DateField(null=True)
     license_end_date = models.DateField(null=True)
