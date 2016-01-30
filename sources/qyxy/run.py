@@ -153,7 +153,7 @@ def crawl_province(province):
             no = fields[2]
             process = multiprocessing.Process(target = crawl_work, args=(province, json_restore_path, no))
             process.daemon = True
-            process.run()
+            process.start()
             process.join(300)
 
     settings.logger.info('All %s crawlers work over' % province)
