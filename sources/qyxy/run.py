@@ -8,6 +8,7 @@ import random
 import time
 import datetime
 import stat
+import unittest
 
 import logging
 import Queue
@@ -58,6 +59,9 @@ from qinghai_crawler import QinghaiCrawler
 from hubei_crawler import HubeiCrawler
 from guizhou_crawler import GuizhouCrawler
 
+
+TEST = False
+
 province_crawler = {
     'beijing': BeijingCrawler,
     'jiangsu': JiangsuCrawler,
@@ -81,7 +85,7 @@ province_crawler = {
     'zhejiang' : ZhejiangCrawler,
     'liaoning': LiaoningCrawler,
     'gansu':GansuClawer,
-    'guangxi': GuangxiClawer,
+    #'guangxi': GuangxiClawer,
     'shanxi':ShanxiCrawler,
     'qinghai':QinghaiCrawler,
     'hubei':HubeiCrawler,
@@ -112,27 +116,17 @@ def config_logging():
     settings.logger.addHandler(ch)
 
 
-def crawl_work(n, province, json_restore_path, ent_queue):
-    crawler = province_crawler[province](json_restore_path)
-
-    while True:
-
-        try:
-            ent = ent_queue.get(timeout=3)
-        except Exception as e:
-            if ent_queue.empty():
-                settings.logger.info('ent queue is empty, crawler %d stop' % n)
-                break
-
-        time.sleep(random.uniform(0.2, 1))
-        settings.logger.info('crawler %d start to crawler enterprise(ent_id = %s)' % (n, ent))
-        try:
-            crawler.run(ent)
-        except Exception as e:
-            settings.logger.error('crawler %s failed to get enterprise(id = %s), with exception %s' % (province, ent, e))
-            send_sentry_report()
-        finally:
-            ent_queue.task_done()
+def crawl_work(province, json_restore_path, enterprise_no):
+    settings.logger.info('crawler start to crawler enterprise(ent_id = %s)' % (enterprise_no))
+    
+    try:
+        crawler = province_crawler[province](json_restore_path)
+        crawler.run(enterprise_no)
+    except Exception as e:
+        settings.logger.error('crawler %s failed to get enterprise(%s), with exception %s' % (province, enterprise_no, e))
+        send_sentry_report()
+    finally:
+        os._exit(0)
 
 
 def crawl_province(province):
@@ -143,25 +137,22 @@ def crawl_province(province):
         CrawlerUtils.make_dir(json_restore_dir)
 
     #获取企业名单
-    enterprise_list = CrawlerUtils.get_enterprise_list(settings.enterprise_list_path + province + '.txt')
+    enterprise_list_path = settings.enterprise_list_path + province + '.txt'
 
     #json存储文件名
     json_restore_path = '%s/%s.json' % (json_restore_dir, cur_date[2])
-
-    #将企业名单放入队列
-    ent_queue = Queue.Queue()
-    for x in enterprise_list:
-        ent_queue.put(x)
-
-    #开启多个线程，每个线程均执行 函数 crawl_work
-    for i in range(settings.crawler_num):
-        worker = threading.Thread(target = crawl_work, args = (i, province, json_restore_path, ent_queue))
-        worker.daemon = True
-        worker.start()
-        time.sleep(random.uniform(1, 2))
-
-    #等待结束
-    ent_queue.join()
+    
+    with open(enterprise_list_path) as f:
+        for line in f:
+            fields = line.strip().split(",")
+            if len(fields) < 3:
+                continue
+            no = fields[2]
+            process = multiprocessing.Process(target = crawl_work, args=(province, json_restore_path, no))
+            process.daemon = True
+            process.run()
+            process.join(300)
+    
     settings.logger.info('All %s crawlers work over' % province)
 
     #压缩保存
@@ -203,6 +194,7 @@ class Checker(object):
         self.parent = settings.json_restore_path
         self.success = [] # {'name':'', "size':0, "rows":0}
         self.failed = [] # string list
+        self.html_template = os.path.join(os.path.dirname(__file__), "mail.html")
         self.send_mail = SendMail(settings.EMAIL_HOST, settings.EMAIL_PORT, settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD, ssl=True)
 
     def run(self):
@@ -215,7 +207,7 @@ class Checker(object):
             st = os.stat(path)
             enterprise_count = self._get_enterprise_count(province)
             done = self._get_rows(path)
-            self.success.append({"name": province, "size": st[stat.ST_SIZE], "done": done, "enterprise_count": enterprise_count})
+            self.success.append({"name": province, "size": st[stat.ST_SIZE], "done": done, "enterprise_count": enterprise_count, "done_ratio": float(done) / enterprise_count})
 
         #output
         settings.logger.error("success %d, failed %d", len(self.success), len(self.failed))
@@ -252,30 +244,18 @@ class Checker(object):
 
     def _report(self):
         title = u"%s 企业信用爬取情况" % (self.yesterday.strftime("%Y-%m-%d"))
-        content = u"Stat Info. Success %d, failed %d\r\n\r\n" % (len(self.success), len(self.failed))
-
-        content += u"Success province:\n"
-        for item in self.success:
-            ratio = float(item['done'])/item["enterprise_count"]
-            content += u"\t%s\tbytes:%d\tdone:%d\tenterprise count:%d\tdone ratio:%.2f\n" % (item["name"], item['size'], item["done"], \
-                                                                            item['enterprise_count'], ratio)
-
-        content += u"\r\n"
-        content += u"Failed province:\n"
-        for item in self.failed:
-            content += u"\t%s\n" % (item)
-        
-        content += u"\r\n"
-        content += u"\r\n -- from %s" % socket.gethostname()
-
+        content = self._render_html()
         to_admins = [x[1] for x in settings.ADMINS]
 
-        self.send_mail.send(settings.EMAIL_HOST_USER, to_admins, title, content)
+        self.send_mail.send_html(settings.EMAIL_HOST_USER, to_admins, title, content)
         
     def _render_html(self):
-        template = jinja2.Template()
-        pass
-        
+        html = ""
+        with open(self.html_template) as f:
+            html = f.read()
+            
+        template = jinja2.Template(html)
+        return template.render(yesterday = self.yesterday.date(), success = self.success, failed = self.failed, host = socket.gethostname())
 
 
 def main():
@@ -333,9 +313,30 @@ def main():
 def send_sentry_report():
     if settings.sentry_client:
         settings.sentry_client.captureException()
+        
+
+class TestChecker(unittest.TestCase):
+    
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        self.checker = Checker()
+        
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        
+    def test_render_html(self):
+        html = self.checker._render_html()
+        self.assertGreater(len(html), 0)
+        
+    def test_report(self):
+        #self.checker.run()
+        self.checker._report()
 
 
 if __name__ == '__main__':
+    if TEST:
+        unittest.main()
+        
     try:
         main()
     except:
