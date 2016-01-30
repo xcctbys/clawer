@@ -163,67 +163,68 @@ class ShanxiCrawler(Crawler):
 
         return ckcode[1]
 
-    def crawl_page_by_url(self, url):
-        """根据url直接爬取页面
-        """
-        resp = self.reqst.get(url)
-        if self.reqst.status_code != 200:
-            settings.logger.error('crawl page by url failed! url = %s' % url)
-        page = resp.content
-        time.sleep(random.uniform(0.2, 1))
-        if settings.save_html:
-            CrawlerUtils.save_page_to_file(self.html_restore_path + 'detail.html', page)
-        return page
 
     def crawl_ind_comm_pub_pages(self):
         """爬取工商公示信息
         """
-        url = "%s%s" % (self.urls['ind_comm_pub_skeleton'], self.company_id)
-        resp = self.reqst.get(url)
-        if resp.status_code != 200:
-            settings.logger.error('failed to get ind_comm_pub_skeleton')
-        else:
-            settings.logger.info('succcess to get ind_comm_pub_skeleton')
-        self.parser.parse_ind_comm_pub_pages(resp.content)
+        for i in range(0, 5):
+            url = "%s%s" % (self.urls['ind_comm_pub_skeleton'], self.company_id)
+            resp = self.reqst.get(url)
+            if resp.status_code != 200:
+                settings.logger.error('failed to get ind_comm_pub_skeleton')
+                continue
+            else:
+                settings.logger.info('succcess to get ind_comm_pub_skeleton')
+                self.parser.parse_ind_comm_pub_pages(resp.content)
+                break
 
         # return resp.content
 
     def crawl_ent_pub_pages(self):
         """爬取企业公示信息
         """
-        url ="%s%s" % (self.urls['ent_pub_skeleton'], self.company_id)
-        resp = self.reqst.get(url)
-        if resp.status_code != 200:
-            settings.logger.error('failed to get ent_pub_skeleton')
-        else:
-            settings.logger.info('success to get ent_pub_skeleton')
-        self.parser.parse_ent_pub_pages(resp.content)
+        for i in range(0, 5):
+            url ="%s%s" % (self.urls['ent_pub_skeleton'], self.company_id)
+            resp = self.reqst.get(url)
+            if resp.status_code != 200:
+                settings.logger.error('failed to get ent_pub_skeleton')
+                continue
+            else:
+                settings.logger.info('success to get ent_pub_skeleton')
+                self.parser.parse_ent_pub_pages(resp.content)
+                break
 
         # return resp.content
 
     def crawl_other_dept_pub_pages(self):
         """爬取其他部门公示信息
         """
-        url = "%s%s" % (self.urls['other_dept_pub_skeleton'], self.company_id)
-        resp = self.reqst.get(url)
-        if resp.status_code != 200:
-            settings.logger.error('failed to get other_dept_pub_skeleton')
-        else:
-            settings.logger.info('success to get other_dept_pub_skeleton')
-        self.parser.crawl_other_dept_pub_pages(resp.content)
+        for i in range(0, 5):
+            url = "%s%s" % (self.urls['other_dept_pub_skeleton'], self.company_id)
+            resp = self.reqst.get(url)
+            if resp.status_code != 200:
+                settings.logger.error('failed to get other_dept_pub_skeleton')
+                continue
+            else:
+                settings.logger.info('success to get other_dept_pub_skeleton')
+                self.parser.crawl_other_dept_pub_pages(resp.content)
+                break
 
         # return resp.content
 
     def crawl_judical_assist_pub_pages(self):
         """爬取司法协助信息
         """
-        url = "%s%s" % (self.urls['judical_assist_skeleton'], self.company_id)
-        resp = self.reqst.get(url)
-        if resp.status_code != 200:
-            settings.logger.error('failed to get judical_assist_skeleton')
-        else:
-            settings.logger.info('success to get judical_assist_skeleton')
-        self.parser.parse_judical_assist_pub_pages(resp.content)
+        for i in range(0, 5):
+            url = "%s%s" % (self.urls['judical_assist_skeleton'], self.company_id)
+            resp = self.reqst.get(url)
+            if resp.status_code != 200:
+                settings.logger.error('failed to get judical_assist_skeleton')
+                continue
+            else:
+                settings.logger.info('success to get judical_assist_skeleton')
+                self.parser.parse_judical_assist_pub_pages(resp.content)
+                break
 
         # return resp.content
 
@@ -630,7 +631,7 @@ class ShanxiParser(Parser):
 
         name_table_map1 = [u"抵押权人概况"]
         name_table_map2 = [u'动产抵押登记信息', u'被担保债权概况']
-        table_detail = []
+        # table_detail = []
         wrap = {}
         for table in soupn.find_all('table'):
             list_table_title = table.find("th")
@@ -642,8 +643,9 @@ class ShanxiParser(Parser):
         table = soupn.find("div", {"id": "guaDiv"})
         if table:
             wrap[u"抵押物概况"] = self.parse_table2(table, 1, 0, 0)[0]
-        table_detail.append(wrap)
-        return table_detail
+        # table_detail.append(wrap)
+        print wrap
+        return wrap
 
     def ana_table4(self, table):
         ths = table.find_all("th")

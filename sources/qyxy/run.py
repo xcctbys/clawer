@@ -17,6 +17,8 @@ import socket
 import raven
 from encodings import zlib_codec
 import zlib
+import jinja2
+
 
 ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
 if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
@@ -38,7 +40,7 @@ from anhui_crawler import AnhuiCrawler
 from yunnan_crawler import YunnanCrawler
 from tianjin_crawler import TianjinCrawler
 from hunan_crawler import HunanCrawler
-# from fujian_crawler import FujianCrawler
+from fujian_crawler import FujianCrawler
 from sichuan_crawler import SichuanCrawler
 from shandong_crawler import ShandongCrawler
 from hebei_crawler import HebeiCrawler
@@ -54,6 +56,7 @@ from gansu_crawler import GansuClawer
 from shanxi_crawler import ShanxiCrawler
 from qinghai_crawler import QinghaiCrawler
 from hubei_crawler import HubeiCrawler
+from guizhou_crawler import GuizhouCrawler
 
 province_crawler = {
     'beijing': BeijingCrawler,
@@ -66,7 +69,7 @@ province_crawler = {
     'yunnan':YunnanCrawler,
     'tianjin' : TianjinCrawler,
     'hunan' : HunanCrawler,
-    # 'fujian' : FujianCrawler,
+    'fujian' : FujianCrawler,
     'sichuan': SichuanCrawler,
     'shandong' : ShandongCrawler,
     'hebei' : HebeiCrawler,
@@ -78,10 +81,11 @@ province_crawler = {
     'zhejiang' : ZhejiangCrawler,
     'liaoning': LiaoningCrawler,
     'gansu':GansuClawer,
-    # 'guangxi': GuangxiClawer,
+    'guangxi': GuangxiClawer,
     'shanxi':ShanxiCrawler,
     'qinghai':QinghaiCrawler,
     'hubei':HubeiCrawler,
+    'guizhou' : GuizhouCrawler,
 }
 
 process_pool = None
@@ -267,6 +271,11 @@ class Checker(object):
         to_admins = [x[1] for x in settings.ADMINS]
 
         self.send_mail.send(settings.EMAIL_HOST_USER, to_admins, title, content)
+        
+    def _render_html(self):
+        template = jinja2.Template()
+        pass
+        
 
 
 def main():
