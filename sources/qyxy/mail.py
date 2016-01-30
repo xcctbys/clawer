@@ -41,8 +41,10 @@ class SendMail(object):
         multipart["From"] = from_addr
         multipart["To"] = ", ".join(to_addrs)
         
-        text = MIMEText(content, 'html', "utf-8")
+        text = MIMEText(content, 'plain', "utf-8")
         multipart.attach(text)
+        html = MIMEText(content, 'html', "utf-8")
+        multipart.attach(html)
         
         self.smtp.sendmail(from_addr, to_addrs, multipart.as_string(False))
         self.smtp.quit()
