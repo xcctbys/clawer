@@ -58,6 +58,7 @@ from shanxi_crawler import ShanxiCrawler
 from qinghai_crawler import QinghaiCrawler
 from hubei_crawler import HubeiCrawler
 from guizhou_crawler import GuizhouCrawler
+from jilin_crawler import JilinCrawler
 
 
 TEST = False
@@ -85,11 +86,12 @@ province_crawler = {
     'zhejiang' : ZhejiangCrawler,
     'liaoning': LiaoningCrawler,
     'gansu':GansuClawer,
-    #'guangxi': GuangxiClawer,
+    'guangxi': GuangxiCrawler,
     'shanxi':ShanxiCrawler,
     'qinghai':QinghaiCrawler,
     'hubei':HubeiCrawler,
     'guizhou' : GuizhouCrawler,
+    'jilin' : JilinCrawler,
 }
 
 process_pool = None
@@ -118,7 +120,7 @@ def config_logging():
 
 def crawl_work(province, json_restore_path, enterprise_no):
     settings.logger.info('crawler start to crawler enterprise(ent_id = %s)' % (enterprise_no))
-    
+
     try:
         crawler = province_crawler[province](json_restore_path)
         crawler.run(enterprise_no)
@@ -141,7 +143,7 @@ def crawl_province(province):
 
     #json存储文件名
     json_restore_path = '%s/%s.json' % (json_restore_dir, cur_date[2])
-    
+
     with open(enterprise_list_path) as f:
         for line in f:
             fields = line.strip().split(",")
@@ -152,7 +154,7 @@ def crawl_province(province):
             process.daemon = True
             process.run()
             process.join(300)
-    
+
     settings.logger.info('All %s crawlers work over' % province)
 
     #压缩保存
@@ -174,12 +176,12 @@ def crawl_province(province):
 
 def force_exit():
     pgid = os.getpgid(0)
-    
+
     settings.logger.error("PID %d run timeout", pgid)
-    
+
     if process_pool != None:
         process_pool.terminate()
-    
+
     os.killpg(pgid, 9)
     os._exit(1)
 
@@ -223,23 +225,23 @@ class Checker(object):
     def _json_path(self, province):
         path = os.path.join(self.parent, province, self.yesterday.strftime("%Y/%m/%d.json.gz"))
         return path
-    
+
     def _get_rows(self, path):
         rows = 0
-        
+
         with gzip.open(path) as f:
             for _ in f:
                 rows += 1
-        
+
         return rows
-    
+
     def _get_enterprise_count(self, province):
         path = os.path.join(settings.enterprise_list_path, "%s.txt" % province)
         count = 0
         with open(path) as f:
             for _ in f:
                 count += 1
-        
+
         return count
 
     def _report(self):
@@ -248,12 +250,12 @@ class Checker(object):
         to_admins = [x[1] for x in settings.ADMINS]
 
         self.send_mail.send_html(settings.EMAIL_HOST_USER, to_admins, title, content)
-        
+
     def _render_html(self):
         html = ""
         with open(self.html_template) as f:
             html = f.read()
-            
+
         template = jinja2.Template(html)
         return template.render(yesterday = self.yesterday.date(), success = self.success, failed = self.failed, host = socket.gethostname())
 
@@ -278,7 +280,7 @@ def main():
     if len(sys.argv) < 3:
         print 'usage: run.py [check] [max_crawl_time(minutes) province...] \n\tmax_crawl_time 最大爬取秒数，以秒计;\n\tprovince 是所要爬取的省份列表 用空格分开, all表示爬取全部)'
         return
-        
+
     try:
         max_crawl_time = int(sys.argv[1])
         settings.max_crawl_time = datetime.timedelta(minutes=max_crawl_time)
@@ -291,7 +293,7 @@ def main():
 
     settings.logger.info(u'即将开始爬取，最长爬取时间为 %s 秒' % settings.max_crawl_time)
     settings.start_crawl_time = datetime.datetime.now()
-    
+
     if sys.argv[2] == 'all':
         args = [p for p in sorted(province_crawler.keys())]
         process_pool = multiprocessing.Pool()
@@ -305,29 +307,29 @@ def main():
             if not p in province_crawler.keys():
                 settings.logger.warn('province %s is not supported currently' % p)
                 continue
-            
+
             crawl_province(p)
-    
-    
-    
+
+
+
 def send_sentry_report():
     if settings.sentry_client:
         settings.sentry_client.captureException()
-        
+
 
 class TestChecker(unittest.TestCase):
-    
+
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.checker = Checker()
-        
+
     def tearDown(self):
         unittest.TestCase.tearDown(self)
-        
+
     def test_render_html(self):
         html = self.checker._render_html()
         self.assertGreater(len(html), 0)
-        
+
     def test_report(self):
         #self.checker.run()
         self.checker._report()
@@ -336,7 +338,7 @@ class TestChecker(unittest.TestCase):
 if __name__ == '__main__':
     if TEST:
         unittest.main()
-        
+
     try:
         main()
     except:

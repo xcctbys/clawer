@@ -1294,7 +1294,7 @@ if __name__ == "__main__":
     jilin = JilinCrawler('./enterprise_crawler/jilin.json')
     jilin.work('220000000005183')
 
-"""
+
 if __name__ == "__main__":
     reload (sys)
     sys.setdefaultencoding('utf-8')
@@ -1310,4 +1310,4 @@ if __name__ == "__main__":
         jilin.run(ent_num = ent_str[2])
         settings.logger.info(u'###################   Enterprise with id  %s Finished!  ###################\n' % ent_str[2])
 
-
+"""
