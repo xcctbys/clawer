@@ -151,7 +151,7 @@ def crawl_province(province):
             if len(fields) < 3:
                 continue
             no = fields[2]
-            process = multiprocessing.Process(target = crawl_work, args=(province, json_restore_path, no))
+            process = multiprocessing.Process(target = crawl_work, args = (province, json_restore_path, no))
             process.daemon = True
             process.start()
             process.join(300)
@@ -261,6 +261,20 @@ class Checker(object):
         return template.render(yesterday = self.yesterday.date(), success = self.success, failed = self.failed, host = socket.gethostname())
 
 
+
+class NoDaemonProcess(multiprocessing.Process):
+    # make 'daemon' attribute always return False
+    def _get_daemon(self):
+        return False
+    def _set_daemon(self, value):
+        pass
+    daemon = property(_get_daemon, _set_daemon)
+
+# We sub-class multiprocessing.pool.Pool instead of multiprocessing.Pool
+# because the latter is only a wrapper function, not a proper class.
+class MyPool(multiprocessing.pool.Pool):
+    Process = NoDaemonProcess
+
 def main():
     config_logging()
 
@@ -297,7 +311,7 @@ def main():
 
     if sys.argv[2] == 'all':
         args = [p for p in sorted(province_crawler.keys())]
-        process_pool = multiprocessing.Pool()
+        process_pool = MyPool()
         process_pool.map(crawl_province, args)
         process_pool.close()
         settings.logger.info("wait processes....")
