@@ -1402,6 +1402,8 @@ class ShandongCrawler(object):
 
 
     def crawl_page_by_url(self, url):
+        text = ""
+        urls = ""
         try:
             r = self.requests.get( url)
             if r.status_code != 200:
@@ -1414,9 +1416,11 @@ class ShandongCrawler(object):
         finally:
             return {'page' : text, 'url': urls}
 
-    def crawl_page_by_url_post(self, url, data, headers={}):
+    def crawl_page_by_url_post(self, url, data, header={}):
+        text = ""
+        urls = ""
         try:
-            self.requests.headers.update(headers)
+            self.requests.headers.update(header)
             r = self.requests.post(url, data)
             if r.status_code != 200:
                 settings.logger.error(u"Getting page by url with post:%s, return status %s\n"% (url, r.status_code))
