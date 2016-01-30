@@ -15,7 +15,7 @@ class SendMail(object):
         self.ssl = ssl
         self.smtp = None
     
-    def send(self, from_addr, to_addrs, subject, content):
+    def send_text(self, from_addr, to_addrs, subject, content):
         self._login()
         
         multipart = MIMEMultipart('alternative')
@@ -26,6 +26,22 @@ class SendMail(object):
         multipart["To"] = ", ".join(to_addrs)
         
         text = MIMEText(content, 'plain', "utf-8")
+        multipart.attach(text)
+        
+        self.smtp.sendmail(from_addr, to_addrs, multipart.as_string(False))
+        self.smtp.quit()
+        
+    def send_html(self, from_addr, to_addrs, subject, content):
+        self._login()
+        
+        multipart = MIMEMultipart('alternative')
+        multipart.set_charset('utf-8')
+        
+        multipart["Subject"] = subject
+        multipart["From"] = from_addr
+        multipart["To"] = ", ".join(to_addrs)
+        
+        text = MIMEText(content, 'html', "utf-8")
         multipart.attach(text)
         
         self.smtp.sendmail(from_addr, to_addrs, multipart.as_string(False))
