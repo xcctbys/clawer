@@ -116,27 +116,17 @@ def config_logging():
     settings.logger.addHandler(ch)
 
 
-def crawl_work(n, province, json_restore_path, ent_queue):
-    crawler = province_crawler[province](json_restore_path)
-
-    while True:
-
-        try:
-            ent = ent_queue.get(timeout=3)
-        except Exception as e:
-            if ent_queue.empty():
-                settings.logger.info('ent queue is empty, crawler %d stop' % n)
-                break
-
-        time.sleep(random.uniform(0.2, 1))
-        settings.logger.info('crawler %d start to crawler enterprise(ent_id = %s)' % (n, ent))
-        try:
-            crawler.run(ent)
-        except Exception as e:
-            settings.logger.error('crawler %s failed to get enterprise(id = %s), with exception %s' % (province, ent, e))
-            send_sentry_report()
-        finally:
-            ent_queue.task_done()
+def crawl_work(province, json_restore_path, enterprise_no):
+    settings.logger.info('crawler start to crawler enterprise(ent_id = %s)' % (enterprise_no))
+    
+    try:
+        crawler = province_crawler[province](json_restore_path)
+        crawler.run(enterprise_no)
+    except Exception as e:
+        settings.logger.error('crawler %s failed to get enterprise(%s), with exception %s' % (province, enterprise_no, e))
+        send_sentry_report()
+    finally:
+        os._exit(0)
 
 
 def crawl_province(province):
@@ -147,25 +137,22 @@ def crawl_province(province):
         CrawlerUtils.make_dir(json_restore_dir)
 
     #获取企业名单
-    enterprise_list = CrawlerUtils.get_enterprise_list(settings.enterprise_list_path + province + '.txt')
+    enterprise_list_path = settings.enterprise_list_path + province + '.txt'
 
     #json存储文件名
     json_restore_path = '%s/%s.json' % (json_restore_dir, cur_date[2])
-
-    #将企业名单放入队列
-    ent_queue = Queue.Queue()
-    for x in enterprise_list:
-        ent_queue.put(x)
-
-    #开启多个线程，每个线程均执行 函数 crawl_work
-    for i in range(settings.crawler_num):
-        worker = threading.Thread(target = crawl_work, args = (i, province, json_restore_path, ent_queue))
-        worker.daemon = True
-        worker.start()
-        time.sleep(random.uniform(1, 2))
-
-    #等待结束
-    ent_queue.join()
+    
+    with open(enterprise_list_path) as f:
+        for line in f:
+            fields = line.strip().split(",")
+            if len(fields) < 3:
+                continue
+            no = fields[2]
+            process = multiprocessing.Process(target = crawl_work, args=(province, json_restore_path, no))
+            process.daemon = True
+            process.run()
+            process.join(300)
+    
     settings.logger.info('All %s crawlers work over' % province)
 
     #压缩保存
