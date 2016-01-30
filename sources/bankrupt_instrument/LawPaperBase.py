@@ -1,5 +1,6 @@
 # encoding=utf-8
 
+
 from datetime import datetime
 import re
 import os
@@ -376,11 +377,11 @@ class LawPaperBase(object):
         try:
             if len(set(df["count"])) == 1:
                 df["length"] = df["name"].map(lambda x: len(x))
-                sort = df.sort("length", ascending=False)["name"]
+                sort = df.sort_values(by="length", ascending=False)["name"]
                 sort.index = range(len(sort))
                 return_name = sort.iloc[0]
             else:
-                sort = df.sort("count", ascending=False)["name"]
+                sort = df.sort_values(by="count", ascending=False)["name"]
                 sort.index = range(len(sort))
                 return_name = sort.iloc[0]
         except:
@@ -395,7 +396,3 @@ class LawPaperBase(object):
                         name_list.append(na)
 
         return u"、".join(name_list), replace_name
-
-
-
-

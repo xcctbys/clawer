@@ -8,6 +8,7 @@ import gzip
 from LawPaperBase import LawPaperBase
 from InstrumentSplit import InstrumentSplit
 import mysql.connector
+import sys
 
 
 class InstrumentParsing():
@@ -55,8 +56,12 @@ class InstrumentParsing():
         print "Caching URLs stored"
         self.__get__urls__()
         print "Start Inserting..."
-        self.insert_data(available_file_list)
+        complete_files = self.insert_data(available_file_list)
         self.connector.close()
+        with open(self.record_file, "a") as fo:
+            for path in complete_files:
+                fo.write(path)
+                fo.write("\n")
 
     def get_configuration(self, conf):
         config = ConfigParser.SafeConfigParser({'bar': 'Life', 'baz': 'hard'})
@@ -148,9 +153,6 @@ class InstrumentParsing():
         cursor = self.connector.cursor()
 
         for _file in file_list:
-            if not os.path.exists("tmp"):
-                os.mkdir("tmp")
-            os.popen("scp -r root@" + self.json_host + ":" + self.json_path + " tmp/")
             with gzip.open(_file, 'rb') as fin:
                 for line in fin:
                     line_item = json.loads(line, encoding="utf-8")
@@ -167,11 +169,7 @@ class InstrumentParsing():
                         if "abs_path" in item:
                             pdf_path = item["abs_path"]
                         contents = self.partition.split(item["content"])
-                        # contents = [item["content"]]
-                        # index = -1
                         for content in contents:
-                            # index += 1
-                            # print index, url, court, publish_date, pdf_path
                             law_data = self.event_termination(content, url, court, publish_date, pdf_path)
                             if len(law_data) > 0:
                                 for data in law_data.values():
@@ -229,7 +227,6 @@ class InstrumentParsing():
                             print "lost!"
 
         cursor.close()
-        os.popen("rm -r tmp/")
         return completed_files
 
     def get_connection(self):
@@ -528,5 +525,9 @@ class InstrumentParsing():
 
 
 if __name__ == '__main__':
-    InstrumentParsing()
+    args = sys.argv
+    if len(args) > 1:
+        InstrumentParsing(args[1])
+    else:
+        InstrumentParsing()
     print "End"
