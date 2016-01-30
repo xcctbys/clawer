@@ -10,6 +10,7 @@ json_paths = (
     "profiles/jsons/tianjin.json",
     "profiles/jsons/zhejiang.json",
     "profiles/jsons/neimeng.json",
+    "profiles/jsons/guizhou.json",
 )
 "profiles/jsons/guangxi.json",
 "profiles/jsons/yunnan.json",

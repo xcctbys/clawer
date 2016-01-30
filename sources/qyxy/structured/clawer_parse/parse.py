@@ -213,7 +213,7 @@ class Parse(object):
 
         for key, value in dict_in_company.iteritems():
             type_value = type(value)
-            if type_value == unicode or type_value == str:
+            if type_value == unicode or type_value == str or type_value == int:
                 ent_report[mapping[key]] = value
                 self.company_result[mapping[key]] = value
             else:
@@ -269,7 +269,7 @@ class Parse(object):
             value = company_result[field]
 
             if self.is_type_date(field, value):
-                company_result[field] = to_date(value.encode('utf-8'))
+                company_result[field] = to_date(value.encode('utf-8').strip())
 
             elif self.is_type_float(field, value):
                 company_result[field] = to_float(value.encode('utf-8'))
