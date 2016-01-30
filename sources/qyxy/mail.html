@@ -56,7 +56,7 @@
 	        {% for item in success %}
 	        <tr>
 	            <td>{{ item.name }}</td>
-	            <td>{{ item.size }}</td>
+	            <td>{{ item.size|filesizeformat }}</td>
 	            <td>{{ item.done }}</td>
 	            <td>{{ item.enterprise_count }}</td>
 	            <td>{{ item.done_ratio|round(2) }}</td>
