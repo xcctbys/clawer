@@ -66,7 +66,7 @@ class JilinCrawler(object):
             for div in divs:
                 a = div.find('a')
                 if a.has_attr('href'):
-                    Ent.append(div.find('a')['href'])
+                    Ent.append(a['href'])
         self.ents = Ent
 
     def is_search_result_page(self, page):
@@ -1283,6 +1283,7 @@ def read_ent_from_file(path):
         lines = f.readlines()
     lines = [ line.split(',') for line in lines ]
     return lines
+
 """
 if __name__ == "__main__":
     reload (sys)
@@ -1309,5 +1310,4 @@ if __name__ == "__main__":
         settings.logger.info(u'###################   Start to crawl enterprise with id %s   ###################\n' % ent_str[2])
         jilin.run(ent_num = ent_str[2])
         settings.logger.info(u'###################   Enterprise with id  %s Finished!  ###################\n' % ent_str[2])
-
 """

@@ -63,6 +63,7 @@ from jilin_crawler import JilinCrawler
 
 TEST = False
 
+
 province_crawler = {
     'beijing': BeijingCrawler,
     'jiangsu': JiangsuCrawler,
@@ -246,6 +247,7 @@ class Checker(object):
 
     def _report(self):
         title = u"%s 企业信用爬取情况" % (self.yesterday.strftime("%Y-%m-%d"))
+<<<<<<< Updated upstream
         content = self._render_html()
         to_admins = [x[1] for x in settings.ADMINS]
 
@@ -258,6 +260,32 @@ class Checker(object):
 
         template = jinja2.Template(html)
         return template.render(yesterday = self.yesterday.date(), success = self.success, failed = self.failed, host = socket.gethostname())
+=======
+        content = u"Stat Info. Success %d, failed %d\r\n\r\n" % (len(self.success), len(self.failed))
+
+        content += u"Success province:\n"
+        for item in self.success:
+            ratio = float(item['done'])/item["enterprise_count"]
+            content += u"\t%s\tbytes:%d\tdone:%d\tenterprise count:%d\tdone ratio:%.2f\n" % (item["name"], item['size'], item["done"], \
+                                                                            item['enterprise_count'], ratio)
+
+        content += u"\r\n"
+        content += u"Failed province:\n"
+        for item in self.failed:
+            content += u"\t%s\n" % (item)
+
+        content += u"\r\n"
+        content += u"\r\n -- from %s" % socket.gethostname()
+
+        to_admins = [x[1] for x in settings.ADMINS]
+
+        self.send_mail.send(settings.EMAIL_HOST_USER, to_admins, title, content)
+
+    def _render_html(self):
+        template = jinja2.Template()
+        pass
+
+>>>>>>> Stashed changes
 
 
 def main():
