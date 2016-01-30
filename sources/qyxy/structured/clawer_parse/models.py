@@ -20,11 +20,11 @@ class Operation(object):
         models = self.models
 
         if self.is_company_in_db():
-            print "新增公司ID: %s 的数据！" % self.register_num.encode('utf-8')
+            print "Add %s" % self.register_num.encode('utf-8')
             for model in models:
                 self.insert(model)
         else:
-            print "更新公司ID: %s 的数据！" % self.register_num.encode('utf-8')
+            print "Update %s" % self.register_num.encode('utf-8')
             for model in models:
                 self.update(model)
 
@@ -87,7 +87,7 @@ class Operation(object):
         data = self.data
         clear = consts.special_tables[1]
 
-        querys = model.objects.filter(enter_id=enter_id, invalidation=False).update(invalidation=True)
+        model.objects.filter(enter_id=enter_id, invalidation=False).update(invalidation=True)
 
         if data.get(name) is not None:
             for row in data[name]:
@@ -108,7 +108,7 @@ class Operation(object):
             else:
                 value = data.get(field)
 
-            if value is not None:
+            if value is not None and value != u"":
                 setattr(query, field, value)
 
                 if field != "year_report_id" and field != "enter_id":
@@ -470,7 +470,7 @@ class EnterAdministrativeLicense(models.Model):
 
     license_num = models.CharField(max_length=100, null=True, blank=True)
     license_filename = models.CharField(max_length=50, null=True, blank=True)
-    license_begien_date = models.DateField(null=True)
+    license_begin_date = models.DateField(null=True)
     license_end_date = models.DateField(null=True)
     license_authority = models.CharField(max_length=30, null=True, blank=True)
     license_content = models.TextField(null=True, blank=True)
@@ -670,7 +670,7 @@ class OtherAdministrativeLicense(models.Model):
     """其他部门-行政许可
     """
 
-    license_file_num = models.IntegerField(null=True)
+    license_file_num = models.CharField(max_length=30, null=True, blank=True)
     license_filename = models.CharField(max_length=50, null=True, blank=True)
     license_begin_date = models.DateField(null=True)
     license_end_date = models.DateField(null=True)

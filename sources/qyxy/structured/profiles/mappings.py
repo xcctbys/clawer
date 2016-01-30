@@ -73,16 +73,15 @@ mappings["ind_comm_pub_movable_property_reg"] = {
 }
 
 mappings["ind_comm_pub_equity_ownership_reg"] = {
+    u"登记编号": "register_num",
+    u"质权人": "mortgagee_name",
+    u"证照/证件号码": "pledgor_certificate_code",
     u"出质股权数额": "share_pledge_num",
     u"公示日期": "publicity_time",
     u"状态": "status",
-    u"质权人": "mortgagee",
     u"股权出质设立登记日期": None,
     u"出质人": "pledgor",
-    u"登记编号": "register_num",
-    u"证照/证件号码": "pledgor_certificate_code",
     u"变化情况": "change_detail",
-    u"序号": None,
 }
 
 mappings["ind_comm_pub_administration_sanction"] = {
@@ -109,20 +108,17 @@ mappings["ind_comm_pub_business_exception"] = {
 mappings["ind_comm_pub_serious_violate_law"] = {
     u"移出严重违法企业名单原因": "list_out_reason",
     u"列入严重违法企业名单原因": "list_on_reason",
-    u"公示日期": None,
     u"作出决定机关": "decision_gov",
     u"列入日期": "list_on_date",
     u"移出日期": "list_out_date",
-    u"序号": None,
 }
 
 mappings["ind_comm_pub_spot_check"] = {
     u"检查实施机关": "check_gov",
-    u"公示日期": None,
+    u"公示日期": "check_date",
     u"结果": "check_result",
     u"类型": "check_type",
     u"日期": "check_date",
-    u"序号": None,
 }
 
 mappings["ent_pub_shareholder_capital_contribution"] = {

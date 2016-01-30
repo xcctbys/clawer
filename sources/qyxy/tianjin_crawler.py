@@ -78,8 +78,11 @@ class TianjinCrawler(object):
         Ent = []
         soup = BeautifulSoup(page, "html5lib")
         divs = soup.find_all("div", {"class":"result-item"})
-        for div in divs:
-            Ent.append(div.div.a['href'])
+        if divs:
+            for div in divs:
+                a = div.find('a')
+                if a and a.has_attr('href'):
+                    Ent.append(a['href'])
         self.ents = Ent
 
     # 破解验证码页面
@@ -92,16 +95,14 @@ class TianjinCrawler(object):
             if r.status_code != 200:
                 settings.logger.error(u"Something wrong when getting the Captcha url:%s , status_code=%d", url_Captcha, r.status_code)
                 return
-            self.Captcha = r.content
             #settings.logger.debug("Captcha page html :\n  %s", self.Captcha)
-            if self.save_captcha():
+            if self.save_captcha(r.content):
                 result = self.crack_captcha()
                 print result
                 datas= {
                         'searchContent': textfield,
                         'vcode': result,
                 }
-                #response = self.get_check_response(url_CheckCode, datas)
                 page=  self.crawl_page_by_url_post(url_CheckCode, datas)['page']
                 # 如果验证码正确，就返回一种页面，否则返回主页面
                 if self.is_search_result_page(page) :
@@ -119,13 +120,6 @@ class TianjinCrawler(object):
         divs = soup.find('div', {'class':'nav-query'})
         return divs is None
 
-    #获得验证的结果信息
-    def get_check_response(self, url, datas):
-        r = self.requests.post( url, data = datas )
-        if r.status_code != 200:
-            return False
-        #print r.json()
-        return r.json()
     #调用函数，破解验证码图片并返回结果
     def crack_captcha(self):
         if os.path.exists(self.path_captcha) is False:
@@ -135,17 +129,16 @@ class TianjinCrawler(object):
         return result[1]
         #print result
     # 保存验证码图片
-    def save_captcha(self):
-        url_Captcha = self.path_captcha
-        if self.Captcha is None:
+    def save_captcha(self, Captcha):
+        if Captcha is None:
             settings.logger.error(u"Can not store Captcha: None\n")
             return False
         self.write_file_mutex.acquire()
-        f = open(url_Captcha, 'w')
+        f = open(self.path_captcha, 'w')
         try:
-            f.write(self.Captcha)
+            f.write(Captcha)
         except IOError:
-            settings.logger.debug("%s can not be written", url_Captcha)
+            settings.logger.debug("%s can not be written", Captcha)
         finally:
             f.close
         self.write_file_mutex.release()
@@ -417,9 +410,7 @@ class TianjinCrawler(object):
             tbody= bs_table.find_all('tbody')[1]
         else:
             tbody = bs_table.find('tbody') or BeautifulSoup(page, 'html5lib').find('tbody')
-        # print "tbody\n"
-        # print tbody
-        # print "--tbody\n"
+
         tr = None
         if tbody:
             if len(tbody.find_all('tr')) <= 1:
@@ -435,8 +426,8 @@ class TianjinCrawler(object):
                     #    pass
                     else:
                         tr = None
-                else:
-                    pass
+                elif tr.find('td'):
+                    tr = None
         else:
             if len(bs_table.find_all('tr')) <= 1:
                 return None
@@ -463,7 +454,6 @@ class TianjinCrawler(object):
             count = 0
             if len(tr_tag.find_all('th'))>0 :
                 for th in tr_tag.find_all('th'):
-                    #logging.debug(u"th in get_record_table_columns_by_tr =\n %s", th)
                     col_name = self.get_raw_text_by_tag(th)
                     if col_name :
                         if ((col_name, col_name) in columns) :
@@ -571,7 +561,6 @@ class TianjinCrawler(object):
             print table_name
             columns = self.get_columns_of_record_table(bs_table, page, table_name)
             #print columns
-            #print columns
             tbody = None
             if len(bs_table.find_all('tbody'))>1:
                 tbody = bs_table.find_all('tbody')[1]
@@ -607,9 +596,7 @@ class TianjinCrawler(object):
                                 if next_url:
                                     detail_page = self.crawl_page_by_url(next_url)
                                     #html_to_file("next.html", detail_page['page'])
-                                    #print "table_name : "+ table_name
                                     if table_name == u'年报信息':
-                                        #logging.debug(u"next_url = %s, table_name= %s\n", detail_page['url'], table_name)
                                         page_data = self.parse_ent_pub_annual_report_page(detail_page['page'])
 
                                         item[columns[col_count][0]] = page_data #this may be a detail page data
@@ -617,7 +604,6 @@ class TianjinCrawler(object):
                                         page_data = self.parse_page(detail_page['page'])
                                         item[columns[col_count][0]] = page_data #this may be a detail page data
                                 else:
-                                    #item[columns[col_count]] = CrawlerUtils.get_raw_text_in_bstag(td)
                                     item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
                             else:
                                 item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
@@ -750,16 +736,15 @@ class TianjinCrawler(object):
 
     def work(self, ent_num= ""):
 
-        # if not os.path.exists(self.html_restore_path):
-        #     os.makedirs(self.html_restore_path)
-        # self.json_dict = {}
+        if not os.path.exists(self.html_restore_path):
+            os.makedirs(self.html_restore_path)
 
-        # self.crawl_page_search(urls['page_search'])
-        # self.crawl_page_captcha(urls['page_Captcha'], urls['checkcode'], urls['page_showinfo'], ent_num)
-        # data = self.crawl_page_main()
-
-        self.ents= ['/platform/saic/viewBase.ftl?entId=349DDA405D520231E04400306EF52828']
+        self.crawl_page_search(urls['page_search'])
+        self.crawl_page_captcha(urls['page_Captcha'], urls['checkcode'], urls['page_showinfo'], ent_num)
         data = self.crawl_page_main()
+
+        #self.ents= ['/platform/saic/viewBase.ftl?entId=349DDA405D520231E04400306EF52828']
+        #data = self.crawl_page_main()
 
         #txt = html_from_file('tianjin_dj.html')
         #txt = html_from_file('next.html')
@@ -801,6 +786,7 @@ def read_ent_from_file(path):
     lines = [ line.split(',') for line in lines ]
     return lines
 
+"""
 if __name__ == "__main__":
     reload (sys)
     sys.setdefaultencoding('utf8')
@@ -809,10 +795,10 @@ if __name__ == "__main__":
     if not os.path.exists("./enterprise_crawler"):
         os.makedirs("./enterprise_crawler")
     tianjin = TianjinCrawler('./enterprise_crawler/tianjin.json')
-    #tianjin.work()
+    #tianjin.work('120000000000165')
     tianjin.work('120000000000165')
 
-"""
+
 if __name__ == "__main__":
     reload (sys)
     sys.setdefaultencoding('utf8')

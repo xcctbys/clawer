@@ -23,6 +23,7 @@ keys = (
     "ent_pub_administration_license",
     "ent_pub_knowledge_property",
     "ent_pub_administration_sanction",
+    "ent_pub_shareholder_modify",
 
     "other_dept_pub_administration_license",
     "other_dept_pub_administration_sanction",
@@ -60,6 +61,7 @@ keys_to_tables["ent_pub_administration_license"] = "enter_administrative_license
 keys_to_tables["ent_pub_knowledge_property"] = "enter_intellectual_property_pledge"
 keys_to_tables["ent_pub_administration_sanction"] = "enter_administrative_penalty"
 keys_to_tables["ent_pub_ent_annual_report"] = "enter_annual_report"
+keys_to_tables["ent_pub_shareholder_modify"] = "enter_modification"
 
 keys_to_tables["other_dept_pub_administration_license"] = "other_administrative_license"
 keys_to_tables["other_dept_pub_administration_sanction"] = "other_administrative_penalty"
@@ -90,7 +92,7 @@ type_date = (
     "sharechange_publicity_date",
     "share_change_date",
     "license_end_date",
-    "license_begien_date",
+    "license_begin_date",
     "mortgage_register_date",
     "decision_date",
     "time_start",
@@ -100,6 +102,8 @@ type_date = (
     "publicity_date",
     "paid_time",
     "subscription_time",
+    "license_register_time",
+    "license_change_time"
 )
 
 type_float = (

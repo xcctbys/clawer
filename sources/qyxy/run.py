@@ -8,6 +8,7 @@ import random
 import time
 import datetime
 import stat
+import unittest
 
 import logging
 import Queue
@@ -17,6 +18,8 @@ import socket
 import raven
 from encodings import zlib_codec
 import zlib
+import jinja2
+
 
 ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
 if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
@@ -38,7 +41,7 @@ from anhui_crawler import AnhuiCrawler
 from yunnan_crawler import YunnanCrawler
 from tianjin_crawler import TianjinCrawler
 from hunan_crawler import HunanCrawler
-# from fujian_crawler import FujianCrawler
+from fujian_crawler import FujianCrawler
 from sichuan_crawler import SichuanCrawler
 from shandong_crawler import ShandongCrawler
 from hebei_crawler import HebeiCrawler
@@ -54,6 +57,12 @@ from gansu_crawler import GansuClawer
 from shanxi_crawler import ShanxiCrawler
 from qinghai_crawler import QinghaiCrawler
 from hubei_crawler import HubeiCrawler
+from guizhou_crawler import GuizhouCrawler
+from jilin_crawler import JilinCrawler
+
+
+TEST = False
+
 
 province_crawler = {
     'beijing': BeijingCrawler,
@@ -66,7 +75,7 @@ province_crawler = {
     'yunnan':YunnanCrawler,
     'tianjin' : TianjinCrawler,
     'hunan' : HunanCrawler,
-    # 'fujian' : FujianCrawler,
+    'fujian' : FujianCrawler,
     'sichuan': SichuanCrawler,
     'shandong' : ShandongCrawler,
     'hebei' : HebeiCrawler,
@@ -78,10 +87,12 @@ province_crawler = {
     'zhejiang' : ZhejiangCrawler,
     'liaoning': LiaoningCrawler,
     'gansu':GansuClawer,
-    # 'guangxi': GuangxiClawer,
+    'guangxi': GuangxiCrawler,
     'shanxi':ShanxiCrawler,
     'qinghai':QinghaiCrawler,
     'hubei':HubeiCrawler,
+    'guizhou' : GuizhouCrawler,
+    'jilin' : JilinCrawler,
 }
 
 process_pool = None
@@ -108,27 +119,17 @@ def config_logging():
     settings.logger.addHandler(ch)
 
 
-def crawl_work(n, province, json_restore_path, ent_queue):
-    crawler = province_crawler[province](json_restore_path)
+def crawl_work(province, json_restore_path, enterprise_no):
+    settings.logger.info('crawler start to crawler enterprise(ent_id = %s)' % (enterprise_no))
 
-    while True:
-
-        try:
-            ent = ent_queue.get(timeout=3)
-        except Exception as e:
-            if ent_queue.empty():
-                settings.logger.info('ent queue is empty, crawler %d stop' % n)
-                break
-
-        time.sleep(random.uniform(0.2, 1))
-        settings.logger.info('crawler %d start to crawler enterprise(ent_id = %s)' % (n, ent))
-        try:
-            crawler.run(ent)
-        except Exception as e:
-            settings.logger.error('crawler %s failed to get enterprise(id = %s), with exception %s' % (province, ent, e))
-            send_sentry_report()
-        finally:
-            ent_queue.task_done()
+    try:
+        crawler = province_crawler[province](json_restore_path)
+        crawler.run(enterprise_no)
+    except Exception as e:
+        settings.logger.error('crawler %s failed to get enterprise(%s), with exception %s' % (province, enterprise_no, e))
+        send_sentry_report()
+    finally:
+        os._exit(0)
 
 
 def crawl_province(province):
@@ -139,25 +140,22 @@ def crawl_province(province):
         CrawlerUtils.make_dir(json_restore_dir)
 
     #获取企业名单
-    enterprise_list = CrawlerUtils.get_enterprise_list(settings.enterprise_list_path + province + '.txt')
+    enterprise_list_path = settings.enterprise_list_path + province + '.txt'
 
     #json存储文件名
     json_restore_path = '%s/%s.json' % (json_restore_dir, cur_date[2])
 
-    #将企业名单放入队列
-    ent_queue = Queue.Queue()
-    for x in enterprise_list:
-        ent_queue.put(x)
+    with open(enterprise_list_path) as f:
+        for line in f:
+            fields = line.strip().split(",")
+            if len(fields) < 3:
+                continue
+            no = fields[2]
+            process = multiprocessing.Process(target = crawl_work, args = (province, json_restore_path, no))
+            process.daemon = True
+            process.start()
+            process.join(300)
 
-    #开启多个线程，每个线程均执行 函数 crawl_work
-    for i in range(settings.crawler_num):
-        worker = threading.Thread(target = crawl_work, args = (i, province, json_restore_path, ent_queue))
-        worker.daemon = True
-        worker.start()
-        time.sleep(random.uniform(1, 2))
-
-    #等待结束
-    ent_queue.join()
     settings.logger.info('All %s crawlers work over' % province)
 
     #压缩保存
@@ -179,12 +177,12 @@ def crawl_province(province):
 
 def force_exit():
     pgid = os.getpgid(0)
-    
+
     settings.logger.error("PID %d run timeout", pgid)
-    
+
     if process_pool != None:
         process_pool.terminate()
-    
+
     os.killpg(pgid, 9)
     os._exit(1)
 
@@ -199,6 +197,7 @@ class Checker(object):
         self.parent = settings.json_restore_path
         self.success = [] # {'name':'', "size':0, "rows":0}
         self.failed = [] # string list
+        self.html_template = os.path.join(os.path.dirname(__file__), "mail.html")
         self.send_mail = SendMail(settings.EMAIL_HOST, settings.EMAIL_PORT, settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD, ssl=True)
 
     def run(self):
@@ -211,7 +210,7 @@ class Checker(object):
             st = os.stat(path)
             enterprise_count = self._get_enterprise_count(province)
             done = self._get_rows(path)
-            self.success.append({"name": province, "size": st[stat.ST_SIZE], "done": done, "enterprise_count": enterprise_count})
+            self.success.append({"name": province, "size": st[stat.ST_SIZE], "done": done, "enterprise_count": enterprise_count, "done_ratio": float(done) / enterprise_count})
 
         #output
         settings.logger.error("success %d, failed %d", len(self.success), len(self.failed))
@@ -227,47 +226,54 @@ class Checker(object):
     def _json_path(self, province):
         path = os.path.join(self.parent, province, self.yesterday.strftime("%Y/%m/%d.json.gz"))
         return path
-    
+
     def _get_rows(self, path):
         rows = 0
-        
+
         with gzip.open(path) as f:
             for _ in f:
                 rows += 1
-        
+
         return rows
-    
+
     def _get_enterprise_count(self, province):
         path = os.path.join(settings.enterprise_list_path, "%s.txt" % province)
         count = 0
         with open(path) as f:
             for _ in f:
                 count += 1
-        
+
         return count
 
     def _report(self):
         title = u"%s 企业信用爬取情况" % (self.yesterday.strftime("%Y-%m-%d"))
-        content = u"Stat Info. Success %d, failed %d\r\n\r\n" % (len(self.success), len(self.failed))
-
-        content += u"Success province:\n"
-        for item in self.success:
-            ratio = float(item['done'])/item["enterprise_count"]
-            content += u"\t%s\tbytes:%d\tdone:%d\tenterprise count:%d\tdone ratio:%.2f\n" % (item["name"], item['size'], item["done"], \
-                                                                            item['enterprise_count'], ratio)
-
-        content += u"\r\n"
-        content += u"Failed province:\n"
-        for item in self.failed:
-            content += u"\t%s\n" % (item)
-        
-        content += u"\r\n"
-        content += u"\r\n -- from %s" % socket.gethostname()
-
+        content = self._render_html()
         to_admins = [x[1] for x in settings.ADMINS]
 
-        self.send_mail.send(settings.EMAIL_HOST_USER, to_admins, title, content)
+        self.send_mail.send_html(settings.EMAIL_HOST_USER, to_admins, title, content)
 
+    def _render_html(self):
+        html = ""
+        with open(self.html_template) as f:
+            html = f.read()
+
+        template = jinja2.Template(html)
+        return template.render(yesterday = self.yesterday.date(), success = self.success, failed = self.failed, host = socket.gethostname())
+
+
+
+class NoDaemonProcess(multiprocessing.Process):
+    # make 'daemon' attribute always return False
+    def _get_daemon(self):
+        return False
+    def _set_daemon(self, value):
+        pass
+    daemon = property(_get_daemon, _set_daemon)
+
+# We sub-class multiprocessing.pool.Pool instead of multiprocessing.Pool
+# because the latter is only a wrapper function, not a proper class.
+class MyPool(multiprocessing.pool.Pool):
+    Process = NoDaemonProcess
 
 def main():
     config_logging()
@@ -289,7 +295,7 @@ def main():
     if len(sys.argv) < 3:
         print 'usage: run.py [check] [max_crawl_time(minutes) province...] \n\tmax_crawl_time 最大爬取秒数，以秒计;\n\tprovince 是所要爬取的省份列表 用空格分开, all表示爬取全部)'
         return
-        
+
     try:
         max_crawl_time = int(sys.argv[1])
         settings.max_crawl_time = datetime.timedelta(minutes=max_crawl_time)
@@ -302,10 +308,10 @@ def main():
 
     settings.logger.info(u'即将开始爬取，最长爬取时间为 %s 秒' % settings.max_crawl_time)
     settings.start_crawl_time = datetime.datetime.now()
-    
+
     if sys.argv[2] == 'all':
         args = [p for p in sorted(province_crawler.keys())]
-        process_pool = multiprocessing.Pool()
+        process_pool = MyPool()
         process_pool.map(crawl_province, args)
         process_pool.close()
         settings.logger.info("wait processes....")
@@ -316,17 +322,38 @@ def main():
             if not p in province_crawler.keys():
                 settings.logger.warn('province %s is not supported currently' % p)
                 continue
-            
+
             crawl_province(p)
-    
-    
-    
+
+
+
 def send_sentry_report():
     if settings.sentry_client:
         settings.sentry_client.captureException()
 
 
+class TestChecker(unittest.TestCase):
+
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        self.checker = Checker()
+
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+
+    def test_render_html(self):
+        html = self.checker._render_html()
+        self.assertGreater(len(html), 0)
+
+    def test_report(self):
+        #self.checker.run()
+        self.checker._report()
+
+
 if __name__ == '__main__':
+    if TEST:
+        unittest.main()
+
     try:
         main()
     except:

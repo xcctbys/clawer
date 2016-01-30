@@ -35,7 +35,7 @@ logging.basicConfig(level=level, format="%(levelname)s %(asctime)s %(lineno)d:: 
 
 
 class History(object):
-    START_DATE = datetime.datetime(2015, 1, 1)
+    START_DATE = datetime.datetime(2016, 1, 11)
     END_DATE = datetime.datetime.now() - datetime.timedelta(2)
     article_num = 0
     def __init__(self):
@@ -89,9 +89,10 @@ class Generator(object):
     def obtain_urls(self):
         end = self.history.current_date + datetime.timedelta(self.STEP)
         while self.history.current_date < end:
-           
 
             if self.history.total_page > 0:
+            	print "article_num", self.history.article_num
+
                 if not self.obtain_total_page(self.history.current_date):
                     self.history.current_date += datetime.timedelta(1)
                     self.history.save()
@@ -108,6 +109,7 @@ class Generator(object):
         if page>=10:
             return urlparse.urljoin(self.HOST, "/rmrb/html/%s/nbs.D110000renmrb_%d.htm" % (dt.strftime("%Y-%m/%d"), page))
     def do_obtain(self, dt, page):
+        
         url = self.page_url(dt, page)
         # url= "http://paper.people.com.cn/rmrb/html/2015-01/24/nw.D110000renmrb_20150124_1-05.htm"
         current_cookie = "username=bestjyz; expires=Thu, 12 Nov 2015 04:00:55 GMT; path=/; domain=paper.people.com.cn"
@@ -127,7 +129,6 @@ class Generator(object):
                 self.uris.add(node_url)
             # logging.debug("uri is %s", node_url)
 
-
     def obtain_total_page(self, dt):
         url = self.page_url(dt, 1)
         r = requests.get(url)
@@ -141,8 +142,16 @@ class Generator(object):
         return True
 
     def download(self,url,n):
-        
-        urllib.urlretrieve(url,'e://plkj/peopledaily/%s.txt' % n)
+       
+        # url= "http://paper.people.com.cn/rmrb/html/2015-01/24/nw.D110000renmrb_20150124_1-05.htm"
+        current_cookie = "username=bestjyz; expires=Thu, 12 Nov 2015 04:00:55 GMT; path=/; domain=paper.people.com.cn"
+        r = requests.get(url, headers={"user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36", "cookie": current_cookie})
+        if r.status_code != 200:
+            return
+        # path2 = ('e://plkj/peopledaily/%s.txt' % n
+        path2 = "%s%s%s" % ('content/', n, ".txt")
+        with open(path2, "w") as f:
+            f.write(r.content)
 
 class GeneratorTest(unittest.TestCase):
 

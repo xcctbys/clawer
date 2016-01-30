@@ -630,7 +630,7 @@ class QinghaiParser(Parser):
 
         name_table_map1 = [u"抵押权人概况"]
         name_table_map2 = [u'动产抵押登记信息', u'被担保债权概况']
-        table_detail = []
+        # table_detail = []
         wrap = {}
         for table in soupn.find_all('table'):
             list_table_title = table.find("th")
@@ -642,8 +642,8 @@ class QinghaiParser(Parser):
         table = soupn.find("div", {"id": "guaDiv"})
         if table:
             wrap[u"抵押物概况"] = self.parse_table2(table, 1, 0, 0)[0]
-        table_detail.append(wrap)
-        return table_detail
+        # table_detail.append(wrap)
+        return wrap
 
     def ana_table4(self, table):
         ths = table.find_all("th")

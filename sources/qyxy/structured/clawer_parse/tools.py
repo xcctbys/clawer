@@ -10,17 +10,15 @@ import datetime
 
 
 def trans_time(s):
-    try:
-        a = time.strptime(s, '%Y年%m月%d日')
-        time1 = datetime.datetime(*a[:6])
-        return time1
-    except:
+    time_format = ['%Y年%m月%d日','%Y-%m-%d','%Y.%m.%d','%Y-%m-%d %l:%M:%S','%Y-%m-%d %H:%M:%S']
+    for time_in in time_format:
         try:
-            b = time.strptime(s, '%Y-%m-%d')
-            time2 = datetime.datetime(*b[:6])
-            return time2
+            a = time.strptime(s, time_in)
+            time1 = datetime.datetime(*a[:6])
+            return time1 
         except:
-            return None
+            pass
+    return None
 
 
 def trans_float(s):
