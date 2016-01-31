@@ -8,7 +8,12 @@ import gzip
 from LawPaperBase import LawPaperBase
 from InstrumentSplit import InstrumentSplit
 import mysql.connector
+import sys
+import raven
 
+
+sentry_client = None
+configuration_file = "sys/Configuration.cfg"
 
 class InstrumentParsing():
     configuration_file = "sys/Configuration.cfg"
@@ -24,14 +29,25 @@ class InstrumentParsing():
     db_host = None
     db_user = None
     db_pwd = None
+    db_name = None
     urls = set()
+    iszip = False
     pattern_date = u"[\s0-9一二三四五六七八九十零〇]+年[\s0-9一二三四五六七八九十零〇]+月[\s0-9一二三四五六七八九十零〇]+[日]*"
 
-    def __init__(self, conf=None):
+    def __init__(self, conf=None, iszip = False):
+        self.iszip = iszip
         print "Start"
+
         # get the last json file parsed
         self.get_configuration(conf)
         print "Get Configuration"
+        print "-" * 30 + "Configuration" + "-" * 30
+        print "json_path", self.json_path
+        print "json_host", self.json_host
+        print "pdf_path", self.pdf_path
+        print "pdf_host", self.pdf_host
+        print "db", self.db_host
+        print "-" * 73
         self.connector = self.get_connection()
         print "Connected Database"
         # self.check_db_config(conf)
@@ -41,13 +57,7 @@ class InstrumentParsing():
                 for line in fi:
                     self.last_file.append(line)
         available_file_list = self.get_available_file()
-        print "-" * 30 + "Configuration" + "-" * 30
-        print "json_path", self.json_path
-        print "json_host", self.json_host
-        print "pdf_path", self.pdf_path
-        print "pdf_host", self.pdf_host
-        print "db", self.db_host
-        print "-" * 73
+        
         if len(available_file_list) == 0:
             exit(1)
         self.base = LawPaperBase()
@@ -55,8 +65,12 @@ class InstrumentParsing():
         print "Caching URLs stored"
         self.__get__urls__()
         print "Start Inserting..."
-        self.insert_data(available_file_list)
+        complete_files = self.insert_data(available_file_list)
         self.connector.close()
+        with open(self.record_file, "a") as fo:
+            for path in complete_files:
+                fo.write(path)
+                fo.write("\n")
 
     def get_configuration(self, conf):
         config = ConfigParser.SafeConfigParser({'bar': 'Life', 'baz': 'hard'})
@@ -87,10 +101,13 @@ class InstrumentParsing():
             self.db_host = "10.100.80.50"
         self.db_user = config.get("DB", "user")
         if self.db_user is None or self.db_user == "":
-            self.db_user = "root"
+            self.db_user = "cacti"
         self.db_pwd = config.get("DB", "password")
         if self.db_pwd is None or self.db_pwd == "":
-            self.db_pwd = ""
+            self.db_pwd = "cacti"
+        self.db_name = config.get("DB", "name")
+        if self.db_name is None or self.db_name == "":
+            self.db_name = "bankrupt"
 
     def default_config(self):
 
@@ -146,12 +163,15 @@ class InstrumentParsing():
     def insert_data(self, file_list):
         completed_files = set()
         cursor = self.connector.cursor()
-
+        open_fun = open
         for _file in file_list:
-            if not os.path.exists("tmp"):
-                os.mkdir("tmp")
-            os.popen("scp -r root@" + self.json_host + ":" + self.json_path + " tmp/")
-            with gzip.open(_file, 'rb') as fin:
+            if self.iszip:
+                open_fun = gzip.open
+                # with open(_file, 'rb') as fin:
+            # else:
+                # with
+            # with gzip.open(_file, 'rb') as fin:
+            with open_fun(_file, 'r') as fin:
                 for line in fin:
                     line_item = json.loads(line, encoding="utf-8")
                     items = line_item["list"]
@@ -167,11 +187,7 @@ class InstrumentParsing():
                         if "abs_path" in item:
                             pdf_path = item["abs_path"]
                         contents = self.partition.split(item["content"])
-                        # contents = [item["content"]]
-                        # index = -1
                         for content in contents:
-                            # index += 1
-                            # print index, url, court, publish_date, pdf_path
                             law_data = self.event_termination(content, url, court, publish_date, pdf_path)
                             if len(law_data) > 0:
                                 for data in law_data.values():
@@ -229,13 +245,12 @@ class InstrumentParsing():
                             print "lost!"
 
         cursor.close()
-        os.popen("rm -r tmp/")
         return completed_files
 
     def get_connection(self):
         cnx = mysql.connector.connect(user=self.db_user, password=self.db_pwd,
                                       host=self.db_host,
-                                      database='bankrupt')
+                                      database=self.db_name)
         return cnx
 
     def get_available_file(self):
@@ -255,7 +270,8 @@ class InstrumentParsing():
                     for jf in json_file:
                         file_path = path_day + jf
                         if file_path not in self.last_file:
-                            available_files.append(file_path)
+                            if file_path.find("_insert") != -1:
+                                available_files.append(file_path)
         return available_files
 
     def event_termination(self, content, url, court, publish_date, pdf_path):
@@ -527,6 +543,34 @@ class InstrumentParsing():
         return results
 
 
+def send_sentry_report():
+    if sentry_client:
+        sentry_client.captureException()
+
 if __name__ == '__main__':
-    InstrumentParsing()
+    args = sys.argv
+    configfile = None
+    sentry_dns = None
+    if len(args) > 1:
+        configfile = args[1]
+
+    config = ConfigParser.SafeConfigParser({'bar': 'Life', 'baz': 'hard'})
+
+    if configfile is None:
+        if os.path.exists(configuration_file):
+            config.read(configuration_file)
+    else:
+        if os.path.exists(configfile):
+            config.read(configfile)
+
+    sentry_dns = config.get("SETTING", "sentry_dns")
+    if sentry_dns is None or sentry_dns== "":
+        sentry_dns = 'http://917b2f66b96f46b785f8a1e635712e45:556a6614fe28410dbf074552bd566750@sentry.princetechs.com//2'
+    sentry_client = raven.Client(dsn=sentry_dns)
+
+    try:
+        InstrumentParsing(conf = configfile)
+    except:
+        send_sentry_report()
+    
     print "End"

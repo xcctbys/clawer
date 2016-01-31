@@ -7,7 +7,7 @@ MAX_TIME=72000
 
 function safe_run()
 {
-    file="/tmp/enterprise_$1.lock"
+    file="/tmp/bankrupt_instrument_$1.lock"
 
     (
         flock -xn -w 10 200 || exit 1
