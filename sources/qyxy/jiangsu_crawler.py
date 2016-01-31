@@ -158,7 +158,7 @@ class JiangsuCrawler(Crawler):
                 count += 1
                 continue
         return False
-    
+
     def get_page_data(self, page_name, real_post_data=None):
         """获取页面数据，通过页面名称，和post_data， 江苏的页面中几乎全部都是post方式来获取数据
         """
@@ -817,17 +817,28 @@ class JiangsuParser(Parser):
         """
         json_obj = json.loads(page_data)
         table_data = {}
-        if json_obj.get('listValue', None):
-            table_data[u'投资人名称'] = json_obj.get('listValue')[0].get('STOCK_NAME')
-            table_data[u'投资人类型'] = json_obj.get('listValue')[0].get('STOCK_TYPE')
-        if json_obj.get('listchuzi', None):
-            table_data[u'出资方式'] = json_obj.get('listchuzi')[0].get('INVEST_TYPE_NAME')
-        if json_obj.get('listrenjiao'):
-            table_data[u'认缴出资额'] = json_obj.get('listrenjiao')[0].get('SHOULD_CAPI')
-        if json_obj.get('listshijiao', None):
-            table_data[u'实缴出资额'] = json_obj.get('listshijiao')[0].get('REAL_CAPI')
-            table_data[u'实缴实缴'] = json_obj.get('listshijiao')[0].get('REAL_CAPI_DATE')
-        return table_data
+        table_list = []
+        num = len(json_obj.get('listValue', None))
+        for i in range(num):
+            sub_dict={}
+            if json_obj.get('listValue', None):
+                table_data[u'投资人名称'] = json_obj.get('listValue')[i].get('STOCK_NAME')
+                table_data[u'投资人类型'] = json_obj.get('listValue')[i].get('STOCK_TYPE')
+            if json_obj.get('listchuzi', None):
+                table_data[u'出资方式'] = json_obj.get('listchuzi')[i].get('INVEST_TYPE_NAME')
+                sub_dict[u'认缴出资方式'] = json_obj.get('listchuzi')[i].get('INVEST_TYPE_NAME')
+                sub_dict[u'实缴出资方式'] = json_obj.get('listchuzi')[i].get('INVEST_TYPE_NAME')
+            if json_obj.get('listrenjiao'):
+                table_data[u'认缴额'] = json_obj.get('listrenjiao')[i].get('SHOULD_CAPI')
+                sub_dict[u'认缴出资额'] = json_obj.get('listrenjiao')[i].get('SHOULD_CAPI')
+                sub_dict[u'认缴出资时间'] = json_obj.get('listrenjiao')[i].get('SHOULD_CAPI_DATE')
+            if json_obj.get('listshijiao', None):
+                table_data[u'实缴额'] = json_obj.get('listshijiao')[i].get('REAL_CAPI')
+                sub_dict[u'实缴出资额'] = json_obj.get('listshijiao')[i].get('REAL_CAPI')
+                sub_dict[u'实缴出资时间'] = json_obj.get('listshijiao')[i].get('REAL_CAPI_DATE')
+            table_data['list'] = sub_dict
+            table_list.append(table_data)
+        return {u'投资人及出资信息':table_list}
 
     def parse_annual_report_shareholder_info(self, page):
         """解析年报信息中的投资人信息
@@ -875,7 +886,7 @@ class JiangsuParser(Parser):
 #         with open('./unittest_data/htmls/judical_assist_pub_skeleton.html') as f:
 #             page = f.read()
 #             self.parser.parse_judical_assist_pub_skeleton(page)
-
+"""
 if __name__ == '__main__':
     from CaptchaRecognition import CaptchaRecognition
     import run
@@ -888,3 +899,4 @@ if __name__ == '__main__':
         ent_number = ent_number.rstrip('\n')
         settings.logger.info('###################   Start to crawl enterprise with id %s   ###################\n' % ent_number)
         crawler.run(ent_number=ent_number)
+"""
