@@ -27,10 +27,13 @@ class InstrumentParsing():
     db_pwd = None
     db_name = None
     urls = set()
+    iszip = False
     pattern_date = u"[\s0-9一二三四五六七八九十零〇]+年[\s0-9一二三四五六七八九十零〇]+月[\s0-9一二三四五六七八九十零〇]+[日]*"
 
-    def __init__(self, conf=None):
+    def __init__(self, conf=None, iszip = False):
+        self.iszip = iszip
         print "Start"
+
         # get the last json file parsed
         self.get_configuration(conf)
         print "Get Configuration"
@@ -156,9 +159,15 @@ class InstrumentParsing():
     def insert_data(self, file_list):
         completed_files = set()
         cursor = self.connector.cursor()
-
+        open_fun = open
         for _file in file_list:
-            with gzip.open(_file, 'rb') as fin:
+            if not self.iszip:
+                open_fun = gzip.open
+                # with open(_file, 'rb') as fin:
+            # else:
+                # with
+            # with gzip.open(_file, 'rb') as fin:
+            with open_fun(_file, 'r+') as fin:
                 for line in fin:
                     line_item = json.loads(line, encoding="utf-8")
                     items = line_item["list"]
@@ -257,7 +266,8 @@ class InstrumentParsing():
                     for jf in json_file:
                         file_path = path_day + jf
                         if file_path not in self.last_file:
-                            available_files.append(file_path)
+                            if file_path.find("_insert") != -1:
+                                available_files.append(file_path)
         return available_files
 
     def event_termination(self, content, url, court, publish_date, pdf_path):
