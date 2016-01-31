@@ -481,19 +481,19 @@ class ChongqingParser(Parser):
         # 公司基本信息
         base_info = json_ent_info.get('base')
         # print json_ent_info.keys()
-        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, 'register_capital', 'regcap')
-        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, 'business_scope', 'opscope')
-        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, 'credit_code', 'pripid')
-        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, 'time_end', 'opto')
-        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, 'register_num', 'estdate')
-        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, 'place', 'dom')
-        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, 'enter_name', 'entname')
-        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, 'check_date', 'apprdate')
-        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, 'enter_type', 'enttype')
-        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, 'register_status', 'opstate')
-        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, 'corporation', 'lerep')
-        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, 'register_gov', 'regorg')
-        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, 'time_start', 'opfrom')
+        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, u'注册资本', 'regcap')
+        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, u'经营范围', 'opscope')
+        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, u'注册号/统一社会信用代码', 'pripid')
+        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, u'营业期限至', 'opto')
+        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, u'注册号', 'estdate')
+        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, u'住所', 'dom')
+        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, u'名称', 'entname')
+        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, u'核准日期', 'apprdate')
+        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, u'类型', 'enttype')
+        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, u'类型', 'opstate')
+        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, u'法定代表人', 'lerep')
+        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, u'登记机关', 'regorg')
+        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, u'成立日期', 'opfrom')
         # print(self.ind_comm_pub_reg_basic)
 
         # 股东基本信息
@@ -503,20 +503,20 @@ class ChongqingParser(Parser):
         i = 0
         while i < len(investors):
             sharehodler = {}
-            self.check_key_is_exists(investors[i], sharehodler, 'shareholder_type', 'invtype')
-            self.check_key_is_exists(investors[i], sharehodler, 'certificate_number', 'oid')
+            self.check_key_is_exists(investors[i], sharehodler, u'股东类型', 'invtype')
+            self.check_key_is_exists(investors[i], sharehodler, u'证照/证件号码', 'oid')
             if len(investors[i].get('gInvaccon')) > 0:
-                self.check_key_is_exists(investors[i].get('gInvaccon')[0], sharehodler, 'subscription_date', 'accondate')
-                self.check_key_is_exists(investors[i], sharehodler, 'subscription_amount', 'lisubconam')
-                self.check_key_is_exists(investors[i].get('gInvaccon')[0], sharehodler, 'subscription_type', 'acconform')
-                self.check_key_is_exists(investors[i].get('gInvaccon')[0], sharehodler, 'subscription_money_amount', 'acconam')
-            self.check_key_is_exists(investors[i], sharehodler, 'paid_amount', 'liacconam')
+                self.check_key_is_exists(investors[i].get('gInvaccon')[0], sharehodler, u'认缴出资日期', 'accondate')
+                self.check_key_is_exists(investors[i], sharehodler, '认缴额（万元）', 'lisubconam')
+                self.check_key_is_exists(investors[i].get('gInvaccon')[0], sharehodler, u'认缴出资方式', 'acconform')
+                self.check_key_is_exists(investors[i].get('gInvaccon')[0], sharehodler, u'认缴出资额（万元）', 'acconam')
+            self.check_key_is_exists(investors[i], sharehodler, u'实缴出资方式', 'liacconam')
             if len(investors[i].get('gInvsubcon')) > 0:
-                self.check_key_is_exists(investors[i].get('gInvsubcon')[0], sharehodler, 'paid_type', 'conform')
-                self.check_key_is_exists(investors[i].get('gInvsubcon')[0], sharehodler, 'paid_date', 'condate')
-                self.check_key_is_exists(investors[i].get('gInvsubcon')[0], sharehodler, 'paid_money_amount', 'subconam')
-            self.check_key_is_exists(investors[i], sharehodler, 'shareholder_name', 'inv')
-            self.check_key_is_exists(investors[i], sharehodler, 'certificate_type', 'blictype')
+                self.check_key_is_exists(investors[i].get('gInvsubcon')[0], sharehodler, u'实缴出资方式', 'conform')
+                self.check_key_is_exists(investors[i].get('gInvsubcon')[0], sharehodler, u'实缴出资日期', 'condate')
+                self.check_key_is_exists(investors[i].get('gInvsubcon')[0], sharehodler, u'实缴出资额（万元）', 'subconam')
+            self.check_key_is_exists(investors[i], sharehodler, u'股东', 'inv')
+            self.check_key_is_exists(investors[i], sharehodler, u'证照/证件类型', 'blictype')
             sharehodlers.append(sharehodler)
             i = i + 1
         self.ind_comm_pub_reg_shareholder = sharehodlers
@@ -526,10 +526,10 @@ class ChongqingParser(Parser):
         modify = {}
         alters = json_ent_info.get('alters')
         for alter in alters:
-            self.check_key_is_exists(alter, modify, 'modify_item', 'altitem')
-            self.check_key_is_exists(alter, modify, 'modify_date', 'altdate')
-            self.check_key_is_exists(alter, modify, 'modify_after', 'altaf')
-            self.check_key_is_exists(alter, modify, 'modify_before', 'altbe')
+            self.check_key_is_exists(alter, modify, u'变更事项', 'altitem')
+            self.check_key_is_exists(alter, modify, u'变更日期', 'altdate')
+            self.check_key_is_exists(alter, modify, u'变更后内容', 'altaf')
+            self.check_key_is_exists(alter, modify, u'变更后内容', 'altbe')
             modifies.append(modify)
         self.ind_comm_pub_reg_modify = modifies
         # for item in modifies:
@@ -541,9 +541,9 @@ class ChongqingParser(Parser):
         i = 0
         while i < len(members):
             key_person = {}
-            key_person['enter_id'] = i + 1
-            self.check_key_is_exists(members[i], key_person, 'name', 'name')
-            self.check_key_is_exists(members[i], key_person, 'position', 'position')
+            key_person[u'序号'] = i + 1
+            self.check_key_is_exists(members[i], key_person, u'姓名', 'name')
+            self.check_key_is_exists(members[i], key_person, u'职务', 'position')
             key_persons.append(key_person)
             i += 1
         self.ind_comm_pub_arch_key_persons = key_persons
@@ -556,12 +556,12 @@ class ChongqingParser(Parser):
         while i < len(motages):
             # print(motages[i])
             movable_property_reg = {}
-            movable_property_reg['enter_id'] = i + 1
-            self.check_key_is_exists(motages[i], movable_property_reg, 'status', '')
-            self.check_key_is_exists(motages[i], movable_property_reg, 'sharechange_register_date', 'regidate')
-            self.check_key_is_exists(motages[i], movable_property_reg, 'register_num', 'morregcno')
-            self.check_key_is_exists(motages[i], movable_property_reg, 'guarantee_debt_amount', 'priclasecam')
-            self.check_key_is_exists(motages[i], movable_property_reg, 'register_gov', 'regorg')
+            movable_property_reg[u'序号'] = i + 1
+            self.check_key_is_exists(motages[i], movable_property_reg, u'状态', '')
+            self.check_key_is_exists(motages[i], movable_property_reg, u'登记日期', 'regidate')
+            self.check_key_is_exists(motages[i], movable_property_reg, u'登记编号', 'morregcno')
+            self.check_key_is_exists(motages[i], movable_property_reg, u'被担保债权数额', 'priclasecam')
+            self.check_key_is_exists(motages[i], movable_property_reg, u'登记机关', 'regorg')
             movable_property_reges.append(movable_property_reg)
             i += 1
         self.ind_comm_pub_movable_property_reg = movable_property_reges
@@ -574,12 +574,12 @@ class ChongqingParser(Parser):
         while i < len(punishments):
             # print(punishments[i])
             administration_sanction = {}
-            administration_sanction['enter_id'] = i + 1
-            self.check_key_is_exists(punishments[i], administration_sanction, 'penalty_content', 'authcontent')
-            self.check_key_is_exists(punishments[i], administration_sanction, 'penalty_decision_gov', 'penauth')
-            self.check_key_is_exists(punishments[i], administration_sanction, 'illegal_type', 'illegacttype')
-            self.check_key_is_exists(punishments[i], administration_sanction, 'penalty_decision_date', 'pendecissdate')
-            self.check_key_is_exists(punishments[i], administration_sanction, 'penalty_decision_num', 'pendecno')
+            administration_sanction[u'序号'] = i + 1
+            self.check_key_is_exists(punishments[i], administration_sanction, u'行政处罚内容', 'authcontent')
+            self.check_key_is_exists(punishments[i], administration_sanction, u'作出行政处罚决定机关名称', 'penauth')
+            self.check_key_is_exists(punishments[i], administration_sanction, u'违法行为类型', 'illegacttype')
+            self.check_key_is_exists(punishments[i], administration_sanction, u'作出行政处罚决定日期', 'pendecissdate')
+            self.check_key_is_exists(punishments[i], administration_sanction, u'行政处罚决定书文号', 'pendecno')
             administration_sanctions.append(administration_sanction)
             i += 1
         self.ind_comm_pub_administration_sanction = administration_sanctions
@@ -591,10 +591,10 @@ class ChongqingParser(Parser):
         i = 0
         while i < len(brunchs):
             arch_branch = {}
-            arch_branch['enter_id'] = i + 1
-            self.check_key_is_exists(brunchs[i], arch_branch, 'register_gov', 'regorgname')
-            self.check_key_is_exists(brunchs[i], arch_branch, 'enter_code', 'regno')
-            self.check_key_is_exists(brunchs[i], arch_branch, 'branch_name', 'brname')
+            arch_branch[u'序号'] = i + 1
+            self.check_key_is_exists(brunchs[i], arch_branch, u'登记机关', 'regorgname')
+            self.check_key_is_exists(brunchs[i], arch_branch, u'注册号/统一社会信用代码', 'regno')
+            self.check_key_is_exists(brunchs[i], arch_branch, u'名称', 'brname')
             arch_branches.append(arch_branch)
             i += 1
         self.ind_comm_pub_arch_branch = arch_branches
@@ -607,12 +607,12 @@ class ChongqingParser(Parser):
         while i < len(illegals):
             # print(illegals[i])
             serious_violate_law = {}
-            serious_violate_law['enter_id'] = i + 1
-            self.check_key_is_exists(illegals[i], serious_violate_law, 'list_out_reason', 'remexcpres')
-            self.check_key_is_exists(illegals[i], serious_violate_law, 'list_on_reason', 'serillrea')
-            self.check_key_is_exists(illegals[i], serious_violate_law, 'decision_gov', 'decorg')
-            self.check_key_is_exists(illegals[i], serious_violate_law, 'list_on_date', 'lisdate')
-            self.check_key_is_exists(illegals[i], serious_violate_law, 'list_out_date', 'remdate')
+            serious_violate_law[u'序号'] = i + 1
+            self.check_key_is_exists(illegals[i], serious_violate_law, u'移出严重违法企业名单原因', 'remexcpres')
+            self.check_key_is_exists(illegals[i], serious_violate_law, u'列入严重违法企业名单原因', 'serillrea')
+            self.check_key_is_exists(illegals[i], serious_violate_law, u'作出决定机关', 'decorg')
+            self.check_key_is_exists(illegals[i], serious_violate_law, u'列入日期', 'lisdate')
+            self.check_key_is_exists(illegals[i], serious_violate_law, u'移出日期', 'remdate')
             serious_violate_laws.append(serious_violate_law)
             i += 1
         self.ind_comm_pub_serious_violate_law = serious_violate_laws
@@ -624,11 +624,11 @@ class ChongqingParser(Parser):
         i = 0
         while i < len(ccjces):
             spot_check = {}
-            spot_check['enter_id'] = i + 1
-            self.check_key_is_exists(ccjces[i], spot_check, 'check_gov', 'insauth')
-            self.check_key_is_exists(ccjces[i], spot_check, 'check_result', 'insresname')
-            self.check_key_is_exists(ccjces[i], spot_check, 'check_type', 'instype')
-            self.check_key_is_exists(ccjces[i], spot_check, 'check_date', 'insdate')
+            spot_check[u'序号'] = i + 1
+            self.check_key_is_exists(ccjces[i], spot_check, u'检查实施机关', 'insauth')
+            self.check_key_is_exists(ccjces[i], spot_check, u'结果', 'insresname')
+            self.check_key_is_exists(ccjces[i], spot_check, u'类型', 'instype')
+            self.check_key_is_exists(ccjces[i], spot_check, u'公示日期', 'insdate')
             spot_checkes.append(spot_check)
             i += 1
         self.ind_comm_pub_spot_check = spot_checkes
@@ -639,12 +639,12 @@ class ChongqingParser(Parser):
         i = 0
         while i < len(qyjyes):
             business_exception = {}
-            business_exception['enter_id'] = i + 1
-            self.check_key_is_exists(qyjyes[i], business_exception, 'list_out_reason', 'remexcpres')
-            self.check_key_is_exists(qyjyes[i], business_exception, 'list_gov', 'decorg')
-            self.check_key_is_exists(qyjyes[i], business_exception, 'list_on_reason', 'specause')
-            self.check_key_is_exists(qyjyes[i], business_exception, 'list_on_date', 'abntime')
-            self.check_key_is_exists(qyjyes[i], business_exception, 'list_out_date', 'remdate')
+            business_exception[u'序号'] = i + 1
+            self.check_key_is_exists(qyjyes[i], business_exception, u'移出经营异常名录原因', 'remexcpres')
+            self.check_key_is_exists(qyjyes[i], business_exception, u'作出决定机关', 'decorg')
+            self.check_key_is_exists(qyjyes[i], business_exception, u'列入经营异常名录原因', 'specause')
+            self.check_key_is_exists(qyjyes[i], business_exception, u'列入日期', 'abntime')
+            self.check_key_is_exists(qyjyes[i], business_exception, u'移出日期', 'remdate')
             business_exceptiones.append(business_exception)
             i += 1
         self.ind_comm_pub_business_exception = business_exceptiones
@@ -655,9 +655,9 @@ class ChongqingParser(Parser):
         i = 0
         while i < len(accounts):
             arch_liquidation = {}
-            arch_liquidation['enter_id'] = i + 1
-            self.check_key_is_exists(accounts[i], arch_liquidation, 'persons', 'persons')
-            self.check_key_is_exists(accounts[i], arch_liquidation, 'person_in_change', 'ligprincipal')
+            arch_liquidation[u'序号'] = i + 1
+            self.check_key_is_exists(accounts[i], arch_liquidation, u'清算组成员', 'persons')
+            self.check_key_is_exists(accounts[i], arch_liquidation, u'清算组负责人', 'ligprincipal')
             business_exceptiones.append(arch_liquidation)
             i += 1
         self.ind_comm_pub_arch_liquidation = arch_liquidationes
@@ -669,14 +669,14 @@ class ChongqingParser(Parser):
         while i < len(stockes):
             # print stockes[i]
             equity_ownership_reg = {}
-            equity_ownership_reg['enter_id'] = i + 1
-            self.check_key_is_exists(stockes[i], equity_ownership_reg, 'share_pledge_num', 'pripid')
-            self.check_key_is_exists(stockes[i], equity_ownership_reg, 'publicity_time', 'equpledate')
-            self.check_key_is_exists(stockes[i], equity_ownership_reg, 'status', 'type')
-            self.check_key_is_exists(stockes[i], equity_ownership_reg, 'mortgagee', 'imporg')
-            self.check_key_is_exists(stockes[i], equity_ownership_reg, 'pledgor', 'pledgor')
-            self.check_key_is_exists(stockes[i], equity_ownership_reg, 'register_num', 'equityno')
-            self.check_key_is_exists(stockes[i], equity_ownership_reg, 'pledgor_certificate_code', 'impno')
+            equity_ownership_reg[u'序号'] = i + 1
+            self.check_key_is_exists(stockes[i], equity_ownership_reg, u'出质股权数额', 'pripid')
+            self.check_key_is_exists(stockes[i], equity_ownership_reg, u'公示日期', 'equpledate')
+            self.check_key_is_exists(stockes[i], equity_ownership_reg, u'状态', 'type')
+            self.check_key_is_exists(stockes[i], equity_ownership_reg, u'质权人', 'imporg')
+            self.check_key_is_exists(stockes[i], equity_ownership_reg, u'出质人', 'pledgor')
+            self.check_key_is_exists(stockes[i], equity_ownership_reg, u'登记编号', 'equityno')
+            self.check_key_is_exists(stockes[i], equity_ownership_reg, u'证照/证件号码', 'impno')
             equity_ownership_reges.append(equity_ownership_reg)
             i += 1
         self.ind_comm_pub_equity_ownership_reg = equity_ownership_reges
@@ -707,12 +707,12 @@ class ChongqingParser(Parser):
         i = 0
         while i < len(json_sfxz):
             equity_freez = {}
-            equity_freez['enter_id'] = i + 1
-            self.check_key_is_exists(json_sfxz[i], equity_freez, 'freeze_status', 'frozstate')
-            self.check_key_is_exists(json_sfxz[i], equity_freez, 'been_excute_person', 'inv')
-            self.check_key_is_exists(json_sfxz[i], equity_freez, 'share_num', 'froam')
-            self.check_key_is_exists(json_sfxz[i], equity_freez, 'excute_court', 'froauth')
-            self.check_key_is_exists(json_sfxz[i], equity_freez, 'notice_num', 'executeno')
+            equity_freez[u'序号'] = i + 1
+            self.check_key_is_exists(json_sfxz[i], equity_freez, u'状态', 'frozstate')
+            self.check_key_is_exists(json_sfxz[i], equity_freez, u'被执行人', 'inv')
+            self.check_key_is_exists(json_sfxz[i], equity_freez, u'股权数额', 'froam')
+            self.check_key_is_exists(json_sfxz[i], equity_freez, u'执行法院', 'froauth')
+            self.check_key_is_exists(json_sfxz[i], equity_freez, u'协助公示通知书文号', 'executeno')
             i += 1
         self.judical_assist_pub_equity_freeze = equity_freezes
         # print ' 股权冻结', equity_freezes
@@ -746,18 +746,18 @@ class ChongqingParser(Parser):
         i = 0
         while i < len(json_other_qlicinfoes):
             administration_license = {}
-            administration_license['enter_id'] = i + 1
-            self.check_key_is_exists(json_other_qlicinfoes[i], administration_license, 'license_status', 'type')
-            self.check_key_is_exists(json_other_qlicinfoes[i], administration_license, 'license_end_date', 'valto')
-            self.check_key_is_exists(json_other_qlicinfoes[i], administration_license, 'license_content', 'licitem')
-            self.check_key_is_exists(json_other_qlicinfoes[i], administration_license, 'license_filename', 'licname')
-            self.check_key_is_exists(json_other_qlicinfoes[i], administration_license, 'license_file_num', 'licno')
+            administration_license['序号'] = i + 1
+            self.check_key_is_exists(json_other_qlicinfoes[i], administration_license, '状态', 'type')
+            self.check_key_is_exists(json_other_qlicinfoes[i], administration_license, '有效期至', 'valto')
+            self.check_key_is_exists(json_other_qlicinfoes[i], administration_license, '许可内容', 'licitem')
+            self.check_key_is_exists(json_other_qlicinfoes[i], administration_license, '许可文件名称', 'licname')
+            self.check_key_is_exists(json_other_qlicinfoes[i], administration_license, '许可文件编号', 'licno')
             # 暂时没有确定
-            self.check_key_is_exists(json_other_qlicinfoes[i], administration_license, 'license_detail',
+            self.check_key_is_exists(json_other_qlicinfoes[i], administration_license, '详情',
                                      'license_detail')
-            self.check_key_is_exists(json_other_qlicinfoes[i], administration_license, 'license_authority_gov',
+            self.check_key_is_exists(json_other_qlicinfoes[i], administration_license, '许可机关',
                                      'licanth')
-            self.check_key_is_exists(json_other_qlicinfoes[i], administration_license, 'license_begin_date', 'valfrom')
+            self.check_key_is_exists(json_other_qlicinfoes[i], administration_license, '有效期自', 'valfrom')
             administration_licenses.append(administration_license)
             i += 1
         self.other_dept_pub_administration_license = administration_licenses
