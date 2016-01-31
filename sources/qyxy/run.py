@@ -234,8 +234,6 @@ class Checker(object):
             for line in f:
                 if len(line.strip()) == 0:
                     continue
-                if len(line.split(",")) < 3:
-                    continue
                 rows += 1
 
         return rows
