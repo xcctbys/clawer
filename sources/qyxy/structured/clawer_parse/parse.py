@@ -14,22 +14,18 @@ class Parse(object):
 
     mappings = mappings
 
-    def __init__(self, clawer_file_path=''):
+    def __init__(self, companies=''):
         self.keys = consts.keys
-        if (clawer_file_path == ''):
-            raise Exception('Must give clawer json file path.')
-
-        else:
-            self.companies = {}
-            for line in fileinput.input(clawer_file_path):
-                company = json.loads(line)
-                for key in company:
-                    self.companies[key] = company[key]
+        self.companies = {}
+        for line in companies:
+            company = json.loads(line)
+            for key in company:
+                self.companies[key] = company[key]
 
     def parse_companies(self):
         for register_num in self.companies:
             company = self.companies[register_num]
-            # self.parse_company(company, register_num)
+
             try:
                 self.parse_company(company, register_num)
             except Exception as e:
@@ -112,6 +108,7 @@ class Parse(object):
 
     def parse_general(self, dict_in_company, mapping):
         result = {}
+
         for field, value in dict_in_company.iteritems():
             if field in mapping and value is not None:
                 result[mapping[field]] = value

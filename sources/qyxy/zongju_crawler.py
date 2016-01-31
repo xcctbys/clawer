@@ -433,7 +433,7 @@ class ZongjuParser(Parser):
                             item[u'详情'] = page_data  # this may be a detail page data
                         elif table_name == 'ind_comm_pub_reg_shareholder':
                             page_data = self.parse_ind_comm_pub_shareholder_detail_page(detail_page)
-                            item[u'详情'] = page_data
+                            item[u'详情'] = {u"投资人及出资信息" : page_data}
                         else:
                             page_data = self.parse_page(detail_page, table_name + '_detail')
                             item[columns[col_count][0]] = page_data  # this may be a detail page data
@@ -452,41 +452,44 @@ class ZongjuParser(Parser):
         """解析工商公示信息- 登记信息- 股东信息 中的详情链接页面
         """
         detail_dict = {}
+        list_content = []
         m = re.search(r'investor\.invName = \"(.+)\";', page)
         if m:
             detail_dict[u'股东'] = unicode(m.group(1), 'utf8')
 
-        subscribe_detail = {}
+        detail = {}
         m = re.search(r'invt\.subConAm = \"([\d\.]+)\";', page)
         if m:
-            subscribe_detail[u'认缴出资额（万元）'] = m.group(1)
+            detail[u'认缴出资额（万元）'] = m.group(1)
 
         m = re.search(r'invt\.conDate = \'([\w\-\.]*)\';', page)
         if m:
-            subscribe_detail[u'认缴出资日期'] = m.group(1)
+            detail[u'认缴出资日期'] = m.group(1)
 
         m = re.search(r'invt\.conForm = \"(.+)\";', page)
         if m:
-            subscribe_detail[u'认缴出资方式'] = m.group(1)
+            detail[u'认缴出资方式'] = m.group(1)
 
-        paid_in_detail = {}
+        # paid_in_detail = {}
         m = re.search(r'invtActl\.acConAm = \"([\d\.]+)\";', page)
         if m:
-            paid_in_detail[u'实缴出资额（万元）'] = m.group(1)
+            detail[u'实缴出资额（万元）'] = m.group(1)
 
         m = re.search(r'invtActl\.conForm = \"(.+)\";', page)
         if m:
-            paid_in_detail[u'实缴出资方式'] = m.group(1)
+            detail[u'实缴出资方式'] = m.group(1)
 
         m = re.search(r'invtActl\.conDate = \'([\w\-\.]*)\';', page)
         if m:
-            paid_in_detail[u'实缴出资日期'] = m.group(1)
+            detail[u'实缴出资日期'] = m.group(1)
 
-        detail_dict[u'认缴额（万元）'] = subscribe_detail.get(u'认缴出资额（万元）', '0')
-        detail_dict[u'实缴额（万元）'] = paid_in_detail.get(u'实缴出资额（万元）', '0')
-        detail_dict[u'认缴明细'] = subscribe_detail
-        detail_dict[u'实缴明细'] = paid_in_detail
-        return detail_dict
+        detail_dict[u'认缴额（万元）'] = detail.get(u'认缴出资额（万元）', '0')
+        detail_dict[u'实缴额（万元）'] = detail.get(u'实缴出资额（万元）', '0')
+        # detail_dict[u'认缴明细'] = subscribe_detail
+        # detail_dict[u'实缴明细'] = paid_in_detail
+        list_content.append(detail)
+        detail_dict[u"list"] = list_content
+        return [detail_dict]
 
     def parse_ent_pub_annual_report_page(self, page):
         """解析企业年报页面，该页面需要单独处理

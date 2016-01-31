@@ -3,6 +3,33 @@
 DEFAULT_ENTER_ID = 0
 DEFAULT_VERSION = 1
 
+JSONS_URL = 'http://clawer.princetechs.com/media/clawer_result/enterprise/json'
+
+PROVINCES = (
+    "anhui",
+    "liaoning",
+    "guangxi",
+    "yunnan",
+    "beijing",
+    "hebei",
+    "henan",
+    "heilongjiang",
+    "tianjin",
+    "zhejiang",
+    "neimeng",
+    "guizhou",
+    "fujian",
+    "guangdong",
+    "hunan",
+    "jiangsu",
+    "shandong",
+    "shanghai",
+    "sichuan",
+    "zongju",
+    "gansu",
+    "shaanxi",
+)
+
 keys = (
     "ind_comm_pub_reg_basic",
     "ind_comm_pub_reg_shareholder",
