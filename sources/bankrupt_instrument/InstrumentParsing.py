@@ -167,7 +167,7 @@ class InstrumentParsing():
             # else:
                 # with
             # with gzip.open(_file, 'rb') as fin:
-            with open_fun(_file, 'r+') as fin:
+            with open_fun(_file, 'r') as fin:
                 for line in fin:
                     line_item = json.loads(line, encoding="utf-8")
                     items = line_item["list"]
