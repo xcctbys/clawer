@@ -558,7 +558,7 @@ if __name__ == '__main__':
 
     if configfile is None:
         if os.path.exists(configuration_file):
-            config.read(conf)
+            config.read(configuration_file)
     else:
         if os.path.exists(configfile):
             config.read(configfile)
