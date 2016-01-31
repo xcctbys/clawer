@@ -340,7 +340,7 @@ class GansuParser(Parser):
                         detail['list'] = detail_list
                     list_detail.append(detail)
                     list_detail_super = {}
-                    list_detail_super['股东及出资信息"'] = list_detail
+                    list_detail_super[u'股东及出资信息'] = list_detail
                     ind_comm_pub_reg_shareholder[u'详情'] = list_detail_super
                     ind_comm_pub_reg_shareholderes.append(ind_comm_pub_reg_shareholder)
                     i += 1
