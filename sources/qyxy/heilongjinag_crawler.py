@@ -12,8 +12,6 @@ from crawler import Crawler
 from crawler import Parser
 from crawler import CrawlerUtils
 import types
-import urlparse
-import json
 ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
 if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
     import settings_pro as settings
@@ -49,6 +47,10 @@ class HeilongjiangClawer(Crawler):
             'ind_comm_pub_spot_check': 'http://gsxt.hljaic.gov.cn/QuerySpotCheckList.jspx?',  # 抽样检查信息翻页
             'ind_comm_pub_movable_property_reg': 'http://gsxt.hljaic.gov.cn/QueryMortList.jspx?',  # 动产抵押登记信息翻页
             'ind_comm_pub_business_exception': 'http://gsxt.hljaic.gov.cn/QueryExcList.jspx?',  # 经营异常信息
+
+            'shareholder_detail': 'http://gsxt.hljaic.gov.cn/queryInvDetailAction.jspx?id=',  # 投资人详情
+            'movable_property_reg_detail': 'http://gsxt.hljaic.gov.cn/mortInfoDetail.jspx?id=',  # 动产抵押登记详情
+            'annual_report': 'http://gsxt.hljaic.gov.cn/QueryYearExamineDetail.jspx?id=',  # 企业年报详情
             }
 
     def __init__(self, json_restore_path):
@@ -70,7 +72,7 @@ class HeilongjiangClawer(Crawler):
             ck_code = self.crack_check_code()
 
             data = {'checkNo': ck_code}
-            resp = self.reqst.post(HeilongjiangClawer.urls['post_checkcode'], data=data)
+            resp = self.reqst.post(self.urls['post_checkcode'], data=data)
 
             if resp.status_code != 200:
                 settings.logger.error("crawl post check page failed!")
@@ -78,13 +80,14 @@ class HeilongjiangClawer(Crawler):
                 continue
             if resp.content[10] == 't':
                 data = {'checkNo': ck_code, 'entName': self.ent_number}
-                resp = self.reqst.post(HeilongjiangClawer.urls['get_info_entry'], data=data)
+                resp = self.reqst.post(self.urls['get_info_entry'], data=data)
                 soup = BeautifulSoup(resp.text, "html5lib")
                 div = soup.find("div", {"style": "height:500px;"})
                 a = div.find("a")
                 if a:
                     company_id = a["href"].split('?')[1]
                     self.company_id = company_id.split("=")[1]
+
                     return True
                 else:
                     return False
@@ -98,7 +101,7 @@ class HeilongjiangClawer(Crawler):
         """破解验证码
         :return 破解后的验证码
         """
-        resp = self.reqst.get(HeilongjiangClawer.urls['get_checkcode'])
+        resp = self.reqst.get(self.urls['get_checkcode'])
         if resp.status_code != 200:
             settings.logger.error('failed to get get_checkcode')
             return None
@@ -182,6 +185,7 @@ class HeilongjiangParser(Parser):
             if name_table_map.has_key(list_table_title.text):
                 table_name = name_table_map[list_table_title.text]
                 settings.logger.info('crawler to get %s', table_name)
+
                 self.crawler.json_dict[table_name] = self.parse_table1(table)
 
         # 二类表
@@ -218,6 +222,7 @@ class HeilongjiangParser(Parser):
             return_table = self.parse_table2(div, 'ind_comm_pub_reg_shareholder')
             if return_table[1] != "None":
                 for i in range(0, len(return_table[1])):
+
                     return_table[0][i][u'详情'] = self.get_shareholder_detail(return_table[1][i])
             self.crawler.json_dict['ind_comm_pub_reg_shareholder'] = return_table[0]
         else:
@@ -289,7 +294,7 @@ class HeilongjiangParser(Parser):
                 for a1 in a:
                     m = re.search(r'id=(.*?)\"', str(a1))
                     args = m.group(1)
-                    host = 'http://gsxt.hljaic.gov.cn/QueryYearExamineDetail.jspx?id='
+                    host = self.crawler.urls['annual_report']
                     url = '%s%s' % (host, args)
                     rep = requests.get(url)
                     soup = BeautifulSoup(rep.content, 'html5lib')
@@ -362,6 +367,7 @@ class HeilongjiangParser(Parser):
             table_name = id_table_map[table_id]
             div = soup.find("div", {"id": table_id})
             table = div.next_sibling.next_sibling
+
             if not table:
                 self.crawler.json_dict[table_name] = []
                 continue
@@ -425,8 +431,12 @@ class HeilongjiangParser(Parser):
                     content_tr = []
                     url = '%s%s%s%s%s' % (self.crawler.urls[table_name], "pno=", j, '&mainId=', self.crawler.company_id)
                     rep = requests.get(url)
+
                     soup = BeautifulSoup(rep.text, "html5lib")
                     table = soup.find("table")
+                    if table == None:
+                        return ['', 'None']
+
                     if table_name == "ind_comm_pub_arch_key_persons":
                         trs = table.find_all("tr")
                         table_save = []
@@ -452,6 +462,8 @@ class HeilongjiangParser(Parser):
                     content_tr.extend(tr)
                     table_ts.extend(table_save)
                     return [table_ts, content_tr]
+            else:
+                return ['', 'None']
 
         else:
             table_save = self.get_td(table, table_columns)
@@ -485,10 +497,12 @@ class HeilongjiangParser(Parser):
 
     def get_td(self, table, table_columns):
         # 获取内容表的每一列，并将每一列做成一个字典，返回列表
-
+        table_save = []
+        if table == None:
+            return table_save
         content_trs = table.find_all("tr")
         content_td = table.find_all("td")
-        table_save = []
+
         if content_trs and content_td:
             for content_tr in content_trs:
                 content_tds = content_tr.find_all("td")
@@ -504,6 +518,7 @@ class HeilongjiangParser(Parser):
 
     def get_shareholder_detail(self, content_tr):
 
+        detail = {}
         if not content_tr.find("a"):
             return
 
@@ -511,13 +526,15 @@ class HeilongjiangParser(Parser):
         m = re.search(r'id=(.\d+)', str(link))
 
         int1 = m.group(1)
-        url1 = '%s%s' %('http://gsxt.hljaic.gov.cn/queryInvDetailAction.jspx?id=', int1)
+        url1 = '%s%s' %(self.crawler.urls["shareholder_detail"], int1)
         rep1 = requests.get(url1)
         soupn = BeautifulSoup(rep1.text, "html5lib")
 
         table = soupn.find("table")
+        if table == None:
+             return detail
         table_title1 = table.find("th").text  # 获取表头
-        detail = {}
+
         detail[table_title1] = self.coarse_page_table(table)
 
         return detail
@@ -527,7 +544,7 @@ class HeilongjiangParser(Parser):
         link = content_tr.find("a")
         m = re.search(r'id=(.\d+)', str(link))
         int1 = m.group(1)
-        url1 = '%s%s' %('http://gsxt.hljaic.gov.cn/mortInfoDetail.jspx?id=', int1)
+        url1 = '%s%s' %(self.crawler.urls['movable_property_reg_detail'], int1)
         rep1 = requests.get(url1)
         soupn = BeautifulSoup(rep1.text, "html5lib")
 
@@ -582,14 +599,13 @@ class HeilongjiangParser(Parser):
                 for i in range(0, len(list_title_th)):
                     table_save[list_title_th[i]] = list_td[i]
                 del list_td[0:len(list_title_th)]
-
-            elif len(list_td) > sum:
-
+            elif len(list_td) < sum:
                 del list_th[0: colspan_list[0]]
+                sum = len(list_td)
+
             list_test = []
             table_test = {}
             for i in range(0, sum):
-
                 if list_th[i] == "公示日期":
                     if table_test.has_key("认缴_公示日期"):
                         table_test["实缴_公示日期"] = list_td[i]

@@ -153,6 +153,8 @@ class ZongjuCrawler(Crawler):
                 return True
             else:
                 settings.logger.debug('crack checkcode failed, total fail count = %d' % count)
+                if count == 3:
+                    break
         return False
 
     def crawl_ind_comm_pub_pages(self):
