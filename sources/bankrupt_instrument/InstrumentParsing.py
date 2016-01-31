@@ -159,15 +159,15 @@ class InstrumentParsing():
     def insert_data(self, file_list):
         completed_files = set()
         cursor = self.connector.cursor()
-        open_fun = open
+        # open_fun = open
         for _file in file_list:
-            if not self.iszip:
-                open_fun = gzip.open
+            # if not self.iszip:
+            #     open_fun = gzip.open
                 # with open(_file, 'rb') as fin:
             # else:
                 # with
             # with gzip.open(_file, 'rb') as fin:
-            with open_fun(_file, 'r') as fin:
+            with open(_file, 'r') as fin:
                 for line in fin:
                     line_item = json.loads(line, encoding="utf-8")
                     items = line_item["list"]
