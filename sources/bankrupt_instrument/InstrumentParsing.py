@@ -10,6 +10,12 @@ from InstrumentSplit import InstrumentSplit
 import mysql.connector
 import sys
 
+ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
+if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
+    import settings_pro as settings
+else:
+    import settings
+
 
 class InstrumentParsing():
     configuration_file = "sys/Configuration.cfg"
@@ -159,15 +165,15 @@ class InstrumentParsing():
     def insert_data(self, file_list):
         completed_files = set()
         cursor = self.connector.cursor()
-        # open_fun = open
+        open_fun = open
         for _file in file_list:
-            # if not self.iszip:
-            #     open_fun = gzip.open
+            if self.iszip:
+                open_fun = gzip.open
                 # with open(_file, 'rb') as fin:
             # else:
                 # with
             # with gzip.open(_file, 'rb') as fin:
-            with open(_file, 'r') as fin:
+            with open_fun(_file, 'r') as fin:
                 for line in fin:
                     line_item = json.loads(line, encoding="utf-8")
                     items = line_item["list"]
@@ -539,10 +545,18 @@ class InstrumentParsing():
         return results
 
 
+def send_sentry_report():
+    if settings.sentry_client:
+        settings.sentry_client.captureException()
+
 if __name__ == '__main__':
     args = sys.argv
-    if len(args) > 1:
-        InstrumentParsing(args[1])
-    else:
-        InstrumentParsing()
+    try:
+        if len(args) > 1:
+            InstrumentParsing(args[1])
+        else:
+            InstrumentParsing()
+    except:
+        send_sentry_report()
+    
     print "End"
