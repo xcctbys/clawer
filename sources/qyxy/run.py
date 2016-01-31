@@ -215,7 +215,7 @@ class Checker(object):
         #output
         settings.logger.error("success %d, failed %d", len(self.success), len(self.failed))
         for item in self.success:
-            settings.logger.error("\t%s: %d bytes, rows %d, count %d", item['name'], item['size'], item["done"], item["enterprise_count"])
+            settings.logger.error("\t%s: %d bytes, done %d, enterprise count %d", item['name'], item['size'], item["done"], item["enterprise_count"])
 
         settings.logger.error("Failed province")
         for item in self.failed:
@@ -231,7 +231,11 @@ class Checker(object):
         rows = 0
 
         with gzip.open(path) as f:
-            for _ in f:
+            for line in f:
+                if len(line.strip()) == 0:
+                    continue
+                if len(line.split(",")) < 3:
+                    continue
                 rows += 1
 
         return rows
