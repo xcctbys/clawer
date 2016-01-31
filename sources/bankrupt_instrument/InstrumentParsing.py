@@ -9,13 +9,11 @@ from LawPaperBase import LawPaperBase
 from InstrumentSplit import InstrumentSplit
 import mysql.connector
 import sys
+import raven
 
-ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
-if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
-    import settings_pro as settings
-else:
-    import settings
 
+sentry_client = None
+configuration_file = "sys/Configuration.cfg"
 
 class InstrumentParsing():
     configuration_file = "sys/Configuration.cfg"
@@ -546,16 +544,32 @@ class InstrumentParsing():
 
 
 def send_sentry_report():
-    if settings.sentry_client:
-        settings.sentry_client.captureException()
+    if sentry_client:
+        sentry_client.captureException()
 
 if __name__ == '__main__':
     args = sys.argv
+    configfile = None
+    sentry_dns = None
+    if len(args) > 1:
+        configfile = args[1]
+
+    config = ConfigParser.SafeConfigParser({'bar': 'Life', 'baz': 'hard'})
+
+    if configfile is None:
+        if os.path.exists(configuration_file):
+            config.read(conf)
+    else:
+        if os.path.exists(configfile):
+            config.read(configfile)
+
+    sentry_dns = config.get("SETTING", "sentry_dns")
+    if sentry_dns is None or sentry_dns== "":
+        sentry_dns = 'http://917b2f66b96f46b785f8a1e635712e45:556a6614fe28410dbf074552bd566750@sentry.princetechs.com//2'
+    sentry_client = raven.Client(dsn=sentry_dns)
+
     try:
-        if len(args) > 1:
-            InstrumentParsing(args[1])
-        else:
-            InstrumentParsing()
+        InstrumentParsing(conf = configfile)
     except:
         send_sentry_report()
     
