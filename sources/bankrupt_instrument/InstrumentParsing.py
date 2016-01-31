@@ -25,6 +25,7 @@ class InstrumentParsing():
     db_host = None
     db_user = None
     db_pwd = None
+    db_name = None
     urls = set()
     pattern_date = u"[\s0-9一二三四五六七八九十零〇]+年[\s0-9一二三四五六七八九十零〇]+月[\s0-9一二三四五六七八九十零〇]+[日]*"
 
@@ -33,6 +34,13 @@ class InstrumentParsing():
         # get the last json file parsed
         self.get_configuration(conf)
         print "Get Configuration"
+        print "-" * 30 + "Configuration" + "-" * 30
+        print "json_path", self.json_path
+        print "json_host", self.json_host
+        print "pdf_path", self.pdf_path
+        print "pdf_host", self.pdf_host
+        print "db", self.db_host
+        print "-" * 73
         self.connector = self.get_connection()
         print "Connected Database"
         # self.check_db_config(conf)
@@ -42,13 +50,7 @@ class InstrumentParsing():
                 for line in fi:
                     self.last_file.append(line)
         available_file_list = self.get_available_file()
-        print "-" * 30 + "Configuration" + "-" * 30
-        print "json_path", self.json_path
-        print "json_host", self.json_host
-        print "pdf_path", self.pdf_path
-        print "pdf_host", self.pdf_host
-        print "db", self.db_host
-        print "-" * 73
+        
         if len(available_file_list) == 0:
             exit(1)
         self.base = LawPaperBase()
@@ -92,10 +94,13 @@ class InstrumentParsing():
             self.db_host = "10.100.80.50"
         self.db_user = config.get("DB", "user")
         if self.db_user is None or self.db_user == "":
-            self.db_user = "root"
+            self.db_user = "cacti"
         self.db_pwd = config.get("DB", "password")
         if self.db_pwd is None or self.db_pwd == "":
-            self.db_pwd = ""
+            self.db_pwd = "cacti"
+        self.db_name = config.get("DB", "name")
+        if self.db_name is None or self.db_name == "":
+            self.db_name = "bankrupt"
 
     def default_config(self):
 
@@ -232,7 +237,7 @@ class InstrumentParsing():
     def get_connection(self):
         cnx = mysql.connector.connect(user=self.db_user, password=self.db_pwd,
                                       host=self.db_host,
-                                      database='bankrupt')
+                                      database=self.db_name)
         return cnx
 
     def get_available_file(self):
