@@ -150,7 +150,7 @@ class ShaanxiCrawler(object):
             settings.logger.error(u"Get no search result\n")
         try:
             for ent in self.ents:
-                settings.logger.info(u"crawl main url:%s"% ent)
+                #settings.logger.info(u"crawl main url:%s"% ent)
                 params = re.findall(r'\'(.*?)\'', ent)
                 url = "http://xygs.snaic.gov.cn/ztxy.do"
                 pripid, enttype, others= params
@@ -174,7 +174,7 @@ class ShaanxiCrawler(object):
     def crawl_ind_comm_pub_pages(self, url="", post_data={}):
         sub_json_dict={}
         try:
-            settings.logger.info( u"crawl the crawl_ind_comm_pub_pages page %s."%(url))
+            #settings.logger.info( u"crawl the crawl_ind_comm_pub_pages page %s."%(url))
             post_data['method'] = 'qyInfo'
             post_data['czmk'] = 'czmk1'
             post_data['from'] = ''
@@ -234,7 +234,7 @@ class ShaanxiCrawler(object):
     def crawl_ent_pub_pages(self, url= "", post_data={}):
         sub_json_dict = {}
         try:
-            settings.logger.info( u"crawl the crawl_ent_pub_pages page %s."%(url))
+            #settings.logger.info( u"crawl the crawl_ent_pub_pages page %s."%(url))
             post_data['method'] = 'qygsInfo'
             post_data['czmk'] = 'czmk8'
             page = self.crawl_page_by_url_post(url, post_data)['page']
@@ -276,7 +276,7 @@ class ShaanxiCrawler(object):
         """爬取 其他部门公示 页面"""
         sub_json_dict = {}
         try:
-            settings.logger.info( u"crawl the crawl_other_dept_pub_pages page %s."%(url))
+            #settings.logger.info( u"crawl the crawl_other_dept_pub_pages page %s."%(url))
             post_data['method'] = 'qtgsInfo'
             post_data['czmk'] = 'czmk9'
             page = self.crawl_page_by_url_post(url, post_data)['page']
@@ -297,7 +297,7 @@ class ShaanxiCrawler(object):
         """爬取司法协助信息页面 """
         sub_json_dict = {}
         try:
-            settings.logger.info( u"crawl the crawl_judical_assist_pub_pages page %s."%(url))
+            #settings.logger.info( u"crawl the crawl_judical_assist_pub_pages page %s."%(url))
             post_data['method'] = 'sfgsInfo'
             post_data['czmk'] = 'czmk17'
             page = self.crawl_page_by_url_post(url, post_data)['page']
@@ -367,7 +367,10 @@ class ShaanxiCrawler(object):
                 data[col[0]] = self.get_column_data(col[1], multi_col_tag.find_all('td', recursive=False)[id])
             return data
         else:
-            return self.get_raw_text_by_tag(td_tag)
+            td_text = self.get_raw_text_by_tag(td_tag)
+            if td_text.find('\n\t\t\t        \t\t\t\t\t\t'):
+                return td_text.split('\n\t\t\t        \t\t\t\t\t\t')[0].strip()
+            return td_text
 
 
     def get_detail_link(self, bs4_tag):
@@ -777,9 +780,9 @@ if __name__ == "__main__":
     if not os.path.exists("./enterprise_crawler"):
         os.makedirs("./enterprise_crawler")
     shaanxi = ShaanxiCrawler('./enterprise_crawler/shaanxi.json')
-    shaanxi.work('610000100018589')
+    shaanxi.work('610100100012377')
 
-"""
+
 if __name__ == "__main__":
     reload (sys)
     sys.setdefaultencoding('utf8')
@@ -795,4 +798,4 @@ if __name__ == "__main__":
         shaanxi.run(ent_num = ent_str[2])
         settings.logger.info(u'###################   Enterprise with id  %s Finished!  ###################\n' % ent_str[2])
 
-
+"""
