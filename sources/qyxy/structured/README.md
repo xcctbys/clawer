@@ -14,23 +14,29 @@
     }
 
     # edit Makefile
-    # change `user` and `password` for yours.
+    # change `USER` and `PASSWORD` for your mysql's.
 
 ### Create Mysql Tables
 
-    mysql -udb_user -p db_password
-    create database clawer;
-    python manage.py makemigrations
-    python manage.py migrate
-
-    # OR
     make db_init
+
+### Crontab
+
+    # In Terminal
+    crontab -e.
+
+    # Press i to go into vim's insert mode.
+    # Type the cron job, for example:
+    0 0  * * * cd project_path && make
+
+
+    # Press Esc to exit vim's insert mode.
+    # Type ZZ (must be capital letters).
+    # Verify by using
+    crontab -l.
 
 ### Import Data to Database
 
-    python manage.py structured
-
-    # OR
     make
 
 ### Json Keys to Mysql Tables

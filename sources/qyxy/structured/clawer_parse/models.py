@@ -2,7 +2,7 @@
 
 from django.db import models
 from django.utils import timezone
-import profiles.consts as consts
+from configs import configs
 import sys
 import inspect
 
@@ -12,7 +12,6 @@ class Operation(object):
 
     def __init__(self, data):
         self.data = data
-        self.enter_name = data.get('enter_name')
         self.register_num = data.get('register_num')
         self.models = self.get_all_clawer_db_models()
 
@@ -20,39 +19,37 @@ class Operation(object):
         models = self.models
 
         if self.is_company_in_db():
-            print "Add %s" % self.register_num.encode('utf-8')
+            print("Add %s" % self.register_num.encode('utf-8'))
             for model in models:
                 self.insert(model)
         else:
-            print "Update %s" % self.register_num.encode('utf-8')
+            print("Update %s" % self.register_num.encode('utf-8'))
             for model in models:
                 self.update(model)
 
     def is_company_in_db(self):
-        enter_name = self.enter_name
         register_num = self.register_num
 
-        query = Basic.objects.filter(enter_name=enter_name, register_num=register_num)
+        query = Basic.objects.filter(register_num=register_num)
 
         return not query
 
     def insert(self, model):
         data = self.data
-        special_tables = consts.special_tables
+        special_tables = configs.special_tables
         fields = model._meta.get_all_field_names()
         name = model._meta.db_table
-        enter_name = self.enter_name
         register_num = self.register_num
 
         try:
-            enter_id = Basic.objects.get(enter_name=enter_name, register_num=register_num).id
+            enter_id = Basic.objects.get(register_num=register_num).id
         except:
-            enter_id = consts.DEFAULT_ENTER_ID
+            enter_id = configs.DEFAULT_ENTER_ID
 
         try:
-            version = Basic.objects.get(enter_name=enter_name, register_num=register_num).version
+            version = Basic.objects.get(register_num=register_num).version
         except:
-            version = consts.DEFAULT_VERSION
+            version = configs.DEFAULT_VERSION
 
         if name in special_tables:
             self.insert_one_row(model, name, fields, enter_id, version, {})
@@ -62,16 +59,15 @@ class Operation(object):
 
     def update(self, model):
         data = self.data
-        basic = consts.special_tables[0]
+        basic = configs.special_tables[0]
         fields = model._meta.get_all_field_names()
         name = model._meta.db_table
-        enter_name = data.get('enter_name')
         register_num = data.get('register_num')
-        version = Basic.objects.get(enter_name=enter_name, register_num=register_num).version
-        enter_id = Basic.objects.get(enter_name=enter_name, register_num=register_num).id
+        version = Basic.objects.get(register_num=register_num).version
+        enter_id = Basic.objects.get(register_num=register_num).id
 
         if name == basic:
-            query = Basic.objects.get(enter_name=enter_name, register_num=register_num)
+            query = Basic.objects.get(register_num=register_num)
             for field in fields:
                 value = data.get(field)
                 if value is not None:
@@ -85,7 +81,7 @@ class Operation(object):
 
     def update_rows(self, model, name, fields, enter_id, version):
         data = self.data
-        clear = consts.special_tables[1]
+        clear = configs.special_tables[1]
 
         model.objects.filter(enter_id=enter_id, invalidation=False).update(invalidation=True)
 
@@ -201,7 +197,7 @@ class IndustryCommerceChange(models.Model):
     """工商-变更
     """
 
-    modify_item = models.CharField(max_length=100, null=True, blank=True)
+    modify_item = models.TextField(null=True, blank=True)
     modify_before = models.TextField(null=True, blank=True)
     modify_after = models.TextField(max_length=50, null=True, blank=True)
     modify_date = models.DateField(null=True)
@@ -553,7 +549,7 @@ class EnterModification(models.Model):
     """企业-变更
     """
 
-    modify_item = models.CharField(max_length=100, null=True, blank=True)
+    modify_item = models.TextField(null=True, blank=True)
     modify_before = models.CharField(max_length=50, null=True, blank=True)
     modify_after = models.CharField(max_length=50, null=True, blank=True)
     modify_date = models.DateField(null=True)
@@ -619,7 +615,7 @@ class JudicialShareFreeze(models.Model):
     been_excute_person = models.CharField(max_length=30, null=True, blank=True)
     share_num = models.IntegerField(null=True)
     excute_court = models.CharField(max_length=30, null=True, blank=True)
-    notice_num = models.IntegerField(null=True)
+    notice_num = models.CharField(max_length=30, null=True, blank=True)
     freeze_status = models.CharField(max_length=30, null=True, blank=True)
     freeze_detail = models.TextField(null=True, blank=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
@@ -761,7 +757,7 @@ class YearReportBasic(models.Model):
     credit_code = models.CharField(max_length=20, null=True, blank=True)
     enter_name = models.CharField(max_length=50, null=True, blank=True)
     enter_phone = models.CharField(max_length=50, null=True, blank=True)
-    zipcode = models.CharField(max_length=10, null=True, blank=True)
+    zipcode = models.CharField(max_length=30, null=True, blank=True)
     enter_place = models.CharField(max_length=100, null=True, blank=True)
     email = models.CharField(max_length=100, null=True, blank=True)
     shareholder_change = models.BooleanField(default=False)
@@ -815,7 +811,7 @@ class YearReportModification(models.Model):
     """年报-修改记录
     """
 
-    modify_item = models.CharField(max_length=100, null=True, blank=True)
+    modify_item = models.TextField(null=True, blank=True)
     modify_before = models.TextField(max_length=50, null=True, blank=True)
     modify_after = models.TextField(max_length=50, null=True, blank=True)
     modify_date = models.DateField(null=True)
@@ -832,7 +828,7 @@ class YearReportOnline(models.Model):
     """年报-网站或网店
     """
 
-    online_type = models.CharField(max_length=20, null=True, blank=True)
+    online_type = models.CharField(max_length=100, null=True, blank=True)
     enter_name = models.CharField(max_length=50, null=True, blank=True)
     enter_url = models.TextField(null=True, blank=True)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)

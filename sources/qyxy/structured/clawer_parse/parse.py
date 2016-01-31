@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import json
-import fileinput
-import profiles.consts as consts
+from configs import configs
 from clawer_parse import tools
-from profiles.mappings import mappings
+from configs.mappings import mappings
 from clawer_parse.models import Operation
 
 
@@ -14,13 +13,16 @@ class Parse(object):
 
     mappings = mappings
 
-    def __init__(self, companies=''):
-        self.keys = consts.keys
+    def __init__(self, companies="", prinvince=""):
+        self.prinvince = prinvince
+        self.keys = configs.keys
         self.companies = {}
+
         for line in companies:
             company = json.loads(line)
-            for key in company:
-                self.companies[key] = company[key]
+            for key, value in company.iteritems():
+                if value:
+                    self.companies[key] = value
 
     def parse_companies(self):
         for register_num in self.companies:
@@ -29,8 +31,9 @@ class Parse(object):
             try:
                 self.parse_company(company, register_num)
             except Exception as e:
-                print "❌  公司ID: %s 解析错误: ❌ " % register_num.encode('utf-8')
-                print e
+                print("❌  === 省份: %s === \n公司ID: %s 解析错误: ❌ "
+                      % (self.prinvince, register_num.encode('utf-8')))
+                print(e)
                 import traceback
                 traceback.print_exc()
 
@@ -62,8 +65,8 @@ class Parse(object):
                 self.company_result[mapping[field]] = dict_in_company[field]
 
     def parse_list(self, key, list_in_company, mapping):
-        keys_to_tables = consts.keys_to_tables
-        special_parse_keys = consts.special_parse_keys
+        keys_to_tables = configs.keys_to_tables
+        special_parse_keys = configs.special_parse_keys
         name = keys_to_tables.get(key)
         parse_func = self.key_to_parse_function(key)
 
@@ -75,10 +78,13 @@ class Parse(object):
                         self.company_result[name] = []
                     self.company_result[name].append(value)
         else:
-            for d in list_in_company:
-                value = parse_func(d, mapping)
-                if name is not None and value is not None:
-                    self.company_result[name] = value
+            try:
+                for d in list_in_company:
+                    value = parse_func(d, mapping)
+                    if name is not None and value is not None:
+                        self.company_result[name] = value
+            except:
+                pass
 
     def key_to_parse_function(self, key):
         keys_to_functions = {
@@ -108,10 +114,10 @@ class Parse(object):
 
     def parse_general(self, dict_in_company, mapping):
         result = {}
-
-        for field, value in dict_in_company.iteritems():
-            if field in mapping and value is not None:
-                result[mapping[field]] = value
+        if type(dict_in_company) == dict:
+            for field, value in dict_in_company.iteritems():
+                if field in mapping and value is not None:
+                    result[mapping[field]] = value
         return result
 
     def parse_ind_shareholder(self, dict_in_company, mapping):
@@ -205,7 +211,7 @@ class Parse(object):
         return result
 
     def parse_ent_report(self, dict_in_company, mapping):
-        keys_to_tables = consts.keys_to_tables
+        keys_to_tables = configs.keys_to_tables
         ent_report = {}
 
         for key, value in dict_in_company.iteritems():
@@ -225,7 +231,7 @@ class Parse(object):
         return None
 
     def parse_report_details(self, year_report_id, details, mapping):
-        keys_to_tables = consts.keys_to_tables
+        keys_to_tables = configs.keys_to_tables
 
         for key, value in details.iteritems():
             name = keys_to_tables.get(key)
@@ -283,11 +289,11 @@ class Parse(object):
                             d[d_field] = to_float(d_value.encode('utf-8'))
 
     def is_type_date(self, field, value):
-        type_date = consts.type_date
+        type_date = configs.type_date
 
         return field in type_date and value is not None and type(value) == unicode
 
     def is_type_float(self, field, value):
-        type_float = consts.type_float
+        type_float = configs.type_float
 
         return field in type_float and value is not None and type(value) == unicode
