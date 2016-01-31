@@ -160,10 +160,29 @@ class AnhuiCrawler(object):
 
 		# print [th.get_text().strip() for th in (ths[1:4]+ths[6:])]
 		# print [td.get_text().strip() if td.get_text() else None for td in tds]
-		allths = [th.get_text().strip() for th in (ths[1:4]+ths[6:])]
-		alltds = [td.get_text().strip() if td.get_text() else None for td in tds]
+		# 已修改—--by蔡丹红 2016.1.31
+		# allths = [th.get_text().strip() for th in (ths[1:4]+ths[6:])]
+		# alltds = [td.get_text().strip() if td.get_text() else None for td in tds]
+
+		allths = [th.get_text().strip() for th in ths[1:4]]
+		alltds = [td.get_text().strip() if td.get_text() else None for td in tds[0:3]]
+		list1 = self.get_one_to_one_dict(allths, alltds)
+
+		allths = [th.get_text().strip() for th in ths[6:]]
+		alltds = [td.get_text().strip() if td.get_text() else None for td in tds[3:]]
+		list2 = self.get_one_to_one_dict(allths, alltds)
+
+		detail = []
+		detail.append(list2)
+
+		table_dict = {}
+		table_dict[u'list'] = detail
+
+		table_dict.update(list1)
+
+		return {u"投资人及出资信息": [table_dict]}
 		#self.test_print_all_ths_tds(allths, alltds)
-		return self.get_one_to_one_dict(allths, alltds)
+		# return self.get_one_to_one_dict(allths, alltds)
 
 	def do_with_hasnext(self, mydict, head, table_head, table_next):
 		#print 'do_with_hasnext',head

@@ -486,7 +486,10 @@ class LiaoningParser(Parser):
         m = re.search(r'gqbgPaging\((\[.*?\])', resp.content)
         total = []
         if m:
-            self.crawler.json_dict["ent_pub_equity_change"] = m.group(1)
+            if len(m.group(1)) <= 2:
+                self.crawler.json_dict["ent_pub_equity_change"] = []
+            else:
+                self.crawler.json_dict["ent_pub_equity_change"] = m.group(1)
         else:
             self.crawler.json_dict["ent_pub_equity_change"] = total
         # if m:
