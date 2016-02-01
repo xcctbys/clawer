@@ -3,12 +3,16 @@
 import gzip
 import requests
 import time
+import logging
 from django.core.management.base import BaseCommand
+from django.conf import settings
 from clawer_parse.parse import Parse
+from clawer_parse.models import Basic
 from multiprocessing import Pool
-from configs import configs
 from datetime import date, timedelta
 from cStringIO import StringIO
+from configs import configs
+from clawer_parse import multiprocessing_logging
 
 
 class Command(BaseCommand):
@@ -16,31 +20,69 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         begin = time.time()
         p = Pool(processes=16)
-        base_url = configs.JSONS_URL
+        base_url = settings.JSONS_URL
         provinces = configs.PROVINCES
-        yesterday = date.today() - timedelta(7)
-        yesterday_str = yesterday.strftime("%Y/%m/%d")
         suffix = ".json.gz"
 
-        for prinvince in provinces:
-            url = base_url + "/" + prinvince + "/" + yesterday_str + suffix
-            response = requests.get(url)
+        config_logging()
 
-            if int(response.status_code) == 200:
-                gz = gzip.GzipFile(fileobj=StringIO(response.content))
-                companies = gz.readlines()
-                p.apply_async(parse, args=(companies, prinvince))
+        if not is_first_run():
+            yesterday = date.today() - timedelta(1)
+            yesterday_str = yesterday.strftime("%Y/%m/%d")
+
+            for prinvince in provinces:
+                url = base_url + "/" + prinvince + "/" + yesterday_str + suffix
+                response = requests.get(url)
+
+                if int(response.status_code) == 200:
+                    gz = gzip.GzipFile(fileobj=StringIO(response.content))
+                    companies = gz.readlines()
+                    p.apply_async(parse, args=(companies, prinvince))
+
+        else:
+            for dec_day in reversed(range(1, 20)):
+                yesterday = date.today() - timedelta(dec_day)
+                yesterday_str = yesterday.strftime("%Y/%m/%d")
+
+                for prinvince in provinces:
+                    url = base_url+"/"+prinvince+"/"+yesterday_str+suffix
+                    response = requests.get(url)
+
+                    if int(response.status_code) == 200:
+                        gz = gzip.GzipFile(fileobj=StringIO(response.content))
+                        companies = gz.readlines()
+                        p.apply_async(parse, args=(companies, prinvince))
 
         p.close()
         p.join()
-
         end = time.time()
-        secs = int(round(end - begin))
-        m, s = divmod(secs, 60)
-        h, m = divmod(m, 60)
-        print("✅  Done！耗时 %d时%02d分%02d秒 ✅ " % (h, m, s))
+        secs = round(end - begin)
+        print(settings.logger)
+        settings.logger("Cost " + str(secs) + "s.")
+
+
+def is_first_run():
+    is_first_run = Basic.objects.all()
+    return not is_first_run
 
 
 def parse(companies, prinvince):
+    config_logging()
     worker = Parse(companies, prinvince)
     worker.parse_companies()
+
+
+def config_logging():
+    settings.logger = logging.getLogger('structured')
+    settings.logger.setLevel(settings.LOG_LEVEL)
+    fh = logging.FileHandler(settings.LOG_FILE)
+    fh.setLevel(settings.LOG_LEVEL)
+    ch = logging.StreamHandler()
+    ch.setLevel(settings.LOG_LEVEL)
+
+    formatter = logging.Formatter(settings.LOG_FORMAT)
+    fh.setFormatter(formatter)
+    ch.setFormatter(formatter)
+    settings.logger.addHandler(fh)
+    settings.logger.addHandler(ch)
+    multiprocessing_logging.install_mp_handler()
