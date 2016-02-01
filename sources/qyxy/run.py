@@ -22,13 +22,6 @@ import jinja2
 import importlib
 
 
-ENT_CRAWLER_SETTINGS = os.getenv('ENT_CRAWLER_SETTINGS')
-if ENT_CRAWLER_SETTINGS:
-    settings = importlib.import_module(ENT_CRAWLER_SETTINGS)
-else:
-    import settings
-
-
 from mail import SendMail
 
 from CaptchaRecognition import CaptchaRecognition
@@ -62,6 +55,14 @@ from hubei_crawler import HubeiCrawler
 from guizhou_crawler import GuizhouCrawler
 from jilin_crawler import JilinCrawler
 from hainan_crawler import HainanCrawler
+import traceback
+
+
+ENT_CRAWLER_SETTINGS = os.getenv('ENT_CRAWLER_SETTINGS')
+if ENT_CRAWLER_SETTINGS:
+    settings = importlib.import_module(ENT_CRAWLER_SETTINGS)
+else:
+    import settings
 
 
 TEST = False
@@ -104,8 +105,11 @@ cur_date = CrawlerUtils.get_cur_y_m_d()
 
 
 def set_codecracker():
-    for province in province_crawler.keys():
-        province_crawler.get(province).code_cracker = CaptchaRecognition(province)
+    for province in sorted(province_crawler.keys()):
+        try:
+            province_crawler.get(province).code_cracker = CaptchaRecognition(province)
+        except Exception, e:
+            settings.logger.warn("init captcha recognition of %s", province)
 
 
 def config_logging():
@@ -293,14 +297,15 @@ class NoDaemonProcess(multiprocessing.Process):
 class MyPool(multiprocessing.pool.Pool):
     Process = NoDaemonProcess
 
+
 def main():
     config_logging()
 
     if not os.path.exists(settings.json_restore_path):
         CrawlerUtils.make_dir(settings.json_restore_path)
-
-    set_codecracker()
+    
     cur_date = CrawlerUtils.get_cur_y_m_d()
+    set_codecracker()
 
     if len(sys.argv) >= 2 and sys.argv[1] == "check":
         dt = None
@@ -313,7 +318,7 @@ def main():
     if len(sys.argv) < 3:
         print 'usage: run.py [check] [max_crawl_time(minutes) province...] \n\tmax_crawl_time 最大爬取秒数，以秒计;\n\tprovince 是所要爬取的省份列表 用空格分开, all表示爬取全部)'
         return
-
+    
     try:
         max_crawl_time = int(sys.argv[1])
         settings.max_crawl_time = datetime.timedelta(minutes=max_crawl_time)
@@ -376,4 +381,5 @@ if __name__ == '__main__':
         main()
     except:
         send_sentry_report()
+        print traceback.format_exc(10)
 

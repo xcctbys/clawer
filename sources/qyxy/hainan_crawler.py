@@ -65,10 +65,13 @@ class HainanCrawler(object):
             for div in divs:
                 if div.find('a') and div.find('a').has_attr('href'):
                     Ent.append(div.find('a')['href'])
+        else:
+            return False
         self.ents = Ent
+        return True
 
     # 破解验证码页面
-    def crawl_page_captcha(self, url_search, url_Captcha, url_CheckCode,url_showInfo,  textfield= '460000000091050'):
+    def crawl_page_captcha(self, url_search, url_Captcha, url_CheckCode,url_showInfo,  textfield= '460000000265072'):
         r = self.requests.get( url_search)
         if r.status_code != 200:
             settings.logger.error(u"Something wrong when getting the url:%s , status_code=%d", url, r.status_code)
@@ -88,16 +91,16 @@ class HainanCrawler(object):
                         'code': result,
                 }
                 response = json.loads(self.crawl_page_by_url_post(url_CheckCode, datas)['page'])
-                print response
                 # response返回的json结果: {u'flag': u'1', u'textfield': u'H+kiIP4DWBtMJPckUI3U3Q=='}
                 if response['flag'] == "1":
                     datas_showInfo = {'textfield': response['textfield'], 'code': result}
                     page_showInfo = self.crawl_page_by_url_post(url_showInfo, datas_showInfo)['page']
-                    self.analyze_showInfo(page_showInfo)
-                    break
+                    if self.analyze_showInfo(page_showInfo):
+                        break
+
                 else:
                     settings.logger.debug(u"crack Captcha failed, the %d time(s)", count)
-                    if count > 15:
+                    if count > 40:
                         break
         return
 
@@ -484,6 +487,8 @@ class HainanCrawler(object):
             for tr in trs:
                 if tr.find('td'):
                     tds = tr.find_all('td')
+                    if len(tds)<= 1:
+                        continue
                     table_dict[u'股东'] = self.get_raw_text_by_tag(tds[0])
                     table_dict[u'股东类型'] = self.get_raw_text_by_tag(tds[1])
                     sub_dict = {}
@@ -505,7 +510,28 @@ class HainanCrawler(object):
         return table_list
 
 
-
+    def parse_page(self, page, div_id='jibenxinxi'):
+        soup = BeautifulSoup(page, 'html5lib')
+        page_data = {}
+        try:
+            div = soup.find('div', attrs = {'id':div_id})
+            if div:
+                tables = div.find_all('table')
+            else:
+                tables = soup.find_all('table')
+            #print table
+            for table in tables:
+                table_name = self.get_table_title(table)
+                if table_name:
+                    if table_name == u"股东及出资信息":
+                        page_data[table_name ] = self.get_particular_table(table, page)
+                    else:
+                        page_data[table_name] = self.parse_table(table, table_name, page)
+        except Exception as e:
+            logging.error(u'parse page failed, with exception %s' % e)
+            raise e
+        finally:
+            return page_data
 
     def parse_page_2(self, page, div_id, post_data={}):
         soup = BeautifulSoup(page, 'html5lib')
@@ -527,13 +553,7 @@ class HainanCrawler(object):
                             table_name = self.get_table_title(table)
                             if table_name is None :
                                 table_name = div_id
-                            if table_name == u'股东及出资信息':
-                                page_data[table_name] = self.get_particular_table(table, page)
-                                table = table.nextSibling
-                                continue
-
                             page_data[table_name] = []
-
                             columns = self.get_columns_of_record_table(table, page, table_name)
                             result =self.parse_table_2(table, columns, post_data, table_name)
                             if  not columns and not result :
@@ -599,14 +619,11 @@ class HainanCrawler(object):
                         "regOrg" : post_data["regOrg"],
                         "entType" : post_data["entType"].encode('utf-8'),
                     }
-                    print url
-                    print data
                     res = self.crawl_page_by_url_post(url, data)
                     #print res['page']
                     if table_name == u"变更信息":
                         # chaToPage
                         d = json.loads(res['page'])
-                        print d
                         titles = [column[0] for column in columns]
                         for i, model in enumerate(d['list']):
                             data = [model['altFiledName'], model['altBe'], model['altAf'], model['altDate']]
@@ -663,7 +680,7 @@ class HainanCrawler(object):
                                             item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
                                             item[u'详情'] = page_data
                                         else:
-                                            page_data = self.parse_page_2(detail_page['page'], table_name + '_detail')
+                                            page_data = self.parse_page(detail_page['page'], table_name + '_detail')
                                             item[columns[col_count][0]] = page_data #this may be a detail page data
                                     else:
                                         item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
@@ -691,7 +708,7 @@ class HainanCrawler(object):
                                             item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
                                             item[u'详情'] = page_data
                                         else:
-                                            page_data = self.parse_page_2(detail_page['page'], table_name + '_detail')
+                                            page_data = self.parse_page(detail_page['page'], table_name + '_detail')
                                             item[columns[col_count][0]] = page_data #this may be a detail page data
                                     else:
                                         item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
@@ -753,14 +770,11 @@ class HainanCrawler(object):
         #    print self.html_restore_path
         if not os.path.exists(self.html_restore_path):
             os.makedirs(self.html_restore_path)
-        self.json_dict = {}
-
-        self.crawl_page_search(urls['page_search'])
-        self.crawl_page_captcha(urls['page_Captcha'], urls['checkcode'], urls['page_showinfo'], ent_num)
-        self.analyze_showInfo()
+        json_dict={}
+        self.crawl_page_captcha(urls['page_search'], urls['page_Captcha'], urls['checkcode'], urls['page_showinfo'], ent_num)
         data = self.crawl_page_main()
-        self.json_dict[ent_num] = data
-        json_dump_to_file(self.json_restore_path , self.json_dict)
+        json_dict[ent_num] = data
+        json_dump_to_file(self.json_restore_path , json_dict)
 
     def work(self, ent_num):
         #if settingss.save_html and :
@@ -802,8 +816,9 @@ if __name__ == "__main__":
     run.config_logging()
     if not os.path.exists("./enterprise_crawler"):
         os.makedirs("./enterprise_crawler")
-    hainan = HainanClawer('./enterprise_crawler/hainan.json')
-    hainan.work('460000000181422')
+    hainan = HainanCrawler('./enterprise_crawler/hainan.json')
+    hainan.work('460000000265072')
+
 
 
 if __name__ == "__main__":
@@ -814,7 +829,7 @@ if __name__ == "__main__":
     ents = read_ent_from_file("./enterprise_list/hainan.txt")
     if not os.path.exists("./enterprise_crawler"):
         os.makedirs("./enterprise_crawler")
-    hainan = HainanClawer('./enterprise_crawler/hainan.json')
+    hainan = HainanCrawler('./enterprise_crawler/hainan.json')
 
     for ent_str in ents:
         settings.logger.info(u'###################   Start to crawl enterprise with id %s   ###################\n' % ent_str[2])

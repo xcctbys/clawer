@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import json
+import time
 import traceback
 from configs import configs
 from clawer_parse import tools
 from configs.mappings import mappings
 from clawer_parse.models import Operation
 from django.conf import settings
+from clawer_parse.mail import SendMail
 
 
 class Parse(object):
@@ -32,11 +34,28 @@ class Parse(object):
 
             try:
                 self.parse_company(company, register_num)
-            except Exception as e:
-                logger = settings.logger
-                logger.error("❌  === 省份: " + self.prinvince + "=== \n公司ID:" + register_num.encode('utf-8') +  "解析错误: ❌ ")
-                logger.error(e)
-                logger.error(traceback.format_exc())
+            except:
+                self.send_mail(register_num)
+                self.write_log(register_num)
+
+    def send_mail(self, register_num):
+        mail = SendMail(settings.EMAIL_HOST,
+                        settings.EMAIL_PORT,
+                        settings.EMAIL_HOST_USER,
+                        settings.EMAIL_HOST_PASSWORD,
+                        ssl=True)
+        title = u"%s 结构化转换错误日志" % (time.strftime("%Y-%m-%d"))
+        content = u"❌  === 省份: %s === 公司ID: %s 解析错误: ❌ \n" % (self.prinvince, register_num.encode('utf-8'))
+        content += traceback.format_exc()
+        to_admins = [x[1] for x in settings.ADMINS]
+        mail.send_text(settings.EMAIL_HOST_USER, to_admins,
+                       title, content)
+
+    def write_log(self, register_num):
+        logger = settings.logger
+        title = u"❌  === 省份: %s === 公司ID: %s 解析错误: ❌ " % (self.prinvince, register_num.encode('utf-8'))
+        error = traceback.format_exc()
+        logger.error(title + error)
 
     def parse_company(self, company={}, register_num=0):
         keys = self.keys
@@ -79,10 +98,13 @@ class Parse(object):
                         self.company_result[name] = []
                     self.company_result[name].append(value)
         else:
-            for d in list_in_company:
-                value = parse_func(d, mapping)
-                if name is not None and value is not None:
-                    self.company_result[name] = value
+            try:
+                for d in list_in_company:
+                    value = parse_func(d, mapping)
+                    if name is not None and value is not None:
+                        self.company_result[name] = value
+            except:
+                pass
 
     def key_to_parse_function(self, key):
         keys_to_functions = {

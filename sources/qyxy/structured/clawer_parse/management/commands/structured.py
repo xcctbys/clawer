@@ -57,8 +57,7 @@ class Command(BaseCommand):
         p.join()
         end = time.time()
         secs = round(end - begin)
-        print(settings.logger)
-        settings.logger("Cost " + str(secs) + "s.")
+        settings.logger.info("✅  Done! Cost " + str(secs) + "s ✅ ")
 
 
 def is_first_run():
