@@ -6,9 +6,10 @@ import os
 import sys
 import time
 import re
-ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
-if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
-    import settings_pro as settings
+import importlib
+ENT_CRAWLER_SETTINGS = os.getenv('ENT_CRAWLER_SETTINGS')
+if ENT_CRAWLER_SETTINGS:
+    settings = importlib.import_module(ENT_CRAWLER_SETTINGS)
 else:
     import settings
 import json
@@ -76,7 +77,7 @@ class ZhejiangCrawler(object):
         if divs:
             for div in divs:
                 if div.find('a') and div.find('a').has_attr('href'):
-                    Ent.append(div.find('a').has_attr('href'))
+                    Ent.append(div.find('a')['href'])
         self.ents = Ent
 
     # 破解验证码页面
@@ -106,7 +107,7 @@ class ZhejiangCrawler(object):
                     break
                 else:
                     settings.logger.debug(u"crack Captcha failed, the %d time(s)", count)
-                    if count> 15:
+                    if count> 25:
                         break
         return
     def get_check_response(self, url, datas):
@@ -1202,7 +1203,6 @@ def read_ent_from_file(path):
     lines = [ line.split(',') for line in lines ]
     return lines
 
-
 """
 if __name__ == "__main__":
     reload (sys)
@@ -1214,8 +1214,8 @@ if __name__ == "__main__":
     zhejiang = ZhejiangCrawler('./enterprise_crawler/zhejiang.json')
     #zhejiang.work('330000000050426')
     #zhejiang.work('330000000000503')
-    zhejiang.work('3300000000222913')
-"""
+    zhejiang.work('330000000050426')
+
 if __name__ == "__main__":
     reload (sys)
     sys.setdefaultencoding('utf8')
@@ -1231,3 +1231,4 @@ if __name__ == "__main__":
         zhejiang.run(ent_num = ent_str[2])
         settings.logger.info(u'###################   Enterprise with id  %s Finished!  ###################\n' % ent_str[2])
 
+"""

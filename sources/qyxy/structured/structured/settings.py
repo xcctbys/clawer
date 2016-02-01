@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+import logging
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -105,3 +106,19 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
+
+JSONS_URL = 'http://clawer.princetechs.com/media/clawer_result/enterprise/json'
+
+LOG_LEVEL = logging.DEBUG
+LOG_FORMAT = '%(asctime)s %(name)s %(levelname)s %(pathname)s:%(lineno)d:: %(message)s'
+LOG_FILE = 'structured.log'
+logger = None
+
+EMAIL_HOST = 'smtp.exmail.qq.com'
+EMAIL_PORT = 465
+EMAIL_HOST_USER = 'robot@princetechs.com'
+EMAIL_HOST_PASSWORD = 'Robot0023'
+
+ADMINS = (
+    ('admin', 'zhongyid@princetechs.com'),
+)
