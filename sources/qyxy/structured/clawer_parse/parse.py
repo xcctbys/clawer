@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import json
+import time
 import traceback
 from configs import configs
 from clawer_parse import tools
 from configs.mappings import mappings
 from clawer_parse.models import Operation
 from django.conf import settings
+from clawer_parse.mail import SendMail
 
 
 class Parse(object):
@@ -32,11 +34,28 @@ class Parse(object):
 
             try:
                 self.parse_company(company, register_num)
-            except Exception as e:
-                logger = settings.logger
-                logger.error("❌  === 省份: " + self.prinvince + "=== \n公司ID:" + register_num.encode('utf-8') +  "解析错误: ❌ ")
-                logger.error(e)
-                logger.error(traceback.format_exc())
+            except:
+                self.send_mail(register_num)
+                self.write_log(register_num)
+
+    def send_mail(self, register_num):
+        mail = SendMail(settings.EMAIL_HOST,
+                        settings.EMAIL_PORT,
+                        settings.EMAIL_HOST_USER,
+                        settings.EMAIL_HOST_PASSWORD,
+                        ssl=True)
+        title = u"%s 结构化转换错误日志" % (time.strftime("%Y-%m-%d"))
+        content = u"❌  === 省份: %s === 公司ID: %s 解析错误: ❌ \n" % (self.prinvince, register_num.encode('utf-8'))
+        content += traceback.format_exc()
+        to_admins = [x[1] for x in settings.ADMINS]
+        mail.send_text(settings.EMAIL_HOST_USER, to_admins,
+                       title, content)
+
+    def write_log(self, register_num):
+        logger = settings.logger
+        title = u"❌  === 省份: %s === 公司ID: %s 解析错误: ❌ " % (self.prinvince, register_num.encode('utf-8'))
+        error = traceback.format_exc()
+        logger.error(title + error)
 
     def parse_company(self, company={}, register_num=0):
         keys = self.keys
@@ -158,8 +177,10 @@ class Parse(object):
         """处理ind_shareholder中"详情中"股东（发起人）及出资信息"的value中的字典
         """
         dict_inner = {}
+        judge = False
         for key_in in dict_in:
             if key_in == u"list":
+                judge = True
                 for dict_fuck in dict_in[key_in]:
                     for key_fuck in dict_fuck:
                         dict_inner[mapping.get(key_fuck)] = dict_fuck[key_fuck]
@@ -168,7 +189,7 @@ class Parse(object):
         for key_in in dict_in:
             if key_in == u"list":
                 pass
-            else:
+            elif judge == True:
                 if not result:
                     dict_inner[mapping.get(key_in)] = dict_in[key_in]
                     result.append(dict_inner)
@@ -176,6 +197,33 @@ class Parse(object):
                 else:
                     for result_dict in result:
                         result_dict[mapping.get(key_in)] = dict_in[key_in]
+            else:
+                if key_in == u"认缴明细":
+                    for key_fuck in dict_in[key_in]:
+                        if not result:
+                            dict_inner[mapping.get(key_in)] = dict_in[key_in]
+                            result.append(dict_inner)
+                            dict_inner = {}
+                        else:
+                            for result_dict in result:
+                                result_dict[mapping.get(key_in)] = dict_in[key_in]
+                elif key_in == u"实缴明细":
+                    for key_fuck in dict_in[key_in]:
+                        if not result:
+                            dict_inner[mapping.get(key_in)] = dict_in[key_in]
+                            result.append(dict_inner)
+                            dict_inner = {}
+                        else:
+                            for result_dict in result:
+                                result_dict[mapping.get(key_in)] = dict_in[key_in]
+                else:
+                    if not result:
+                        dict_inner[mapping.get(key_in)] = dict_in[key_in]
+                        result.append(dict_inner)
+                        dict_inner = {}
+                    else:
+                        for result_dict in result:
+                            result_dict[mapping.get(key_in)] = dict_in[key_in]
         return result
 
     def parse_enter_license(self, dict_in_company, mapping):
