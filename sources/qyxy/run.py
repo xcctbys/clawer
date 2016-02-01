@@ -106,7 +106,10 @@ cur_date = CrawlerUtils.get_cur_y_m_d()
 
 def set_codecracker():
     for province in sorted(province_crawler.keys()):
-        province_crawler.get(province).code_cracker = CaptchaRecognition(province)
+        try:
+            province_crawler.get(province).code_cracker = CaptchaRecognition(province)
+        except Exception, e:
+            settings.logger.warn("init captcha recognition of %s", province)
 
 
 def config_logging():
