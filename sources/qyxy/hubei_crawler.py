@@ -68,7 +68,10 @@ if __name__ == '__main__':
 
     crawler = HubeiCrawler('./enterprise_crawler/hubei.json')
     enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/hubei.txt')
-    # enterprise_list = ["420000000010087"]
+    # enterprise_list = ['420000400000283']
+    # enterprise_list = ['420000000010087']
+    # enterprise_list = ['914201133002117823']  # 股东信息二级表格
+    # enterprise_list = ['420000000032278']
     for ent_number in enterprise_list:
         ent_number = ent_number.rstrip('\n')
         settings.logger.info('###################   Start to crawl enterprise with id %s   ###################\n' % ent_number)
