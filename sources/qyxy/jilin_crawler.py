@@ -117,7 +117,7 @@ class JilinCrawler(object):
                     break
                 else:
                     settings.logger.debug(u"crack Captcha failed, the %d time(s)", count)
-                    if count >5:
+                    if count >10:
                         break;
         return
     def crack_captcha(self):
@@ -1293,7 +1293,7 @@ if __name__ == "__main__":
     if not os.path.exists("./enterprise_crawler"):
         os.makedirs("./enterprise_crawler")
     jilin = JilinCrawler('./enterprise_crawler/jilin.json')
-    jilin.work('220000000005183')
+    jilin.work('220214000015448')
 
 
 if __name__ == "__main__":
