@@ -2,10 +2,11 @@
 #encoding=utf-8
 import os
 import threading
+import importlib
 
-ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
-if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
-    import settings_pro as settings
+ENT_CRAWLER_SETTINGS = os.getenv('ENT_CRAWLER_SETTINGS')
+if ENT_CRAWLER_SETTINGS:
+    settings = importlib.import_module(ENT_CRAWLER_SETTINGS)
 else:
     import settings
 
@@ -52,7 +53,7 @@ if __name__ == '__main__':
 
     crawler = ShanghaiCrawler('./enterprise_crawler/shanghai.json')
     enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/shanghai.txt')
-    #enterprise_list = ['100000000018305']
+    # enterprise_list = ['310000000007622']
     for ent_number in enterprise_list:
         ent_number = ent_number.rstrip('\n')
         settings.logger.info('###################   Start to crawl enterprise with id %s   ###################\n' % ent_number)
