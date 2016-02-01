@@ -20,8 +20,8 @@
     mysql> create database db_name;
     mysql> \q
 
-    python manage.py makemigrations clawer_parse
-    python manage.py migrate
+    python manage_pro.py makemigrations clawer_parse
+    python manage_pro.py migrate
 
 ### Deps
 
