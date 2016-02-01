@@ -27,7 +27,7 @@ if ENT_CRAWLER_SETTINGS:
     settings = importlib.import_module(ENT_CRAWLER_SETTINGS)
 else:
     import settings
-    
+
 
 from mail import SendMail
 
@@ -61,6 +61,7 @@ from qinghai_crawler import QinghaiCrawler
 from hubei_crawler import HubeiCrawler
 from guizhou_crawler import GuizhouCrawler
 from jilin_crawler import JilinCrawler
+from hainan_crawler import HainanCrawler
 
 
 TEST = False
@@ -95,6 +96,7 @@ province_crawler = {
     'hubei':HubeiCrawler,
     'guizhou' : GuizhouCrawler,
     'jilin' : JilinCrawler,
+    'hainan' : HainanCrawler,
 }
 
 process_pool = None
@@ -208,7 +210,7 @@ class Checker(object):
         for province in sorted(province_crawler.keys()):
             enterprise_count = self._get_enterprise_count(province)
             data = {"name": province, "size": 0, "done": 0, "enterprise_count": enterprise_count, "done_ratio": 0}
-            
+
             self.enterprise_count += enterprise_count
             path = self._json_path(province)
             if os.path.exists(path) is False:
@@ -220,7 +222,7 @@ class Checker(object):
             data["size"] = st[stat.ST_SIZE]
             data['done_ratio'] = float(data["done"]) / data["enterprise_count"]
             self.success.append(data)
-            
+
             self.done += data["done"]
 
         #output
