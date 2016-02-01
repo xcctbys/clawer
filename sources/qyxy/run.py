@@ -153,7 +153,7 @@ def crawl_province(province):
             if len(fields) < 3:
                 continue
             no = fields[2]
-            process = multiprocessing.Process(target = crawl_work, args = (province, json_restore_path, no))
+            process = multiprocessing.Process(target=crawl_work, args=(province, json_restore_path, no))
             process.daemon = True
             process.start()
             process.join(300)
