@@ -130,7 +130,10 @@ class Parse(object):
             "judical_assist_pub_equity_freeze": self.parse_general,
             "judical_assist_pub_shareholder_modify": self.parse_general,
         }
-        return keys_to_functions.get(key, lambda: "noting")
+        return keys_to_functions.get(key, self.parse_null)
+
+    def parse_null(self, dict_in_company, mapping):
+        pass
 
     def parse_general(self, dict_in_company, mapping):
         result = {}
@@ -189,7 +192,7 @@ class Parse(object):
         for key_in in dict_in:
             if key_in == u"list":
                 pass
-            elif judge == True:
+            elif judge is True:
                 if not result:
                     dict_inner[mapping.get(key_in)] = dict_in[key_in]
                     result.append(dict_inner)
