@@ -11,10 +11,11 @@ import unittest
 import threading
 import copy
 from datetime import datetime, timedelta
+import importlib
 
-ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
-if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
-    import settings_pro as settings
+ENT_CRAWLER_SETTINGS = os.getenv('ENT_CRAWLER_SETTINGS')
+if ENT_CRAWLER_SETTINGS:
+    settings = importlib.import_module(ENT_CRAWLER_SETTINGS)
 else:
     import settings
 

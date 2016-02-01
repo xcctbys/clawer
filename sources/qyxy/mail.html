@@ -32,14 +32,18 @@
 	        <tr>
 	            <th>日期</th>
 	            <th>主机</th>
-	            <th>成功</th>
-	            <th>失败</th>
+	            <th>成功省份数</th>
+	            <th>失败省份数</th>
+	            <th>企业总数</th>
+	            <th>完成数</th>
 	        </tr>
 	        <tr>
 	            <td>{{ yesterday }}</td>
 	            <td>{{ host }}</td>
 	            <td>{{ success|count }}</td>
 	            <td>{{ failed|count }}</td>
+	            <td>{{ enterprise_count }}</td>
+	            <td>{{ done }}</td>
 	        </tr>
 	    </table>
 	    
@@ -68,16 +72,22 @@
 	    <table class="table table-bordered table-striped"> 
 	        <tr>
 	            <th>省份</th>
+	            <th>字节数</th>
+	            <th>完成数</th>
+	            <th>企业数</th>
+	            <th>完成率</th>
 	        </tr>
 	        {% for item in failed %}
 	        <tr>
-	            <td>{{ item }}</td>
+	            <td>{{ item.name }}</td>
+	            <td>{{ item.size|filesizeformat }}</td>
+	            <td>{{ item.done }}</td>
+	            <td>{{ item.enterprise_count }}</td>
+	            <td>{{ item.done_ratio|round(2) }}</td>
 	        </tr>
 	        {% endfor %}
 	    </table>
-	    
-	    
-         
+	     
     </div> <!-- /container -->
 
 </body>

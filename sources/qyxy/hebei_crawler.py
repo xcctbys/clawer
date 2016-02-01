@@ -106,7 +106,7 @@ class HebeiCrawler(object):
                     break
                 else:
                     settings.logger.debug(u"crack Captcha failed, the %d time(s)", count)
-                    if count > 7:
+                    if count > 15:
                         break
         return
     def crack_captcha(self):
