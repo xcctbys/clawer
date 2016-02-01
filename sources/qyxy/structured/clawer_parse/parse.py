@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import json
+import traceback
 from configs import configs
 from clawer_parse import tools
 from configs.mappings import mappings
 from clawer_parse.models import Operation
+from django.conf import settings
 
 
 class Parse(object):
@@ -31,11 +33,10 @@ class Parse(object):
             try:
                 self.parse_company(company, register_num)
             except Exception as e:
-                print("❌  === 省份: %s === \n公司ID: %s 解析错误: ❌ "
-                      % (self.prinvince, register_num.encode('utf-8')))
-                print(e)
-                import traceback
-                traceback.print_exc()
+                logger = settings.logger
+                logger.error("❌  === 省份: " + self.prinvince + "=== \n公司ID:" + register_num.encode('utf-8') +  "解析错误: ❌ ")
+                logger.error(e)
+                logger.error(traceback.format_exc())
 
     def parse_company(self, company={}, register_num=0):
         keys = self.keys

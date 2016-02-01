@@ -1,5 +1,4 @@
-#encoding=utf-8
-
+# -*- coding: utf-8 -*-
 from settings import *
 
 
@@ -14,3 +13,9 @@ DATABASES = {
     }
 }
 
+JSONS_URL = 'http://10.100.90.51:8080/media/clawer_result/enterprise/json'
+
+LOG_LEVEL = logging.ERROR
+LOG_FORMAT = '%(asctime)s %(name)s %(levelname)s %(pathname)s:%(lineno)d:: %(message)s'
+LOG_FILE = 'structured.log'
+logger = None

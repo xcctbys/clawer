@@ -2,6 +2,7 @@
 
 from django.db import models
 from django.utils import timezone
+from django.conf import settings
 from configs import configs
 import sys
 import inspect
@@ -17,13 +18,14 @@ class Operation(object):
 
     def write_db_by_dict(self):
         models = self.models
+        logger = settings.logger
 
         if self.is_company_in_db():
-            print("Add %s" % self.register_num.encode('utf-8'))
+            logger.info("Add " + self.register_num.encode('utf-8'))
             for model in models:
                 self.insert(model)
         else:
-            print("Update %s" % self.register_num.encode('utf-8'))
+            logger.info("Update " + self.register_num.encode('utf-8'))
             for model in models:
                 self.update(model)
 
