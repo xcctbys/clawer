@@ -33,7 +33,7 @@
 
     # Press i to go into vim's insert mode.
     # Type the cron job, 01:00 every day import yesterday's data to db:
-    00 01 * * * sh ~/projects/nice-clawer/sources/qyxy/structured/run.sh
+    00 01 * * * sh ~/projects/nice-clawer/sources/qyxy/structured/scripts/production/run.sh
 
     # Press Esc to exit vim's insert mode.
     # Type ZZ (must be capital letters).
