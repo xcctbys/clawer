@@ -6,30 +6,30 @@ import os
 import sys
 import time
 import re
+
 import importlib
 ENT_CRAWLER_SETTINGS = os.getenv('ENT_CRAWLER_SETTINGS')
 if ENT_CRAWLER_SETTINGS:
     settings = importlib.import_module(ENT_CRAWLER_SETTINGS)
 else:
     import settings
+
 import json
-import urlparse
 import codecs
-#import traceback
 import unittest
+import threading
 from bs4 import BeautifulSoup
 import CaptchaRecognition as CR
+
 urls = {
-    'host': 'http://gsxt.gdgs.gov.cn/aiccips/',
-    'prefix_url':'http://www.szcredit.com.cn/web/GSZJGSPT/',
-    'page_search': 'http://gsxt.gdgs.gov.cn/aiccips/index',
-    'page_Captcha': 'http://gsxt.gdgs.gov.cn/aiccips/verify.html',
-    'page_showinfo': 'http://gsxt.gdgs.gov.cn/aiccips/CheckEntContext/showInfo.html',
-    'checkcode':'http://gsxt.gdgs.gov.cn/aiccips/CheckEntContext/checkCode.html',
-    'ind_comm_pub_reg_basic': 'http://gsxt.gdgs.gov.cn/aiccips/GSpublicity/GSpublicityList.html?service=entInfo',
-    'prefix_GSpublicity':'http://gsxt.gdgs.gov.cn/aiccips/GSpublicity/GSpublicityList.html?service=',
+    'host': 'http://aic.hainan.gov.cn:1888/aiccips/',
+    'root': 'http://aic.hainan.gov.cn:1888/',
+    'page_search': 'http://aic.hainan.gov.cn:1888/aiccips/index',
+    'page_Captcha': 'http://aic.hainan.gov.cn:1888/aiccips/verify.html',
+    'page_showinfo': 'http://aic.hainan.gov.cn:1888/aiccips/CheckEntContext/showInfo.html',
+    'checkcode':'http://aic.hainan.gov.cn:1888/aiccips/CheckEntContext/checkCode.html',
+    'prefix_GSpublicity':'http://aic.hainan.gov.cn:1888/aiccips/GSpublicity/GSpublicityList.html?service=',
 }
-#debug control parameter
 
 
 headers = { 'Connetion': 'Keep-Alive',
@@ -37,25 +37,145 @@ headers = { 'Connetion': 'Keep-Alive',
             'Accept-Language': 'en-US, en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"}
 
-class Crawler(object):
-    def __init__(self, analysis):
-        self.analysis = analysis
-        self.html_search = None
-        self.html_showInfo = None
-        self.Captcha = None
-        #self.opener = self.make_opener()
+class HainanClawer(object):
+
+    #多线程爬取时往最后的json文件中写时的加锁保护
+    write_file_mutex = threading.Lock()
+    def __init__(self, json_restore_path):
+        self.CR = CR.CaptchaRecognition("guangdong")
         self.requests = requests.Session()
         self.requests.headers.update(headers)
         self.ents = []
         self.main_host = ""
         self.json_dict={}
+        self.json_restore_path = json_restore_path
+        self.html_restore_path = settings.html_restore_path + '/hainan/'
+        #验证码图片的存储路径
+        self.path_captcha = settings.json_restore_path + '/hainan/ckcode.png'
 
+    #分析 展示页面， 获得搜索到的企业列表
+    def analyze_showInfo(self, page):
+        if page is None:
+            settings.logger.error(u"Getting Page ShowInfo failed\n")
+            return
+        Ent = []
+        soup = BeautifulSoup(page, "html5lib")
+        divs = soup.find_all("div", {"class":"list"})
+        if divs:
+            for div in divs:
+                if div.find('a') and div.find('a').has_attr('href'):
+                    Ent.append(div.find('a')['href'])
+        self.ents = Ent
+
+    # 破解验证码页面
+    def crawl_page_captcha(self, url_search, url_Captcha, url_CheckCode,url_showInfo,  textfield= '460000000091050'):
+        r = self.requests.get( url_search)
+        if r.status_code != 200:
+            settings.logger.error(u"Something wrong when getting the url:%s , status_code=%d", url, r.status_code)
+            return
+        count = 0
+        while True:
+            count+= 1
+            r = self.requests.get( url_Captcha)
+            if r.status_code != 200:
+                settings.logger.error(u"Something wrong when getting the Captcha url:%s , status_code=%d", url_Captcha, r.status_code)
+                continue
+            if self.save_captcha(r.content):
+                result = self.crack_captcha()
+                print result
+                datas= {
+                        'textfield': textfield,
+                        'code': result,
+                }
+                response = json.loads(self.crawl_page_by_url_post(url_CheckCode, datas)['page'])
+                print response
+                # response返回的json结果: {u'flag': u'1', u'textfield': u'H+kiIP4DWBtMJPckUI3U3Q=='}
+                if response['flag'] == "1":
+                    datas_showInfo = {'textfield': response['textfield'], 'code': result}
+                    page_showInfo = self.crawl_page_by_url_post(url_showInfo, datas_showInfo)['page']
+                    self.analyze_showInfo(page_showInfo)
+                    break
+                else:
+                    settings.logger.debug(u"crack Captcha failed, the %d time(s)", count)
+                    if count > 15:
+                        break
+        return
+
+    #调用函数，破解验证码图片并返回结果
+    def crack_captcha(self):
+        if os.path.exists(self.path_captcha) is False:
+            settings.logger.error(u"Captcha path is not found\n")
+            return
+        result = self.CR.predict_result(self.path_captcha)
+        return result[1]
+
+    # 保存验证码图片
+    def save_captcha(self, Captcha):
+        url_Captcha = self.path_captcha
+        if Captcha is None:
+            settings.logger.error(u"Can not store Captcha: None\n")
+            return False
+        self.write_file_mutex.acquire()
+        f = open(url_Captcha, 'w')
+        try:
+            f.write(Captcha)
+        except IOError:
+            settings.logger.debug("%s can not be written", url_Captcha)
+        finally:
+            f.close
+        self.write_file_mutex.release()
+        return True
+
+    def parse_page_data_2(self, page):
+        data= {
+            "aiccipsUrl": "",
+            "entNo": "",
+            "entType":"",
+            "regOrg":"",
+        }
+        try:
+            soup = BeautifulSoup(page, "html5lib")
+            data['aiccipsUrl'] = soup.find("input", {"id": "aiccipsUrl"})['value']
+            data['entNo'] = soup.find("input", {"id": "entNo"})['value']
+            data['entType'] = soup.find("input", {"id": "entType"})['value'].strip()#+"++"
+            data['regOrg'] = soup.find("input", {"id": "regOrg"})['value']
+
+        except Exception as e:
+            settings.logger.error(u"parse page failed in function parse_page_data_2\n" )
+            raise e
+        finally:
+            return data
+
+    def crawl_page_main(self ):
+        sub_json_dict= {}
+        if not self.ents:
+            settings.logger.error(u"Get no search result\n")
+        try:
+            for ent in self.ents:
+                m = re.match('http', ent)
+                if m is None:
+                    ent = urls['host']+ ent[3:]
+                settings.logger.debug(u"ent url:%s\n"% ent)
+                url = ent
+                page_entInfo = self.crawl_page_by_url(url)['page']
+                post_data = self.parse_page_data_2(page_entInfo)
+                sub_json_dict.update(self.crawl_ind_comm_pub_pages(url, post_data))
+                url = "http://aic.hainan.gov.cn:1888/aiccips/BusinessAnnals/BusinessAnnalsList.html"
+                sub_json_dict.update(self.crawl_ent_pub_pages(url, post_data))
+                url = "http://aic.hainan.gov.cn:1888/aiccips/OtherPublicity/environmentalProtection.html"
+                sub_json_dict.update(self.crawl_other_dept_pub_pages(url, post_data))
+                url = "http://aic.hainan.gov.cn:1888/aiccips/judiciaryAssist/judiciaryAssistInit.html"
+                sub_json_dict.update(self.crawl_judical_assist_pub_pages(url, post_data))
+
+        except Exception as e:
+            settings.logger.error(u"An error ocurred when getting the main page, error: %s"% type(e))
+            raise e
+        finally:
+            return sub_json_dict
     # 爬取 工商公示信息 页面
-    def crawl_ind_comm_pub_pages(self, url, types, post_data= {}):
+    def crawl_ind_comm_pub_pages(self, url,  post_data= {}):
         sub_json_dict={}
         try:
-
-
             tabs = (
                     'entInfo',          # 登记信息
                     'curStoPleInfo',    #股权出质
@@ -78,210 +198,109 @@ class Crawler(object):
                             'chouchajiancha',
                         )
             for tab, div_name in zip(tabs, div_names):
-                #url = "http://gsxt.gdgs.gov.cn/aiccips/GSpublicity/GSpublicityList.html?service=" + tab
+                #url = "http://http://aic.hainan.gov.cn:1888/aiccips/GSpublicity/GSpublicityList.html?service=" + tab
                 url = urls['prefix_GSpublicity'] + tab
                 page = self.crawl_page_by_url_post(url, post_data)['page']
                 if div_name == 'jibenxinxi':
-                    dict_jiben = self.analysis.parse_page_2(page, div_name, post_data)
+                    dict_jiben = self.parse_page_2(page, div_name, post_data)
                     sub_json_dict['ind_comm_pub_reg_modify'] = dict_jiben[u'变更信息'] if dict_jiben.has_key(u"变更信息") else {}
                     sub_json_dict['ind_comm_pub_reg_basic'] =  dict_jiben[u'基本信息'] if dict_jiben.has_key(u"基本信息") else []
                     sub_json_dict['ind_comm_pub_reg_shareholder']= dict_jiben[u'股东信息'] if dict_jiben.has_key(u"股东信息") else []
                 elif div_name == 'beian':
-                    dict_beian = self.analysis.parse_page_2(page, div_name, post_data)
+                    dict_beian = self.parse_page_2(page, div_name, post_data)
                     sub_json_dict['ind_comm_pub_arch_key_persons']=  dict_beian[u'主要人员信息'] if dict_beian.has_key(u"主要人员信息") else []
                     sub_json_dict['ind_comm_pub_arch_branch'] = dict_beian[u'分支机构信息'] if dict_beian.has_key(u"分支机构信息") else []
                     sub_json_dict['ind_comm_pub_arch_liquidation'] = dict_beian[u"清算信息"] if dict_beian.has_key(u'清算信息') else []
                 elif div_name == 'guquanchuzhi':
-                    dj = self.analysis.parse_page_2(page, div_name, post_data)
+                    dj = self.parse_page_2(page, div_name, post_data)
                     sub_json_dict['ind_comm_pub_equity_ownership_reg'] = dj[u'股权出质登记信息'] if dj.has_key(u'股权出质登记信息') else []
                 elif div_name == 'dongchandiya':
-                    dj = self.analysis.parse_page_2(page, div_name, post_data)
+                    dj = self.parse_page_2(page, div_name, post_data)
                     sub_json_dict['ind_comm_pub_movable_property_reg'] = dj[u'动产抵押信息'] if dj.has_key(u'动产抵押信息') else []
                 elif div_name == 'xingzhengchufa':
-                    dj = self.analysis.parse_page_2(page, div_name, post_data)
+                    dj = self.parse_page_2(page, div_name, post_data)
                     sub_json_dict['ind_comm_pub_administration_sanction'] = dj[u'行政处罚信息'] if dj.has_key(u'行政处罚信息') else []
                 elif div_name == 'jingyingyichang':
-                    dj = self.analysis.parse_page_2(page, div_name, post_data)
+                    dj = self.parse_page_2(page, div_name, post_data)
                     sub_json_dict['ind_comm_pub_business_exception'] = dj[u'经营异常信息'] if dj.has_key(u'经营异常信息') else []
                 elif div_name == 'yanzhongweifa':
-                    dj = self.analysis.parse_page_2(page, div_name, post_data)
+                    dj = self.parse_page_2(page, div_name, post_data)
                     sub_json_dict['ind_comm_pub_serious_violate_law'] =  dj[u'严重违法信息'] if dj.has_key(u'严重违法信息') else []
                 elif div_name == 'chouchajiancha':
-                    dj = self.analysis.parse_page_2(page, div_name, post_data)
+                    dj = self.parse_page_2(page, div_name, post_data)
                     sub_json_dict['ind_comm_pub_spot_check'] = dj[u'抽查检查信息'] if dj.has_key(u'抽查检查信息') else []
 
         except Exception as e:
-            settings.logger.debug(u"An error ocurred in crawl_ind_comm_pub_pages: %s, type is %d"% (type(e), types))
+            settings.logger.debug(u"An error ocurred in crawl_ind_comm_pub_pages: %s"% (type(e)))
             raise e
         finally:
             return sub_json_dict
     #爬取 企业公示信息 页面
-    def crawl_ent_pub_pages(self, url, types, post_data={}):
+    def crawl_ent_pub_pages(self, url, post_data={}):
         sub_json_dict = {}
         try:
-            page = self.crawl_page_by_url_post("http://gsxt.gdgs.gov.cn/aiccips/BusinessAnnals/BusinessAnnalsList.html", post_data)['page']
-            p = self.analysis.parse_page_2(page, 'qiyenianbao', post_data)
+            page = self.crawl_page_by_url_post(urls['host']+ "/BusinessAnnals/BusinessAnnalsList.html", post_data)['page']
+            p = self.parse_page_2(page, 'qiyenianbao', post_data)
             sub_json_dict['ent_pub_ent_annual_report'] = p[u'qiyenianbao'] if p.has_key(u'qiyenianbao') else []
 
-            page = self.crawl_page_by_url_post("http://gsxt.gdgs.gov.cn/aiccips/AppPerInformation.html", post_data)['page']
-            p = self.analysis.parse_page_2(page, 'appPer', post_data)
+            page = self.crawl_page_by_url_post(urls['host']+ "/AppPerInformation.html", post_data)['page']
+            p = self.parse_page_2(page, 'appPer', post_data)
             sub_json_dict['ent_pub_administration_license'] = p[u'行政许可情况'] if p.has_key(u'行政许可情况') else []
 
-            page = self.crawl_page_by_url_post("http://gsxt.gdgs.gov.cn/aiccips/XZPunishmentMsg.html", post_data)['page']
-            p = self.analysis.parse_page_2(page, 'xzpun', post_data)
+            page = self.crawl_page_by_url_post(urls['host']+ "/XZPunishmentMsg.html", post_data)['page']
+            p = self.parse_page_2(page, 'xzpun', post_data)
             sub_json_dict['ent_pub_administration_sanction'] = p[u'行政处罚情况'] if p.has_key(u'行政处罚情况') else []
 
-            page = self.crawl_page_by_url_post("http://gsxt.gdgs.gov.cn/aiccips/ContributionCapitalMsg.html", post_data)['page']
-            p = self.analysis.parse_page_2(page, 'sifapanding', post_data)
+            page = self.crawl_page_by_url_post(urls['host']+ "/ContributionCapitalMsg.html", post_data)['page']
+            p = self.parse_page_2(page, 'sifapanding', post_data)
             sub_json_dict['ent_pub_shareholder_capital_contribution'] = p[u'股东及出资信息'] if p.has_key(u'股东及出资信息') else []
             sub_json_dict['ent_pub_reg_modify'] = p[u'变更信息'] if p.has_key(u'变更信息') else []
 
-            page = self.crawl_page_by_url_post("http://gsxt.gdgs.gov.cn/aiccips/GDGQTransferMsg/shareholderTransferMsg.html", post_data)['page']
-            p = self.analysis.parse_page_2(page, 'guquanbiangeng', post_data)
+            page = self.crawl_page_by_url_post(urls['host']+ "/GDGQTransferMsg/shareholderTransferMsg.html", post_data)['page']
+            p = self.parse_page_2(page, 'guquanbiangeng', post_data)
             sub_json_dict['ent_pub_equity_change'] = p[u'股权变更信息'] if p.has_key(u'股权变更信息') else []
 
-            page = self.crawl_page_by_url_post("http://gsxt.gdgs.gov.cn/aiccips/intPropertyMsg.html", post_data)['page']
-            p = self.analysis.parse_page_2(page, 'inproper', post_data)
+            page = self.crawl_page_by_url_post(urls['host']+ "/intPropertyMsg.html", post_data)['page']
+            p = self.parse_page_2(page, 'inproper', post_data)
             sub_json_dict['ent_pub_knowledge_property'] = p[u'知识产权出质登记信息'] if p.has_key(u'知识产权出质登记信息') else []
         except Exception as e:
-            settings.logger.debug(u"An error ocurred in crawl_ent_pub_pages: %s, types = %d"% (type(e), types))
+            settings.logger.debug(u"An error ocurred in crawl_ent_pub_pages: %s"% (type(e)))
             raise e
         finally:
             return sub_json_dict
         #json_dump_to_file("json_dict.json", self.json_dict)
 
     #爬取 其他部门公示信息 页面
-    def crawl_other_dept_pub_pages(self, url, types, post_data={}):
+    def crawl_other_dept_pub_pages(self, url, post_data={}):
         sub_json_dict={}
-        # titles =(   'other_dept_pub_administration_license',#行政许可信息
-        #             'other_dept_pub_administration_sanction',#行政处罚信息
-        #         )
         try:
-            # other_dept_urls = {
-            #     "xzxk"  :   "http://gsxt.gdgs.gov.cn/aiccips/OtherPublicity/environmentalProtection.html",
-            #     "czcf"  :   "http://gsxt.gdgs.gov.cn/aiccips/OtherPublicity/environmentalProtection.html",
-            #     }
-            # for title, ids in zip(titles, other_dept_urls):
-            #     url = other_dept_urls[ids]
-            #     page = self.crawl_page_by_url_post(url, post_data)['page']
-            #     sub_json_dict[title] = self.analysis.parse_page_2(page, ids, post_data)
-            page = self.crawl_page_by_url_post("http://gsxt.gdgs.gov.cn/aiccips/OtherPublicity/environmentalProtection.html", post_data)['page']
-            xk = self.analysis.parse_page_2(page, "xzxk", post_data)
+            page = self.crawl_page_by_url_post(urls['host']+ "/OtherPublicity/environmentalProtection.html", post_data)['page']
+            xk = self.parse_page_2(page, "xzxk", post_data)
             sub_json_dict["other_dept_pub_administration_license"] =  xk[u'行政许可信息'] if xk.has_key(u'行政许可信息') else []
-            page = self.crawl_page_by_url_post("http://gsxt.gdgs.gov.cn/aiccips/OtherPublicity/environmentalProtection.html", post_data)['page']
-            xk = self.analysis.parse_page_2(page, "czcf", post_data)
+            page = self.crawl_page_by_url_post(urls['host']+ "/OtherPublicity/environmentalProtection.html", post_data)['page']
+            xk = self.parse_page_2(page, "czcf", post_data)
             sub_json_dict["other_dept_pub_administration_sanction"] = xk[u'行政处罚信息'] if xk.has_key(u'行政处罚信息') else []  # 行政处罚信息
         except Exception as e:
-            settings.logger.debug(u"An error ocurred in crawl_other_dept_pub_pages: %s, types = %d"% (type(e), types))
+            settings.logger.debug(u"An error ocurred in crawl_other_dept_pub_pages: %s"% (type(e)))
             raise e
         finally:
             return sub_json_dict
     #judical assist pub informations
-    def crawl_judical_assist_pub_pages(self, url, types, post_data= {}):
+    def crawl_judical_assist_pub_pages(self, url, post_data= {}):
         sub_json_dict={}
-        # titles = (  'judical_assist_pub_equity_freeze', # 股权冻结信息
-        #             'judical_assist_pub_shareholder_modify', #股东变更信息
-        #             )
         try:
-
-            # judical_assist_url = {
-            #     "guquandongjie"   :   "http://gsxt.gdgs.gov.cn/aiccips/judiciaryAssist/judiciaryAssistInit.html",
-            #     "gudongbiangeng"  :   "http://gsxt.gdgs.gov.cn/aiccips/sfGuQuanChange/guQuanChange.html",
-            #     }
-
-            # for (title, ids) in zip(titles, judical_assist_url):
-            #     url = judical_assist_url[ids]
-            #     page = self.crawl_page_by_url_post(url, post_data)['page']
-            #     sub_json_dict[title] = self.analysis.parse_page_2(page, ids, post_data)
-            page = self.crawl_page_by_url_post('http://gsxt.gdgs.gov.cn/aiccips/judiciaryAssist/judiciaryAssistInit.html', post_data)['page']
-            xz  = self.analysis.parse_page_2(page, 'guquandongjie', post_data)
+            page = self.crawl_page_by_url_post(urls['host'] + "/judiciaryAssist/judiciaryAssistInit.html", post_data)['page']
+            xz  = self.parse_page_2(page, 'guquandongjie', post_data)
             sub_json_dict['judical_assist_pub_equity_freeze'] = xz[u'司法股权冻结信息'] if xz.has_key(u'司法股权冻结信息') else []
-            page = self.crawl_page_by_url_post('http://gsxt.gdgs.gov.cn/aiccips/sfGuQuanChange/guQuanChange.html', post_data)['page']
-            xz  = self.analysis.parse_page_2(page, 'gudongbiangeng', post_data)
+            page = self.crawl_page_by_url_post(urls['host'] + "/sfGuQuanChange/guQuanChange.html", post_data)['page']
+            xz  = self.parse_page_2(page, 'gudongbiangeng', post_data)
             sub_json_dict['judical_assist_pub_shareholder_modify'] = xz[u'司法股东变更登记信息'] if xz.has_key(u'司法股东变更登记信息') else []
         except Exception as e:
-            settings.logger.debug(u"An error ocurred in crawl_other_dept_pub_pages: %s, types = %d"% (type(e), types))
+            settings.logger.debug(u"An error ocurred in crawl_other_dept_pub_pages: %s"% (type(e)))
             raise e
         finally:
             return sub_json_dict
         pass
-
-    def crawl_page_by_url(self, url):
-        r = self.requests.get( url)
-        if r.status_code != 200:
-            settings.logger.error(u"Getting page by url:%s\n, return status %s\n"% (url, r.status_code))
-            return False
-        # 为了防止页面间接跳转，获取最终目标url
-        return {'page' : r.text, 'url': r.url}
-
-    def crawl_page_by_url_post(self, url, data, header={}):
-        if header:
-            r = self.requests.post(url, data, headers= header)
-        else :
-            r = self.requests.post(url, data)
-        if r.status_code != 200:
-            settings.logger.error(u"Getting page by url with post:%s\n, return status %s\n"% (url, r.status_code))
-            return False
-        return {'page': r.text, 'url': r.url}
-
-    # main function
-    def work(self):
-        """
-        ens = read_ent_from_file("./enterprise_list/guangdong1.txt")
-        #os.makedirs("./Guangdong")
-        for i, ent in enumerate(ens):
-            self.crawl_page_search(urls['page_search'])
-            self.crawl_page_captcha(urls['page_Captcha'], urls['checkcode'], urls['page_showinfo'], ent[2])
-            self.analyze_showInfo()
-            data = self.crawl_page_main()
-            self.json_dict[ent[0]] = data
-            json_dump_to_file("./guangdong/final_json_%s.json" % ent[0], self.json_dict)
-            settings.logger.debug(u"Now %s was finished\n"% ent[0])
-        """
-        #url = "http://gsxt.gdgs.gov.cn/aiccips/GSpublicity/GSpublicityList.html?service=entInfo_06CAc+ibgylJZ6y3lp3JBNsJrQ1qA5gDU7qYIU/VOow9Am1tz4CcjiZg6BZzhZQU-QuOaBlqqlUykdKokb5yijg=="
-        #东莞证券
-        url = "http://gsxt.gdgs.gov.cn/aiccips/GSpublicity/GSpublicityList.html?service=entInfo_GmjYOaEEX9Xx3eeM0JcrtOywZcfQzs3Ry0M6NPS1/iCr+cQwm+oHVoPBzdIqEiYb-7vusEl1hPU+qjV70QwcUXQ=="
-        page_entInfo = self.crawl_page_by_url(url)['page']
-
-        post_data = self.analysis.parse_page_data_2(page_entInfo)
-        #self.crawl_ind_comm_pub_pages(url, 2, post_data)
-        self.crawl_ent_pub_pages(url, 2, post_data)
-        #
-        #self.crawl_other_dept_pub_pages(url, 2)
-        #self.crawl_judical_assist_pub_pages(url, 2)
-
-        #datas = html_from_file('next.html')
-        #self.analysis.parse_ent_pub_annual_report_page_2(datas, "_detail")
-        """
-        sub_json_dict = {}
-        datas = html_from_file('next.html')
-        sub_json_dict['guquanbiangeng'] = self.analysis.parse_page_2(datas, 'guquanbiangeng', {})
-        json_dump_to_file("crawl_ent_pub_pages.json", sub_json_dict)
-        """
-
-    def run(self, ent):
-        sub_json_dict= {}
-        url = ent
-        page_entInfo = self.crawl_page_by_url(url)['page']
-        post_data = self.analysis.parse_page_data_2(page_entInfo)
-
-        sub_json_dict.update(self.crawl_ind_comm_pub_pages(url, 2, post_data))
-        url = "http://gsxt.gdgs.gov.cn/aiccips/BusinessAnnals/BusinessAnnalsList.html"
-        sub_json_dict.update(self.crawl_ent_pub_pages(url, 2, post_data))
-        url = "http://gsxt.gdgs.gov.cn/aiccips/OtherPublicity/environmentalProtection.html"
-        sub_json_dict.update(self.crawl_other_dept_pub_pages(url, 2, post_data))
-        url = "http://gsxt.gdgs.gov.cn/aiccips/judiciaryAssist/judiciaryAssistInit.html"
-        sub_json_dict.update(self.crawl_judical_assist_pub_pages(url, 2, post_data))
-        return sub_json_dict
-
-class Analyze(object):
-
-    crawler = None
-    def __init__(self):
-        self.Ent = []
-        self.json_dict = {}
-
-
 
     def get_raw_text_by_tag(self, tag):
         return tag.get_text().strip()
@@ -386,10 +405,7 @@ class Analyze(object):
                 tr = bs_table.find_all('tr')[0]
             elif bs_table.find_all('tr')[1].find('th') and not bs_table.find_all('tr')[1].find('td') and len(bs_table.find_all('tr')[1].find_all('th')) > 1:
                 tr = bs_table.find_all('tr')[1]
-        #settings.logger.debug(u"get_columns_of_record_table->tr:%s\n", tr)
         ret_val=  self.get_record_table_columns_by_tr(tr, table_name)
-        #settings.logger.debug(u"table columns:%s\n"% table_name)
-        #settings.logger.debug(u"ret_val->%s\n", ret_val)
         return  ret_val
 
     def get_record_table_columns_by_tr(self, tr_tag, table_name):
@@ -424,6 +440,7 @@ class Analyze(object):
         finally:
             return columns
 
+    # 如果是第二种： http://gsxt.gdgs.gov.cn/aiccips/ q情况
     def parse_ent_pub_annual_report_page_2(self, base_page, page_type):
 
         page_data = {}
@@ -456,27 +473,6 @@ class Analyze(object):
             pass
         return page_data
 
-
-    def parse_page_data_2(self, page):
-        data= {
-            "aiccipsUrl": "",
-            "entNo": "",
-            "entType":"",
-            "regOrg":"",
-        }
-        try:
-            soup = BeautifulSoup(page, "html5lib")
-            data['aiccipsUrl'] = soup.find("input", {"id": "aiccipsUrl"})['value']
-            data['entNo'] = soup.find("input", {"id": "entNo"})['value']
-            data['entType'] = soup.find("input", {"id": "entType"})['value'].strip()+"++"
-            data['regOrg'] = soup.find("input", {"id": "regOrg"})['value']
-
-        except Exception as e:
-            settings.logger.error(u"parse page failed in function parse_page_data_2\n" )
-            raise e
-        finally:
-            return data
-
     def get_particular_table(self, table, page):
         """ 获取 股东及出资信息的表格，按照指定格式输出
         """
@@ -508,6 +504,9 @@ class Analyze(object):
             settings.logger.error(u'parse 股东及出资信息 table failed! : %s'% e)
         return table_list
 
+
+
+
     def parse_page_2(self, page, div_id, post_data={}):
         soup = BeautifulSoup(page, 'html5lib')
         page_data = {}
@@ -532,7 +531,9 @@ class Analyze(object):
                                 page_data[table_name] = self.get_particular_table(table, page)
                                 table = table.nextSibling
                                 continue
+
                             page_data[table_name] = []
+
                             columns = self.get_columns_of_record_table(table, page, table_name)
                             result =self.parse_table_2(table, columns, post_data, table_name)
                             if  not columns and not result :
@@ -598,11 +599,14 @@ class Analyze(object):
                         "regOrg" : post_data["regOrg"],
                         "entType" : post_data["entType"].encode('utf-8'),
                     }
-                    res = self.crawler.crawl_page_by_url_post(url, data, {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',})
+                    print url
+                    print data
+                    res = self.crawl_page_by_url_post(url, data)
                     #print res['page']
                     if table_name == u"变更信息":
                         # chaToPage
                         d = json.loads(res['page'])
+                        print d
                         titles = [column[0] for column in columns]
                         for i, model in enumerate(d['list']):
                             data = [model['altFiledName'], model['altBe'], model['altAf'], model['altDate']]
@@ -638,7 +642,6 @@ class Analyze(object):
                 else:
 
                     if not tbody:
-                        #records_tag = bs_table
                         records_tag = tables[0]
                     else:
                         records_tag = tbody
@@ -650,18 +653,11 @@ class Analyze(object):
                             for td in tr.find_all('td',recursive=False):
                                 if td.find('a'):
                                     next_url = self.get_detail_link(td.find('a'))
-                                    #print next_url
-                                    #has detail link
+                                    print next_url
                                     if re.match(r"http", next_url):
-                                        detail_page = self.crawler.crawl_page_by_url(next_url)
+                                        detail_page = self.crawl_page_by_url(next_url)
                                         #html_to_file("next.html", detail_page['page'])
-                                        if table_name == u'企业年报':
-                                            #settings.logger.debug(u"next_url = %s, table_name= %s\n", detail_page['url'], table_name)
-                                            page_data = self.parse_ent_pub_annual_report_page(detail_page['page'], table_name + '_detail')
-                                            item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
-                                            item[u'详情'] = page_data
-                                            #item[columns[col_count][0]] = page_data #this may be a detail page data
-                                        elif table_name == u'qiyenianbao':
+                                        if table_name == u'qiyenianbao':
                                             print "in table_name"
                                             page_data = self.parse_ent_pub_annual_report_page_2(detail_page['page'], table_name+ '_detail')
                                             item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
@@ -689,16 +685,8 @@ class Analyze(object):
                                     next_url = self.get_detail_link(td.find('a'))
                                     #has detail link
                                     if next_url:
-                                        detail_page = self.crawler.crawl_page_by_url(next_url)['page']
-                                        #html_to_file("next.html", detail_page['page'])
-
-                                        if table_name == u'企业年报':
-                                            #settings.logger.debug(u"2next_url = %s, table_name= %s\n", next_url, table_name)
-
-                                            page_data = self.parse_ent_pub_annual_report_page(detail_page['page'], table_name + '_detail')
-                                            item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
-                                            item[u'详情'] = page_data
-                                        elif table_name == 'qiyenianbao':
+                                        detail_page = self.crawl_page_by_url(next_url)['page']
+                                        if table_name == 'qiyenianbao':
                                             page_data = self.parse_ent_pub_annual_report_page_2(detail_page['page'], table_name+ '_detail')
                                             item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
                                             item[u'详情'] = page_data
@@ -706,7 +694,6 @@ class Analyze(object):
                                             page_data = self.parse_page_2(detail_page['page'], table_name + '_detail')
                                             item[columns[col_count][0]] = page_data #this may be a detail page data
                                     else:
-                                        #item[columns[col_count]] = CrawlerUtils.get_raw_text_in_bstag(td)
                                         item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
                                 else:
                                     if type(columns[col_count][1]) == list:
@@ -745,6 +732,44 @@ class Analyze(object):
         finally:
             return table_dict
 
+    def crawl_page_by_url(self, url, header={}):
+        self.requests.headers.update(header)
+        r = self.requests.get( url)
+        if r.status_code != 200:
+            settings.logger.error(u"Getting page by url:%s\n, return status %s\n"% (url, r.status_code))
+        # 为了防止页面间接跳转，获取最终目标url
+        return {'page' : r.text, 'url': r.url}
+
+    def crawl_page_by_url_post(self, url, datas, header={}):
+        self.requests.headers.update(header)
+        r = self.requests.post(url, data = datas)
+        if r.status_code != 200:
+            settings.logger.error(u"Getting page by url with post:%s\n, return status %s\n"% (url, r.status_code))
+        return {'page': r.text, 'url': r.url}
+
+    # main function
+    def run(self, ent_num):
+        #if settingss.save_html and :
+        #    print self.html_restore_path
+        if not os.path.exists(self.html_restore_path):
+            os.makedirs(self.html_restore_path)
+        self.json_dict = {}
+
+        self.crawl_page_search(urls['page_search'])
+        self.crawl_page_captcha(urls['page_Captcha'], urls['checkcode'], urls['page_showinfo'], ent_num)
+        self.analyze_showInfo()
+        data = self.crawl_page_main()
+        self.json_dict[ent_num] = data
+        json_dump_to_file(self.json_restore_path , self.json_dict)
+
+    def work(self, ent_num):
+        #if settingss.save_html and :
+        #    print self.html_restore_path
+        if not os.path.exists(self.html_restore_path):
+            os.makedirs(self.html_restore_path)
+        self.crawl_page_captcha(urls['page_search'], urls['page_Captcha'], urls['checkcode'], urls['page_showinfo'], ent_num)
+        data = self.crawl_page_main()
+        json_dump_to_file('hainan.json' , data)
 
 def html_to_file(path, html):
     write_type = 'w'
@@ -769,34 +794,31 @@ def read_ent_from_file(path):
         lines = f.readlines()
     lines = [ line.split(',') for line in lines ]
     return lines
-
-def html_from_file(path):
-    read_type = 'r'
-    if not os.path.exists(path):
-        return None
-    datas = None
-    with codecs.open(path, read_type, 'utf8') as f:
-        datas = f.read()
-        f.close()
-    return datas
-
-
-class Guangdong2(object):
-    def __init__(self):
-        self.analysis = Analyze()
-        self.crawler = Crawler(self.analysis)
-        self.analysis.crawler = self.crawler
-
-    def run(self, url):
-        return self.crawler.run(url)
-    def work(self):
-        self.crawler.work()
-
 """
 if __name__ == "__main__":
     reload (sys)
     sys.setdefaultencoding('utf8')
-    guangdong = Guangdong2()
-    guangdong.work()
+    import run
+    run.config_logging()
+    if not os.path.exists("./enterprise_crawler"):
+        os.makedirs("./enterprise_crawler")
+    hainan = HainanClawer('./enterprise_crawler/hainan.json')
+    hainan.work('460000000181422')
 
+
+if __name__ == "__main__":
+    reload (sys)
+    sys.setdefaultencoding('utf8')
+    import run
+    run.config_logging()
+    ents = read_ent_from_file("./enterprise_list/hainan.txt")
+    if not os.path.exists("./enterprise_crawler"):
+        os.makedirs("./enterprise_crawler")
+    hainan = HainanClawer('./enterprise_crawler/hainan.json')
+
+    for ent_str in ents:
+        settings.logger.info(u'###################   Start to crawl enterprise with id %s   ###################\n' % ent_str[2])
+        hainan.run(ent_num = ent_str[2])
+        settings.logger.info(u'###################   Enterprise with id Finished : %s   ###################\n' % ent_str[2])
 """
+
