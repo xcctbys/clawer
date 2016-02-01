@@ -205,7 +205,6 @@ class Parse(object):
                     else:
                         for result_dict in result:
                             result_dict[mapping.get(key_in)] = dict_in[key_in]
-        print result
         return result
 
     def parse_enter_license(self, dict_in_company, mapping):
