@@ -5,6 +5,7 @@ from configs import configs
 from clawer_parse import tools
 from configs.mappings import mappings
 from clawer_parse.models import Operation
+import re
 
 
 class Parse(object):
@@ -157,8 +158,10 @@ class Parse(object):
         """处理ind_shareholder中"详情中"股东（发起人）及出资信息"的value中的字典
         """
         dict_inner = {}
+        judge = False
         for key_in in dict_in:
             if key_in == u"list":
+                judge = True
                 for dict_fuck in dict_in[key_in]:
                     for key_fuck in dict_fuck:
                         dict_inner[mapping.get(key_fuck)] = dict_fuck[key_fuck]
@@ -167,7 +170,7 @@ class Parse(object):
         for key_in in dict_in:
             if key_in == u"list":
                 pass
-            else:
+            elif judge == True:
                 if not result:
                     dict_inner[mapping.get(key_in)] = dict_in[key_in]
                     result.append(dict_inner)
@@ -175,6 +178,34 @@ class Parse(object):
                 else:
                     for result_dict in result:
                         result_dict[mapping.get(key_in)] = dict_in[key_in]
+            else:
+                if key_in == u"认缴明细":
+                    for key_fuck in dict_in[key_in]:
+                        if not result:
+                            dict_inner[mapping.get(key_in)] = dict_in[key_in]
+                            result.append(dict_inner)
+                            dict_inner = {}
+                        else:
+                            for result_dict in result:
+                                result_dict[mapping.get(key_in)] = dict_in[key_in]
+                elif key_in == u"实缴明细":
+                    for key_fuck in dict_in[key_in]:
+                        if not result:
+                            dict_inner[mapping.get(key_in)] = dict_in[key_in]
+                            result.append(dict_inner)
+                            dict_inner = {}
+                        else:
+                            for result_dict in result:
+                                result_dict[mapping.get(key_in)] = dict_in[key_in]
+                else:
+                    if not result:
+                        dict_inner[mapping.get(key_in)] = dict_in[key_in]
+                        result.append(dict_inner)
+                        dict_inner = {}
+                    else:
+                        for result_dict in result:
+                            result_dict[mapping.get(key_in)] = dict_in[key_in]
+        print result
         return result
 
     def parse_enter_license(self, dict_in_company, mapping):
