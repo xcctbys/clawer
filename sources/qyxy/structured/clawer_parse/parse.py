@@ -204,21 +204,21 @@ class Parse(object):
                 if key_in == u"认缴明细":
                     for key_fuck in dict_in[key_in]:
                         if not result:
-                            dict_inner[mapping.get(key_in)] = dict_in[key_in]
+                            dict_inner[mapping.get(key_fuck)] = dict_in[key_in][key_fuck]
                             result.append(dict_inner)
                             dict_inner = {}
                         else:
                             for result_dict in result:
-                                result_dict[mapping.get(key_in)] = dict_in[key_in]
+                                result_dict[mapping.get(key_fuck)] = dict_in[key_in][key_fuck]
                 elif key_in == u"实缴明细":
                     for key_fuck in dict_in[key_in]:
                         if not result:
-                            dict_inner[mapping.get(key_in)] = dict_in[key_in]
+                            dict_inner[mapping.get(key_fuck)] = dict_in[key_in][key_fuck]
                             result.append(dict_inner)
                             dict_inner = {}
                         else:
                             for result_dict in result:
-                                result_dict[mapping.get(key_in)] = dict_in[key_in]
+                                result_dict[mapping.get(key_fuck)] = dict_in[key_in][key_fuck]
                 else:
                     if not result:
                         dict_inner[mapping.get(key_in)] = dict_in[key_in]
