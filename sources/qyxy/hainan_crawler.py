@@ -808,7 +808,7 @@ def read_ent_from_file(path):
         lines = f.readlines()
     lines = [ line.split(',') for line in lines ]
     return lines
-
+"""
 if __name__ == "__main__":
     reload (sys)
     sys.setdefaultencoding('utf8')
@@ -819,7 +819,7 @@ if __name__ == "__main__":
     hainan = HainanCrawler('./enterprise_crawler/hainan.json')
     hainan.work('460000000265072')
 
-"""
+
 
 if __name__ == "__main__":
     reload (sys)
