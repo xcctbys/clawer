@@ -76,7 +76,7 @@ class CaptchaRecognition(object):
                                 "qinghai", "shanxi", "henan", "guangxi", "xizang", "heilongjiang", "anhui", "shaanxi",
                                 "ningxia", "chongqing", "sichuan", "hunan", "gansu", "xinjiang", "guizhou", "shandong",
                                 "neimenggu", "zhejiang", "heibei", "jilin", "yunnan", "fujian", "hebei", "shanghai"]:
-            exit(1)
+            raise Exception("unknown province %s" % catpcha_type)
         elif captcha_type in ["jiangsu", "beijing", "liaoning"]:
             self.label_list = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
                                "q", "w", "e", "r", "t", "y", "u", "i", "o", "p",
