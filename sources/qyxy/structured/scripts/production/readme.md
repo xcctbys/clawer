@@ -1,11 +1,11 @@
 ### Mysql's Configs
 
     # edit structured/settings.py
-    # change `db_user` and `db_password` for yours.
+    # change `db_name` `db_user` and `db_password` for yours.
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'clawer',
+            'NAME': 'db_name',
             'USER': 'db_user',
             'PASSWORD': 'db_password',
             'HOST': '127.0.0.1',
@@ -14,7 +14,9 @@
     }
 
 ### Create Mysql Tables
+
     mysql -uroot -p
+
     mysql> create database db_name;
     mysql> \q
 
