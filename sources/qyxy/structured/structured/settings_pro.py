@@ -6,7 +6,7 @@ import logging
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'clawer',
+        'NAME': 'enterprise',
         'USER': 'cacti',
         'PASSWORD': 'cacti',
         'HOST': '10.100.80.50',
