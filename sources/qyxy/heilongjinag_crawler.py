@@ -11,7 +11,6 @@ from bs4 import BeautifulSoup
 from crawler import Crawler
 from crawler import Parser
 from crawler import CrawlerUtils
-import types
 import importlib
 
 ENT_CRAWLER_SETTINGS = os.getenv('ENT_CRAWLER_SETTINGS')
@@ -132,8 +131,6 @@ class HeilongjiangClawer(Crawler):
             settings.logger.error('failed to get ind_comm_pub_skeleton')
         self.parser.parse_ind_comm_pub_pages(resp.content)
 
-        return resp.content
-
     def crawl_ent_pub_pages(self):
         """爬取企业公示信息
         """
@@ -182,8 +179,7 @@ class HeilongjiangParser(Parser):
             list_table_title = table.find("th")
             if not list_table_title:
                 continue
-
-            if name_table_map.has_key(list_table_title.text):
+            if list_table_title.text in name_table_map.keys():
                 table_name = name_table_map[list_table_title.text]
                 settings.logger.info('crawler to get %s', table_name)
 
@@ -194,56 +190,49 @@ class HeilongjiangParser(Parser):
             'altDiv': 'ind_comm_pub_reg_modify',  # 登记信息-变更信息
             "memDiv": 'ind_comm_pub_arch_key_persons',  # 主要人员信息
             "childDiv": 'ind_comm_pub_arch_branch',  # 备案信息-分支机构信息
-            "pledgeDiv": 'ind_comm_pub_equity_ownership_reg',  # 股权出置登记信息
+            "pledgeDiv": 'ind_comm_pub_equity_ownership_reg',  # 股权出质登记信息
             "punDiv": 'ind_comm_pub_administration_sanction',  # 行政处罚信息
             "excDiv": 'ind_comm_pub_business_exception',  # 经营异常信息
             "serillDiv": 'ind_comm_pub_serious_violate_law',  # 严重违法信息
             "spotCheckDiv": 'ind_comm_pub_spot_check',  # 抽查检查信息
+            "invDiv": 'ind_comm_pub_reg_shareholder',  # 股东信息
+            "mortDiv": 'ind_comm_pub_movable_property_reg',  # 动产抵押登记信息
         }
-        table_ids = id_table_map.keys()
-        for table_id in table_ids:
+        for table_id in id_table_map.keys():
             table_name = id_table_map[table_id]
             table = soup.find("div", {"id": table_id})
             if not table:  # 如果没找到内容表，返回空列表
                 self.crawler.json_dict[table_name] = []
                 continue
-            table_tds = table.find_all("td")
 
-            if table_tds:
-                settings.logger.info('crawler to get %s', table_name)
-                self.crawler.json_dict[table_name] = self.parse_table2(table, table_name)[0]
-            else:
+            table_tds = table.find_all("td")
+            if not table_tds:
                 self.crawler.json_dict[table_name] = []  # 若表格内没有td则视为空，返回空列表
                 continue
 
-        # 股东信息
-        div = soup.find("div", {"id": "invDiv"})
-        if div:
-                # 该函数返回解析的表格内容和每一行的内容，通过get_shareholder_detail函数读取详情页网址
-            return_table = self.parse_table2(div, 'ind_comm_pub_reg_shareholder')
-            if return_table[1] != "None":
-                for i in range(0, len(return_table[1])):
-                    return_table[0][i][u'详情'] = self.get_shareholder_detail(return_table[1][i])
-            self.crawler.json_dict['ind_comm_pub_reg_shareholder'] = return_table[0]
-        else:
-            self.crawler.json_dict['ind_comm_pub_reg_shareholder'] = []
+            settings.logger.info('crawler to get %s', table_name)
+            table_content = self.parse_table2(table, table_name)
+            if table_name == "ind_comm_pub_reg_shareholder":  # 股东信息需调用获取详情函数，特殊处理
+                if table_content[1] != "None":  # table_content[1]为tr的内容
+                    for i in range(0, len(table_content[1])):
+                        table_content[0][i][u'详情'] = self.get_shareholder_detail(table_content[1][i])
+                self.crawler.json_dict[table_name] = table_content[0]
 
-        # 动产抵押登记信息
-        div = soup.find("div", {"id": "mortDiv"})
-        if div:
-                # 该函数返回解析的表格内容和每一行的内容，通过get_movable_property_reg_detail函数读取详情页网址
-            return_table = self.parse_table2(div, 'ind_comm_pub_movable_property_reg')
-            if return_table[1] != "None":
-                for i in range(0, len(return_table[1])):
-                    return_table[0][i][u'详情'] = self.get_movable_property_reg_detail(return_table[1][i])
-            self.crawler.json_dict['ind_comm_pub_movable_property_reg'] = return_table[0]
-        else:
-            self.crawler.json_dict['ind_comm_pub_movable_property_reg'] = []
+            elif table_name == "ind_comm_pub_movable_property_reg":  # 动产抵押登记信息需调用获取详情函数，特殊处理
+                if table_content[1] != "None":
+                    for i in range(0, len(table_content[1])):
+                        table_content[0][i][u'详情'] = self.get_movable_property_reg_detail(table_content[1][i])
+                self.crawler.json_dict[table_name] = table_content[0]
+
+            else:
+                self.crawler.json_dict[table_name] = table_content[0]
 
     def parse_ent_pub_pages(self, page):
+        """解析企业公示信息
+        """
         soup = BeautifulSoup(page, "html5lib")
 
-        # 四类表：name_table_mapp为表格的table,列名和列表内容在同一张表中
+        # 三类表：name_table_map为表格的table,列名和列表内容在同一张表中
         name_table_map = {
             u'股权变更信息': 'ent_pub_equity_change',
             u'变更信息': 'ent_pub_reg_modify',
@@ -255,7 +244,7 @@ class HeilongjiangParser(Parser):
             list_table_title = table.find("th")
             if not list_table_title:
                 continue
-            if name_table_map.has_key(list_table_title.text):
+            if list_table_title.text in name_table_map.keys():
                 table_name1 = name_table_map[list_table_title.text]
                 settings.logger.info('crawler to get %s', table_name1)
                 self.crawler.json_dict[table_name1] = self.parse_table3(table)
@@ -270,64 +259,61 @@ class HeilongjiangParser(Parser):
 
         #企业年报
         qiyenianbao = soup.find("div", {"id": "qiyenianbao"})
-        table_th1 = []  # 所有不跨列的th
+        list_th = []  # 所有不跨列的th
         table_save_all = []
 
         table_ths = qiyenianbao.find_all("th")
         for th in table_ths:
             if 'colspan' in th.attrs:
                 continue
-            table_th1.append(th.text)
+            list_th.append(th.text)
 
         table_trs = qiyenianbao.find_all("tr")
         for tr in table_trs[2:]:
-            table_ts = {}  # 每行th、td对应后的表格解析内容
-            table_td1 = []  # 每行的表格td
+            table_content = {}  # 每行th、td对应后的表格解析内容
+            list_td = []  # 每行的td
             content_tds = tr.find_all("td")
-            for table_td_text in content_tds:
-                table_td1.append(table_td_text.text.strip())
-            for i in range(0, len(table_th1)):
-                table_ts[table_th1[i]] = table_td1[i]
-            table_detail = {}
-            a = qiyenianbao.find_all("a")
-            if a:
-                for a1 in a:
-                    m = re.search(r'id=(.*?)\"', str(a1))
-                    args = m.group(1)
-                    host = self.crawler.urls['annual_report']
-                    url = '%s%s' % (host, args)
-                    rep = requests.get(url)
-                    soup = BeautifulSoup(rep.content, 'html5lib')
+            for table_td in content_tds:
+                list_td.append(table_td.text.strip())
+            for i in range(0, len(list_th)):
+                table_content[list_th[i]] = list_td[i]
+            detail = {}
+            a = qiyenianbao.find("a")
+            if not a:
+                table_save_all.append(table_content)
+                self.crawler.json_dict['ent_pub_ent_annual_report'] = table_save_all
+                continue
+            m = re.search(r'id=(.*?)\"', str(a))
+            args = m.group(1)
+            host = self.crawler.urls['annual_report']
+            url = '%s%s' % (host, args)
+            rep = requests.get(url)
+            soup = BeautifulSoup(rep.content, 'html5lib')
 
-                    tables = soup.find_all("table")
-                    for table in tables:
-                        table_tiiles = table.find("th")
-                        if table_tiiles.attrs['style'] == 'text-align:center;color:red':
-                            table_tiiles = table_tiiles.parent
-                            table_tiiles = table_tiiles.next_sibling.next_sibling
+            tables = soup.find_all("table")
+            for table in tables:
+                table_tiiles = table.find("th")
+                if table_tiiles.attrs['style'] == 'text-align:center;color:red':
+                    table_tiiles = table_tiiles.parent
+                    table_tiiles = table_tiiles.next_sibling.next_sibling
 
-                        name_table_map2 = [u'企业资产状况信息', u'企业基本信息', u'基本信息']
-                        if table_tiiles.text in name_table_map2:
-                            table_detail[table_tiiles.text] = self.parse_table1(table)
+                name_table_map2 = [u'企业资产状况信息', u'企业基本信息', u'基本信息']
+                if table_tiiles.text in name_table_map2:
+                    detail[table_tiiles.text] = self.parse_table1(table)
+                # 三类表
+                name_table_map = [u'网站或网店信息', u'股东及出资信息', u'行政许可情况', u'对外投资信息',
+                                  u'对外提供保证担保信息', u'股权变更信息', u'修改记录']
+                if table_tiiles.text in name_table_map:
+                    detail[table_tiiles.text] = self.parse_table3(table)
 
-                    # 三类表
-                    name_table_map = [u'网站或网店信息', u'股东及出资信息', u'行政许可情况', u'对外投资信息',
-                                      u'对外提供保证担保信息', u'股权变更信息', u'修改记录']
-
-                    for table in soup.find_all('table'):
-                        list_table_title = table.find("th")
-                        if list_table_title.text in name_table_map:
-                            table_detail[list_table_title.text] = self.parse_table3(table)
-
-                table_ts[u'详情'] = table_detail
-            else:
-                table_ts[u'详情'] = ""
-            table_save_all.append(table_ts)
+            table_content[u'详情'] = detail
+            table_save_all.append(table_content)
 
         self.crawler.json_dict['ent_pub_ent_annual_report'] = table_save_all
 
     def crawl_other_dept_pub_pages(self, page):
-
+        """解析其他部门公示信息
+        """
         soup = BeautifulSoup(page, "html5lib")
         id_table_map = {
             'licenseRegDiv': 'other_dept_pub_administration_license',  # 行政许可信息
@@ -347,7 +333,8 @@ class HeilongjiangParser(Parser):
             self.crawler.json_dict[table_name] = self.parse_table2(table, table_name,)[0]
 
     def parse_judical_assist_pub_pages(self, page):
-
+        """司法协助信息
+        """
         soup = BeautifulSoup(page, "html5lib")
         id_table_map = {
             'EquityFreezeDiv': 'judical_assist_pub_shareholder_modify',  # 股东变更信息
@@ -367,24 +354,49 @@ class HeilongjiangParser(Parser):
             self.crawler.json_dict[table_name] = self.parse_table2(table, table_name,)[0]
 
     def parse_table1(self, table):
+        """一类解析表：一个th对应一个td
+        Args:
+            table: 需要解析的表
+        thinking:
+            获取所有不跨列的th，获得所有td，将th与td一一对应
+        Returns:
+            table_save: 将th与td对应，得到解析好的内容，返回字典
+        """
         table_ths = table.find_all("th")
-        table_th = []
+        list_th = []
         for th in table_ths:
             if 'colspan' in th.attrs:
                 continue
             if th.text.strip() == "":
                 continue
-            table_th.append(th.text.strip())
+            list_th.append(th.text.strip())
 
         table_tds = table.find_all("td")
-        table_td = [td.text.strip() for td in table_tds]
+        list_td = [td.text.strip() for td in table_tds]
 
         table_save = {}
-        for i in range(0, len(table_th)):
-            table_save[table_th[i]] = table_td[i]
+        for i in range(0, len(list_th)):
+            table_save[list_th[i]] = list_td[i]
+
         return table_save
 
     def parse_table2(self, table, table_name):
+        """二类表格解析：解析表列名、内容、页数为三个同级的表格
+        Args:
+            table: 内容表
+            table_name： 表的名字
+        thinking:
+            1.读取内容表同级上一张表，获得列名
+            2.读取内容表同级下一张表，获得页数
+                2.1若没有页数，直接通过get_td解析表格，返回需要保存的表
+                2.2若只有一页，直接通过get_td解析表格，返回需要保存的表
+                2.3若有多页，依次发送请求，通过get_td解析表格，返回需要保存的表
+        Returns:
+            [table_content, content_tr]:有详情页时返回解析的表table_content列表和每一行的内容content_tr列表
+            [table_ts, "None"]:若没有详情，返回解析的表table_content列表
+            ["", "None"]:若出现页面读取错误返回""和"None"
+        """
+
         # 获得表头
         previous_table = table.previous_sibling.previous_sibling
         table_title = previous_table.find("tr")
@@ -395,43 +407,41 @@ class HeilongjiangParser(Parser):
         # 将列名存在列表里
         table_columns = [column for column in table_column.stripped_strings]
 
-        # 获得页数
+        # 若没有翻页,直接通过get_td解析表格，返回需要保存的表
         if not table.next_sibling.next_sibling:
             table_save = self.get_td(table, table_columns)
-            # print "for 1111 table_name",table_name
             return [table_save, 'None']
 
-        table_name_map = ["ind_comm_pub_arch_key_persons", "ind_comm_pub_reg_shareholder", "ind_comm_pub_movable_property_reg"]
         # 获得页数的表
         pages = table.next_sibling.next_sibling
-        status1 = False
-        status2 = False
+        status1 = False  # 状态值1判断pages是否为id为invPagination的div（特例）
+        status2 = False  # 状态值2判断pages是否为table,若不是table找不到页数a
 
         if 'id' in pages.attrs and pages.attrs['id'] == 'invPagination':
             status1 = True
         if str(pages.name) == 'table':
             status2 = True
-
+        table_name_map = ["ind_comm_pub_arch_key_persons", "ind_comm_pub_reg_shareholder", "ind_comm_pub_movable_property_reg"]
         if status1 or status2:
-            total_page = pages.find_all("a")
+            total_page = pages.find_all("a")   # 获得页数
 
-            if int(len(total_page)) <= 1 and table_name not in table_name_map:
+            if int(len(total_page)) <= 1 and table_name not in table_name_map:  # 若只有一页，且没有详情也不是主要人员信息表直接解析，不发请求
                 table_save = self.get_td(table, table_columns)
                 return [table_save, 'None']
 
-            elif self.crawler.urls.has_key(table_name):
+            elif self.crawler.urls.has_key(table_name):  # 判断翻页信息链接在urls里能否找到
                 for j in range(1, len(total_page)+1):
-                    table_ts = []
+                    table_content = []
                     content_tr = []
                     url = '%s%s%s%s%s' % (self.crawler.urls[table_name], "pno=", j, '&mainId=', self.crawler.company_id)
                     rep = requests.get(url)
 
                     soup = BeautifulSoup(rep.text, "html5lib")
                     table = soup.find("table")
-                    if table == None:
+                    if not table:  # 如出现错误，网页信息获取不到直接返回
                         return ['', 'None']
 
-                    if table_name == "ind_comm_pub_arch_key_persons":  # 主要人员列名重复，特殊处理
+                    if table_name == "ind_comm_pub_arch_key_persons":  # 主要人员列名重复，需特殊处理
                         trs = table.find_all("tr")
                         table_save = []
                         for tr in trs:
@@ -454,8 +464,8 @@ class HeilongjiangParser(Parser):
                     table_save = self.get_td(table, table_columns)
                     tr = table.find_all("tr")
                     content_tr.extend(tr)
-                    table_ts.extend(table_save)
-                    return [table_ts, content_tr]
+                    table_content.extend(table_save)
+                    return [table_content, content_tr]
             else:
                 return ['', 'None']
 
@@ -464,7 +474,7 @@ class HeilongjiangParser(Parser):
             return [table_save, 'None']
 
     def parse_table3(self, table):
-
+        # 三类解析表：name_table_mapp为表格的table,列名和列表内容在同一张表中，返回列表
         table_ths = table.find_all("th")
         list_th = []
         trs = table.find_all("tr")
@@ -494,28 +504,41 @@ class HeilongjiangParser(Parser):
         return table_all
 
     def get_td(self, table, table_columns):
-        # 获取内容表的每一列，并将每一列做成一个字典，返回列表
+        """内容解析表：将内容的表和列名对应
+        Args:
+            table: 需要解析的内容表
+            table_columns:表格列名
+        thinking:
+             获取内容表的每一列，并将每一列做成一个字典，返回列表
+        """
         table_save = []
-        if table == None:
+        if not table:
             return table_save
-        content_trs = table.find_all("tr")
-        content_td = table.find_all("td")
 
-        if content_trs and content_td:
-            for content_tr in content_trs:
-                content_tds = content_tr.find_all("td")
-                list_td = []
-                test = {}
-                for content_td in content_tds:
-                    list_td.append(content_td.text.strip())
-                for i in range(0, len(table_columns)):
-                    test[table_columns[i]] = list_td[i]
-                table_save.append(test)
+        content_trs = table.find_all("tr")
+        for content_tr in content_trs:
+            content_tds = content_tr.find_all("td")
+            list_td = []
+            test = {}
+            for content_td in content_tds:
+                list_td.append(content_td.text.strip())
+            if not list_td:
+                continue
+            for i in range(0, len(table_columns)):
+                test[table_columns[i]] = list_td[i]
+            table_save.append(test)
 
         return table_save
 
     def get_shareholder_detail(self, content_tr):
-
+        """股东信息详情页面内容解析：
+        Args:
+            content_tr: 表格的某一行内容
+        thinking:
+             找出a里的目标网也id，访问并通过coarse_page_table解析，若页面访问出错，返回空字典
+        return:
+             detail:详情页字典
+        """
         detail = {}
         if not content_tr.find("a"):
             return ""
@@ -524,13 +547,13 @@ class HeilongjiangParser(Parser):
         m = re.search(r'id=(.\d+)', str(link))
 
         int1 = m.group(1)
-        url1 = '%s%s' %(self.crawler.urls["shareholder_detail"], int1)
+        url1 = '%s%s' % (self.crawler.urls["shareholder_detail"], int1)
         rep1 = requests.get(url1)
-        soupn = BeautifulSoup(rep1.text, "html5lib")
+        soup = BeautifulSoup(rep1.text, "html5lib")
 
-        table = soupn.find("table")
-        if table == None:
-             return detail
+        table = soup.find("table")
+        if not table:
+            return detail
         table_title1 = table.find("th").text  # 获取表头
 
         detail[table_title1] = self.coarse_page_table(table)
@@ -538,58 +561,65 @@ class HeilongjiangParser(Parser):
         return detail
 
     def get_movable_property_reg_detail(self, content_tr):
-
+        """动产抵押信息详情页面内容解析：
+        Args:
+            content_tr: 表格的某一行内容
+        thinking:
+             找出a里的目标网也id，访问并更具不用的表格类型选择不同解析方式
+        return:
+             detail:详情页字典
+        """
         if not content_tr.find("a"):
             return ""
 
         link = content_tr.find("a")
         m = re.search(r'id=(.\d+)', str(link))
         int1 = m.group(1)
-        url1 = '%s%s' %(self.crawler.urls['movable_property_reg_detail'], int1)
+        url1 = '%s%s' % (self.crawler.urls['movable_property_reg_detail'], int1)
         rep1 = requests.get(url1)
-        soupn = BeautifulSoup(rep1.text, "html5lib")
+        soup = BeautifulSoup(rep1.text, "html5lib")
 
         name_table_map1 = [u"抵押权人概况"]
         name_table_map2 = [u'动产抵押登记信息', u'被担保债权概况']
-        wrap = {}
-        for table in soupn.find_all('table'):
+        detail = {}
+        for table in soup.find_all('table'):
             list_table_title = table.find("th")
 
             if list_table_title and list_table_title.text in name_table_map2:
-                wrap[list_table_title.text] = self.parse_table1(table)
-            if list_table_title and list_table_title.text in name_table_map1:
-                wrap[list_table_title.text] = self.parse_table3(table)
-        table = soupn.find("div", {"id": "guaDiv"})
+                detail[list_table_title.text] = self.parse_table1(table)
+            elif list_table_title and list_table_title.text in name_table_map1:
+                detail[list_table_title.text] = self.parse_table3(table)
+        table = soup.find("div", {"id": "guaDiv"})
         if table:
-            wrap[u"抵押物概况"] = self.parse_table2(table, 1)[0]
-        return wrap
+            detail[u"抵押物概况"] = self.parse_table2(table, 1)[0]
+        return detail
 
     def coarse_page_table(self, table):
-
+        # 有二级表头的表格解析：
         colspan_list = []  # 跨列的列数
-        list_title_th = []  # 第一行不跨列的列名
-        list_th = []  # 第二行的列名
+        list_frist_row_not_cross_column_title_th = []  # 第一行不跨列的列名
+        list_second_row_title_th = []  # 第二行的列名
 
         table_trs = table.find_all("tr")
         list_tr = [tr for tr in table_trs]
-        table_title_wraps = list_tr[1].find_all("th")
+        table_title = list_tr[1].find_all("th")
 
-        for title_wrap in table_title_wraps:
+        for title_wrap in table_title:
             if 'colspan' in title_wrap.attrs:
                 for colspan in title_wrap['colspan']:
                     colspan_list.append(int(colspan))
             else:
-                list_title_th.append(title_wrap.text)
+                list_frist_row_not_cross_column_title_th.append(title_wrap.text)
 
         table_title = list_tr[2].find_all("th")
         for title_wrap in table_title:
-            list_th.append(title_wrap.text)
-        sum = 0
+            list_second_row_title_th.append(title_wrap.text)
+        my_sum = 0  # 第一行跨列的总数
         for i in colspan_list:
-            sum = sum + i
+            my_sum = my_sum + i
 
         total = []  # 若有多行td
-        total_th = list_title_th + list_th  # 总列名
+        total_th = list_frist_row_not_cross_column_title_th + list_second_row_title_th  # 总列名
 
         for tr in table_trs[3:]:
             table_td = tr.find_all("td")
@@ -597,27 +627,27 @@ class HeilongjiangParser(Parser):
             table_save = {}  # 保存的表格
             if len(list_td) == len(total_th):
                 status = "1"
-                for i in range(0, len(list_title_th)):
-                    table_save[list_title_th[i]] = list_td[i]
-                del list_td[0:len(list_title_th)]
-            elif len(list_td) == sum:
+                for i in range(0, len(list_frist_row_not_cross_column_title_th)):
+                    table_save[list_frist_row_not_cross_column_title_th[i]] = list_td[i]
+                del list_td[0:len(list_frist_row_not_cross_column_title_th)]
+            elif len(list_td) == my_sum:
                 status = "0"
             else:
-                del list_th[0: colspan_list[0]]
+                del list_second_row_title_th[0: colspan_list[0]]
                 status = "0"
-                sum = len(list_td)
+                my_sum = len(list_td)
 
             list_test = []
             table_test = {}
-            for i in range(0, sum):
-                if list_th[i] == "公示日期":
-                    if table_test.has_key("认缴_公示日期"):
+            for i in range(0, my_sum):
+                if list_second_row_title_th[i] == "公示日期":
+                    if "认缴_公示日期" in table_test.keys():
                         table_test[u"实缴_公示日期"] = list_td[i]
                         continue
                     else:
                         table_test[u"认缴_公示日期"] = list_td[i]
                         continue
-                table_test[list_th[i]] = list_td[i]
+                table_test[list_second_row_title_th[i]] = list_td[i]
             list_test.append(table_test)
             table_save[u"list"] = list_test
             if status == "1":
@@ -627,9 +657,10 @@ class HeilongjiangParser(Parser):
 
             table_title = list_tr[2].find_all("th")
             for title_wrap in table_title:
-                list_th.append(title_wrap.text)
+                list_second_row_title_th.append(title_wrap.text)
 
         return total
+
 
 class TestParser(unittest.TestCase):
 
