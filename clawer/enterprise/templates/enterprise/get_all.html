@@ -8,6 +8,13 @@
 <div id="toolbar">
     <a href="#" class="easyui-menubutton" data-options="menu:'#operate',">操作</a>
     
+    <select id="province_select" class="easyui-combobox" name="province" style="width:200px;">
+	    <option value="">全部</option>
+	    {% for item in Province.choices %}
+	    <option value="{{ item.0 }}">{{ item.1 }}</option>
+	    {% endfor %}
+	</select>
+    
     <input id="query" name="query" prompt="名称" class="easyui-textbox" />
     <a href="javascript:void(0)" id="search_btn" class="easyui-linkbutton" data-options="iconCls:'icon-search'">搜索</a>
 </div>
@@ -30,7 +37,7 @@
     </thead>
     <thead>
         <tr>
-            <th data-options="field:'province'," formatter="formatProvince">省份</th>
+            <th data-options="field:'province_name',">省份</th>
             <th data-options="field:'register_no',">注册号</th>
             <th data-options="field:'add_datetime',">添加时间</th>
         </tr>
@@ -41,7 +48,7 @@
 <!-- new form -->
 <div id="new_win" class="easyui-window" title="新增名单" closed="true" style="width:80%;height:60%;padding:5px;">
 
-    <form method="post" id="new_form" enctype="multipart/form-data" action="{% url clawer.apis.home.clawer_task_generator_update %}">
+    <form method="post" id="new_form" enctype="multipart/form-data" action="{% url enterprise.apis.add %}">
 
 			<div style="margin-bottom:20px">
 				<div>名单文件:</div>
@@ -109,6 +116,12 @@ $(document).ready(function(){
                     $.messager.alert('warning', resp.reason);
                     return;
                 }
+                var content = [
+                    "成功: " + resp.success,
+                    "失败: " + resp.failed,
+                    "重复: " + resp.multiple,
+                ].join(", ");
+                $.messager.alert("success", content);
                 
                 $("#new_form").form("reset");
                 $("#new_form").form("clear");
@@ -121,6 +134,15 @@ $(document).ready(function(){
     	
     	return false;
     });
+	
+	
+	$("#province_select").combobox({
+		onSelect: function(record) {
+			$("#grid").datagrid("reload", {
+	            province: record.value
+	        });
+		}
+	});
 	
 	
 });

@@ -3,18 +3,21 @@
 from enterprise.models import Enterprise, Province
 from clawer.utils import EasyUIPager, check_auth_for_api
 from html5helper.decorator import render_json
-from enterprise.forms import AddEnterpriseForm
+
 from django.utils.encoding import smart_unicode
 
 
 @render_json
 @check_auth_for_api
 def get_all(request):
+    province = request.GET.get("province")
     q = request.POST.get("q")  # use like
     
     queryset = Enterprise.objects
     if q:
         queryset = queryset.filter(name__icontains=q)
+    if province:
+        queryset = queryset.filter(province=int(province))
         
     pager = EasyUIPager(queryset, request)
     return pager.query()
@@ -23,10 +26,6 @@ def get_all(request):
 @render_json
 @check_auth_for_api
 def add(request):
-    form = AddEnterpriseForm(request.POST, request.FILES)
-    if form.is_valid() is False:
-        return {"is_ok":False, "reason":form.errors}
-    
     names_file = request.FILES["names_file"]
     success = 0
     failed = 0
@@ -56,7 +55,7 @@ def add(request):
             multiple += 1
             continue
         
-        Enterprise.objects.filter(name=name, province=province, register_no=register_no)
+        Enterprise.objects.create(name=name, province=province, register_no=register_no)
         success += 1
     
     return {"is_ok": True, "line_count": line_count, 'success': success, 'failed': failed, 'multiple': multiple}
