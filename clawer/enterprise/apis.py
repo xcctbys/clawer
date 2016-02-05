@@ -11,7 +11,7 @@ from django.utils.encoding import smart_unicode
 @check_auth_for_api
 def get_all(request):
     province = request.GET.get("province")
-    q = request.POST.get("q")  # use like
+    q = request.GET.get("q")  # use like
     
     queryset = Enterprise.objects
     if q:
