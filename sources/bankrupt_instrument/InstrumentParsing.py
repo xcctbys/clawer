@@ -188,61 +188,97 @@ class InstrumentParsing():
                             pdf_path = item["abs_path"]
                         contents = self.partition.split(item["content"])
                         for content in contents:
-                            law_data = self.event_termination(content, url, court, publish_date, pdf_path)
-                            if len(law_data) > 0:
-                                for data in law_data.values():
-                                    self.insert_execute(cursor, data)
-                                continue
+                            try:
+                                law_data = self.event_termination(content, url, court, publish_date, pdf_path)
+                                if len(law_data) > 0:
+                                    for data in law_data.values():
+                                        self.insert_execute(cursor, data)
+                                    continue
+                            except:
+                                pass
 
-                            law_data = self.event_ruin(content, url, court, publish_date, pdf_path)
-                            if len(law_data) > 0:
-                                for data in law_data.values():
-                                    self.insert_execute(cursor, data)
-                                continue
+                            try:
+                                law_data = self.event_ruin(content, url, court, publish_date, pdf_path)
+                                if len(law_data) > 0:
+                                    for data in law_data.values():
+                                        self.insert_execute(cursor, data)
+                                    continue
+                            except:
+                                pass
+                            
 
-                            law_data = self.event_compulsory(content, url, court, publish_date, pdf_path)
-                            if len(law_data) > 0:
-                                for data in law_data.values():
-                                    self.insert_execute(cursor, data)
-                                continue
+                            try:
+                                law_data = self.event_compulsory(content, url, court, publish_date, pdf_path)
+                                if len(law_data) > 0:
+                                    for data in law_data.values():
+                                        self.insert_execute(cursor, data)
+                                    continue
+                            except:
+                                pass
+                            
 
-                            law_data = self.event_creditors_meeting(content, url, court, publish_date, pdf_path)
-                            if len(law_data) > 0:
-                                for data in law_data.values():
-                                    self.insert_execute(cursor, data)
-                                continue
+                            try:
+                                law_data = self.event_creditors_meeting(content, url, court, publish_date, pdf_path)
+                                if len(law_data) > 0:
+                                    for data in law_data.values():
+                                        self.insert_execute(cursor, data)
+                                    continue
+                            except:
+                                pass
+                            
 
-                            law_data = self.event_declaration(content, url, court, publish_date, pdf_path)
-                            if len(law_data) > 0:
-                                for data in law_data.values():
-                                    self.insert_execute(cursor, data)
-                                continue
+                            try:
+                                law_data = self.event_declaration(content, url, court, publish_date, pdf_path)
+                                if len(law_data) > 0:
+                                    for data in law_data.values():
+                                        self.insert_execute(cursor, data)
+                                    continue
+                            except:
+                                pass
+                            
 
-                            law_data = self.event_reforming(content, url, court, publish_date, pdf_path)
-                            if len(law_data) > 0:
-                                for data in law_data.values():
-                                    self.insert_execute(cursor, data)
-                                continue
+                            try:
+                                law_data = self.event_reforming(content, url, court, publish_date, pdf_path)
+                                if len(law_data) > 0:
+                                    for data in law_data.values():
+                                        self.insert_execute(cursor, data)
+                                    continue
+                            except:
+                                pass
+                            
 
-                            law_data = self.event_reforming_plan(content, url, court, publish_date, pdf_path)
-                            if len(law_data) > 0:
-                                for data in law_data.values():
-                                    self.insert_execute(cursor, data)
-                                # print "Successful, reforming_plan"
-                                continue
+                            try:
+                                law_data = self.event_reforming_plan(content, url, court, publish_date, pdf_path)
+                                if len(law_data) > 0:
+                                    for data in law_data.values():
+                                        self.insert_execute(cursor, data)
+                                    # print "Successful, reforming_plan"
+                                    continue
+                            except:
+                                pass
+                            
 
-                            law_data = self.event_application(content, url, court, publish_date, pdf_path)
-                            if len(law_data) > 0:
-                                for data in law_data.values():
-                                    self.insert_execute(cursor, data)
-                                continue
+                            try:
+                                law_data = self.event_application(content, url, court, publish_date, pdf_path)
+                                if len(law_data) > 0:
+                                    for data in law_data.values():
+                                        self.insert_execute(cursor, data)
+                                    continue
+                            except:
+                                pass
+                            
 
-                            law_data = self.event_other(content, url, court, publish_date, pdf_path)
-                            if len(law_data) > 0:
-                                for data in law_data.values():
-                                    self.insert_execute(cursor, data)
-                                continue
+                            try:
+                                law_data = self.event_other(content, url, court, publish_date, pdf_path)
+                                if len(law_data) > 0:
+                                    for data in law_data.values():
+                                        self.insert_execute(cursor, data)
+                                    continue
+                                
+                            except:
+                                pass
                             print "lost!"
+
 
         cursor.close()
         return completed_files
