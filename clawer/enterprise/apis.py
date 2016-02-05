@@ -69,6 +69,12 @@ def province_echarts(request):
     
     serie = [Enterprise.objects.filter(province=x[0]).count() for x in Province.choices]
     result["series"].append(serie)
-    result["xAxis"] = [x[1] for x in Province.choices]
+    xs = []
+    for x in Province.choices:
+        if x[0] % 2 == 0:
+            xs.append("\n"+x[1])
+        else:
+            xs.append(x[1])
+    result["xAxis"] = xs
     
     return result

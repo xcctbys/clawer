@@ -133,16 +133,18 @@ function render_echarts() {
 		           			xAxis : [
 	                            {
 	                                type : 'category',
-	                                boundaryGap : false,
-	                                data : resp.xAxis
+	                                axisLabel:{'interval':0},
+	                                data: resp.xAxis,
+	                                splitLine: {show: true}
 	                            }
 	                        ],
 	                        yAxis : [
 	                            {
-	                                type : 'value'
+	                                type: 'value',
+	                                name: '企业数'
 	                            }
 	                        ],
-	                        calculable : true,
+	                        //calculable : true,
 	                        toolbox: {
 	                            show : true,
 	                            feature : {
@@ -154,7 +156,7 @@ function render_echarts() {
 	                            }
 	                        },
 	                        dataZoom : {
-	                            show : true,
+	                            show : false,
 	                            realtime : true,
 	                            start : 0,
 	                            end : 100
@@ -165,17 +167,14 @@ function render_echarts() {
 	            	
             			var serie = {
 						    name: "省份企业数", 
-							type: 'line',
+							type: 'bar',
 							smooth: true,
-							itemStyle: {normal: {areaStyle: {type: 'default'}}},
 							data: resp.series[0]
 						};
-            			//var legend = resp.clawers[i].name + "(ID:" + resp.clawers[i].id + ")";
             			
-            			options.legend.data.push("Province");
+            			options.legend.data.push("企业数");
             			options.series.push(serie);
             		
-	            		
 	            		chart.hideLoading();
 	            		chart.setOption(options); 
 	            	});
