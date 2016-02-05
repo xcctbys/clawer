@@ -47,7 +47,9 @@ def clawer_add(request):
         return {"is_ok": False, "reason":u"%s 已经被占用" % form.cleaned_data['name']}
     
     clawer = Clawer.objects.create(name=form.cleaned_data['name'], info=form.cleaned_data['info'], customer=form.cleaned_data['customer'])
-    
+    #add log
+    Logger.objects.create(user=request.user, category=LoggerCategory.ADD_CLAWER, title=form.cleaned_data["name"], 
+                          content=json.dumps(request.POST), from_ip=get_request_ip(request))
     return {"is_ok": True, "clawer": clawer.as_json()}
 
 

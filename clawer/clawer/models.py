@@ -335,6 +335,7 @@ class LoggerCategory(object):
     UPDATE_ANALYSIS = u"更新分析器"
     UPDATE_SETTING = u"更新爬虫参数"
     TASK_RESET = u"重设任务"
+    ADD_CLAWER = u"增加爬虫"
     
 
 class Logger(models.Model):
@@ -349,8 +350,7 @@ class Logger(models.Model):
     
     class Meta:
         app_label = "clawer"
-        
-        
+
     def as_json(self):
         result = { "id": self.id,
             "user_id": self.user_id if self.user else 0,
