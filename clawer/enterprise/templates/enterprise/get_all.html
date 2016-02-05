@@ -5,6 +5,10 @@
 {% block body %}
 <body>
 
+<script src="{% static 'echarts/build/dist/echarts.js' %}"></script>
+<div id="echarts" style="height:300px;width:98%; margin-bottom:20px;"></div>
+
+
 <div id="toolbar">
     <a href="#" class="easyui-menubutton" data-options="menu:'#operate',">操作</a>
     
@@ -85,10 +89,101 @@ function formatProvince(val) {
 }
 
 function rowStyle(index, row) {
-	console.debug("index ", index, ", row status ", row.status, ", row ", row);
+	
 	if(row.status == 2) {
 		return {"class":"danger"};
 	}
+}
+
+function render_echarts() {
+	console.debug("render echarts");
+	
+	require.config({
+	    paths: {
+	        echarts: "{% static 'echarts/build/dist' %}"
+	    }
+	});
+
+	require(
+	        [
+	            'echarts',
+	            'echarts/chart/bar',
+	            'echarts/chart/line'
+	        ],
+	        function (ec) {
+	            // 基于准备好的dom，初始化echarts图表
+	            var chart = ec.init(document.getElementById('echarts')); 
+	            
+	            chart.showLoading({
+	                text: '正在努力的读取数据中...',    //loading话术
+	            });
+	                    
+	            function load_data() {
+	            	var url = "{% url enterprise.apis.province_echarts %}";
+	            	
+	            	$.getJSON(url, function(resp){
+	            		
+	            		var options = {
+	           				tooltip : {
+	           			        trigger: 'axis'
+	           			    },
+		           			legend: {
+		           		        data:[]
+		           		    },
+		           			xAxis : [
+	                            {
+	                                type : 'category',
+	                                boundaryGap : false,
+	                                data : resp.xAxis
+	                            }
+	                        ],
+	                        yAxis : [
+	                            {
+	                                type : 'value'
+	                            }
+	                        ],
+	                        calculable : true,
+	                        toolbox: {
+	                            show : true,
+	                            feature : {
+	                                mark : {show: true},
+	                                dataView : {show: true, readOnly: false},
+	                                magicType : {show: true, type: ['line', 'bar', 'stack', 'tiled']},
+	                                restore : {show: true},
+	                                saveAsImage : {show: true}
+	                            }
+	                        },
+	                        dataZoom : {
+	                            show : true,
+	                            realtime : true,
+	                            start : 0,
+	                            end : 100
+	                        },
+	                        series: [
+	                        ]
+	                    };
+	            	
+            			var serie = {
+						    name: "省份企业数", 
+							type: 'line',
+							smooth: true,
+							itemStyle: {normal: {areaStyle: {type: 'default'}}},
+							data: resp.series[0]
+						};
+            			//var legend = resp.clawers[i].name + "(ID:" + resp.clawers[i].id + ")";
+            			
+            			options.legend.data.push("Province");
+            			options.series.push(serie);
+            		
+	            		
+	            		chart.hideLoading();
+	            		chart.setOption(options); 
+	            	});
+	            }
+	            
+	            load_data();
+	        }
+	    );
 }
 
 
@@ -97,7 +192,7 @@ $(document).ready(function(){
 	$("#search_btn").bind("click", function(e){
 		
         $("#grid").datagrid("load", {
-            obj_id: $("#id_input").val()
+            q: $("#query").val()
         });
         
     });
@@ -143,6 +238,8 @@ $(document).ready(function(){
 	        });
 		}
 	});
+	
+	render_echarts();
 	
 	
 });

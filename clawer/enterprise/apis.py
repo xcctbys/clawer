@@ -60,3 +60,15 @@ def add(request):
     
     return {"is_ok": True, "line_count": line_count, 'success': success, 'failed': failed, 'multiple': multiple}
 
+
+
+@render_json
+@check_auth_for_api
+def province_echarts(request):
+    result = {"is_ok":True, "series":[], "xAxis":[]}
+    
+    serie = [Enterprise.objects.filter(province=x[0]).count() for x in Province.choices]
+    result["series"].append(serie)
+    result["xAxis"] = [x[1] for x in Province.choices]
+    
+    return result
