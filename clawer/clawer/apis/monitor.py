@@ -53,14 +53,14 @@ def hour_echarts(request):
         clawers = Clawer.objects.filter(status=Clawer.STATUS_ON)
         
     for clawer in clawers:
-        qs = ClawerHourMonitor.objects.filter(clawer_id=clawer.id).order_by("hour")[:672]
+        qs = ClawerHourMonitor.objects.filter(clawer_id=clawer.id).order_by("-hour")[:672]
         
-        serie = [x.bytes for x in qs]
+        serie = [x.bytes for x in qs].reverse()
         result["series"].append(serie)
         result["clawers"].append(clawer.as_json())
         
         if not result["xAxis"]:
-            result["xAxis"] = [x.hour.strftime("%d日%H") for x in qs]
+            result["xAxis"] = [x.hour.strftime("%d日%H") for x in qs].reverse()
     
     return result
 
@@ -91,13 +91,13 @@ def day_echarts(request):
         clawers = Clawer.objects.filter(status=Clawer.STATUS_ON)
         
     for clawer in clawers:
-        qs = ClawerDayMonitor.objects.filter(clawer_id=clawer.id).order_by("day")[:365]
+        qs = ClawerDayMonitor.objects.filter(clawer_id=clawer.id).order_by("-day")[:365]
         
-        serie = [x.bytes for x in qs]
+        serie = [x.bytes for x in qs].reverse()
         result["series"].append(serie)
         result["clawers"].append(clawer.as_json())
         
         if not result["xAxis"]:
-            result["xAxis"] = [x.day.strftime("%Y-%m-%d") for x in qs]
+            result["xAxis"] = [x.day.strftime("%Y-%m-%d") for x in qs].reverse()
     
     return result
