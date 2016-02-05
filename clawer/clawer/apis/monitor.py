@@ -53,7 +53,7 @@ def hour_echarts(request):
         clawers = Clawer.objects.filter(status=Clawer.STATUS_ON)
         
     for clawer in clawers:
-        qs = ClawerHourMonitor.objects.filter(clawer_id=clawer.id).order_by("hour")
+        qs = ClawerHourMonitor.objects.filter(clawer_id=clawer.id).order_by("hour")[:672]
         
         serie = [x.bytes for x in qs]
         result["series"].append(serie)
@@ -91,7 +91,7 @@ def day_echarts(request):
         clawers = Clawer.objects.filter(status=Clawer.STATUS_ON)
         
     for clawer in clawers:
-        qs = ClawerDayMonitor.objects.filter(clawer_id=clawer.id).order_by("day")
+        qs = ClawerDayMonitor.objects.filter(clawer_id=clawer.id).order_by("day")[:365]
         
         serie = [x.bytes for x in qs]
         result["series"].append(serie)

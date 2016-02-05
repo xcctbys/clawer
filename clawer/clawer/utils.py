@@ -280,6 +280,9 @@ class UrlCache(object):
         return False
         
     def flush(self):
+        if not self.connection:
+            self.connection = redis.Redis.from_url(self.redis_url)
+            
         self.connection.flushall()
         
         

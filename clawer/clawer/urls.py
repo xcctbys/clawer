@@ -34,6 +34,7 @@ monitor_api_urls = patterns("clawer.apis.monitor",
 
 home_api_urls = patterns("clawer.apis.home",
     url(r"^clawer/all/$", "clawer_all"),
+    url(r"^clawer/add/$", "clawer_add"),
     
     url(r"^clawer/task/$", "clawer_task"),
     url(r"^clawer/task/add/$", "clawer_task_add"),

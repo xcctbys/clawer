@@ -251,6 +251,15 @@ class TestHomeApi(TestCase):
         
         clawer.delete()
         
+    def test_clawer_add(self):
+        url = reverse("clawer.apis.home.clawer_add")
+        data = {'name': 'hello', 'info': 'Good word', 'customer': 'daddd'}
+        resp = self.logined_client.post(url, data)
+        self.assertEqual(resp.status_code, 200)
+        
+        result = json.loads(resp.content)
+        self.assertEqual(result["is_ok"], True)
+        
     def test_download_log(self):
         clawer = Clawer.objects.create(name="hi", info="good")
         clawer_generator = ClawerTaskGenerator.objects.create(clawer=clawer, code="print hello", cron="*", status=ClawerTaskGenerator.STATUS_PRODUCT)
@@ -555,16 +564,6 @@ class TestDownload(TestCase):
     def test_selenium(self):
         url = "http://blog.sina.com.cn/s/blog_6175bf700102w08a.html?tj=1"
         downloader = Download(url, engine=Download.ENGINE_SELENIUM)
-        downloader.download()
-        
-        logging.debug(u"%s", downloader.content)
-        print downloader.spend_time
-        self.assertIsNotNone(downloader.content)
-       
-    def test_selenium_with_proxy(self):
-        url = "http://www.baidu.com"
-        downloader = Download(url, engine=Download.ENGINE_SELENIUM)
-        downloader.add_proxies(["http://jp1.dig.name:25"])
         downloader.download()
         
         logging.debug(u"%s", downloader.content)
