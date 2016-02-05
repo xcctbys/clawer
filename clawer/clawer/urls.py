@@ -94,6 +94,8 @@ urlpatterns = patterns('clawer.views.home',
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
     url(r"^captcha/", include("captcha.urls")),
+    
+    url(r"^enterprise/", include("enterprise.urls")),
 
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
