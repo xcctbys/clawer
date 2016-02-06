@@ -3,6 +3,7 @@
 from html5helper.decorator import render_json
 from clawer.models import ClawerTask, RealTimeMonitor, ClawerHourMonitor, Clawer, ClawerDayMonitor
 from clawer.utils import check_auth_for_api, EasyUIPager
+import datetime
 
 
 
@@ -43,6 +44,8 @@ def hour(request):
 @check_auth_for_api
 def hour_echarts(request):
     clawer_id = request.GET.get("clawer_id")
+    end = datetime.datetime.now().replace(minute=0, second=0)
+    start = end - datetime.timedelta(30)
     result = {"is_ok":True, "series":[], "xAxis":[], "clawers":[]}
     
     clawers = []
@@ -52,18 +55,24 @@ def hour_echarts(request):
     else:
         clawers = Clawer.objects.filter(status=Clawer.STATUS_ON)
         
+    offset = start
+    while offset <= end:
+        result['xAxis'].append(offset.strftime("%Y-%m-%d %H"))
+        offset += datetime.timedelta(minutes=60)
+            
     for clawer in clawers:
-        qs = ClawerHourMonitor.objects.filter(clawer=clawer).order_by("-hour")[:672]
+        qs = ClawerHourMonitor.objects.filter(clawer=clawer, hour__range=(start, end)).order_by("-hour")
+        serie = {} # hour -> bytes
         
-        serie = [x.bytes for x in qs]
-        serie.reverse()
-        result["series"].append(serie)
+        for hour in result['xAxis']:
+            serie.update({hour: 0})
+            
+        for item in qs:
+            serie.update({item.hour.strftime("%Y-%m-%d %H"): item.bytes})
+        
+        result["series"].append([x[1] for x in sorted(serie.items(), key=lambda i: i[0])])
         result["clawers"].append(clawer.as_json())
         
-        if not result["xAxis"]:
-            xs = [x.hour.strftime("%m-%d %H") for x in qs]
-            xs.reverse()
-            result["xAxis"] = xs
     
     return result
 
@@ -84,6 +93,8 @@ def day(request):
 @check_auth_for_api
 def day_echarts(request):
     clawer_id = request.GET.get("clawer_id")
+    end = datetime.datetime.now().replace(hour=0, minute=0, second=0)
+    start = end - datetime.timedelta(30)
     result = {"is_ok":True, "series":[], "xAxis":[], "clawers":[]}
     
     clawers = []
@@ -93,17 +104,22 @@ def day_echarts(request):
     else:
         clawers = Clawer.objects.filter(status=Clawer.STATUS_ON)
         
-    for clawer in clawers:
-        qs = ClawerDayMonitor.objects.filter(clawer_id=clawer.id).order_by("-day")[:365]
+    offset = start
+    while offset <= end:
+        result['xAxis'].append(offset.strftime("%Y-%m-%d"))
+        offset += datetime.timedelta(1)
         
-        serie = [x.bytes for x in qs]
-        serie.reverse()
-        result["series"].append(serie)
+    for clawer in clawers:
+        qs = ClawerDayMonitor.objects.filter(clawer_id=clawer.id, day__range=(start, end)).order_by("-day")
+        serie = {} # day -> bytes
+        
+        for hour in result['xAxis']:
+            serie.update({hour: 0})
+            
+        for item in qs:
+            serie.update({item.day.strftime("%Y-%m-%d"): item.bytes})
+        
+        result["series"].append([x[1] for x in sorted(serie.items(), key=lambda i: i[0])])
         result["clawers"].append(clawer.as_json())
         
-        if not result["xAxis"]:
-            xs = [x.day.strftime("%Y-%m-%d") for x in qs]
-            xs.reverse()
-            result["xAxis"] = xs
-    
     return result
