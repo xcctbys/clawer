@@ -8,7 +8,6 @@ from django.utils.encoding import smart_unicode
 
 
 @render_json
-@check_auth_for_api
 def get_all(request):
     province = request.GET.get("province")
     q = request.GET.get("q")  # use like

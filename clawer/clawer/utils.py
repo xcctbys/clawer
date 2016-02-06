@@ -20,7 +20,6 @@ from django.core.mail import send_mail
 from html5helper.utils import do_paginator
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 import threading
-import hashlib
 import urlparse
 import datetime
 import stat
