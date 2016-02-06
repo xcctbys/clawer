@@ -18,13 +18,14 @@ class EnterpriseDownload(object):
         self.url = url
         
         o = urlparse.urlparse(self.url)
+        self.province = o.hostname
+        
         tmp = o.path.split("/")
-        if len(tmp) != 3:
+        if len(tmp) != 2:
             raise Exception("'%s' format invalid" % self.url)
         
-        self.province = tmp[0]
-        self.name = tmp[1]
-        self.register_no = tmp[2]
+        self.name = tmp[0]
+        self.register_no = tmp[1]
         
     def download(self):
         """ Returns: json data

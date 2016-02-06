@@ -145,7 +145,6 @@ class Download(object):
         except:
             self.failed = True
             self.failed_exception = traceback.format_exc(10)
-            logging.warning(self.failed_exception)
             self._send_sentry()
         
         if self.failed:
