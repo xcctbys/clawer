@@ -91,7 +91,7 @@ class Generator(object):
         self.history.save()
         
     def _pack_enterprise_url(self, row):
-        return u"enterprise://%s/%s/%s/" % (row['province'], row['name'], row['register_no'])
+        return u"enterprise://%s/%s/%s/" % (row['province_name'], row['name'], row['register_no'])
         
     
 
