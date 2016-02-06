@@ -112,6 +112,6 @@ if __name__ == "__main__":
         unittest.main()
         
     generator = Generator()
-    generator.obtain_enterprises()()
+    generator.obtain_enterprises()
     for uri in generator.enterprise_urls:
         print json.dumps({"uri":uri})
