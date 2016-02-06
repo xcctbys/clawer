@@ -1,6 +1,6 @@
 # Program Rules
 
-- 每个省份对应一个爬虫文件，代码格式如下：
+- 每个省份对应一个爬虫文件，utf-8文件编码格式，命名方式为：`${Province}_crawler.py`。代码格式如下：
 
         class ${Province}Clawer(object):     #请替换${Province}为省名，如BeiJing
         
@@ -25,6 +25,9 @@
     - 解析网页使用 beautifulsoup
     - 中间不要依赖非标准库的包
     - 也不要引入settings文件的任何配置内容
+    
+    - 最后，这个文件还需要复制到`../../clawer/enterprise/libs/`，该目录运行的是分布式版本
+    
             
 - settings.py 是所有爬虫的配置文件
 - model 里面存放的是破解识别码需要的建模数据，每个省对应一个文件夹
