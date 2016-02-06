@@ -249,7 +249,7 @@ class Download(object):
             if not self.sentry_client:
                 self.sentry_client = raven.Client(dsn=settings.RAVEN_CONFIG['dsn'])
             
-            self.sentry_client.captureExceptions()
+            self.sentry_client.captureException()
             
             
 
