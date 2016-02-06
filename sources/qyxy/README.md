@@ -4,11 +4,28 @@
 
         class ${Province}Clawer(object):     #请替换${Province}为省名，如BeiJing
         
-            def run(self):
+            def __init__(self, json_restore_path):
+                """ Args:
+                json_restore_path: 存放破解的验证码或是其他临时文件
+                """
                 pass
-            
-            ....
 
+            def run(self, register_no):
+                """ Get all data of enterprise by register_no, and return it.
+                Args:
+                    register_no: 企业注册号
+                Returns:
+                    string, which is json format.
+                """
+                
+                return ""
+
+    - 网络请求使用 requests 包
+    - 日志使用 logging 包
+    - 解析网页使用 beautifulsoup
+    - 中间不要依赖非标准库的包
+    - 也不要引入settings文件的任何配置内容
+            
 - settings.py 是所有爬虫的配置文件
 - model 里面存放的是破解识别码需要的建模数据，每个省对应一个文件夹
 - enterprise_list 里面放的是所有的企业名单，现在暂时是一个省一个文件，比如： beijing.txt
