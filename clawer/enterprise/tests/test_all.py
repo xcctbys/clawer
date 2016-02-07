@@ -6,6 +6,7 @@ from django.test.client import Client
 from enterprise.models import Enterprise, Province
 import json
 import os
+from enterprise.utils import EnterpriseDownload
 
 
 class TestApis(TestCase):
@@ -72,5 +73,14 @@ class TestViews(TestCase):
         enterprise.delete()
         
 
-        
+class TestEnterpriseDownload(TestCase):
+    
+    def setUp(self):
+        TestCase.setUp(self)
+    
+    def test_run(self):
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.BEIJING), u"北京高华证券有限责任公司", u'110000007552812')
+        downloader = EnterpriseDownload(url)
+        data = downloader.download()
+        self.assertIsNotNone(data)
         

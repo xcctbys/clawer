@@ -20,7 +20,7 @@ class EnterpriseDownload(object):
         o = urlparse.urlparse(self.url)
         self.province = o.hostname
         
-        tmp = o.path.split("/")
+        tmp = filter(lambda x: x.strip() != "", o.path.split("/"))
         if len(tmp) != 2:
             raise Exception("'%s' format invalid" % self.url)
         
