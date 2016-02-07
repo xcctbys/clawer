@@ -3,6 +3,7 @@
 from enterprise.models import Province
 
 from .libs.beijing_crawler import BeijingCrawler
+from .libs import settings
 import urlparse
 
 
@@ -35,7 +36,7 @@ class EnterpriseDownload(object):
             if item['id'] != province_id:
                 continue
             
-            cls = item['class']()
+            cls = item['class'](settings.json_restore_path)
             data = cls.run(self.register_no)
             return data
         

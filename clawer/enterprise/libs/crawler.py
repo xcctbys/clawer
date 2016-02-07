@@ -4,7 +4,7 @@ import os
 import time
 import random
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime
 import json
 import errno
 import urllib
@@ -12,15 +12,9 @@ import urllib2
 import cookielib
 import logging
 import codecs
-import copy
 import bs4
 from bs4 import BeautifulSoup
 
-ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
-if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
-    import settings_pro as settings
-else:
-    import settings
 
 class CrawlerUtils(object):
     """爬虫工具类，封装了一些常用函数
@@ -79,14 +73,14 @@ class CrawlerUtils(object):
             f.write(page)
 
     @staticmethod
-    def get_enterprise_list(file):
-        list = []
-        with open(file, 'r') as f:
+    def get_enterprise_list(path):
+        result = []
+        with open(path, 'r') as f:
             for line in f.readlines():
                 sp = line.split(',')
                 if len(sp) >= 3:
-                    list.append(sp[2].strip(' \n\r'))
-        return list
+                    result.append(sp[2].strip(' \n\r'))
+        return result
 
     @staticmethod
     def display_item(item):
@@ -151,7 +145,7 @@ class Crawler(object):
         self.ent_number = str(ent_number)
         self.html_restore_path = self.html_restore_path + self.ent_number + '/'
 
-        if settings.save_html and os.path.exists(self.html_restore_path):
+        if self.save_html and os.path.exists(self.html_restore_path):
             CrawlerUtils.make_dir(self.html_restore_path)
 
         self.json_dict = {}
@@ -164,40 +158,16 @@ class Crawler(object):
                 'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:39.0) Gecko/20100101 Firefox/39.0'})
 
         if not self.crawl_check_page():
-            settings.logger.error('crack check code failed, stop to crawl enterprise %s' % self.ent_number)
+            logging.error('crack check code failed, stop to crawl enterprise %s' % self.ent_number)
             return
-        
-        cur_time = datetime.now()
-        if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
-            settings.logger.info('crawl time over, exit!')
-            return False
 
         self.crawl_ind_comm_pub_pages()
-
-        cur_time = datetime.now()
-        if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
-            settings.logger.info('crawl time over, exit!')
-            return False
-
         self.crawl_ent_pub_pages()
-
-        cur_time = datetime.now()
-        if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
-            settings.logger.info('crawl time over, exit!')
-            return False
         self.crawl_other_dept_pub_pages()
-
-        cur_time = datetime.now()
-        if cur_time >= settings.start_crawl_time + settings.max_crawl_time:
-            settings.logger.info('crawl time over, exit!')
-            return False
         self.crawl_judical_assist_pub_pages()
-
-        #采用多线程，在写入文件时需要注意加锁
-        self.write_file_mutex.acquire()
-        CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.json_dict})
-        self.write_file_mutex.release()
-
+        
+        return json.dumps({self.ent_number: self.json_dict})
+        
     def crack_checkcode(self):
         pass
 
@@ -306,7 +276,7 @@ class Parser(object):
                         columns.append((col_name, self.get_sub_columns(tr_tag.nextSibling.nextSibling, sub_col_index, self.sub_column_count(th))))
                         sub_col_index += self.sub_column_count(th)
         except Exception as e:
-            settings.logger.error('exception occured in get_table_columns, except_type = %s' % type(e))
+            logging.error('exception occured in get_table_columns, except_type = %s' % type(e))
         finally:
             return columns
 
@@ -323,18 +293,14 @@ class Parser(object):
             if td_tag.find('table'):
                 multi_col_tag = td_tag.find('table').find('tr')
             if not multi_col_tag:
-                settings.logger.deubg('invalid multi_col_tag, multi_col_tag = %s', multi_col_tag)
-                if settings.sentry_open:
-                    settings.sentry_client.captureMessage('invalid multi_col_tag, multi_col_tag = %s', multi_col_tag)
+                logging.debug('invalid multi_col_tag, multi_col_tag = %s', multi_col_tag)
                 return data
 
             if len(columns) != len(multi_col_tag.find_all('td', recursive=False)):
-                settings.logger.debug('column head size != column data size, columns head = %s, columns data = %s' % (columns, multi_col_tag.contents))
-                if settings.sentry_open:
-                    settings.sentry_client.captureMessage('column head size != column data size, columns head = %s, columns data = %s' % (columns, multi_col_tag.contents))
+                logging.debug('column head size != column data size, columns head = %s, columns data = %s' % (columns, multi_col_tag.contents))
                 return data
 
-            for id, col in enumerate(columns):
+            for _, col in enumerate(columns):
                 data[col[0]] = self.get_column_data(col[1], multi_col_tag.find_all('td', recursive=False)[id])
             return data
         #不含有子列
@@ -355,9 +321,7 @@ class Parser(object):
                 ths = tr.find_all('th')
                 tds = tr.find_all('td')
                 if len(ths) != len(tds):
-                    settings.logger.debug('th size not equals td size in table %s, what\'s up??' % table_name)
-                    if settings.sentry_open:
-                        settings.sentry_client.captureMessage('th size not equals td size in table %s, what\'s up??' % table_name)
+                    logging.debug('th size not equals td size in table %s, what\'s up??' % table_name)
                     return
                 else:
                     for i in range(len(ths)):
@@ -489,7 +453,7 @@ class Parser(object):
             else:
                 table_dict = self.parse_dict_table(bs_table, table_name)
         except Exception as e:
-            settings.logger.error('parse table %s failed with exception %s' % (table_name, type(e)))
+            logging.error('parse table %s failed with exception %s' % (table_name, type(e)))
             raise e
         finally:
             return table_dict
