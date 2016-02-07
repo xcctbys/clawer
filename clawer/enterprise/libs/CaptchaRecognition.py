@@ -350,8 +350,9 @@ class CaptchaRecognition(object):
             self.width = 250
             self.height = 50
             self.style_checker = "model/zhejiang_style_checker/model.m"
-
-        self.model_path = "model/" + captcha_type
+            
+        parent = os.path.dirname(__file__)
+        self.model_path = os.path.join(parent, "model", captcha_type)
         self.model_file = self.model_path + "/model.m"
 
     def __get_pixel_list__(self, captcha_image):

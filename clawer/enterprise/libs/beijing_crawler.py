@@ -66,7 +66,7 @@ class BeijingCrawler(Crawler):
     def crawl_check_page(self):
         """爬取验证码页面，包括获取验证码url，下载验证码图片，破解验证码并提交
         """
-        for count in range(100):
+        for count in range(10):
             ckcode = self.crack_checkcode()
             post_data = {'currentTimeMillis': self.time_stamp, 'credit_ticket': self.credit_ticket, 'checkcode': ckcode[1], 'keyword': self.ent_number}
             next_url = self.urls['post_checkcode']
@@ -332,14 +332,7 @@ class BeijingCrawler(Crawler):
             logging.error('invalid code cracker')
             raise Exception('invalid code cracker, please set it')
         
-        try:
-            ckcode = self.code_cracker.predict_result(self.ckcode_image_path)
-        except Exception as e:
-            logging.warn('exception occured when crack checkcode: %s', e)
-            ckcode = ('', '')
-        finally:
-            pass
-        
+        ckcode = self.code_cracker.predict_result(self.ckcode_image_path)
         return ckcode
 
     def generate_time_stamp(self):
