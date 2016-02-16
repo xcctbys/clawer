@@ -129,7 +129,7 @@ class ChongqingClawer(Crawler):
             crawler.parser.parse_jsons()
             crawler.parser.merge_jsons()
         except Exception as e:
-            settings.logger.error(e.message)
+            # settings.logger.error('error')
             return False
         # 采用多线程，在写入文件时需要注意加锁
         self.write_file_mutex.acquire()
