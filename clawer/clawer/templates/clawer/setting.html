@@ -14,7 +14,6 @@
 	    <option value="2">下线</option>
 	</select>
     
-    
     <input type="number" id="id_input" name="id" placeholder="ID" class="easyui-textbox" />
     <a href="javascript:void(0)" id="search_btn" class="easyui-linkbutton" data-options="iconCls:'icon-search'">搜索</a>
 </div>
@@ -22,6 +21,7 @@
 
 <div id="operate">
     <div id="update_btn" iconCls="icon-edit">更新</div>
+    <div id="add_btn" iconCls="icon-add">新增</div>
 </div>
 
 
@@ -57,7 +57,7 @@
 <div id="update_win" class="easyui-window" title="更新参数" closed="true" style="width:80%;height:60%;padding:5px;">
 
     <h1></h1>
-
+    
     <form method="post" id="update_form" action="{% url clawer.apis.home.clawer_setting_update %}">
         <table style="width:100%;">
             <tr>
@@ -128,6 +128,37 @@
     
 </div>
 <!-- update form end -->
+
+
+<!-- add form -->
+<div id="add_win" class="easyui-window" title="增加爬虫" closed="true" style="width:80%;height:60%;padding:5px;">
+
+    <form method="post" id="add_form" action="{% url clawer.apis.home.clawer_add %}">
+        <table style="width:100%;">
+            <tr>
+                <td>爬虫名</td>
+                <td>
+                    <input name="name" class="easyui-textbox" style="width: 60%; height: 30px;" />
+				</td>
+            </tr>
+            <tr>
+                <td>客户</td>
+                <td><input name="customer" class="easyui-textbox" style="width: 60%; height: 30px;" /></td>
+            </tr>
+            
+            <tr>
+                <td>描述</td>
+                <td><input name="info" class="easyui-textbox" style="width: 70%; height: 80px;" placeholder="多个proxy，请换行" multiline="true" /></td>
+            </tr>
+            <tr>
+                <td><button class="easyui-linkbutton" style="width: 50px" type="submit">增加</button></td>
+                <td></td>
+            </tr>
+        </table>
+    </form>
+    
+</div>
+<!-- add form end -->
 
 
 
@@ -290,6 +321,32 @@ $(document).ready(function(){
 	        });
 		}
 	});
+	
+	
+	$("#add_btn").bind("click", function(e){
+		$("#add_win").window("open");
+	});
+	
+	$("#add_form").submit(function(){
+		
+    	$(this).ajaxSubmit({
+            dataType: "json",
+            success: function(resp, status, xhr, frm) {
+                if(!resp.is_ok) {
+                    $.messager.alert('warning', resp.reason);
+                    return;
+                }
+                
+                $("#add_form").form("reset");
+                $("#add_form").form("clear");
+                
+                $("#grid").datagrid("reload");
+                $("#add_win").window("close");
+            }
+        });
+    	
+    	return false;
+    });
 	
 	
 });

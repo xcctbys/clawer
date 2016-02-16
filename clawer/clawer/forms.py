@@ -6,6 +6,13 @@ from clawer.models import Clawer, ClawerSetting
 from clawer.utils import Download
 
 
+
+class AddClawer(forms.Form):
+    name = forms.CharField(max_length=128)
+    info = forms.CharField(max_length=1024)
+    customer = forms.CharField(max_length=128)
+    
+
 class UpdateClawerTaskGenerator(forms.Form):
     clawer = forms.ModelChoiceField(queryset=Clawer.objects)
     code_file = forms.FileField()

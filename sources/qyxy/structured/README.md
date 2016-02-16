@@ -14,23 +14,28 @@
     }
 
     # edit Makefile
-    # change `user` and `password` for yours.
+    # change `USER` and `PASSWORD` for your mysql's.
 
 ### Create Mysql Tables
 
-    mysql -udb_user -p db_password
-    create database clawer;
-    python manage.py makemigrations
-    python manage.py migrate
+    make init_db
 
-    # OR
-    make db_init
+### Crontab
+
+    # In Terminal
+    crontab -e.
+
+    # Press i to go into vim's insert mode.
+    # Type the cron job, 01:00 every day import yesterday's data to db:
+    00 01 * * * sh ~/projects/nice-clawer/sources/qyxy/structured/run.sh
+
+    # Press Esc to exit vim's insert mode.
+    # Type ZZ (must be capital letters).
+    # Verify by using
+    crontab -l.
 
 ### Import Data to Database
 
-    python manage.py structured
-
-    # OR
     make
 
 ### Json Keys to Mysql Tables

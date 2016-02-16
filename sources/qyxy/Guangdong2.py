@@ -6,10 +6,10 @@ import os
 import sys
 import time
 import re
-#import settings
-ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
-if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
-    import settings_pro as settings
+import importlib
+ENT_CRAWLER_SETTINGS = os.getenv('ENT_CRAWLER_SETTINGS')
+if ENT_CRAWLER_SETTINGS:
+    settings = importlib.import_module(ENT_CRAWLER_SETTINGS)
 else:
     import settings
 import json
@@ -424,10 +424,6 @@ class Analyze(object):
         finally:
             return columns
 
-
-
-
-    # 如果是第二种： http://gsxt.gdgs.gov.cn/aiccips/ q情况
     def parse_ent_pub_annual_report_page_2(self, base_page, page_type):
 
         page_data = {}
@@ -481,6 +477,37 @@ class Analyze(object):
         finally:
             return data
 
+    def get_particular_table(self, table, page):
+        """ 获取 股东及出资信息的表格，按照指定格式输出
+        """
+        table_dict={}
+        sub_dict = {}
+        table_list=[]
+        try:
+            trs = table.find_all('tr')
+            for tr in trs:
+                if tr.find('td'):
+                    tds = tr.find_all('td')
+                    table_dict[u'股东'] = self.get_raw_text_by_tag(tds[0])
+                    table_dict[u'股东类型'] = self.get_raw_text_by_tag(tds[1])
+                    sub_dict = {}
+                    sub_dict[u'认缴出资额（万元）'] = self.get_raw_text_by_tag(tds[2])
+                    sub_dict[u'认缴出资方式'] = self.get_raw_text_by_tag(tds[3])
+                    sub_dict[u'认缴出资日期'] = self.get_raw_text_by_tag(tds[4])
+                    table_dict['认缴明细'] = sub_dict
+                    sub_dict={}
+                    sub_dict[u'实缴出资额（万元）'] = self.get_raw_text_by_tag(tds[5])
+                    sub_dict[u'实缴出资方式'] = self.get_raw_text_by_tag(tds[6])
+                    sub_dict[u'实缴出资时间'] = self.get_raw_text_by_tag(tds[7])
+                    table_dict['实缴明细'] = sub_dict
+
+                    table_dict['实缴额（万元）']= self.get_raw_text_by_tag(tds[5])
+                    table_dict['认缴额（万元）']= self.get_raw_text_by_tag(tds[2])
+                    table_list.append(table_dict)
+        except Exception as e:
+            settings.logger.error(u'parse 股东及出资信息 table failed! : %s'% e)
+        return table_list
+
     def parse_page_2(self, page, div_id, post_data={}):
         soup = BeautifulSoup(page, 'html5lib')
         page_data = {}
@@ -501,7 +528,10 @@ class Analyze(object):
                             table_name = self.get_table_title(table)
                             if table_name is None :
                                 table_name = div_id
-
+                            if table_name == u'股东及出资信息':
+                                page_data[table_name] = self.get_particular_table(table, page)
+                                table = table.nextSibling
+                                continue
                             page_data[table_name] = []
                             columns = self.get_columns_of_record_table(table, page, table_name)
                             result =self.parse_table_2(table, columns, post_data, table_name)

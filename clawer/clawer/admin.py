@@ -8,6 +8,7 @@ from html5helper import autoregister
 
 from clawer import models
 from captcha import models as captcha_models
+from enterprise import models as enterprise_models
 
 
 class UserProfileInline(admin.StackedInline):
@@ -32,11 +33,11 @@ class UserAdmin(DjangoUserAdmin):
         return user.get_profile().nickname
     
     
-    
 
 admin.site.unregister(DjangoUser)
 admin.site.register(DjangoUser, UserAdmin)
 
-
 autoregister.autoregister_admin(models)
 autoregister.autoregister_admin(captcha_models)
+autoregister.autoregister_admin(enterprise_models)
+

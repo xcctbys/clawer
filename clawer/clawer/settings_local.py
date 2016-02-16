@@ -91,14 +91,14 @@ LOGGING = {
         'file': {
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': os.path.join(os.path.dirname(__file__), "clawer.debug.log"),
-            'backupCount': 0,
+            'backupCount': 1,
             'formatter': 'verbose',
             'level': 'DEBUG',
         },
         'dbfile': {
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': os.path.join(os.path.dirname(__file__), "db.debug.log"),
-            'backupCount': 0,
+            'backupCount': 1,
             'formatter': 'verbose',
             'level': 'DEBUG',
         },

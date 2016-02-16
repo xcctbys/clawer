@@ -1,14 +1,34 @@
 # Program Rules
 
-- 每个省份对应一个爬虫文件，代码格式如下：
+- 每个省份对应一个爬虫文件，utf-8文件编码格式，命名方式为：`${Province}_crawler.py`。代码格式如下：
 
         class ${Province}Clawer(object):     #请替换${Province}为省名，如BeiJing
         
-            def run(self):
+            def __init__(self, json_restore_path):
+                """ Args:
+                json_restore_path: 存放破解的验证码或是其他临时文件
+                """
                 pass
-            
-            ....
 
+            def run(self, register_no):
+                """ Get all data of enterprise by register_no, and return it.
+                Args:
+                    register_no: 企业注册号
+                Returns:
+                    string, which is json format.
+                """
+                
+                return ""
+
+    - 网络请求使用 requests 包
+    - 日志使用 logging 包
+    - 解析网页使用 beautifulsoup
+    - 中间不要依赖非标准库的包
+    - 也不要引入settings文件的任何配置内容
+    
+    - 最后，这个文件还需要复制到`../../clawer/enterprise/libs/`，该目录运行的是分布式版本
+    
+            
 - settings.py 是所有爬虫的配置文件
 - model 里面存放的是破解识别码需要的建模数据，每个省对应一个文件夹
 - enterprise_list 里面放的是所有的企业名单，现在暂时是一个省一个文件，比如： beijing.txt
@@ -82,12 +102,17 @@
     具体的json格式，参见 json_data_example 目录下的文件。
 
 ## 代码说明
-    crawler.py 中定义了 CrawlerUtils 类，封装了一些常用的函数；Crawler 类，为爬虫类的基类，其他爬虫最好从该类继承；Parser 类，为解析页面的基类，
-    其他的页面解析类最好继承于它，因为其中封装了一些可能会用到的解析html表格的函数。
+
+crawler.py 中定义了 CrawlerUtils 类，封装了一些常用的函数；
+
+- Crawler 类，为爬虫类的基类，其他爬虫最好从该类继承；
+- Parser 类，为解析页面的基类，其他的页面解析类最好继承于它，因为其中封装了一些可能会用到的解析html表格的函数。
 
 
-## 生产环境部署
-    使用settings_pro.py 配置文件，设置环境变量  ENT_CRAWLER_SETTINGS='settings_pro'
+# 生产环境部署
+
+使用`settings_pro.py` 配置文件，设置环境变量 `ENT_CRAWLER_SETTINGS='settings_pro'`
 
 ## 运行程序
+
     python run.py max_crawl_time province_list

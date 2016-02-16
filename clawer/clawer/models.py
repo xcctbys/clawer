@@ -335,6 +335,7 @@ class LoggerCategory(object):
     UPDATE_ANALYSIS = u"更新分析器"
     UPDATE_SETTING = u"更新爬虫参数"
     TASK_RESET = u"重设任务"
+    ADD_CLAWER = u"增加爬虫"
     
 
 class Logger(models.Model):
@@ -349,8 +350,7 @@ class Logger(models.Model):
     
     class Meta:
         app_label = "clawer"
-        
-        
+
     def as_json(self):
         result = { "id": self.id,
             "user_id": self.user_id if self.user else 0,
@@ -530,7 +530,6 @@ class RealTimeMonitor(object):
         logging.debug("trace task %d, status %s, count is %d", clawer_task.id, clawer_task.status_name(), result["data"][now]["count"])
         return result
     
-    
     def shrink(self, result, status):
         now = datetime.datetime.now().replace(second=0, microsecond=0)
         if result["end_datetime"] < now:
@@ -633,6 +632,9 @@ class MenuPermission:
             {"id":102, "text":u"爬虫下载日志", "url":"clawer.views.home.clawer_download_log", "groups":GROUPS},
             {"id":104, "text":u"爬虫分析日志", "url":"clawer.views.home.clawer_analysis_log", "groups":GROUPS},
             {"id":105, "text":u"数据下载", "url":settings.MEDIA_URL, "groups":GROUPS},
+        ]},
+        {"id":3, "text": u"企业信用", "url":"", "children": [
+            {"id":301, "text":u"名单", "url":"enterprise.views.get_all", "groups":GROUPS},
         ]},
         {"id":3, "text": u"系统监控", "url":"", "children": [
             {"id":301, "text":u"实时数据", "url":"clawer.views.monitor.realtime_dashboard", "groups":GROUPS},

@@ -75,14 +75,19 @@
 				<input id="clawer" name="clawer" type="hidden" />
 				<ol class="text-muted">
 				    <li>支持<code>requests, Beautiful Soup, python标准库</code></li>
-				    <li>执行后输出json数据，每行json格式：{"uri":"", "cookie":"", "args":""}。 <small>例子：{"url":"http://www.github.com", "cookie":"kkk", "args":"kk=ss"}</small></li>
 				    <li>
+				        根据Crontab调度，执行后输出到stdout。每行一个完整的json串，json格式如下：{"uri":"", "cookie":"", "args":""}。 
+				        <p><small>例子：{"url":"http://www.github.com", "cookie":"kkk", "args":"kk=ss"}</small></p>
+				    </li>
+				    <li>
+				        支持如下三种下载引擎：
 				        <ul>
 				            <li>requests: 支持使用requests库下载，不渲染页面js。</li>
 				            <li>phantomjs: 支持使用phantomjs库下载，渲染页面js。</li>
 				            <li>selenium: use firefox.</li>
 				        </ul>
 				    </li>
+				    <li>支持协议http、https、enterprise(企业信用数据下载协议)</li>
 				</ol>
 			</div>
 			
@@ -127,8 +132,15 @@
 				<input id="clawer" name="clawer" type="hidden" />
 				<ol class="text-muted">
 				    <li>支持<code>requests, Beautiful Soup, python标准库</code></li>
-				    <li>从stdin读取json数据，格式： {"path":"文件路径", "url":"", "args":""}</li>
-				    <li>执行后输出json格式 <small>例子：{"name":"hello"}</small></li>
+				    <li>
+				        从stdin读取json数据，格式： {"path":"文件路径", "url":"", "args":""}
+				        <ul>
+				            <li>path: 文件路径</li>
+				            <li>url: 生成器的任务url</li>
+				            <li>args: 生成器生成的args</li>
+				        </ul>
+				    </li>
+				    <li>执行后输出json串到stdout。<small>例子：{"name":"hello"}</small></li>
 				    <li>运行时间不能超过120秒</li>
 				</ol>
 			</div>

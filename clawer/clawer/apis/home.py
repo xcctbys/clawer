@@ -12,7 +12,7 @@ from clawer.models import Clawer, ClawerTask, ClawerTaskGenerator,\
     ClawerGenerateLog
 from clawer.utils import check_auth_for_api, EasyUIPager, BackgroundQueue
 from clawer.forms import UpdateClawerTaskGenerator, UpdateClawerAnalysis,\
-    AddClawerTask, UpdateClawerSetting
+    AddClawerTask, UpdateClawerSetting, AddClawer
 from html5helper.utils import get_request_ip
 
 
@@ -34,6 +34,23 @@ def clawer_all(request):
         
     pager = EasyUIPager(queryset, request)
     return pager.query()
+
+
+@render_json
+@check_auth_for_api
+def clawer_add(request):
+    form = AddClawer(request.POST)
+    if form.is_valid() is False:
+        return {"is_ok": False, "reason": form.errors}
+    
+    if Clawer.objects.filter(name=form.cleaned_data['name']).count() > 0:
+        return {"is_ok": False, "reason":u"%s 已经被占用" % form.cleaned_data['name']}
+    
+    clawer = Clawer.objects.create(name=form.cleaned_data['name'], info=form.cleaned_data['info'], customer=form.cleaned_data['customer'])
+    #add log
+    Logger.objects.create(user=request.user, category=LoggerCategory.ADD_CLAWER, title=form.cleaned_data["name"], 
+                          content=json.dumps(request.POST), from_ip=get_request_ip(request))
+    return {"is_ok": True, "clawer": clawer.as_json()}
 
 
 @render_json

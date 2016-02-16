@@ -20,10 +20,11 @@ from django.core.mail import send_mail
 from html5helper.utils import do_paginator
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 import threading
-import hashlib
 import urlparse
 import datetime
 import stat
+from enterprise.utils import EnterpriseDownload
+import raven
 
 
 
@@ -97,6 +98,7 @@ class Download(object):
         self.proxies = []
         self.cookies = {}
         self.js = None
+        self.sentry_client = None
         
     def add_cookie(self, cookie):
         self.headers["Cookie"] = cookie
@@ -120,6 +122,11 @@ class Download(object):
         return addr, port
         
     def download(self):
+        
+        if self.url.find("enterprise://") == 0:
+            self.download_with_enterprise()
+            return
+        
         if self.engine == self.ENGINE_REQUESTS:
             self.download_with_requests()
         elif self.engine == self.ENGINE_PHANTOMJS:
@@ -138,7 +145,7 @@ class Download(object):
         except:
             self.failed = True
             self.failed_exception = traceback.format_exc(10)
-            logging.warning(self.failed_exception)
+            self._send_sentry()
         
         if self.failed:
             end = time.time()
@@ -204,6 +211,7 @@ class Download(object):
         except:
             self.failed_exception = traceback.format_exc(10)
             self.failed = True
+            self._send_sentry()
         finally:
             driver.close()
             driver.quit()
@@ -215,10 +223,34 @@ class Download(object):
                 shutil.rmtree(driver.profile.tempfolder)
         except:
             logging.error(traceback.format_exc(10))
+            self._send_sentry()
     
         end = time.time()
         self.spend_time = end - start
-
+        
+    def download_with_enterprise(self):
+        start = time.time()
+        
+        try:
+            self.content = EnterpriseDownload(self.url).download()
+        except:
+            self.failed = True
+            self.failed_exception = traceback.format_exc(10)
+            self._send_sentry()
+            logging.warning(self.failed_exception)
+            
+        end = time.time()
+        self.spend_time = end - start
+        
+    def _send_sentry(self):
+        
+        if settings.RAVEN_CONFIG and settings.RAVEN_CONFIG['dsn']:
+            if not self.sentry_client:
+                self.sentry_client = raven.Client(dsn=settings.RAVEN_CONFIG['dsn'])
+            
+            self.sentry_client.captureException()
+            
+            
 
 class SafeProcess(object):
     
@@ -280,6 +312,9 @@ class UrlCache(object):
         return False
         
     def flush(self):
+        if not self.connection:
+            self.connection = redis.Redis.from_url(self.redis_url)
+            
         self.connection.flushall()
         
         

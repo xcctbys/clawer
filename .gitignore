@@ -2,3 +2,7 @@
 *.log
 .DS_Store
 .ropeproject/
+*.debug.log.*
+.cache
+.settings
+\.*

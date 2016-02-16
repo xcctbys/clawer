@@ -19,13 +19,8 @@ import raven
 from encodings import zlib_codec
 import zlib
 import jinja2
+import importlib
 
-
-ENT_CRAWLER_SETTINGS=os.getenv('ENT_CRAWLER_SETTINGS')
-if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
-    import settings_pro as settings
-else:
-    import settings
 
 from mail import SendMail
 
@@ -59,6 +54,15 @@ from qinghai_crawler import QinghaiCrawler
 from hubei_crawler import HubeiCrawler
 from guizhou_crawler import GuizhouCrawler
 from jilin_crawler import JilinCrawler
+from hainan_crawler import HainanCrawler
+import traceback
+
+
+ENT_CRAWLER_SETTINGS = os.getenv('ENT_CRAWLER_SETTINGS')
+if ENT_CRAWLER_SETTINGS:
+    settings = importlib.import_module(ENT_CRAWLER_SETTINGS)
+else:
+    import settings
 
 
 TEST = False
@@ -93,6 +97,7 @@ province_crawler = {
     'hubei':HubeiCrawler,
     'guizhou' : GuizhouCrawler,
     'jilin' : JilinCrawler,
+    'hainan' : HainanCrawler,
 }
 
 process_pool = None
@@ -100,8 +105,11 @@ cur_date = CrawlerUtils.get_cur_y_m_d()
 
 
 def set_codecracker():
-    for province in province_crawler.keys():
-        province_crawler.get(province).code_cracker = CaptchaRecognition(province)
+    for province in sorted(province_crawler.keys()):
+        try:
+            province_crawler.get(province).code_cracker = CaptchaRecognition(province)
+        except Exception, e:
+            settings.logger.warn("init captcha recognition of %s", province)
 
 
 def config_logging():
@@ -151,7 +159,7 @@ def crawl_province(province):
             if len(fields) < 3:
                 continue
             no = fields[2]
-            process = multiprocessing.Process(target = crawl_work, args = (province, json_restore_path, no))
+            process = multiprocessing.Process(target=crawl_work, args=(province, json_restore_path, no))
             process.daemon = True
             process.start()
             process.join(300)
@@ -197,29 +205,38 @@ class Checker(object):
         self.parent = settings.json_restore_path
         self.success = [] # {'name':'', "size':0, "rows":0}
         self.failed = [] # string list
+        self.enterprise_count = 0
+        self.done = 0
         self.html_template = os.path.join(os.path.dirname(__file__), "mail.html")
         self.send_mail = SendMail(settings.EMAIL_HOST, settings.EMAIL_PORT, settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD, ssl=True)
 
     def run(self):
         for province in sorted(province_crawler.keys()):
+            enterprise_count = self._get_enterprise_count(province)
+            data = {"name": province, "size": 0, "done": 0, "enterprise_count": enterprise_count, "done_ratio": 0}
+
+            self.enterprise_count += enterprise_count
             path = self._json_path(province)
             if os.path.exists(path) is False:
-                self.failed.append(province)
+                self.failed.append(data)
                 continue
 
             st = os.stat(path)
-            enterprise_count = self._get_enterprise_count(province)
-            done = self._get_rows(path)
-            self.success.append({"name": province, "size": st[stat.ST_SIZE], "done": done, "enterprise_count": enterprise_count, "done_ratio": float(done) / enterprise_count})
+            data["done"] = self._get_rows(path)
+            data["size"] = st[stat.ST_SIZE]
+            data['done_ratio'] = float(data["done"]) / data["enterprise_count"]
+            self.success.append(data)
+
+            self.done += data["done"]
 
         #output
-        settings.logger.error("success %d, failed %d", len(self.success), len(self.failed))
+        settings.logger.error("success %d, failed %d, enterprise count %d, done %d", len(self.success), len(self.failed), self.enterprise_count, self.done)
         for item in self.success:
             settings.logger.error("\t%s: %d bytes, done %d, enterprise count %d", item['name'], item['size'], item["done"], item["enterprise_count"])
 
         settings.logger.error("Failed province")
         for item in self.failed:
-            settings.logger.error("\t%s", item)
+            settings.logger.error("\t%s", item['name'])
 
         self._report()
 
@@ -242,7 +259,9 @@ class Checker(object):
         path = os.path.join(settings.enterprise_list_path, "%s.txt" % province)
         count = 0
         with open(path) as f:
-            for _ in f:
+            for line in f:
+                if line.split(",") < 3:
+                    continue
                 count += 1
 
         return count
@@ -260,7 +279,8 @@ class Checker(object):
             html = f.read()
 
         template = jinja2.Template(html)
-        return template.render(yesterday = self.yesterday.date(), success = self.success, failed = self.failed, host = socket.gethostname())
+        return template.render(yesterday=self.yesterday.date(), success=self.success, failed=self.failed, host=socket.gethostname(), \
+                               enterprise_count=self.enterprise_count, done=self.done)
 
 
 
@@ -277,14 +297,15 @@ class NoDaemonProcess(multiprocessing.Process):
 class MyPool(multiprocessing.pool.Pool):
     Process = NoDaemonProcess
 
+
 def main():
     config_logging()
 
     if not os.path.exists(settings.json_restore_path):
         CrawlerUtils.make_dir(settings.json_restore_path)
-
-    set_codecracker()
+    
     cur_date = CrawlerUtils.get_cur_y_m_d()
+    set_codecracker()
 
     if len(sys.argv) >= 2 and sys.argv[1] == "check":
         dt = None
@@ -297,7 +318,7 @@ def main():
     if len(sys.argv) < 3:
         print 'usage: run.py [check] [max_crawl_time(minutes) province...] \n\tmax_crawl_time 最大爬取秒数，以秒计;\n\tprovince 是所要爬取的省份列表 用空格分开, all表示爬取全部)'
         return
-
+    
     try:
         max_crawl_time = int(sys.argv[1])
         settings.max_crawl_time = datetime.timedelta(minutes=max_crawl_time)
@@ -360,4 +381,5 @@ if __name__ == '__main__':
         main()
     except:
         send_sentry_report()
+        print traceback.format_exc(10)
 
