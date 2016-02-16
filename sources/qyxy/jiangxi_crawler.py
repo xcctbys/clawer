@@ -496,7 +496,6 @@ class JiangxiClawer(Crawler):
         params['nbxh'] = self.results[0]
         url = JiangxiClawer.urls['report_baseinfo']
         page = self.crawl_page_by_get_params(params=params, url=url)
-        print page
         return page
 
     def crawl_report_website_pages(self, year):
@@ -610,7 +609,6 @@ class JiangxiParser(Parser):
         base_trs = base_info_table.find_all('tr')
 
         ind_comm_pub_reg_basic = {}
-        print base_trs[0].get_text()
         ind_comm_pub_reg_basic[u'统一社会信用代码/注册号'] = self.wipe_off_newline_and_blank_for_fe(
             base_trs[1].find_all('td')[0].get_text())
         ind_comm_pub_reg_basic[u'名称'] = self.wipe_off_newline_and_blank_for_fe(
@@ -995,7 +993,6 @@ class JiangxiParser(Parser):
                     continue
                 a_click = a_link.get('onclick')
                 reportYear = str(a_click)[8:12]
-                print reportYear
                 report_base_page = self.crawler.crawl_report_baseinfo_pages(reportYear)
                 soup_base_info = BeautifulSoup(report_base_page, 'html5lib')
                 base_info = soup_base_info.find('table', {'class': 'detailsList'})
@@ -1477,6 +1474,8 @@ class JiangxiParser(Parser):
         """
         soup = BeautifulSoup(page, 'html5lib')
         equity_freeze_div = soup.find('div', {'id': 'sifaxiezhu'})
+        if equity_freeze_div is None:
+            return
         equity_freeze_info = equity_freeze_div.find('table', {'class': 'detailsList'})
         equity_freeze_trs = equity_freeze_info.find_all('tr')
         if equity_freeze_trs is None:
@@ -1514,6 +1513,8 @@ class JiangxiParser(Parser):
         """
         soup = BeautifulSoup(page, 'html5lib')
         shareholder_modify_div = soup.find('div', {'id': 'sifagudong'})
+        if shareholder_modify_div is None:
+            return
         shareholder_modify_info = shareholder_modify_div.find('table', {'class': 'detailsList'})
         shareholder_modify_trs = shareholder_modify_info.find_all('tr')
         detail_shareholder_modify_infoes = []
@@ -1575,4 +1576,3 @@ if __name__ == '__main__':
         print(
             '############   Start to crawl enterprise with id %s   ################\n' % ent_number)
         crawler.run(ent_number=ent_number)
-    print 'helo'

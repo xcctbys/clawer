@@ -124,9 +124,13 @@ class ChongqingClawer(Crawler):
             CrawlerUtils.make_dir(self.html_restore_path)
         crawler.ent_number = str(ent_number)
         page = crawler.crawl_check_page()
-        crawler.crawl_page_jsons(page)
-        crawler.parser.parse_jsons()
-        crawler.parser.merge_jsons()
+        try:
+            crawler.crawl_page_jsons(page)
+            crawler.parser.parse_jsons()
+            crawler.parser.merge_jsons()
+        except Exception as e:
+            settings.logger.error(e.message)
+            return False
         # 采用多线程，在写入文件时需要注意加锁
         self.write_file_mutex.acquire()
         CrawlerUtils.json_dump_to_file(self.json_restore_path, {crawler.ent_number: crawler.json_dict})
@@ -417,6 +421,8 @@ class ChongqingParser(Parser):
         soup = BeautifulSoup(page, "html5lib")
         result = soup.find('div', {'id': 'result'})
         key_map = {}
+        if result is None:
+            return None
         item = result.find('div', {'class': 'item'})
         link = item.find('a')
         entId = link.get('data-entid')
@@ -477,6 +483,8 @@ class ChongqingParser(Parser):
 
     def parse_json_ent_info(self):
         # print self.crawler.json_ent_info
+        if self.crawler.json_ent_info is None:
+            return
         json_ent_info = my_json.loads(self.crawler.json_ent_info)
         # 公司基本信息
         base_info = json_ent_info.get('base')
@@ -686,6 +694,8 @@ class ChongqingParser(Parser):
 
     def parse_json_sfxzgdbg(self):
         # print self.crawler.json_sfxzgdbg
+        if self.crawler.json_sfxzgdbg is None:
+            return
         json_sfxzgdbg = my_json.loads(self.crawler.json_sfxzgdbg)
         shareholder_modifies = []
         self.judical_assist_pub_shareholder_modify = shareholder_modifies
