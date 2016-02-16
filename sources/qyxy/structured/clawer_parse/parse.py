@@ -73,7 +73,8 @@ class Parse(object):
         if self.company_result.get('credit_code') is None:
             self.company_result['credit_code'] = register_num
         if self.company_result.get('register_num') is None:
-            self.company_result['register_num'] = register_num
+            credit_code = self.company_result.get('credit_code')
+            self.company_result['register_num'] = credit_code
 
         self.conversion_type()
         self.write_to_mysql(self.company_result)

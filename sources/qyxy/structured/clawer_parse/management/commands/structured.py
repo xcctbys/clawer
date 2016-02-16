@@ -19,7 +19,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         begin = time.time()
-        p = Pool(processes=16)
+        p = Pool(processes=4)
         base_url = settings.JSONS_URL
         provinces = configs.PROVINCES
         suffix = ".json.gz"
@@ -84,4 +84,4 @@ def config_logging():
     ch.setFormatter(formatter)
     settings.logger.addHandler(fh)
     settings.logger.addHandler(ch)
-    multiprocessing_logging.install_mp_handler()
+    multiprocessing_logging.install_mp_handler(settings.logger)

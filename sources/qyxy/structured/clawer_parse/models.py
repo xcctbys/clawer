@@ -148,7 +148,7 @@ class Basic(models.Model):
     register_gov = models.CharField(max_length=50, null=True, blank=True)
     check_date = models.DateField(null=True)
     register_status = models.CharField(max_length=20, null=True, blank=True)
-    register_num = models.CharField(max_length=20, null=True, blank=True)
+    register_num = models.CharField(max_length=50, null=True, blank=True)
     version = models.IntegerField(default=1)
     timestamp = models.DateTimeField(default=timezone.now)
 
@@ -184,7 +184,7 @@ class IndustryCommerceBranch(models.Model):
     """工商-分支机构
     """
 
-    enter_code = models.CharField(max_length=20, null=True, blank=True)
+    enter_code = models.CharField(max_length=100, null=True, blank=True)
     branch_name = models.CharField(max_length=100, null=True, blank=True)
     register_gov = models.CharField(max_length=50, null=True, blank=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
@@ -314,7 +314,7 @@ class IndustryCommerceMortgage(models.Model):
     """工商-动产抵押登记
     """
 
-    register_num = models.CharField(max_length=20, null=True, blank=True)
+    register_num = models.CharField(max_length=50, null=True, blank=True)
     sharechange_register_date = models.DateField(null=True)
     register_gov = models.CharField(max_length=50, null=True, blank=True)
     guarantee_debt_amount = models.FloatField(null=True)
@@ -404,7 +404,7 @@ class IndustryCommerceShareholders(models.Model):
     shareholder_type = models.CharField(max_length=20, null=True, blank=True)
     shareholder_name = models.CharField(max_length=100, null=True, blank=True)
     certificate_type = models.CharField(max_length=20, null=True, blank=True)
-    certificate_number = models.CharField(max_length=20, null=True, blank=True)
+    certificate_number = models.CharField(max_length=50, null=True, blank=True)
     subscription_amount = models.FloatField(null=True)
     paid_amount = models.FloatField(null=True)
     subscription_type = models.CharField(max_length=100, null=True, blank=True)
@@ -425,7 +425,7 @@ class IndustryCommerceSharepledge(models.Model):
     """
     """
 
-    register_num = models.CharField(max_length=20, null=True, blank=True)
+    register_num = models.CharField(max_length=50, null=True, blank=True)
     pledgor = models.CharField(max_length=30, null=True, blank=True)
     pledgor_certificate_code = models.CharField(max_length=20, null=True, blank=True)
     share_pledge_num = models.FloatField(null=True)
@@ -472,7 +472,7 @@ class EnterAdministrativeLicense(models.Model):
     license_end_date = models.DateField(null=True)
     license_authority = models.CharField(max_length=30, null=True, blank=True)
     license_content = models.TextField(null=True, blank=True)
-    license_status = models.CharField(max_length=20, null=True, blank=True)
+    license_status = models.TextField(null=True, blank=True)
     license_detail = models.TextField(null=True, blank=True)
     license_register_time = models.DateField(null=True)
     license_publicity_time = models.DateField(null=True)
@@ -674,7 +674,7 @@ class OtherAdministrativeLicense(models.Model):
     license_end_date = models.DateField(null=True)
     license_content = models.TextField(null=True, blank=True)
     license_authority_gov = models.CharField(max_length=50, null=True, blank=True)
-    license_status = models.CharField(max_length=20, null=True, blank=True)
+    license_status = models.TextField(null=True, blank=True)
     license_detail = models.TextField(null=True, blank=True)
     license_valid_date = models.DateField(null=True)
     source = models.CharField(max_length=10, null=True, blank=True)
@@ -766,7 +766,7 @@ class YearReportBasic(models.Model):
     status = models.CharField(max_length=20, null=True, blank=True)
     web_onlinestore = models.BooleanField(default=False)
     staff_number = models.IntegerField(null=True)
-    register_num = models.CharField(max_length=20, null=True, blank=True)
+    register_num = models.CharField(max_length=50, null=True, blank=True)
     is_warrandice = models.CharField(max_length=10, null=True, blank=True)
     is_invest = models.BooleanField(default=False)
     year_report_id = models.CharField(max_length=20, null=True, blank=True)
