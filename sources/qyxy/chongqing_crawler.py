@@ -485,7 +485,7 @@ class ChongqingParser(Parser):
         self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, u'经营范围', 'opscope')
         self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, u'注册号/统一社会信用代码', 'pripid')
         self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, u'营业期限至', 'opto')
-        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, u'注册号', 'estdate')
+        self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, u'注册号', 'regno')
         self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, u'住所', 'dom')
         self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, u'名称', 'entname')
         self.check_key_is_exists(base_info, self.ind_comm_pub_reg_basic, u'核准日期', 'apprdate')
