@@ -3,13 +3,15 @@
 from enterprise.models import Province
 
 from .libs.beijing_crawler import BeijingCrawler
+from .libs.chongqing_crawler import ChongqingClawer
 from .libs import settings
 import urlparse
 
 
 class EnterpriseDownload(object):
     PROVINCES = [
-        {"id": Province.BEIJING, "class": BeijingCrawler}
+        {"id": Province.BEIJING, "class": BeijingCrawler},
+        {"id": Province.CHONGQING, "class": ChongqingClawer}
     ]
     
     def __init__(self, url):
