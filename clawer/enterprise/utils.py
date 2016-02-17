@@ -8,6 +8,7 @@ from .libs.tianjin_crawler import TianjinCrawler
 from .libs.zhejiang_crawler import ZhejiangCrawler
 from .libs.shandong_crawler import ShandongCrawler
 from .libs.xinjiang_crawler import XinjiangClawer
+from .libs.henan_crawler import HenanCrawler
 from .libs import settings
 import urlparse
 
@@ -20,6 +21,8 @@ class EnterpriseDownload(object):
         {'id': Province.ZHEJIANG, 'class': ZhejiangCrawler},
         {'id': Province.SHANDONG, 'class': ShandongCrawler},
         {'id': Province.XINJIANG, 'class': XinjiangClawer},
+        {'id': Province.HENAN, 'class': HenanCrawler},
+
     ]
 
     def __init__(self, url):
