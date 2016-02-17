@@ -4,6 +4,7 @@ from enterprise.models import Province
 
 from .libs.beijing_crawler import BeijingCrawler
 from .libs.chongqing_crawler import ChongqingClawer
+from .libs.tianjin_crawler import TianjinCrawler
 from .libs import settings
 import urlparse
 
@@ -11,7 +12,8 @@ import urlparse
 class EnterpriseDownload(object):
     PROVINCES = [
         {"id": Province.BEIJING, "class": BeijingCrawler},
-        {"id": Province.CHONGQING, "class": ChongqingClawer}
+        {"id": Province.CHONGQING, "class": ChongqingClawer},
+        {"id": Province.TIANJIN, "class": TianjinCrawler},
     ]
     
     def __init__(self, url):
