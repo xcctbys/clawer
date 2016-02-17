@@ -11,8 +11,8 @@ else:
     import settings
 
 from crawler import CrawlerUtils
-from heilongjinag_crawler import HeilongjiangClawer
-from heilongjinag_crawler import HeilongjiangParser
+from heilongjiang_crawler import HeilongjiangClawer
+from heilongjiang_crawler import HeilongjiangParser
 class ShanxiCrawler(HeilongjiangClawer):
     """山西爬虫
     """
