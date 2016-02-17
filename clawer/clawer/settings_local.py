@@ -12,6 +12,7 @@ DATABASES = {
         "USER": "cacti",
         "PASSWORD": "cacti",
         "HOST": "127.0.0.1",
+        'TEST_CHARSET': 'utf-8',
     }
 }
 
