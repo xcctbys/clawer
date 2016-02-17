@@ -152,6 +152,8 @@ class SichuanCrawler(object):
 				enter_allths = [u'股东', u'认缴出资额（万元）', u'认缴出资时间', u'认缴出资方式', u'实缴出资额（万元）', u'出资时间', u'出资方式']
 			#self.test_print_all_ths_tds(enter_head, enter_allths, enter_alltds)
 			needdict[enter_head] = self.get_one_to_one_dict(enter_allths, enter_alltds)
+			if enter_head == u'企业基本信息' or enter_head == u'企业资产状况信息':
+				needdict[enter_head] = self.get_one_to_one_dict(enter_allths, enter_alltds)[0]
 		return needdict
 
 
@@ -167,16 +169,24 @@ class SichuanCrawler(object):
 				detail_head, detail_allths, detail_alltds = self.get_head_ths_tds(table)
 				# self.test_print_all_ths_tds(detail_head, detail_allths, detail_alltds)
 				tempdict = {}
-				for key, value in zip(detail_allths, detail_alltds):
+				for key, value in zip(detail_allths[:3], detail_alltds[:3]):
 					tempdict[key] = value
-				return tempdict
+				onelist_dict = {}
+				for key, value in zip(detail_allths[3:], detail_alltds[3:]):
+					onelist_dict[key] = value
+				tempdict['list'] = [onelist_dict]
+				return {u'股东及出资信息':[tempdict]}
 				break
 		# else:
 		# 	print 'i'*100
 		
 	def get_head_ths_tds(self, table):
 		print table
-		head = table.find_all('th')[0].get_text().strip().split('\n')[0].strip()
+		try:
+			head = table.find_all('th')[0].get_text().strip().split('\n')[0].strip()
+		except:
+			head = None
+			pass
 		allths = [th.get_text().strip() for th in table.find_all('th')[1:] if th.get_text()]
 		for i, th in enumerate(allths):
 			if th[:2] == '<<':
@@ -221,11 +231,13 @@ class SichuanCrawler(object):
 					onclick = td.a['onclick']
 					m = re.search(r'doNdbg\(\'(\w+)\'\)',onclick)
 					if m:
+						alltds.append(td.get_text().strip())
 						alltds.append(self.help_enter_get_dict('ndbgDetail', self.pripid, m.group(1), self.cur_time))
 				elif td.get_text():
 					alltds.append(td.get_text().strip())
 				else:
 					alltds.append(None)
+			allths.insert(2, u'详情')
 		if head == u'动产抵押登记信息':
 			alltds = []
 			for td in table.find_all('td'):
@@ -238,8 +250,8 @@ class SichuanCrawler(object):
 					alltds.append(td.get_text().strip())
 				else:
 					alltds.append(None)
-		if len(alltds) == 0:
-			alltds = [None for th in allths]
+		# if len(alltds) == 0:
+		# 	alltds = [None for th in allths]
 		return head, allths, alltds
 
 	def get_one_to_one_dict(self, allths, alltds):
@@ -247,7 +259,7 @@ class SichuanCrawler(object):
 			one_to_one_dict = {}
 			for key, value in zip(allths, alltds):
 				one_to_one_dict[key] = value
-			return one_to_one_dict
+			return [one_to_one_dict]
 		else:
 			templist = []
 			x = 0
@@ -422,16 +434,18 @@ class SichuanCrawler(object):
 		resp = self.reqst.post('http://gsxt.scaic.gov.cn/ztxy.do', data=data, timeout = 180)
 		self.get_json_one(self.four_dict, BeautifulSoup(resp.content).find_all('table'), u'司法股东变更登记信息')
 
-
+		self.result_json_dict['ind_comm_pub_reg_basic'] = self.result_json_dict['ind_comm_pub_reg_basic'][0]
+		if 'ind_comm_pub_arch_liquidation' in self.result_json_dict.keys() and len(self.result_json_dict['ind_comm_pub_arch_liquidation']) > 0:
+			self.result_json_dict['ind_comm_pub_arch_liquidation'] = self.result_json_dict['ind_comm_pub_arch_liquidation'][0]
 		CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.result_json_dict})
 
 if __name__ == '__main__':
 	sichuan = SichuanCrawler('./enterprise_crawler/sichuan.json')
-	# sichuan.run('510181000035008')
+	sichuan.run('510181000035008')
 	# sichuan.run('511000000000753')
 	# sichuan.run('510300000004462')
-	f = open('enterprise_list/sichuan.txt', 'r')
-	for line in f.readlines():
-		print line.split(',')[2].strip()
-		sichuan.run(str(line.split(',')[2]).strip())
-	f.close()
+	# f = open('enterprise_list/sichuan.txt', 'r')
+	# for line in f.readlines():
+	# 	print line.split(',')[2].strip()
+	# 	sichuan.run(str(line.split(',')[2]).strip())
+	# f.close()
