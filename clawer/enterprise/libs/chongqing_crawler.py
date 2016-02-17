@@ -147,8 +147,6 @@ class ChongqingClawer(Crawler):
             return None
         time.sleep(random.uniform(0.1, 0.2))
         self.write_file_mutex.acquire()
-        if not path.isdir(self.ckcode_image_dir_path):
-            os.makedirs(self.ckcode_image_dir_path)
         with open(self.ckcode_image_path, 'wb') as f:
             f.write(resp.content)
 
@@ -768,19 +766,19 @@ class TestParser(unittest.TestCase):
         self.crawler.ent_number = '500232000003942'
 
 
-if __name__ == '__main__':
-
-    import sys
-    reload(sys)
-    sys.setdefaultencoding("utf-8")
-    from CaptchaRecognition import CaptchaRecognition
-
-    ChongqingClawer.code_cracker = CaptchaRecognition('chongqing')
-    crawler = ChongqingClawer('./enterprise_crawler/chongqing/chongqing.json')
-    start_time = time.localtime()
-    enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/chongqing.txt')
-    for ent_number in enterprise_list:
-        ent_number = ent_number.rstrip('\n')
-        print(
-                '############   Start to crawl enterprise with id %s   ################\n' % ent_number)
-        crawler.run(ent_number=ent_number)
+# if __name__ == '__main__':
+#
+#     import sys
+#     reload(sys)
+#     sys.setdefaultencoding("utf-8")
+#     from CaptchaRecognition import CaptchaRecognition
+#
+#     ChongqingClawer.code_cracker = CaptchaRecognition('chongqing')
+#     crawler = ChongqingClawer('./enterprise_crawler/chongqing/chongqing.json')
+#     start_time = time.localtime()
+#     enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/chongqing.txt')
+#     for ent_number in enterprise_list:
+#         ent_number = ent_number.rstrip('\n')
+#         print(
+#                 '############   Start to crawl enterprise with id %s   ################\n' % ent_number)
+#         crawler.run(ent_number=ent_number)
