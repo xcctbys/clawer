@@ -5,6 +5,7 @@ from enterprise.models import Province
 from .libs.beijing_crawler import BeijingCrawler
 from .libs.chongqing_crawler import ChongqingClawer
 from .libs.tianjin_crawler import TianjinCrawler
+from .libs.henan_crawler import HenanCrawler
 from .libs import settings
 import urlparse
 
