@@ -49,7 +49,7 @@ class TianjinCrawler(object):
         self.Captcha = None
         #self.path_captcha = './Captcha.png'
 
-        self.CR = CaptchaRecognition.CaptchaRecognition("tianjin")
+        self.CR = CaptchaRecognition("tianjin")
         self.requests = requests.Session()
         self.requests.headers.update(headers)
         self.ents = []
