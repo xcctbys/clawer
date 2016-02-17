@@ -18,7 +18,7 @@ if ENT_CRAWLER_SETTINGS:
     settings = importlib.import_module(ENT_CRAWLER_SETTINGS)
 else:
     import settings
-
+from CaptchaRecognition import CaptchaRecognition
 
 class HeilongjiangClawer(Crawler):
     """黑龙江工商公示信息网页爬虫
@@ -28,7 +28,7 @@ class HeilongjiangClawer(Crawler):
 
     # 验证码图片的存储路径
     ckcode_image_path = settings.json_restore_path + '/heilongjiang/ckcode.jpg'
-
+    code_cracker = CaptchaRecognition('heilongjiang')
     # 多线程爬取时往最后的json文件中写时的加锁保护
     write_file_mutex = threading.Lock()
 
@@ -430,13 +430,13 @@ class HeilongjiangParser(Parser):
                 return [table_save, 'None']
 
             elif self.crawler.urls.has_key(table_name):  # 判断翻页信息链接在urls里能否找到
+                table_content = []
+                content_tr = []
                 for j in range(1, len(total_page)+1):
-                    table_content = []
-                    content_tr = []
                     url = '%s%s%s%s%s' % (self.crawler.urls[table_name], "pno=", j, '&mainId=', self.crawler.company_id)
                     rep = requests.get(url)
 
-                    soup = BeautifulSoup(rep.text, "html5lib")
+                    soup = BeautifulSoup(rep.text.strip('"'), "html5lib")
                     table = soup.find("table")
                     if not table:  # 如出现错误，网页信息获取不到直接返回
                         return ['', 'None']
@@ -465,7 +465,7 @@ class HeilongjiangParser(Parser):
                     tr = table.find_all("tr")
                     content_tr.extend(tr)
                     table_content.extend(table_save)
-                    return [table_content, content_tr]
+                return [table_content, content_tr]
             else:
                 return ['', 'None']
 
@@ -690,7 +690,7 @@ class TestParser(unittest.TestCase):
         with open('./enterprise_crawler/heilongjiang/judical_assist_pub.html') as f:
             page = f.read()
             self.parser.parse_judical_assist_pub_pages(page)
-
+"""
 if __name__ == '__main__':
     from CaptchaRecognition import CaptchaRecognition
     import run
@@ -703,3 +703,4 @@ if __name__ == '__main__':
         ent_number = ent_number.rstrip('\n')
         settings.logger.info('############   Start to crawl enterprise with id %s   ################\n' % ent_number)
         crawler.run(ent_number=ent_number)
+"""
