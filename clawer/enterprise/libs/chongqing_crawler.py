@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 # encoding=utf-8
 import os
-from os import path
-import requests
 import time
+import re
 import random
-import threading
+import logging
+import requests
 import unittest
+from os import path
+import threading
+
 from bs4 import BeautifulSoup
 import json
 from . import settings
@@ -105,22 +108,17 @@ class ChongqingClawer(Crawler):
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:39.0) Gecko/20100101 Firefox/39.0'})
 
     def run(self, ent_number=0):
-        crawler = ChongqingClawer(self.json_restore_path)
-        crawler.ent_number = str(ent_number)
-        page = crawler.crawl_check_page()
+        self.ent_number = str(ent_number)
+        page = self.crawl_check_page()
         try:
-            crawler.crawl_page_jsons(page)
-            crawler.parser.parse_jsons()
-            crawler.parser.merge_jsons()
+            self.crawl_page_jsons(page)
+            self.parser.parse_jsons()
+            self.parser.merge_jsons()
         except Exception as e:
-            # settings.logger.error('error')
+            # logging.error('error')
             return None
-        # # 采用多线程，在写入文件时需要注意加锁
-        # self.write_file_mutex.acquire()
-        # CrawlerUtils.json_dump_to_file(self.json_restore_path, {crawler.ent_number: crawler.json_dict})
-        # self.write_file_mutex.release()
-        # return True
-        return json.dumps({crawler.ent_number: crawler.json_dict})
+
+        return json.dumps({self.ent_number: self.json_dict})
 
 
     def crawl_check_page(self):
@@ -133,7 +131,7 @@ class ChongqingClawer(Crawler):
             data = {'key':self.ent_number,'code':ck_code}
             resp = self.reqst.post(ChongqingClawer.urls['post_checkcode'], data=data)
             if resp.status_code != 200:
-                settings.logger.error("crawl post check page failed!")
+                logging.error("crawl post check page failed!")
                 count += 1
                 continue
             return resp.content
@@ -145,7 +143,7 @@ class ChongqingClawer(Crawler):
         """
         resp = self.reqst.get(ChongqingClawer.urls['get_checkcode'])
         if resp.status_code != 200:
-            settings.logger.error('failed to get get_checkcode')
+            logging.error('failed to get get_checkcode')
             return None
         time.sleep(random.uniform(0.1, 0.2))
         self.write_file_mutex.acquire()
@@ -158,7 +156,7 @@ class ChongqingClawer(Crawler):
             ckcode = self.code_cracker.predict_result(self.ckcode_image_path)
             # ckcode = self.code_cracker.predict_result(self.ckcode_image_dir_path + 'image' + str(i) + '.jpg')
         except Exception as e:
-            settings.logger.warn('exception occured when crack checkcode')
+            logging.warn('exception occured when crack checkcode')
             ckcode = ('', '')
         finally:
             pass
@@ -172,7 +170,7 @@ class ChongqingClawer(Crawler):
         """
         resp = self.reqst.get(ChongqingClawer.urls['get_checkcode'])
         if resp.status_code != 200:
-            settings.logger.error('failed to get get_checkcode')
+            logging.error('failed to get get_checkcode')
             print 'error'
             return None
 
@@ -187,7 +185,7 @@ class ChongqingClawer(Crawler):
         try:
             ckcode = self.code_cracker.predict_result(self.ckcode_image_path)
         except Exception as e:
-            settings.logger.warn('exception occured when crack checkcode')
+            logging.warn('exception occured when crack checkcode')
             ckcode = ('', '')
         finally:
             pass

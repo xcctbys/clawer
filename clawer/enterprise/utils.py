@@ -14,6 +14,7 @@ class EnterpriseDownload(object):
         {"id": Province.BEIJING, "class": BeijingCrawler},
         {"id": Province.CHONGQING, "class": ChongqingClawer},
         {"id": Province.TIANJIN, "class": TianjinCrawler},
+        {'id': Province.HENAN, 'class': HenanCrawler},
     ]
     
     def __init__(self, url):
