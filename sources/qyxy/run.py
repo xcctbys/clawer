@@ -31,7 +31,7 @@ from jiangsu_crawler import JiangsuCrawler
 from zongju_crawler import ZongjuCrawler
 from shanghai_crawler import ShanghaiCrawler
 from guangdong_crawler import GuangdongClawer
-from heilongjinag_crawler import HeilongjiangClawer
+from heilongjiang_crawler import HeilongjiangClawer
 from anhui_crawler import AnhuiCrawler
 from yunnan_crawler import YunnanCrawler
 from tianjin_crawler import TianjinCrawler
