@@ -15,24 +15,23 @@ from crawler import CrawlerUtils
 import types
 import urlparse
 import json
-
 from . import settings
 from enterprise.libs.CaptchaRecognition import CaptchaRecognition
 import logging
 
 
-class GansuClawer(Crawler):
+class NingxiaClawer(Crawler):
     """甘肃工商公示信息网页爬虫
     """
     # html数据的存储路径
-    # html_restore_path = settings.html_restore_path + '/gansu/'
+    # html_restore_path = settings.html_restore_path + '/ningxia/'
 
     # 验证码图片的存储路径
-    ckcode_image_path = settings.json_restore_path + '/gansu/ckcode.jpg'
+    ckcode_image_path = settings.json_restore_path + '/ningxia/ckcode.jpg'
 
     # 验证码文件夹
-    ckcode_image_dir_path = settings.json_restore_path + '/gansu/'
-    code_cracker = CaptchaRecognition('gansu')
+    ckcode_image_dir_path = settings.json_restore_path + '/ningxia/'
+    code_cracker = CaptchaRecognition('ningxia')
     # 查询页面
     # search_page = html_restore_path + 'search_page.html'
 
@@ -40,8 +39,10 @@ class GansuClawer(Crawler):
     write_file_mutex = threading.Lock()
 
     urls = {'host': 'http://www.nmgs.gov.cn:7001/aiccips',
-            'get_checkcode': 'http://xygs.gsaic.gov.cn/gsxygs/securitycode.jpg?',
-            'post_checkCode': 'http://xygs.gsaic.gov.cn/gsxygs/pub!list.do',
+            'get_checkcode': 'http://gsxt.ngsh.gov.cn/ECPS/verificationCode.jsp?',
+            'post_checkCode': 'http://gsxt.ngsh.gov.cn/ECPS/qyxxgsAction_checkVerificationCode.action',
+            'post_checkCode2': 'http://gsxt.ngsh.gov.cn/ECPS/qyxxgsAction_queryXyxx.action',
+
             'post_all_page': 'http://xygs.gsaic.gov.cn/gsxygs/pub!view.do',
             'ind_comm_pub_skeleton': 'http://www.nmgs.gov.cn:7001/aiccips/GSpublicity/GSpublicityList.html',
             }
@@ -55,7 +56,7 @@ class GansuClawer(Crawler):
         Returns:
         """
         self.json_restore_path = json_restore_path
-        self.parser = GansuParser(self)
+        self.parser = GansuClawer(self)
 
         self.reqst = requests.Session()
         self.reqst.headers.update({
@@ -63,13 +64,11 @@ class GansuClawer(Crawler):
             'Accept-Encoding': 'gzip, deflate',
             'Accept-Language': 'en-US, en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:39.0) Gecko/20100101 Firefox/39.0'})
-        self.method = None
-        self.pripid = None
         self.json_dict = {}
         self.ent_number = None
 
     def run(self, ent_number=0):
-        crawler = GansuClawer('./enterprise_crawler/gansu/gansu.json')
+        crawler = NingxiaClawer('./enterprise_crawler/ningxia/ningxia.json')
 
         crawler.ent_number = str(ent_number)
         # 对每个企业都指定一个html的存储目录
@@ -82,7 +81,7 @@ class GansuClawer(Crawler):
         page = crawler.crawl_check_page()
         if page is None:
             logging.error(
-                'According to the registration number does not search to the company %s' % self.ent_number)
+                    'According to the registration number does not search to the company %s' % self.ent_number)
             return False
         page = crawler.crawl_ind_comm_pub_pages()
         if page is None:
@@ -120,28 +119,48 @@ class GansuClawer(Crawler):
         :return true or false
         """
         count = 0
-        while count < 30:
-            ck_code = self.crack_check_code()
-            data = {'browse': '', 'loginName': '输入注册号/统一代码点击搜索', 'cerNo': '', 'authCode': '', 'authCodeQuery': ck_code,
-                    'queryVal': self.ent_number}
-            resp = self.reqst.post(GansuClawer.urls['post_checkCode'], data=data)
-
+        while count < 300:
+            ck_code = self.crack_check_code(count)
+            data = {'password': ck_code}
+            resp = self.reqst.post(NingxiaClawer.urls['post_checkCode'], data=data)
             if resp.status_code != 200:
                 logging.error("crawl post check page failed!")
                 count += 1
                 continue
+            message_json = resp.content
+            message = json.loads(str(message_json))
+            if message.get('message') not in 'ok':
+                count += 1
+                continue
+            search_data = {}
+            search_data['isEntRecord'] = ''
+            search_data['password'] = ck_code
+            search_data['loginInfo.regno'] = ''
+            search_data['loginInfo.entname'] = ''
+            search_data['loginInfo.idNo'] = ''
+            search_data['loginInfo.mobile'] = ''
+            search_data['loginInfo.password'] = ''
+            search_data['loginInfo.verificationCode'] = ''
+            search_data['otherLoginInfo.name'] = ''
+            search_data['otherLoginInfo.password'] = ''
+            search_data['otherLoginInfo.verificationCode'] = ''
+            search_data['selectValue'] = self.ent_number
+            resp = self.reqst.post(NingxiaClawer.urls['post_checkCode2'], data=search_data)
+            if resp.status_code != 200:
+                count -= 1
+                continue
             return resp.content
         return None
 
-    def crack_check_code(self):
+    def crack_check_code(self, count=None):
         """破解验证码
         :return 破解后的验证码
         """
         times = long(time.time())
         params = {}
-        params['v'] = times
+        params['_'] = times
 
-        resp = self.reqst.get(GansuClawer.urls['get_checkcode'], params=params)
+        resp = self.reqst.get(NingxiaClawer.urls['get_checkcode'], params=params)
         if resp.status_code != 200:
             logging.error('failed to get get_checkcode')
             return None
@@ -151,7 +170,9 @@ class GansuClawer(Crawler):
             os.makedirs(self.ckcode_image_dir_path)
         with open(self.ckcode_image_path, 'wb') as f:
             f.write(resp.content)
-
+        if count is not None:
+            with open(self.ckcode_image_dir_path + 'ckcode' + str(count) + '.jpg', 'wb') as f:
+                f.write(resp.content)
         # Test
         # with open(self.ckcode_image_dir_path + 'image' + str(i) + '.jpg', 'wb') as f:
         #     f.write(resp.content)
@@ -173,11 +194,11 @@ class GansuClawer(Crawler):
         通过传入不同的参数获得不同的页面
         """
         if url is None:
-            resp = self.reqst.post(GansuClawer.urls['post_all_page'], data=data)
+            resp = self.reqst.post(NingxiaClawer.urls['post_all_page'], data=data)
         else:
             resp = self.reqst.post(url, data=data)
         if resp.status_code != 200:
-            logging.error('crawl page by url failed! url = %s' % GansuClawer.urls['post_all_page'])
+            logging.error('crawl page by url failed! url = %s' % NingxiaClawer.urls['post_all_page'])
         page = resp.content
         time.sleep(random.uniform(0.1, 0.3))
         # if saveingtml:
@@ -218,7 +239,7 @@ class GansuClawer(Crawler):
         return page
 
 
-class GansuParser(Parser):
+class GansuClawer(Parser):
     """甘肃工商页面的解析类
     """
 
@@ -248,31 +269,31 @@ class GansuParser(Parser):
         base_trs = base_info_table.find_all('tr')
         ind_comm_pub_reg_basic = {}
         ind_comm_pub_reg_basic[base_trs[1].find_all('th')[0].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-            base_trs[1].find_all('td')[0].get_text())
+                base_trs[1].find_all('td')[0].get_text())
         ind_comm_pub_reg_basic[base_trs[1].find_all('th')[1].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-            base_trs[1].find_all('td')[1].get_text())
+                base_trs[1].find_all('td')[1].get_text())
         ind_comm_pub_reg_basic[base_trs[2].find_all('th')[0].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-            base_trs[2].find_all('td')[0].get_text())
+                base_trs[2].find_all('td')[0].get_text())
         ind_comm_pub_reg_basic[base_trs[2].find_all('th')[1].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-            base_trs[2].find_all('td')[1].get_text())
+                base_trs[2].find_all('td')[1].get_text())
         ind_comm_pub_reg_basic[base_trs[3].find_all('th')[0].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-            base_trs[3].find_all('td')[0].get_text())
+                base_trs[3].find_all('td')[0].get_text())
         ind_comm_pub_reg_basic[base_trs[3].find_all('th')[1].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-            base_trs[3].find_all('td')[1].get_text())
+                base_trs[3].find_all('td')[1].get_text())
         ind_comm_pub_reg_basic[base_trs[4].find('th').get_text()] = self.wipe_off_newline_and_blank_for_fe(
-            base_trs[4].find('td').get_text())
+                base_trs[4].find('td').get_text())
         ind_comm_pub_reg_basic[base_trs[5].find_all('th')[0].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-            base_trs[5].find_all('td')[0].get_text())
+                base_trs[5].find_all('td')[0].get_text())
         ind_comm_pub_reg_basic[base_trs[5].find_all('th')[1].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-            base_trs[5].find_all('td')[1].get_text())
+                base_trs[5].find_all('td')[1].get_text())
         ind_comm_pub_reg_basic[base_trs[6].find('th').get_text()] = self.wipe_off_newline_and_blank_for_fe(
-            base_trs[6].find('td').get_text())
+                base_trs[6].find('td').get_text())
         ind_comm_pub_reg_basic[base_trs[7].find_all('th')[0].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-            base_trs[7].find_all('td')[0].get_text())
+                base_trs[7].find_all('td')[0].get_text())
         ind_comm_pub_reg_basic[base_trs[7].find_all('th')[1].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-            base_trs[7].find_all('td')[1].get_text())
+                base_trs[7].find_all('td')[1].get_text())
         ind_comm_pub_reg_basic[base_trs[8].find('th').get_text()] = self.wipe_off_newline_and_blank_for_fe(
-            base_trs[8].find('td').get_text())
+                base_trs[8].find('td').get_text())
 
         self.crawler.json_dict['ind_comm_pub_reg_basic'] = ind_comm_pub_reg_basic
 
@@ -288,13 +309,13 @@ class GansuParser(Parser):
                     ind_comm_pub_reg_shareholder = {}
                     tds = shareholder_trs[i].find_all('td')
                     ind_comm_pub_reg_shareholder[u'股东'] = self.wipe_off_newline_and_blank_for_fe(
-                        tds[0].get_text())
+                            tds[0].get_text())
                     ind_comm_pub_reg_shareholder[u'证照/证件类型'] = self.wipe_off_newline_and_blank_for_fe(
-                        tds[1].get_text())
+                            tds[1].get_text())
                     ind_comm_pub_reg_shareholder[u'证照/证件号码'] = self.wipe_off_newline_and_blank_for_fe(
-                        tds[2].get_text())
+                            tds[2].get_text())
                     ind_comm_pub_reg_shareholder[u'股东类型'] = self.wipe_off_newline_and_blank_for_fe(
-                        tds[3].get_text())
+                            tds[3].get_text())
 
                     a_link = tds[4].find('a')
                     if a_link is None:
@@ -320,26 +341,26 @@ class GansuParser(Parser):
                         continue
                     detail_trs = detail_table.find_all('tr')
                     detail_tds = detail_trs[3].find_all('td')
+                    list_detail = []
                     detail = {}
-                    shareholder_detail = []
                     if len(detail_tds) >= 8:
-                        detail_detial = {}
-                        detail_detial[u'股东'] = self.wipe_off_newline_and_blank(detail_tds[0].get_text())
-                        detail_detial[u'认缴额（万元)'] = self.wipe_off_newline_and_blank(detail_tds[1].get_text())
-                        detail_detial[u'实缴额（万元)'] = self.wipe_off_newline_and_blank(detail_tds[2].get_text())
+                        detail[u'股东'] = self.wipe_off_newline_and_blank(detail_tds[0].get_text())
+                        detail[u'认缴额（万元)'] = self.wipe_off_newline_and_blank(detail_tds[1].get_text())
+                        detail[u'实缴额（万元)'] = self.wipe_off_newline_and_blank(detail_tds[2].get_text())
                         detail_list = []
-                        detail_detial_tial = {}
-                        detail_detial_tial[u'认缴出资方式'] = self.wipe_off_newline_and_blank_for_fe(detail_tds[3].get_text())
-                        detail_detial_tial[u'认缴出资额'] = self.wipe_off_newline_and_blank_for_fe(detail_tds[4].get_text())
-                        detail_detial_tial[u'认缴出资日期'] = self.wipe_off_newline_and_blank_for_fe(detail_tds[5].get_text())
-                        detail_detial_tial[u'实缴出资方式'] = self.wipe_off_newline_and_blank_for_fe(detail_tds[6].get_text())
-                        detail_detial_tial[u'实缴出资额'] = self.wipe_off_newline_and_blank_for_fe(detail_tds[7].get_text())
-                        detail_detial_tial[u'实缴出资日期'] = self.wipe_off_newline_and_blank_for_fe(detail_tds[8].get_text())
-                        detail_list.append(detail_detial_tial)
-                        detail_detial['list'] = detail_list
-                        shareholder_detail.append(detail_detial)
-                    detail[u'股东及出资信息'] = shareholder_detail
-                    ind_comm_pub_reg_shareholder[u'详情'] = detail
+                        detail_detial = {}
+                        detail_detial[u'认缴出资方式'] = self.wipe_off_newline_and_blank_for_fe(detail_tds[3].get_text())
+                        detail_detial[u'认缴出资额'] = self.wipe_off_newline_and_blank_for_fe(detail_tds[4].get_text())
+                        detail_detial[u'认缴出资日期'] = self.wipe_off_newline_and_blank_for_fe(detail_tds[5].get_text())
+                        detail_detial[u'实缴出资方式'] = self.wipe_off_newline_and_blank_for_fe(detail_tds[6].get_text())
+                        detail_detial[u'实缴出资额'] = self.wipe_off_newline_and_blank_for_fe(detail_tds[7].get_text())
+                        detail_detial[u'实缴出资日期'] = self.wipe_off_newline_and_blank_for_fe(detail_tds[8].get_text())
+                        detail_list.append(detail_detial)
+                        detail['list'] = detail_list
+                    list_detail.append(detail)
+                    list_detail_super = {}
+                    list_detail_super['股东及出资信息"'] = list_detail
+                    ind_comm_pub_reg_shareholder[u'详情'] = list_detail_super
                     ind_comm_pub_reg_shareholderes.append(ind_comm_pub_reg_shareholder)
                     i += 1
 
@@ -398,13 +419,13 @@ class GansuParser(Parser):
                 if len(tds) <= 0:
                     break
                 detail_arch_branch_info[u'序号'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[0].get_text())
+                        tds[0].get_text())
                 detail_arch_branch_info[u'注册号'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[1].get_text())
+                        tds[1].get_text())
                 detail_arch_branch_info[u'名称'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[2].get_text())
+                        tds[2].get_text())
                 detail_arch_branch_info[u'登记机关'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[3].get_text())
+                        tds[3].get_text())
                 detail_arch_branch_infoes.append(detail_arch_branch_info)
                 i += 1
 
@@ -430,17 +451,17 @@ class GansuParser(Parser):
                 if len(tds) <= 0:
                     break
                 detail_movable_property_reg_info[u'序号'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[0].get_text())
+                        tds[0].get_text())
                 detail_movable_property_reg_info[u'登记编号'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[1].get_text())
+                        tds[1].get_text())
                 detail_movable_property_reg_info[u'登记日期'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[2].get_text())
+                        tds[2].get_text())
                 detail_movable_property_reg_info[u'登记机关'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[3].get_text())
+                        tds[3].get_text())
                 detail_movable_property_reg_info[u'被担保债权数额'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[4].get_text())
+                        tds[4].get_text())
                 detail_movable_property_reg_info[u'状态'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[5].get_text())
+                        tds[5].get_text())
                 detail_movable_property_reg_infoes.append(detail_movable_property_reg_info)
                 i += 1
         self.crawler.json_dict['ind_comm_pub_movable_property_reg'] = detail_movable_property_reg_infoes
@@ -492,19 +513,19 @@ class GansuParser(Parser):
                 if len(tds) <= 0:
                     break
                 detail_administration_sanction_info[u'序号'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[0].get_text())
+                        tds[0].get_text())
                 detail_administration_sanction_info[u'行政处罚决定书文号'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[1].get_text())
+                        tds[1].get_text())
                 detail_administration_sanction_info[u'违法行为类型'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[2].get_text())
+                        tds[2].get_text())
                 detail_administration_sanction_info[u'行政处罚内容'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[3].get_text())
+                        tds[3].get_text())
                 detail_administration_sanction_info[u'作出行政处罚决定机关名称'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[4].get_text())
+                        tds[4].get_text())
                 detail_administration_sanction_info[u'作出行政处罚决定日期'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[5].get_text())
+                        tds[5].get_text())
                 detail_administration_sanction_info[u'公示日期'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[6].get_text())
+                        tds[6].get_text())
                 detail_administration_sanction_infoes.append(detail_administration_sanction_info)
                 i += 1
         self.crawler.json_dict['ind_comm_pub_administration_sanction'] = detail_administration_sanction_infoes
@@ -528,17 +549,17 @@ class GansuParser(Parser):
                 if len(tds) <= 0:
                     break
                 detail_business_exception_info[u'序号'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[0].get_text())
+                        tds[0].get_text())
                 detail_business_exception_info[u'列入经营异常名录原因'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[1].get_text())
+                        tds[1].get_text())
                 detail_business_exception_info[u'列入日期'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[2].get_text())
+                        tds[2].get_text())
                 detail_business_exception_info[u'移出经营异常名录原因'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[3].get_text())
+                        tds[3].get_text())
                 detail_business_exception_info[u'移出日期'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[4].get_text())
+                        tds[4].get_text())
                 detail_business_exception_info[u'作出决定机关'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[5].get_text())
+                        tds[5].get_text())
                 detail_business_exception_infoes.append(detail_business_exception_info)
                 i += 1
         self.crawler.json_dict['ind_comm_pub_business_exception'] = detail_business_exception_infoes
@@ -560,17 +581,17 @@ class GansuParser(Parser):
                 if len(tds) <= 0:
                     break
                 detail_serious_violate_law_info[u'序号'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[0].get_text())
+                        tds[0].get_text())
                 detail_serious_violate_law_info[u'列入严重违法企业名单原因'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[1].get_text())
+                        tds[1].get_text())
                 detail_serious_violate_law_info[u'列入日期'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[2].get_text())
+                        tds[2].get_text())
                 detail_serious_violate_law_info[u'移出严重违法企业名单原因'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[3].get_text())
+                        tds[3].get_text())
                 detail_serious_violate_law_info[u'移出日期'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[4].get_text())
+                        tds[4].get_text())
                 detail_serious_violate_law_info[u'作出决定机关'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[5].get_text())
+                        tds[5].get_text())
                 detail_serious_violate_law_infoes.append(detail_serious_violate_law_info)
                 i += 1
         self.crawler.json_dict['ind_comm_pub_serious_violate_law'] = detail_serious_violate_law_infoes
@@ -592,15 +613,15 @@ class GansuParser(Parser):
                 if len(tds) <= 0:
                     break
                 detail_spot_check_info[u'序号'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[0].get_text())
+                        tds[0].get_text())
                 detail_spot_check_info[u'检查实施机关'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[1].get_text())
+                        tds[1].get_text())
                 detail_spot_check_info[u'类型'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[2].get_text())
+                        tds[2].get_text())
                 detail_spot_check_info[u'日期'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[3].get_text())
+                        tds[3].get_text())
                 detail_spot_check_info[u'结果'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[4].get_text())
+                        tds[4].get_text())
                 detail_spot_check_infoes.append(detail_spot_check_info)
                 i += 1
         self.crawler.json_dict['ind_comm_pub_spot_check'] = detail_spot_check_infoes
@@ -644,15 +665,15 @@ class GansuParser(Parser):
                 if len(tds) <= 0:
                     break
                 detail_reg_modify_info[u'序号'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[0].get_text())
+                        tds[0].get_text())
                 detail_reg_modify_info[u'变更事项'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[1].get_text())
+                        tds[1].get_text())
                 detail_reg_modify_info[u'变更时间'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[2].get_text())
+                        tds[2].get_text())
                 detail_reg_modify_info[u'变更前'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[3].get_text())
+                        tds[3].get_text())
                 detail_reg_modify_info[u'变更后'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[4].get_text())
+                        tds[4].get_text())
 
                 detail_reg_modify_infoes.append(detail_reg_modify_info)
                 i += 1
@@ -674,7 +695,7 @@ class GansuParser(Parser):
                 ent_pub_ent_annual_report = {}
                 ent_pub_ent_annual_report[u'序号'] = self.wipe_off_newline_and_blank_for_fe(tds[0].get_text())
                 ent_pub_ent_annual_report[u'报送年度'] = self.wipe_off_newline_and_blank_for_fe(
-                    (str(tds[1].get_text())[1:]))
+                        (str(tds[1].get_text())[1:]))
                 ent_pub_ent_annual_report[u'发布日期'] = self.wipe_off_newline_and_blank_for_fe((tds[2].get_text()))
                 a_link = tds[1].find('a')
                 if a_link is None:
@@ -708,29 +729,29 @@ class GansuParser(Parser):
                 detail_base_info = {}
 
                 detail_base_info[base_trs[2].find_all('th')[0].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-                    base_trs[2].find_all('td')[0].get_text())
+                        base_trs[2].find_all('td')[0].get_text())
                 detail_base_info[base_trs[2].find_all('th')[1].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-                    base_trs[2].find_all('td')[1].get_text())
+                        base_trs[2].find_all('td')[1].get_text())
                 detail_base_info[base_trs[3].find_all('th')[0].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-                    base_trs[3].find_all('td')[0].get_text())
+                        base_trs[3].find_all('td')[0].get_text())
                 detail_base_info[base_trs[3].find_all('th')[1].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-                    base_trs[3].find_all('td')[1].get_text())
+                        base_trs[3].find_all('td')[1].get_text())
 
                 detail_base_info[base_trs[4].find('th').get_text()] = self.wipe_off_newline_and_blank_for_fe(
-                    base_trs[4].find('td').get_text())
+                        base_trs[4].find('td').get_text())
 
                 detail_base_info[base_trs[5].find_all('th')[0].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-                    base_trs[5].find_all('td')[0].get_text())
+                        base_trs[5].find_all('td')[0].get_text())
                 detail_base_info[base_trs[5].find_all('th')[1].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-                    base_trs[5].find_all('td')[1].get_text())
+                        base_trs[5].find_all('td')[1].get_text())
                 detail_base_info[base_trs[6].find_all('th')[0].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-                    base_trs[6].find_all('td')[0].get_text())
+                        base_trs[6].find_all('td')[0].get_text())
                 detail_base_info[base_trs[6].find_all('th')[1].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-                    base_trs[6].find_all('td')[1].get_text())
+                        base_trs[6].find_all('td')[1].get_text())
                 detail_base_info[base_trs[7].find_all('th')[0].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-                    base_trs[7].find_all('td')[0].get_text())
+                        base_trs[7].find_all('td')[0].get_text())
                 detail_base_info[base_trs[7].find_all('th')[1].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-                    base_trs[7].find_all('td')[1].get_text())
+                        base_trs[7].find_all('td')[1].get_text())
 
                 detail[u'企业基本信息'] = detail_base_info
 
@@ -763,23 +784,23 @@ class GansuParser(Parser):
                         if len(tds) <= 0:
                             break
                         detail_shareholder_capital_contribution_info[u'股东'] = self.wipe_off_newline_and_blank_for_fe(
-                            tds[0].get_text())
+                                tds[0].get_text())
                         detail_shareholder_capital_contribution_info[u'认缴出资额'] = self.wipe_off_newline_and_blank_for_fe(
-                            tds[1].get_text())
+                                tds[1].get_text())
                         detail_shareholder_capital_contribution_info[
                             u'认缴出资时间'] = self.wipe_off_newline_and_blank_for_fe(
-                            tds[2].get_text())
+                                tds[2].get_text())
                         detail_shareholder_capital_contribution_info[
                             u'认缴出资方式'] = self.wipe_off_newline_and_blank_for_fe(
-                            tds[3].get_text())
+                                tds[3].get_text())
                         detail_shareholder_capital_contribution_info[u'实缴出资额'] = self.wipe_off_newline_and_blank_for_fe(
-                            tds[4].get_text())
+                                tds[4].get_text())
                         detail_shareholder_capital_contribution_info[u'出资时间'] = self.wipe_off_newline_and_blank_for_fe(
-                            tds[5].get_text())
+                                tds[5].get_text())
                         detail_shareholder_capital_contribution_info[u'出资方式'] = self.wipe_off_newline_and_blank_for_fe(
-                            tds[6].get_text())
+                                tds[6].get_text())
                         detail_shareholder_capital_contribution_infoes.append(
-                            detail_shareholder_capital_contribution_info)
+                                detail_shareholder_capital_contribution_info)
                         i += 1
                 detail[u'股东及出资信息'] = detail_shareholder_capital_contribution_infoes
 
@@ -794,9 +815,9 @@ class GansuParser(Parser):
                             break
                         detail_outbound_investment_info = {}
                         detail_outbound_investment_info[u'投资设立企业或购买股权企业名称'] = self.wipe_off_newline_and_blank_for_fe(
-                            tds[0].get_text())
+                                tds[0].get_text())
                         detail_outbound_investment_info[u'注册号'] = self.wipe_off_newline_and_blank_for_fe(
-                            tds[1].get_text())
+                                tds[1].get_text())
                         detail_outbound_investment_infoes.append(detail_outbound_investment_info)
                         i += 1
 
@@ -807,28 +828,28 @@ class GansuParser(Parser):
                 detail_state_of_enterprise_assets_infoes = {}
                 detail_state_of_enterprise_assets_infoes[state_of_enterprise_assets_trs[1].find_all('th')[
                     0].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-                    state_of_enterprise_assets_trs[1].find_all('td')[0].get_text())
+                        state_of_enterprise_assets_trs[1].find_all('td')[0].get_text())
                 detail_state_of_enterprise_assets_infoes[state_of_enterprise_assets_trs[1].find_all('th')[
                     1].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-                    state_of_enterprise_assets_trs[1].find_all('td')[1].get_text())
+                        state_of_enterprise_assets_trs[1].find_all('td')[1].get_text())
                 detail_state_of_enterprise_assets_infoes[state_of_enterprise_assets_trs[2].find_all('th')[
                     0].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-                    state_of_enterprise_assets_trs[2].find_all('td')[0].get_text())
+                        state_of_enterprise_assets_trs[2].find_all('td')[0].get_text())
                 detail_state_of_enterprise_assets_infoes[state_of_enterprise_assets_trs[2].find_all('th')[
                     1].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-                    state_of_enterprise_assets_trs[2].find_all('td')[1].get_text())
+                        state_of_enterprise_assets_trs[2].find_all('td')[1].get_text())
                 detail_state_of_enterprise_assets_infoes[state_of_enterprise_assets_trs[3].find_all('th')[
                     0].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-                    state_of_enterprise_assets_trs[3].find_all('td')[0].get_text())
+                        state_of_enterprise_assets_trs[3].find_all('td')[0].get_text())
                 detail_state_of_enterprise_assets_infoes[state_of_enterprise_assets_trs[3].find_all('th')[
                     1].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-                    state_of_enterprise_assets_trs[3].find_all('td')[1].get_text())
+                        state_of_enterprise_assets_trs[3].find_all('td')[1].get_text())
                 detail_state_of_enterprise_assets_infoes[state_of_enterprise_assets_trs[4].find_all('th')[
                     0].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-                    state_of_enterprise_assets_trs[4].find_all('td')[0].get_text())
+                        state_of_enterprise_assets_trs[4].find_all('td')[0].get_text())
                 detail_state_of_enterprise_assets_infoes[state_of_enterprise_assets_trs[4].find_all('th')[
                     1].get_text()] = self.wipe_off_newline_and_blank_for_fe(
-                    state_of_enterprise_assets_trs[4].find_all('td')[1].get_text())
+                        state_of_enterprise_assets_trs[4].find_all('td')[1].get_text())
 
                 detail[u'企业资产状况信息'] = detail_state_of_enterprise_assets_infoes
 
@@ -843,25 +864,25 @@ class GansuParser(Parser):
                         if len(tds) <= 0:
                             break
                         detail_provide_guarantee_to_the_outside_info[u'债权人'] = self.wipe_off_newline_and_blank_for_fe(
-                            tds[0].get_text())
+                                tds[0].get_text())
                         detail_provide_guarantee_to_the_outside_info[u'债务人'] = self.wipe_off_newline_and_blank_for_fe(
-                            tds[1].get_text())
+                                tds[1].get_text())
                         detail_provide_guarantee_to_the_outside_info[u'主债权种类'] = self.wipe_off_newline_and_blank_for_fe(
-                            tds[2].get_text())
+                                tds[2].get_text())
                         detail_provide_guarantee_to_the_outside_info[u'主债权数额'] = self.wipe_off_newline_and_blank_for_fe(
-                            tds[3].get_text())
+                                tds[3].get_text())
                         detail_provide_guarantee_to_the_outside_info[
                             u'履行债务的期限'] = self.wipe_off_newline_and_blank_for_fe(
-                            tds[4].get_text())
+                                tds[4].get_text())
                         detail_provide_guarantee_to_the_outside_info[u'保证的期间'] = self.wipe_off_newline_and_blank_for_fe(
-                            tds[5].get_text())
+                                tds[5].get_text())
                         detail_provide_guarantee_to_the_outside_info[u'保证的方式'] = self.wipe_off_newline_and_blank_for_fe(
-                            tds[6].get_text())
+                                tds[6].get_text())
                         detail_provide_guarantee_to_the_outside_info[
                             u'保证担保的范围'] = self.wipe_off_newline_and_blank_for_fe(
-                            tds[7].get_text())
+                                tds[7].get_text())
                         detail_provide_guarantee_to_the_outside_infoes.append(
-                            detail_provide_guarantee_to_the_outside_info)
+                                detail_provide_guarantee_to_the_outside_info)
                         i += 1
                 detail[u'对外提供保证担保信息'] = detail_provide_guarantee_to_the_outside_infoes
 
@@ -876,13 +897,13 @@ class GansuParser(Parser):
                         if len(tds) <= 0:
                             break
                         detail_ent_pub_equity_change_info[u'股东'] = self.wipe_off_newline_and_blank_for_fe(
-                            tds[0].get_text())
+                                tds[0].get_text())
                         detail_ent_pub_equity_change_info[u'变更前股权比例'] = self.wipe_off_newline_and_blank_for_fe(
-                            tds[1].get_text())
+                                tds[1].get_text())
                         detail_ent_pub_equity_change_info[u'变更后股权比例'] = self.wipe_off_newline_and_blank_for_fe(
-                            tds[2].get_text())
+                                tds[2].get_text())
                         detail_ent_pub_equity_change_info[u'股权变更日期'] = self.wipe_off_newline_and_blank_for_fe(
-                            tds[3].get_text())
+                                tds[3].get_text())
                         detail_ent_pub_equity_change_infoes.append(detail_ent_pub_equity_change_info)
                         i += 1
                 detail[u'股权变更信息'] = detail_ent_pub_equity_change_infoes
@@ -898,15 +919,15 @@ class GansuParser(Parser):
                         if len(tds) <= 0:
                             break
                         detail_change_record_info[u'序号'] = self.wipe_off_newline_and_blank_for_fe(
-                            tds[0].get_text())
+                                tds[0].get_text())
                         detail_change_record_info[u'修改事项'] = self.wipe_off_newline_and_blank_for_fe(
-                            tds[1].get_text())
+                                tds[1].get_text())
                         detail_change_record_info[u'修改前'] = self.wipe_off_newline_and_blank_for_fe(
-                            tds[2].get_text())
+                                tds[2].get_text())
                         detail_change_record_info[u'修改后'] = self.wipe_off_newline_and_blank_for_fe(
-                            tds[3].get_text())
+                                tds[3].get_text())
                         detail_change_record_info[u'修改日期'] = self.wipe_off_newline_and_blank_for_fe(
-                            tds[4].get_text())
+                                tds[4].get_text())
                         detail_change_record_infoes.append(detail_change_record_info)
                         i += 1
                 detail[u'修改记录'] = detail_change_record_infoes
@@ -935,25 +956,25 @@ class GansuParser(Parser):
                 if len(tds) <= 0:
                     break
                 detail_administration_license_info[u'序号'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[0].get_text())
+                        tds[0].get_text())
                 detail_administration_license_info[u'许可文件编号'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[1].get_text())
+                        tds[1].get_text())
                 detail_administration_license_info[u'许可文件名称'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[2].get_text())
+                        tds[2].get_text())
                 detail_administration_license_info[u'有效期自'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[3].get_text())
+                        tds[3].get_text())
                 detail_administration_license_info[u'有效期至'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[4].get_text())
+                        tds[4].get_text())
                 detail_administration_license_info[u'许可机关'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[5].get_text())
+                        tds[5].get_text())
                 detail_administration_license_info[u'许可内容'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[6].get_text())
+                        tds[6].get_text())
                 detail_administration_license_info[u'状态'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[7].get_text())
+                        tds[7].get_text())
                 detail_administration_license_info[u'公示日期'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[8].get_text())
+                        tds[8].get_text())
                 detail_administration_license_info[u'详情'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[9].get_text())
+                        tds[9].get_text())
                 detail_administration_license_infoes.append(detail_administration_license_info)
                 i += 1
         self.crawler.json_dict['ind_comm_pub_administration_license'] = detail_administration_license_infoes
@@ -980,21 +1001,21 @@ class GansuParser(Parser):
                 if len(tds) <= 0:
                     break
                 detail_administration_sanction_info[u'序号'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[0].get_text())
+                        tds[0].get_text())
                 detail_administration_sanction_info[u'行政处罚决定书文号'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[1].get_text())
+                        tds[1].get_text())
                 detail_administration_sanction_info[u'行政处罚类型'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[2].get_text())
+                        tds[2].get_text())
                 detail_administration_sanction_info[u'行政处罚内容'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[3].get_text())
+                        tds[3].get_text())
                 detail_administration_sanction_info[u'作出行政处罚决定机关名称'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[4].get_text())
+                        tds[4].get_text())
                 detail_administration_sanction_info[u'作出行政处罚决定日期'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[5].get_text())
+                        tds[5].get_text())
                 detail_administration_sanction_info[u'公示日期'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[6].get_text())
+                        tds[6].get_text())
                 detail_administration_sanction_info[u'备注'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[7].get_text())
+                        tds[7].get_text())
                 detail_administration_sanction_infoes.append(detail_administration_sanction_info)
                 i += 1
         self.crawler.json_dict['ind_comm_pub_administration_sanction'] = detail_administration_sanction_infoes
@@ -1019,17 +1040,17 @@ class GansuParser(Parser):
                 if len(tds) <= 0:
                     break
                 detail_equity_change_info[u'序号'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[0].get_text())
+                        tds[0].get_text())
                 detail_equity_change_info[u'股东'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[1].get_text())
+                        tds[1].get_text())
                 detail_equity_change_info[u'变更前股权比例'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[2].get_text())
+                        tds[2].get_text())
                 detail_equity_change_info[u'变更后股权比例'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[3].get_text())
+                        tds[3].get_text())
                 detail_equity_change_info[u'股权变更日期'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[4].get_text())
+                        tds[4].get_text())
                 detail_equity_change_info[u'填报时间'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[5].get_text())
+                        tds[5].get_text())
                 detail_equity_change_infoes.append(detail_equity_change_info)
                 i += 1
         self.crawler.json_dict['ind_comm_pub_equity_change'] = detail_equity_change_infoes
@@ -1057,23 +1078,23 @@ class GansuParser(Parser):
                 if len(tds) <= 0:
                     break
                 detail_knowledge_property_info[u'序号'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[0].get_text())
+                        tds[0].get_text())
                 detail_knowledge_property_info[u'注册号'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[1].get_text())
+                        tds[1].get_text())
                 detail_knowledge_property_info[u'名称'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[2].get_text())
+                        tds[2].get_text())
                 detail_knowledge_property_info[u'种类'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[3].get_text())
+                        tds[3].get_text())
                 detail_knowledge_property_info[u'出质人名称'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[4].get_text())
+                        tds[4].get_text())
                 detail_knowledge_property_info[u'质权人名称'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[5].get_text())
+                        tds[5].get_text())
                 detail_knowledge_property_info[u'质权登记期限'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[6].get_text())
+                        tds[6].get_text())
                 detail_knowledge_property_info[u'状态'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[7].get_text())
+                        tds[7].get_text())
                 detail_knowledge_property_info[u'变化情况'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[8].get_text())
+                        tds[8].get_text())
 
                 detail_knowledge_property_infoes.append(detail_knowledge_property_info)
                 i += 1
@@ -1098,19 +1119,19 @@ class GansuParser(Parser):
                 if len(tds) <= 0:
                     break
                 detail_equity_freeze_info[u'序号'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[0].get_text())
+                        tds[0].get_text())
                 detail_equity_freeze_info[u'被执行人'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[1].get_text())
+                        tds[1].get_text())
                 detail_equity_freeze_info[u'股权数额'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[2].get_text())
+                        tds[2].get_text())
                 detail_equity_freeze_info[u'执行法院'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[3].get_text())
+                        tds[3].get_text())
                 detail_equity_freeze_info[u'协助公示通知书文号'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[4].get_text())
+                        tds[4].get_text())
                 detail_equity_freeze_info[u'状态'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[5].get_text())
+                        tds[5].get_text())
                 detail_equity_freeze_info[u'详情'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[6].get_text())
+                        tds[6].get_text())
 
                 detail_equity_freeze_infoes.append(detail_equity_freeze_info)
                 i += 1
@@ -1133,17 +1154,17 @@ class GansuParser(Parser):
                 if len(tds) <= 0:
                     break
                 detail_shareholder_modify_info[u'序号'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[0].get_text())
+                        tds[0].get_text())
                 detail_shareholder_modify_info[u'被执行人'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[1].get_text())
+                        tds[1].get_text())
                 detail_shareholder_modify_info[u'股权数额'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[2].get_text())
+                        tds[2].get_text())
                 detail_shareholder_modify_info[u'受让人'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[3].get_text())
+                        tds[3].get_text())
                 detail_shareholder_modify_info[u'执行法院'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[4].get_text())
+                        tds[4].get_text())
                 detail_shareholder_modify_info[u'详情'] = self.wipe_off_newline_and_blank_for_fe(
-                    tds[5].get_text())
+                        tds[5].get_text())
 
                 detail_shareholder_modify_infoes.append(detail_shareholder_modify_info)
                 i += 1
@@ -1153,7 +1174,7 @@ class GansuParser(Parser):
 class TestParser(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
-        self.crawler = GansuClawer('./enterprise_crawler/gansu.json')
+        self.crawler = NingxiaClawer('./enterprise_crawler/ningxia.json')
         self.parser = self.crawler.parser
         self.crawler.json_dict = {}
         self.crawler.ent_number = '152704000000508'
@@ -1168,13 +1189,13 @@ if __name__ == '__main__':
     import run
 
     run.config_logging()
-    GansuClawer.code_cracker = CaptchaRecognition('gansu')
-    crawler = GansuClawer('./enterprise_crawler/gansu/gansu.json')
-    enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/gansu.txt')
+    NingxiaClawer.code_cracker = CaptchaRecognition('ningxia')
+    crawler = NingxiaClawer('./enterprise_crawler/ningxia/ningxia.json')
+    enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/ningxia.txt')
     i = 0
     for ent_number in enterprise_list:
         ent_number = ent_number.rstrip('\n')
         logging.info(
-            '############   Start to crawl enterprise with id %s   ################\n' % ent_number)
+                '############   Start to crawl enterprise with id %s   ################\n' % ent_number)
         crawler.run(ent_number=ent_number)
 """
