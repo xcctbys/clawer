@@ -1,4 +1,5 @@
 #encoding=utf-8
+import os
 
 from enterprise.models import Province
 
@@ -34,6 +35,8 @@ class EnterpriseDownload(object):
         enterprise://${province}/${enterprise_name}/${register_no}/?${querystring}
         """
         self.url = url
+        if os.path.exists(settings.json_restore_path) is False:
+            os.makedirs(settings.json_restore_path, 0775)
 
         o = urlparse.urlparse(self.url)
         self.province = o.hostname
