@@ -16,18 +16,15 @@ import types
 import urlparse
 import json
 
-ENT_CRAWLER_SETTINGS = os.getenv('ENT_CRAWLER_SETTINGS')
-if ENT_CRAWLER_SETTINGS and ENT_CRAWLER_SETTINGS.find('settings_pro') >= 0:
-    import settings_pro as settings
-else:
-    import settings
-
+from . import settings
+import enterprise.libs.CaptchaRecognition as CaptchaRecognition
+import logging
 
 class JiangxiClawer(Crawler):
     """甘肃工商公示信息网页爬虫
     """
     # html数据的存储路径
-    html_restore_path = settings.html_restore_path + '/jiangxi/'
+    # html_restore_path = settings.html_restore_path + '/jiangxi/'
 
     # 验证码图片的存储路径
     ckcode_image_path = settings.json_restore_path + '/jiangxi/ckcode.jpg'
@@ -36,7 +33,7 @@ class JiangxiClawer(Crawler):
     ckcode_image_dir_path = settings.json_restore_path + '/jiangxi/'
 
     # 查询页面
-    search_page = html_restore_path + 'search_page.html'
+    # search_page = html_restore_path + 'search_page.html'
 
     # 多线程爬取时往最后的json文件中写时的加锁保护
     write_file_mutex = threading.Lock()
@@ -103,15 +100,15 @@ class JiangxiClawer(Crawler):
 
         crawler.ent_number = str(ent_number)
         # 对每个企业都指定一个html的存储目录
-        self.html_restore_path = self.html_restore_path + crawler.ent_number + '/'
-        if settings.save_html and not os.path.exists(self.html_restore_path):
-            CrawlerUtils.make_dir(self.html_restore_path)
+        # self.html_restore_path = self.html_restore_path + crawler.ent_number + '/'
+        # if settings.save_html and not os.path.exists(self.html_restore_path):
+        #     CrawlerUtils.make_dir(self.html_restore_path)
 
         crawler.json_dict = {}
         page = crawler.crawl_check_page()
 
         if page is None:
-            settings.logger.error(
+            logging.error(
                 'According to the registration number does not search to the company %s' % self.ent_number)
             return False
         crawler.results = crawler.parser.parse_search_page(page)
@@ -162,12 +159,12 @@ class JiangxiClawer(Crawler):
         crawler.parser.parse_judical_assist_pub_equity_freeze_pages(page)
         page = crawler.crawl_judical_assist_pub_shareholder_modify_pages()
         crawler.parser.parse_judical_assist_pub_shareholder_modify_pages(page)
-
+        return json.dumps({ ent_number: crawler.json_dict})
         # 采用多线程，在写入文件时需要注意加锁
-        self.write_file_mutex.acquire()
-        CrawlerUtils.json_dump_to_file(self.json_restore_path, {crawler.ent_number: crawler.json_dict})
-        self.write_file_mutex.release()
-        return True
+        # self.write_file_mutex.acquire()
+        # CrawlerUtils.json_dump_to_file(self.json_restore_path, {crawler.ent_number: crawler.json_dict})
+        # self.write_file_mutex.release()
+        # return True
 
     def crawl_check_page(self):
         """爬取验证码页面，包括下载验证码图片以及破解验证码
@@ -179,7 +176,7 @@ class JiangxiClawer(Crawler):
             data = {'password': ck_code}
             resp = self.reqst.post(JiangxiClawer.urls['post_checkCode'], data=data)
             if resp.status_code != 200:
-                settings.logger.error("crawl post check page failed!")
+                logging.error("crawl post check page failed!")
                 count += 1
                 continue
             message_json = resp.content
@@ -218,7 +215,7 @@ class JiangxiClawer(Crawler):
         resp = self.reqst.get(JiangxiClawer.urls['get_checkcode'], params=params)
         print 'image code', str(resp.status_code)
         if resp.status_code != 200:
-            settings.logger.error('failed to get get_checkcode')
+            logging.error('failed to get get_checkcode')
             return None
         time.sleep(random.uniform(0.1, 1))
         self.write_file_mutex.acquire()
@@ -237,7 +234,7 @@ class JiangxiClawer(Crawler):
             ckcode = self.code_cracker.predict_result(self.ckcode_image_path)
             # ckcode = self.code_cracker.predict_result(self.ckcode_image_dir_path + 'image' + str(i) + '.jpg')
         except Exception as e:
-            settings.logger.warn('exception occured when crack checkcode')
+            logging.warn('exception occured when crack checkcode')
             ckcode = ('', '')
         finally:
             pass
@@ -252,11 +249,11 @@ class JiangxiClawer(Crawler):
         resp = self.reqst.get(url=url, params=params)
         # print str(resp.status_code)
         if resp.status_code != 200:
-            settings.logger.error('crawl page by url failed! url = %s' % url)
+            logging.error('crawl page by url failed! url = %s' % url)
         page = resp.content
         time.sleep(random.uniform(0.1, 0.3))
-        if settings.save_html:
-            CrawlerUtils.save_page_to_file(self.html_restore_path + name, page)
+        # if settings.save_html:
+        #     CrawlerUtils.save_page_to_file(self.html_restore_path + name, page)
         return page
 
     def crawl_ind_comm_pub_reg_basic_pages(self):
@@ -1555,7 +1552,7 @@ class TestParser(unittest.TestCase):
         isOK = self.crawler.crawl_check_page()
         self.assertEqual(isOK, True)
 
-
+"""
 if __name__ == '__main__':
 
     # import sys
@@ -1576,3 +1573,4 @@ if __name__ == '__main__':
         print(
             '############   Start to crawl enterprise with id %s   ################\n' % ent_number)
         crawler.run(ent_number=ent_number)
+"""

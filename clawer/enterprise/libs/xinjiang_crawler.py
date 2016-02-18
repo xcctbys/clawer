@@ -23,6 +23,7 @@ import json
 import enterprise.libs.CaptchaRecognition as CaptchaRecognition
 
 
+
 class XinjiangClawer(Crawler):
     """新疆工商公示信息网页爬虫
     """
@@ -53,7 +54,7 @@ class XinjiangClawer(Crawler):
         self.credit_ticket = None
         #html数据的存储路径
         self.save_html = False
-        self.html_restore_path = os.path.join(self.json_restore_path, "chongqing", "html")
+        self.html_restore_path = os.path.join(self.json_restore_path, "xinjiang", "html")
         if os.path.exists(self.html_restore_path) is False:
             os.makedirs(self.html_restore_path, 0775)
         #验证码图片的存储路径
