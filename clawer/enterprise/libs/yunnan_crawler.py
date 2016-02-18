@@ -285,9 +285,9 @@ class YunnanCrawler(object):
 
 		self.ent_number = str(findCode)
 		#对每个企业都指定一个html的存储目录
-		self.html_restore_path = self.html_restore_path + self.ent_number + '/'
-		if settings.save_html and not os.path.exists(self.html_restore_path):
-			CrawlerUtils.make_dir(self.html_restore_path)
+		# self.html_restore_path = self.html_restore_path + self.ent_number + '/'
+		# if settings.save_html and not os.path.exists(self.html_restore_path):
+		# 	CrawlerUtils.make_dir(self.html_restore_path)
 
 		self.uuid = self.get_id_num(findCode)
 		print self.uuid
