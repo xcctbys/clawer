@@ -14,7 +14,7 @@ from . import settings
 from enterprise.libs.CaptchaRecognition import CaptchaRecognition
 
 class YunnanCrawler(object):
-    ckcode_image_path = settings.json_restore_path + '/yunnan/ckcode.jpg'
+	ckcode_image_path = settings.json_restore_path + '/yunnan/ckcode.jpg'
 	def __init__(self, json_restore_path):
 		self.id = None
 		self.reqst = requests.Session()

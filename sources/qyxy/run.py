@@ -31,7 +31,7 @@ from jiangsu_crawler import JiangsuCrawler
 from zongju_crawler import ZongjuCrawler
 from shanghai_crawler import ShanghaiCrawler
 from guangdong_crawler import GuangdongClawer
-from heilongjinag_crawler import HeilongjiangClawer
+from heilongjiang_crawler import HeilongjiangClawer
 from anhui_crawler import AnhuiCrawler
 from yunnan_crawler import YunnanCrawler
 from tianjin_crawler import TianjinCrawler
@@ -55,6 +55,7 @@ from hubei_crawler import HubeiCrawler
 from guizhou_crawler import GuizhouCrawler
 from jilin_crawler import JilinCrawler
 from hainan_crawler import HainanCrawler
+from xizang_crawler import XizangCrawler
 import traceback
 
 
@@ -98,6 +99,7 @@ province_crawler = {
     'guizhou' : GuizhouCrawler,
     'jilin' : JilinCrawler,
     'hainan' : HainanCrawler,
+    'xizang' : XizangCrawler,
 }
 
 process_pool = None
@@ -303,7 +305,7 @@ def main():
 
     if not os.path.exists(settings.json_restore_path):
         CrawlerUtils.make_dir(settings.json_restore_path)
-    
+
     cur_date = CrawlerUtils.get_cur_y_m_d()
     set_codecracker()
 
@@ -318,7 +320,7 @@ def main():
     if len(sys.argv) < 3:
         print 'usage: run.py [check] [max_crawl_time(minutes) province...] \n\tmax_crawl_time 最大爬取秒数，以秒计;\n\tprovince 是所要爬取的省份列表 用空格分开, all表示爬取全部)'
         return
-    
+
     try:
         max_crawl_time = int(sys.argv[1])
         settings.max_crawl_time = datetime.timedelta(minutes=max_crawl_time)
