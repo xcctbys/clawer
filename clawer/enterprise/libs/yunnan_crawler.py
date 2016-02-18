@@ -30,7 +30,7 @@ class YunnanCrawler(object):
 				'search':'http://gsxt.ynaic.gov.cn/notice/',
 				'searchList':'http://gsxt.ynaic.gov.cn/notice/search/ent_info_list',
 				'validateCode':'http://gsxt.ynaic.gov.cn/notice/captcha?preset=&ra=0.06570781518790503'}
-	
+
 		self.one_dict = {u'基本信息':'ind_comm_pub_reg_basic',
 				u'股东信息':'ind_comm_pub_reg_shareholder',
 				u'发起人信息':'ind_comm_pub_reg_shareholder',
@@ -193,7 +193,7 @@ class YunnanCrawler(object):
 					tdlist.append(None)
 			allths.insert(2, u'详情')
 			self.test_print_all_ths_tds(head, allths, tdlist)
-			return head, allths, tdlist			
+			return head, allths, tdlist
 			pass
 		else:
 			if table.find_all('td') :
@@ -257,7 +257,7 @@ class YunnanCrawler(object):
 				else:
 					self.result_json_dict[mydict[head]] = []
 			#self.test_print_all_ths_tds(head, allths, alltds)
-		pass			
+		pass
 	def get_json_two(self, mydict, tables):
 		#self.test_print_table(tables)
 		for table in tables:
@@ -271,7 +271,7 @@ class YunnanCrawler(object):
 			head, allths, alltds = self.get_head_ths_tds(table)
 			#print head
 			self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
-		
+
 		pass
 	def get_json_four(self, mydict, tables):
 		#self.test_print_table(tables)
@@ -304,7 +304,7 @@ class YunnanCrawler(object):
 
 		# CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.result_json_dict})
 		return json.dumps({self.ent_number:self.result_json_dict})
-
+"""
 if __name__ == '__main__':
 	yunnan = YunnanCrawler('./enterprise_crawler/yunnan.json')
 	# yunnan.run('530000000006503')
@@ -313,3 +313,4 @@ if __name__ == '__main__':
 		print line.split(',')[2].strip()
 		yunnan.run(str(line.split(',')[2]).strip())
 	f.close()
+"""

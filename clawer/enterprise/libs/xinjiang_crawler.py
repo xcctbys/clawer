@@ -52,10 +52,10 @@ class XinjiangClawer(Crawler):
         self.parser = XinjiangParser(self)
         self.credit_ticket = None
         #html数据的存储路径
-        self.save_html = False
-        self.html_restore_path = os.path.join(self.json_restore_path, "chongqing", "html")
-        if os.path.exists(self.html_restore_path) is False:
-            os.makedirs(self.html_restore_path, 0775)
+        # self.save_html = False
+        # self.html_restore_path = os.path.join(self.json_restore_path, "xinjiang", "html")
+        # if os.path.exists(self.html_restore_path) is False:
+        #     os.makedirs(self.html_restore_path, 0775)
         #验证码图片的存储路径
         self.ckcode_image_path = os.path.join(self.html_restore_path, 'ckcode.jpg')
         self.code_cracker = CaptchaRecognition("xinjiang")
@@ -193,8 +193,8 @@ class XinjiangClawer(Crawler):
             logging.error('crawl page by url failed! url = %s' % XinjiangClawer.urls['post_all_page'])
         page = resp.content
         time.sleep(random.uniform(0.1, 0.3))
-        if settings.save_html:
-            CrawlerUtils.save_page_to_file(self.html_restore_path + name, page)
+        # if settings.save_html:
+        #     CrawlerUtils.save_page_to_file(self.html_restore_path + name, page)
         return page
 
     def crawl_ind_comm_pub_basic_pages(self, page):
@@ -804,7 +804,7 @@ class TestParser(unittest.TestCase):
     def test_crawl_check_page(self):
         isOK = self.crawler.crawl_check_page()
         self.assertEqual(isOK, True)
-
+"""
 
 if __name__ == '__main__':
     from CaptchaRecognition import CaptchaRecognition
@@ -820,3 +820,4 @@ if __name__ == '__main__':
         logging.info(
             '############   Start to crawl enterprise with id %s   ################\n' % ent_number)
         crawler.run(ent_number=ent_number)
+"""
