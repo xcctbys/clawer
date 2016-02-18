@@ -49,7 +49,7 @@ class GuangdongClawer(object):
         self.main_host = ""
         self.json_dict={}
         self.json_restore_path = json_restore_path
-        #self.html_restore_path = settings.html_restore_path + '/guangdong/'
+        self.dir_restore_path = settings.json_restore_path + '/guangdong/'
         #self.json_restore_path = settings.json_restore_path + '/guangdong.json'
         #验证码图片的存储路径
         self.path_captcha = settings.json_restore_path + '/guangdong/ckcode.jpg'
@@ -218,8 +218,8 @@ class GuangdongClawer(object):
 
     # main function
     def run(self, ent_num):
-        # if not os.path.exists(self.html_restore_path):
-        #     os.makedirs(self.html_restore_path)
+        if not os.path.exists( self.dir_restore_path ):
+            os.makedirs(self.dir_restore_path)
         json_dict = {}
 
         self.crawl_page_search(urls['page_search'])

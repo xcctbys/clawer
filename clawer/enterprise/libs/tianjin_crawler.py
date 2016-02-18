@@ -57,8 +57,8 @@ class TianjinCrawler(object):
         self.json_restore_path = json_restore_path
         #验证码图片的存储路径
         self.path_captcha = settings.json_restore_path + '/tianjin/ckcode.jpeg'
-        #html数据的存储路径
-        # self.html_restore_path = settings.html_restore_path + '/tianjin/'
+        #数据的存储路径
+        self.html_restore_path = settings.json_restore_path + '/tianjin/'
 
 
     # 破解搜索页面
@@ -724,8 +724,8 @@ class TianjinCrawler(object):
 
     def run(self, ent_num):
         # 2016-2-16
-        # if not os.path.exists(self.html_restore_path):
-        #     os.makedirs(self.html_restore_path)
+        if not os.path.exists(self.html_restore_path):
+            os.makedirs(self.html_restore_path)
         json_dict = {}
         self.crawl_page_search(urls['page_search'])
         self.crawl_page_captcha(urls['page_Captcha'], urls['checkcode'], urls['page_showinfo'], ent_num)

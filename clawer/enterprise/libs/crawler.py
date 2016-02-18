@@ -143,7 +143,7 @@ class Crawler(object):
 
     def run(self, ent_number=0):
         self.ent_number = str(ent_number)
-        self.html_restore_path = self.html_restore_path + self.ent_number + '/'
+        # self.html_restore_path = self.json_restore_path + self.ent_number + '/'
 
         # if self.save_html and os.path.exists(self.html_restore_path):
         #     CrawlerUtils.make_dir(self.html_restore_path)

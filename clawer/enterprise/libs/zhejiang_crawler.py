@@ -41,7 +41,7 @@ class ZhejiangCrawler(object):
         self.requests.headers.update(headers)
         self.ents = []
         self.json_restore_path = json_restore_path
-        #self.html_restore_path = settings.html_restore_path + '/zhejiang/'
+        self.html_restore_path = settings.json_restore_path + '/zhejiang/'
         #验证码图片的存储路径
         self.path_captcha = settings.json_restore_path + '/zhejiang/ckcode.jpg'
         self.path_captcha_diff = settings.json_restore_path +'/zhejiang/'
@@ -1158,8 +1158,8 @@ class ZhejiangCrawler(object):
 
     # main function
     def run(self, ent_num):
-        # if not os.path.exists(self.html_restore_path):
-        #     os.makedirs(self.html_restore_path)
+        if not os.path.exists(self.html_restore_path):
+            os.makedirs(self.html_restore_path)
         json_dict = {}
         self.crawl_page_captcha(urls['page_search'], urls['page_Captcha'], urls['checkcode'], urls['page_showinfo'], ent_num)
         data = self.crawl_page_main()
@@ -1169,8 +1169,8 @@ class ZhejiangCrawler(object):
         return json.dumps(json_dict)
 
     def work(self, ent_num):
-        # if not os.path.exists(self.html_restore_path):
-        #     os.makedirs(self.html_restore_path)
+        if not os.path.exists(self.html_restore_path):
+            os.makedirs(self.html_restore_path)
         self.crawl_page_captcha(urls['page_search'], urls['page_Captcha'], urls['checkcode'], urls['page_showinfo'], ent_num)
         self.regNo = ent_num
         data = self.crawl_page_main()

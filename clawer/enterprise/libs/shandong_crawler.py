@@ -44,7 +44,7 @@ class ShandongCrawler(object):
         #验证码图片的存储路径
         self.path_captcha = settings.json_restore_path + '/shandong/ckcode.jpeg'
         #html数据的存储路径
-        #self.html_restore_path = settings.html_restore_path + '/shandong/'
+        self.html_restore_path = settings.json_restore_path + '/shandong/'
 
 
     # 破解搜索页面
@@ -1425,8 +1425,8 @@ class ShandongCrawler(object):
         return {'page': text, 'url': urls}
 
     def run(self, ent_num):
-        # if not os.path.exists(self.html_restore_path):
-        #     os.makedirs(self.html_restore_path)
+        if not os.path.exists(self.html_restore_path):
+            os.makedirs(self.html_restore_path)
         json_dict = {}
         self.crawl_page_captcha(urls['page_search'], urls['page_Captcha'], urls['checkcode'], urls['page_showinfo'], ent_num)
         data = self.crawl_page_main()

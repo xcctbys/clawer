@@ -22,7 +22,7 @@ class BeijingCrawler(Crawler):
     """北京工商爬虫
     """
     #html数据的存储路径
-    # html_restore_path = settings.html_restore_path + '/beijing/'
+    html_restore_path = settings.json_restore_path + '/beijing/'
 
     #验证码图片的存储路径
     ckcode_image_path = settings.json_restore_path + '/beijing/ckcode.jpg'
@@ -62,6 +62,8 @@ class BeijingCrawler(Crawler):
         self.json_restore_path = json_restore_path
         self.parser = BeijingParser(self)
         self.credit_ticket = None
+        if not os.path.exists(self.html_restore_path):
+            os.makedirs(self.html_restore_path)
 
     def run(self, ent_number=0):
         """爬取的主函数
