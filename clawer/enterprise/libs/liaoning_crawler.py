@@ -11,7 +11,7 @@ import urllib
 import unittest
 from datetime import datetime, timedelta
 from . import settings
-import enterprise.libs.CaptchaRecognition as CaptchaRecognition
+from enterprise.libs.CaptchaRecognition import CaptchaRecognition
 import logging
 from bs4 import BeautifulSoup
 from crawler import Crawler

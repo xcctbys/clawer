@@ -12,7 +12,7 @@ import codecs
 import unittest
 import threading
 from bs4 import BeautifulSoup
-import enterprise.libs.CaptchaRecognition as CaptchaRecognition
+from enterprise.libs.CaptchaRecognition import CaptchaRecognition
 import random
 import hashlib # MD5 encrypt
 

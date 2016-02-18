@@ -13,7 +13,7 @@ from crawler import Parser
 from crawler import CrawlerUtils
 from datetime import datetime, timedelta
 from . import settings
-import enterprise.libs.CaptchaRecognition as CaptchaRecognition
+from enterprise.libs.CaptchaRecognition import CaptchaRecognition
 import logging
 
 class ZongjuCrawler(Crawler):

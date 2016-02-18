@@ -13,7 +13,7 @@ from crawler import Parser
 from crawler import CrawlerUtils
 from . import settings
 import logging
-import enterprise.libs.CaptchaRecognition as CaptchaRecognition
+from enterprise.libs.CaptchaRecognition import CaptchaRecognition
 
 class HeilongjiangClawer(Crawler):
     """黑龙江工商公示信息网页爬虫

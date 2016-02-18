@@ -12,7 +12,7 @@ import json
 import codecs
 import threading
 from bs4 import BeautifulSoup
-import enterprise.libs.CaptchaRecognition as CaptchaRecognition
+from enterprise.libs.CaptchaRecognition import CaptchaRecognition
 import random
 
 urls = {

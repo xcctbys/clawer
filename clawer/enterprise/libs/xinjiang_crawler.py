@@ -20,7 +20,7 @@ import parse_table
 import types
 import urlparse
 import json
-import enterprise.libs.CaptchaRecognition as CaptchaRecognition
+from enterprise.libs.CaptchaRecognition import CaptchaRecognition
 
 
 

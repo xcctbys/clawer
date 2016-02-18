@@ -17,7 +17,7 @@ import urlparse
 import json
 
 from . import settings
-import enterprise.libs.CaptchaRecognition as CaptchaRecognition
+from enterprise.libs.CaptchaRecognition import CaptchaRecognition
 import logging
 
 class JiangxiClawer(Crawler):
