@@ -35,7 +35,7 @@ class Province(object):
      YUNNAN,
      ZHEJIANG,
      ZONGJU,
-     XIZANG) = range(1, 32)
+     XIZANG) = range(1, 33)
 
     choices = (
         (ANHUI, u"安徽"),
