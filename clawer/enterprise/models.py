@@ -4,8 +4,8 @@ from django.db import models
 
 
 class Province(object):
-    (ANHUI, 
-     BEIJING, 
+    (ANHUI,
+     BEIJING,
      CHONGQING,
      FUJIAN,
      GANSU,
@@ -34,8 +34,9 @@ class Province(object):
      XINJIANG,
      YUNNAN,
      ZHEJIANG,
-     ZONGJU) = range(1, 32)
-      
+     ZONGJU,
+     XIZANG) = range(1, 32)
+
     choices = (
         (ANHUI, u"安徽"),
         (BEIJING, u"北京"),
@@ -68,32 +69,33 @@ class Province(object):
         (YUNNAN, u"云南"),
         (ZHEJIANG, u'浙江'),
         (ZONGJU, u"总局"),
+        (ZONGJU, u"西藏"),
     )
-    
+
     @classmethod
     def to_name(cls, province):
         for item in cls.choices:
             if item[0] == province:
                 return item[1]
-            
+
         return None
-    
+
     @classmethod
     def to_id(cls, name):
         for item in cls.choices:
             if item[1] == name:
                 return item[0]
-            
+
         return None
-        
-    
+
+
 
 class Enterprise(models.Model):
     name = models.CharField(max_length=256)
     province = models.IntegerField(max_length=128, choices=Province.choices)
     register_no = models.CharField(max_length=128)
     add_datetime = models.DateTimeField(auto_now_add=True)
-    
+
     def as_json(self):
         result = {"id": self.id,
             "name": self.name,
@@ -103,5 +105,5 @@ class Enterprise(models.Model):
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }
         return result
-    
-    
+
+

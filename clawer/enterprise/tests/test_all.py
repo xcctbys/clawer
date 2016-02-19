@@ -114,14 +114,39 @@ class TestEnterpriseDownload(TestCase):
         data = downloader.download()
         self.assertIsNotNone(data)
 
+    def test_run_yunnan(self):
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.YUNNAN), u"云南三七科技有限公司", u'530000000010908')
+        downloader = EnterpriseDownload(url)
+        data = downloader.download()
+        self.assertIsNotNone(data)
+
     def test_run_henan(self):
         url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.HENAN), u"中信重工机械股份有限公司", u'410300110053941')
         downloader = EnterpriseDownload(url)
         data = downloader.download()
         self.assertIsNotNone(data)
 
-    def test_run_yunnan(self):
-        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.YUNNAN), u"云南三七科技有限公司", u'530000000010908')
+    def test_run_xizang(self):
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.XIZANG), u"西藏同信证券股份有限公司", u'5400001000374')
         downloader = EnterpriseDownload(url)
         data = downloader.download()
         self.assertIsNotNone(data)
+
+    def test_run_shaanxi(self):
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.SHAANXI), u"西部证券股份有限公司", u'610000100026931')
+        downloader = EnterpriseDownload(url)
+        data = downloader.download()
+        self.assertIsNotNone(data)
+
+    def test_run_jilin(self):
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.JILIN), u"东北证券股份有限公司", u'220000000005183')
+        downloader = EnterpriseDownload(url)
+        data = downloader.download()
+        self.assertIsNotNone(data)
+
+    def test_run_hainan(self):
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.HAINAN), u"万和证券有限责任公司", u'460000000091050')
+        downloader = EnterpriseDownload(url)
+        data = downloader.download()
+        self.assertIsNotNone(data)
+

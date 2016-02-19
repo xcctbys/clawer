@@ -11,6 +11,12 @@ from .libs.shandong_crawler import ShandongCrawler
 from .libs.xinjiang_crawler import XinjiangClawer
 from .libs.yunnan_crawler import YunnanCrawler
 from .libs.neimenggu_crawler import NeimengguClawer
+##
+from .libs.henan_crawler import HenanCrawler
+from .libs.hainan_crawler import HainanCrawler
+from .libs.jilin_crawler import JilinCrawler
+from .libs.xizang_crawler import XizangCrawler
+from .libs.shaanxi_crawler import ShaanxiCrawler
 
 from .libs import settings
 import urlparse
@@ -26,7 +32,12 @@ class EnterpriseDownload(object):
         {'id': Province.XINJIANG, 'class': XinjiangClawer},
         {'id': Province.YUNNAN, 'class': YunnanCrawler},
         {'id': Province.NEIMENGGU, 'class': NeimengguClawer},
-
+        #####
+        {'id': Province.HENAN, 'class': HenanCrawler},
+        {'id': Province.HAINAN, 'class': HainanCrawler},
+        {'id': Province.JILIN, 'class': JilinCrawler},
+        {'id': Province.XIZANG, 'class': XizangCrawler},
+        {'id': Province.SHAANXI, 'class': NeimengguClawer},
 
     ]
 
