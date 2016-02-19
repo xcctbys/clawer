@@ -313,7 +313,7 @@ class CaptchaRecognition(object):
             self.masker = 254
             self.width = 86
             self.height = 31
-            self.style_checker = os.path.join(self.model_path, "liaoning_style_checker/model.m")
+            self.style_checker = os.path.join(parent, "model", "liaoning_style_checker/model.m")
         elif captcha_type in ["guangdong"]:
             self.image_label_count = 5
             self.image_start = 26
@@ -338,7 +338,7 @@ class CaptchaRecognition(object):
             self.image_height = 50
             self.width = 250
             self.height = 50
-            self.style_checker = os.path.join(self.model_path, "zhejiang_style_checker/model.m")
+            self.style_checker = os.path.join(parent, "model", "zhejiang_style_checker/model.m")
         
         self.model_file = self.model_path + "/model.m"
 
