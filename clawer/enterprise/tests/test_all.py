@@ -120,6 +120,35 @@ class TestEnterpriseDownload(TestCase):
         data = downloader.download()
         self.assertIsNotNone(data)
 
+    def test_run_anhui(self):
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.ANHUI), u"华安证券股份有限公司", u'340000000002071')
+        downloader = EnterpriseDownload(url)
+        data = downloader.download()
+        self.assertIsNotNone(data)
+
+    def test_run_fujian(self):
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.FUJIAN), u"中国武夷实业股份有限公司", u'350000100029637')
+        downloader = EnterpriseDownload(url)
+        data = downloader.download()
+        self.assertIsNotNone(data)
+
+    def test_run_gansu(self):
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.GANSU), u"国投电力控股股份有限公司", u'620000000006064')
+        downloader = EnterpriseDownload(url)
+        data = downloader.download()
+        self.assertIsNotNone(data)
+
+    def test_run_guangdong(self):
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.GUANGDONG), u"广发证券股份有限公司", u'222400000001337')
+        downloader = EnterpriseDownload(url)
+        data = downloader.download()
+        self.assertIsNotNone(data)
+
+    def test_run_guangxi(self):
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.GUANGXI), u"南宁威宁投资集团有限责任公司", u'450100000128441')
+        downloader = EnterpriseDownload(url)
+        data = downloader.download()
+        self.assertIsNotNone(data)
     """
     def test_run_tianjin(self):
         url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.TIANJIN), u"融创房地产集团有限公司", u'120111000006866')

@@ -1,31 +1,27 @@
 #!/usr/bin/env python
 #encoding=utf-8
 import sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
 import requests
 import re
 import os,os.path
 from crawler import CrawlerUtils
 from bs4 import BeautifulSoup
-import importlib
-
-ENT_CRAWLER_SETTINGS = os.getenv('ENT_CRAWLER_SETTINGS')
-if ENT_CRAWLER_SETTINGS:
-    settings = importlib.import_module(ENT_CRAWLER_SETTINGS)
-else:
-    import settings
+from . import settings
+import json
+import logging
+from enterprise.libs.CaptchaRecognition import CaptchaRecognition
 
 class AnhuiCrawler(object):
 	#html数据的存储路径
-	html_restore_path = settings.html_restore_path + '/anhui/'
+	html_restore_path = settings.json_restore_path + '/anhui/'
 	#验证码图片的存储路径
-    	ckcode_image_path = settings.json_restore_path + '/anhui/ckcode.jpg'
+	ckcode_image_path = settings.json_restore_path + '/anhui/ckcode.jpg'
     	#write_file_mutex = threading.Lock()
 	def __init__(self, json_restore_path):
 		self.id = None
 		self.json_restore_path = json_restore_path
 		self.ckcode_image_path = settings.json_restore_path + '/anhui/ckcode.jpg'
+		self.code_cracker = CaptchaRecognition('qinghai')
 		self.reqst = requests.Session()
 		self.reqst.headers.update(
 			{'Accept': 'text/html, application/xhtml+xml, */*',
@@ -87,11 +83,8 @@ class AnhuiCrawler(object):
 			return None
 		with open(self.ckcode_image_path, 'wb') as f:
 			f.write(resp.content)
-		from CaptchaRecognition import CaptchaRecognition
-		#code_cracker = CaptchaRecognition('qinghai')
-		code_cracker = CaptchaRecognition('qinghai')
-		#code_cracker = CaptchaRecognition('guangdong')
-		ck_code = code_cracker.predict_result(self.ckcode_image_path)
+
+		ck_code = self.code_cracker.predict_result(self.ckcode_image_path)
 		if not ck_code is None:
 			return ck_code[1]
 		else:
@@ -218,7 +211,7 @@ class AnhuiCrawler(object):
 						#print len(details), details, specially_dict
 						details.append(specially_dict)
 						templist.append(self.get_one_to_one_dict(allths, details))
-			
+
 				else :
 					print 'error...tempurl'
 			self.result_json_dict[mydict[head]] = templist
@@ -303,9 +296,9 @@ class AnhuiCrawler(object):
 				#self.test_print_all_ths_tds(allths, alltds)
 				#print head
 				#print mydict[head]
-				
+
 				self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
-				
+
 
 	def get_json_one(self, mydict, tables):
 		count_table = len(tables)
@@ -369,7 +362,7 @@ class AnhuiCrawler(object):
 			templist.append(self.get_one_to_one_dict(allths, alltds))
 		self.result_json_dict[mydict[head]] = templist
 		return templist
-				
+
 
 	def get_json_two(self, mydict, tables):
 		tables = [table for table in tables if len(table.find_all('div'))==0 and len(table.find_all('script'))==0]
@@ -426,8 +419,7 @@ class AnhuiCrawler(object):
 
 		self.ent_number = str(findCode)
 		#对每个企业都指定一个html的存储目录
-		self.html_restore_path = self.html_restore_path + self.ent_number + '/'
-		if settings.save_html and not os.path.exists(self.html_restore_path):
+		if not os.path.exists(self.html_restore_path):
 			CrawlerUtils.make_dir(self.html_restore_path)
 
 		self.id = self.get_id_num(findCode)
@@ -443,11 +435,12 @@ class AnhuiCrawler(object):
 		tablefour = self.get_tables(self.mysearchdict['justiceAssistance'] + 'id=' +self.id)
 		self.get_json_four(self.four_dict, tablefour)
 
+		return json.dumps({self.ent_number: self.result_json_dict})
 		#self.write_file_mutex.acquire()
-		print {self.ent_number: self.result_json_dict}
-		CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.result_json_dict})
+		# print {self.ent_number: self.result_json_dict}
+		# CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.result_json_dict})
 		#self.write_file_mutex.release()
-
+"""
 if __name__ == '__main__':
 	anhui = AnhuiCrawler('./enterprise_crawler/anhui.json')
 	# anhui.run('450100000128441')
@@ -460,3 +453,4 @@ if __name__ == '__main__':
 # anhui.run('340313000002482')
 # anhui.run('340000000018072')
 # anhui.run('341521000013920')
+"""
