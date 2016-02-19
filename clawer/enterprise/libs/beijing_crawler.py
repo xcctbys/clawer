@@ -1,74 +1,114 @@
+#!/usr/bin/env python
 #encoding=utf-8
 import os
+import requests
 import time
 import re
 import random
-import logging
-
-from bs4 import BeautifulSoup
-
+import urllib
+import threading
+from datetime import datetime, timedelta
 from . import settings
-
-from .crawler import Crawler
-from .crawler import Parser
-from .crawler import CrawlerUtils
 from enterprise.libs.CaptchaRecognition import CaptchaRecognition
+import logging
+from bs4 import BeautifulSoup
+from crawler import Crawler
+from crawler import Parser
+from crawler import CrawlerUtils
 
 
 
 class BeijingCrawler(Crawler):
     """北京工商爬虫
     """
-    urls = {
-        'host': 'http://qyxy.baic.gov.cn',
-        'official_site': 'http://qyxy.baic.gov.cn/beijing',
-        'get_checkcode': 'http://qyxy.baic.gov.cn',
-        'post_checkcode': 'http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!checkCode.dhtml',
-        'open_info_entry': 'http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!getBjQyList.dhtml',
-        'ind_comm_pub_reg_basic': 'http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!openEntInfo.dhtml?',
-        'ind_comm_pub_reg_shareholder': 'http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!tzrFrame.dhtml?',
-        'ind_comm_pub_reg_modify': 'http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!biangengFrame.dhtml?',
-        'ind_comm_pub_arch_key_persons': 'http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!zyryFrame.dhtml?',
-        'ind_comm_pub_arch_branch': 'http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!fzjgFrame.dhtml?',
-        'ind_comm_pub_arch_liquidation': 'http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!qsxxFrame.dhtml?',
-        'ind_comm_pub_movable_property_reg': 'http://qyxy.baic.gov.cn/gjjbjTab/gjjTabQueryCreditAction!dcdyFrame.dhtml?',
-        'ind_comm_pub_equity_ownership_reg': 'http://qyxy.baic.gov.cn/gdczdj/gdczdjAction!gdczdjFrame.dhtml?',
-        'ind_comm_pub_administration_sanction': 'http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list.dhtml?',
-        'ind_comm_pub_business_exception': 'http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_jyycxx.dhtml?',
-        'ind_comm_pub_serious_violate_law':   'http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_yzwfxx.dhtml?',
-        'ind_comm_pub_spot_check':   'http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_ccjcxx.dhtml?',
-        'ent_pub_ent_annual_report':   'http://qyxy.baic.gov.cn/qynb/entinfoAction!qyxx.dhtml?',
-        'ent_pub_shareholder_capital_contribution':   'http://qyxy.baic.gov.cn/gdcz/gdczAction!list_index.dhtml?',
-        'ent_pub_equity_change':   'http://qyxy.baic.gov.cn/gdgq/gdgqAction!gdgqzrxxFrame.dhtml?',
-        'ent_pub_administration_license':   'http://qyxy.baic.gov.cn/xzxk/xzxkAction!list_index.dhtml?',
-        'ent_pub_knowledge_property':   'http://qyxy.baic.gov.cn/zscqczdj/zscqczdjAction!list_index.dhtml?',
-        'ent_pub_administration_sanction':   'http://qyxy.baic.gov.cn/gdgq/gdgqAction!qyxzcfFrame.dhtml?',
-        'other_dept_pub_administration_license':   'http://qyxy.baic.gov.cn/qtbm/qtbmAction!list_xzxk.dhtml?',
-        'other_dept_pub_administration_sanction':   'http://qyxy.baic.gov.cn/qtbm/qtbmAction!list_xzcf.dhtml?',
-        'shareholder_detail': 'http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!touzirenInfo.dhtml?'
-    }
+    #html数据的存储路径
+    html_restore_path = settings.json_restore_path + '/beijing/'
+
+    #验证码图片的存储路径
+    ckcode_image_path = settings.json_restore_path + '/beijing/ckcode.jpg'
+    code_cracker = CaptchaRecognition('beijing')
+    #多线程爬取时往最后的json文件中写时的加锁保护
+    write_file_mutex = threading.Lock()
+
+    urls = {'host': 'http://qyxy.baic.gov.cn',
+            'official_site': 'http://qyxy.baic.gov.cn/beijing',
+            'get_checkcode': 'http://qyxy.baic.gov.cn',
+            'post_checkcode': 'http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!checkCode.dhtml',
+            'open_info_entry': 'http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!getBjQyList.dhtml',
+            'ind_comm_pub_reg_basic': 'http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!openEntInfo.dhtml?',
+            'ind_comm_pub_reg_shareholder': 'http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!tzrFrame.dhtml?',
+            'ind_comm_pub_reg_modify': 'http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!biangengFrame.dhtml?',
+            'ind_comm_pub_arch_key_persons': 'http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!zyryFrame.dhtml?',
+            'ind_comm_pub_arch_branch': 'http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!fzjgFrame.dhtml?',
+            'ind_comm_pub_arch_liquidation': 'http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!qsxxFrame.dhtml?',
+            'ind_comm_pub_movable_property_reg': 'http://qyxy.baic.gov.cn/gjjbjTab/gjjTabQueryCreditAction!dcdyFrame.dhtml?',
+            'ind_comm_pub_equity_ownership_reg': 'http://qyxy.baic.gov.cn/gdczdj/gdczdjAction!gdczdjFrame.dhtml?',
+            'ind_comm_pub_administration_sanction': 'http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list.dhtml?',
+            'ind_comm_pub_business_exception': 'http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_jyycxx.dhtml?',
+            'ind_comm_pub_serious_violate_law':   'http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_yzwfxx.dhtml?',
+            'ind_comm_pub_spot_check':   'http://qyxy.baic.gov.cn/gsgs/gsxzcfAction!list_ccjcxx.dhtml?',
+            'ent_pub_ent_annual_report':   'http://qyxy.baic.gov.cn/qynb/entinfoAction!qyxx.dhtml?',
+            'ent_pub_shareholder_capital_contribution':   'http://qyxy.baic.gov.cn/gdcz/gdczAction!list_index.dhtml?',
+            'ent_pub_equity_change':   'http://qyxy.baic.gov.cn/gdgq/gdgqAction!gdgqzrxxFrame.dhtml?',
+            'ent_pub_administration_license':   'http://qyxy.baic.gov.cn/xzxk/xzxkAction!list_index.dhtml?',
+            'ent_pub_knowledge_property':   'http://qyxy.baic.gov.cn/zscqczdj/zscqczdjAction!list_index.dhtml?',
+            'ent_pub_administration_sanction':   'http://qyxy.baic.gov.cn/gdgq/gdgqAction!qyxzcfFrame.dhtml?',
+            'other_dept_pub_administration_license':   'http://qyxy.baic.gov.cn/qtbm/qtbmAction!list_xzxk.dhtml?',
+            'other_dept_pub_administration_sanction':   'http://qyxy.baic.gov.cn/qtbm/qtbmAction!list_xzcf.dhtml?',
+            'shareholder_detail': 'http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!touzirenInfo.dhtml?'
+            }
 
     def __init__(self, json_restore_path):
         self.json_restore_path = json_restore_path
-        if os.path.exists(self.json_restore_path) is False:
-            os.makedirs(self.json_restore_path, 0775)
         self.parser = BeijingParser(self)
         self.credit_ticket = None
-        #html数据的存储路径
-        self.save_html = False
-        self.html_restore_path = os.path.join(self.json_restore_path, "beijing", "html")
-        if os.path.exists(self.html_restore_path) is False:
-            os.makedirs(self.html_restore_path, 0775)
-        #验证码图片的存储路径
-        self.ckcode_image_path = os.path.join(self.html_restore_path, 'ckcode.jpg')
-        self.code_cracker = CaptchaRecognition("beijing")
+        if not os.path.exists(self.html_restore_path):
+            os.makedirs(self.html_restore_path)
+
+    def run(self, ent_number=0):
+        """爬取的主函数
+        """
+        self.ent_id = ''
+        Crawler.run(self, ent_number)
+
+        '''
+        self.ent_number = str(ent_number)
+        self.html_restore_path = BeijingCrawler.html_restore_path + self.ent_number + '/'
+
+        if settings.save_html and os.path.exists(self.html_restore_path):
+            CrawlerUtils.make_dir(self.html_restore_path)
+
+        self.json_dict = {}
+
+        self.reqst = requests.Session()
+        self.reqst.headers.update({
+                'Accept': 'text/html, application/xhtml+xml, */*',
+                'Accept-Encoding': 'gzip, deflate',
+                'Accept-Language': 'en-US, en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:39.0) Gecko/20100101 Firefox/39.0'})
+
+        if not self.crawl_check_page():
+            settings.logger.error('crack check code failed, stop to crawl enterprise %s' % self.ent_number)
+            return
+
+        self.crawl_ind_comm_pub_pages()
+        self.crawl_ent_pub_pages()
+        self.crawl_other_dept_pub_pages()
+
+        #采用多线程，在写入文件时需要注意加锁
+        self.write_file_mutex.acquire()
+        CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.json_dict})
+        self.write_file_mutex.release()
+        '''
 
     def crawl_check_page(self):
         """爬取验证码页面，包括获取验证码url，下载验证码图片，破解验证码并提交
         """
-        for count in range(10):
+        count = 0
+        while count < 10:
+            count += 1
             ckcode = self.crack_checkcode()
-            post_data = {'currentTimeMillis': self.time_stamp, 'credit_ticket': self.credit_ticket, 'checkcode': ckcode[1], 'keyword': self.ent_number}
+            post_data = {'currentTimeMillis': self.time_stamp, 'credit_ticket': self.credit_ticket, 'checkcode': ckcode[1], 'keyword': self.ent_number};
             next_url = self.urls['post_checkcode']
             resp = self.reqst.post(next_url, data=post_data)
             if resp.status_code != 200:
@@ -92,7 +132,6 @@ class BeijingCrawler(Crawler):
                 return True
             else:
                 logging.debug('crack checkcode failed, total fail count = %d' % count)
-                
         return False
 
     def crawl_ind_comm_pub_pages(self):
@@ -181,7 +220,6 @@ class BeijingCrawler(Crawler):
                 self.parse_pre_check_page(response)
                 return checkcode_url
             logging.debug('get crackable checkcode img failed')
-            
         return None
 
     def parse_post_check_page(self, page):
@@ -189,6 +227,8 @@ class BeijingCrawler(Crawler):
         """
         if page == 'fail':
             logging.error('checkcode error!')
+            # if senting_open:
+            #     senting_client.captureMessage('checkcode error!')
             return False
 
         soup = BeautifulSoup(page, 'html.parser')
@@ -232,8 +272,8 @@ class BeijingCrawler(Crawler):
             return
         page = resp.content
         time.sleep(random.uniform(0.2, 1))
-        if settings.save_html:
-            CrawlerUtils.save_page_to_file(self.html_restore_path + 'detail.html', page)
+        # if saveingtml:
+        #     CrawlerUtils.save_page_to_file(self.html_restore_path + 'detail.html', page)
         return page
 
     def get_all_pages_of_a_section(self, page, type, url=None):
@@ -310,8 +350,8 @@ class BeijingCrawler(Crawler):
             return
         page = resp.content
         time.sleep(random.uniform(0.2, 1))
-        if settings.save_html:
-            CrawlerUtils.save_page_to_file(self.html_restore_path + type + '.html', page)
+        # if saveingtml:
+        #     CrawlerUtils.save_page_to_file(self.html_restore_path + type + '.html', page)
         return page
 
     def crack_checkcode(self):
@@ -322,17 +362,23 @@ class BeijingCrawler(Crawler):
             logging.warn('failed to get checkcode img')
             return
         page = resp.content
-        
+
         time.sleep(random.uniform(2, 4))
 
+        self.write_file_mutex.acquire()
         with open(self.ckcode_image_path, 'wb') as f:
             f.write(page)
-            
         if not self.code_cracker:
-            logging.error('invalid code cracker')
-            raise Exception('invalid code cracker, please set it')
-        
-        ckcode = self.code_cracker.predict_result(self.ckcode_image_path)
+            print 'invalid code cracker'
+            return ''
+        try:
+            ckcode = self.code_cracker.predict_result(self.ckcode_image_path)
+        except Exception as e:
+            logging.warn('exception occured when crack checkcode')
+            ckcode = ('', '')
+        finally:
+            pass
+        self.write_file_mutex.release()
         return ckcode
 
     def generate_time_stamp(self):
@@ -426,8 +472,8 @@ class BeijingParser(Parser):
             t = soup.body.find('table')
             return CrawlerUtils.get_raw_text_in_bstag(t.find('tr'))
 
-        if settings.save_html:
-            CrawlerUtils.save_page_to_file(self.crawler.html_restore_path + 'annual_report_base_info.html', base_page)
+        # if saveingtml:
+        #     CrawlerUtils.save_page_to_file(self.crawler.html_restore_path + 'annual_report_base_info.html', base_page)
 
         page_data = {}
         soup = BeautifulSoup(base_page, 'html.parser')
@@ -552,4 +598,17 @@ class BeijingParser(Parser):
             next_url = self.crawler.urls['host'] + bs4_tag['href']
 
         return next_url
-
+"""
+if __name__ == '__main__':
+    from CaptchaRecognition import CaptchaRecognition
+    import run
+    run.config_logging()
+    BeijingCrawler.code_cracker = CaptchaRecognition('beijing')
+    crawler = BeijingCrawler('./enterprise_crawler/beijing.json')
+    #enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/beijing.txt')
+    enterprise_list = ['110000005791844'] #'110000005791844', '110000410227029',
+    for ent_number in enterprise_list:
+        ent_number = ent_number.rstrip('\n')
+        logging.info('###################   Start to crawl enterprise with id %s   ###################\n' % ent_number)
+        crawler.run(ent_number=ent_number)
+"""

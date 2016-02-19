@@ -143,10 +143,10 @@ class Crawler(object):
 
     def run(self, ent_number=0):
         self.ent_number = str(ent_number)
-        self.html_restore_path = self.html_restore_path + self.ent_number + '/'
+        # self.html_restore_path = self.json_restore_path + self.ent_number + '/'
 
-        if self.save_html and os.path.exists(self.html_restore_path):
-            CrawlerUtils.make_dir(self.html_restore_path)
+        # if self.save_html and os.path.exists(self.html_restore_path):
+        #     CrawlerUtils.make_dir(self.html_restore_path)
 
         self.json_dict = {}
 
@@ -165,9 +165,9 @@ class Crawler(object):
         self.crawl_ent_pub_pages()
         self.crawl_other_dept_pub_pages()
         self.crawl_judical_assist_pub_pages()
-        
+
         return json.dumps({self.ent_number: self.json_dict})
-        
+
     def crack_checkcode(self):
         pass
 

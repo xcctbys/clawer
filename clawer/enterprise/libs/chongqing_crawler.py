@@ -75,7 +75,7 @@ class ChongqingClawer(Crawler):
         self.parser = ChongqingParser(self)
         self.credit_ticket = None
         #html数据的存储路径
-        self.html_restore_path = os.path.join(self.json_restore_path, "chongqing", "html")
+        self.html_restore_path = os.path.join(self.json_restore_path, "/chongqing/")
         if os.path.exists(self.html_restore_path) is False:
             os.makedirs(self.html_restore_path, 0775)
         #验证码图片的存储路径

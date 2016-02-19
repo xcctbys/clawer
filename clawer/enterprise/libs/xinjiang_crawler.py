@@ -20,7 +20,8 @@ import parse_table
 import types
 import urlparse
 import json
-import enterprise.libs.CaptchaRecognition as CaptchaRecognition
+from enterprise.libs.CaptchaRecognition import CaptchaRecognition
+
 
 
 class XinjiangClawer(Crawler):
@@ -51,9 +52,8 @@ class XinjiangClawer(Crawler):
             os.makedirs(self.json_restore_path, 0775)
         self.parser = XinjiangParser(self)
         self.credit_ticket = None
-        #html数据的存储路径
-        self.save_html = False
-        self.html_restore_path = os.path.join(self.json_restore_path, "chongqing", "html")
+
+        self.html_restore_path = os.path.join(self.json_restore_path, "/xinjiang/")
         if os.path.exists(self.html_restore_path) is False:
             os.makedirs(self.html_restore_path, 0775)
         #验证码图片的存储路径
