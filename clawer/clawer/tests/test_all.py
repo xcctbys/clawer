@@ -561,6 +561,7 @@ class TestDownload(TestCase):
     def setUp(self):
         TestCase.setUp(self)
         
+    """
     def test_selenium(self):
         url = "http://blog.sina.com.cn/s/blog_6175bf700102w08a.html?tj=1"
         downloader = Download(url, engine=Download.ENGINE_SELENIUM)
@@ -569,7 +570,7 @@ class TestDownload(TestCase):
         logging.debug(u"%s", downloader.content)
         print downloader.spend_time
         self.assertIsNotNone(downloader.content)
-    
+    """
     
 class TestMonitorClawerHour(TestCase):
     def setUp(self):
