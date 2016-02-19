@@ -71,7 +71,7 @@ class CaptchaRecognition(object):
         :return: predict results
         '''
         parent = os.path.dirname(__file__)
-        self.model_path = os.path.join(parent, "model", captcha_type)
+
 
         captcha_type = captcha_type.lower()
         if captcha_type not in ["jiangsu", "beijing", "zongju", "liaoning", "guangdong", "hubei", "tianjin",
@@ -93,7 +93,7 @@ class CaptchaRecognition(object):
                               "guangxi", "xizang",
                               "heilongjiang", "anhui", "shaanxi", "chongqing", "sichuan", "hunan", "gansu",
                               "xinjiang", "guizhou", "shandong", "hebei", "neimenggu", "zhejiang", "jilin", "yunnan",
-                              "fujian", "hebei","jiangxi"]:
+                              "fujian","jiangxi"]:
             self.to_denoise = True
             self.masker = 255
             self.to_calculate = True
@@ -339,7 +339,8 @@ class CaptchaRecognition(object):
             self.width = 250
             self.height = 50
             self.style_checker = os.path.join(parent, "model", "zhejiang_style_checker/model.m")
-        
+
+        self.model_path = os.path.join(parent, "model", captcha_type)
         self.model_file = self.model_path + "/model.m"
 
     def __get_pixel_list__(self, captcha_image):
