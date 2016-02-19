@@ -15,7 +15,7 @@ class AnhuiCrawler(object):
 	#html数据的存储路径
 	html_restore_path = settings.json_restore_path + '/anhui/'
 	#验证码图片的存储路径
-    ckcode_image_path = settings.json_restore_path + '/anhui/ckcode.jpg'
+	ckcode_image_path = settings.json_restore_path + '/anhui/ckcode.jpg'
     	#write_file_mutex = threading.Lock()
 	def __init__(self, json_restore_path):
 		self.id = None
