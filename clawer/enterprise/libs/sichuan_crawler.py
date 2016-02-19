@@ -9,17 +9,14 @@ import os,os.path
 from crawler import CrawlerUtils
 from bs4 import BeautifulSoup
 import time
-import importlib
-
-ENT_CRAWLER_SETTINGS = os.getenv('ENT_CRAWLER_SETTINGS')
-if ENT_CRAWLER_SETTINGS:
-    settings = importlib.import_module(ENT_CRAWLER_SETTINGS)
-else:
-    import settings
+from . import settings
+import json
+import logging
+from enterprise.libs.CaptchaRecognition import CaptchaRecognition
 
 class SichuanCrawler(object):
 	#html数据的存储路径
-	html_restore_path = settings.html_restore_path + '/sichuan/'
+	html_restore_path = settings.json_restore_path + '/sichuan/'
 	ckcode_image_path = settings.json_restore_path + '/sichuan/ckcode.jpg'
     	#write_file_mutex = threading.Lock()
 	def __init__(self, json_restore_path):
@@ -28,6 +25,7 @@ class SichuanCrawler(object):
 		self.reqst = requests.Session()
 		self.json_restore_path = json_restore_path
 		self.ckcode_image_path = settings.json_restore_path + '/sichuan/ckcode.jpg'
+		self.code_cracker = CaptchaRecognition('sichuan')
 		self.result_json_dict = {}
 		self.reqst.headers.update(
 			{'Accept': 'text/html, application/xhtml+xml, */*',
@@ -39,7 +37,7 @@ class SichuanCrawler(object):
 				'search':'http://gsxt.scaic.gov.cn/ztxy.do?method=index&random=',
 				'searchList':'http://gsxt.scaic.gov.cn/ztxy.do?method=list&djjg=&random=',
 				'validateCode':'http://gsxt.scaic.gov.cn/ztxy.do?method=createYzm'}
-	
+
 		self.one_dict = {u'基本信息':'ind_comm_pub_reg_basic',
 				u'股东信息':'ind_comm_pub_reg_shareholder',
 				u'发起人信息':'ind_comm_pub_reg_shareholder',
@@ -88,15 +86,14 @@ class SichuanCrawler(object):
 			return None
 		with open(self.ckcode_image_path, 'wb') as f:
 			f.write(resp.content)
-		from CaptchaRecognition import CaptchaRecognition
-		code_cracker = CaptchaRecognition('sichuan')
-		ck_code = code_cracker.predict_result(self.ckcode_image_path)
+
+		ck_code = self.code_cracker.predict_result(self.ckcode_image_path)
 		if ck_code is None:
 			return None
 		else:
 			return ck_code[1]
 
-		
+
 
 	def get_id_num(self, findCode):
 		count = 0
@@ -116,7 +113,7 @@ class SichuanCrawler(object):
 				print onclick
 				m = re.search(r"openView\(\'(\w+?)\'", onclick)
 				if m:
-					return m.group(1) 
+					return m.group(1)
 			except:
 				print count
 				print '*'*100
@@ -125,7 +122,7 @@ class SichuanCrawler(object):
 
 		pass
 	def get_re_list_from_content(self, content):
-		
+
 		pass
 
 	def help_dcdy_get_dict(self, method, maent_pripid, maent_xh, random):
@@ -179,7 +176,7 @@ class SichuanCrawler(object):
 				break
 		# else:
 		# 	print 'i'*100
-		
+
 	def get_head_ths_tds(self, table):
 		print table
 		try:
@@ -307,7 +304,7 @@ class SichuanCrawler(object):
 				head, allths, alltds = self.get_head_ths_tds(table)
 				#self.test_print_all_ths_tds(head, allths, alltds)
 				self.result_json_dict [mydict[head]] = self.get_one_to_one_dict(allths, alltds)
-		pass			
+		pass
 	def get_json_two(self, mydict, tables):
 		#self.test_print_table(tables)
 		for head_item in param:
@@ -317,7 +314,7 @@ class SichuanCrawler(object):
 				head, allths, alltds = self.get_head_ths_tds(table)
 				#self.test_print_all_ths_tds(head, allths, alltds)
 				self.result_json_dict [mydict[head]] = self.get_one_to_one_dict(allths, alltds)
-		
+
 		pass
 	def get_json_three(self, mydict, tables):
 		#self.test_print_table(tables)
@@ -328,7 +325,7 @@ class SichuanCrawler(object):
 				head, allths, alltds = self.get_head_ths_tds(table)
 				#self.test_print_all_ths_tds(head, allths, alltds)
 				self.result_json_dict [mydict[head]] = self.get_one_to_one_dict(allths, alltds)
-		
+
 		pass
 	def get_json_four(self, mydict, tables):
 		#self.test_print_table(tables)
@@ -344,10 +341,8 @@ class SichuanCrawler(object):
 	def run(self, findCode):
 
 		self.ent_number = str(findCode)
-		#对每个企业都指定一个html的存储目录
-		self.html_restore_path = self.html_restore_path + self.ent_number + '/'
-		if settings.save_html and not os.path.exists(self.html_restore_path):
-			CrawlerUtils.make_dir(self.html_restore_path)
+		if not os.path.exists(self.html_restore_path):
+			os.makedirs(self.html_restore_path)
 
 		self.pripid = self.get_id_num(findCode)
 		print findCode, self.pripid
@@ -437,8 +432,9 @@ class SichuanCrawler(object):
 		self.result_json_dict['ind_comm_pub_reg_basic'] = self.result_json_dict['ind_comm_pub_reg_basic'][0]
 		if 'ind_comm_pub_arch_liquidation' in self.result_json_dict.keys() and len(self.result_json_dict['ind_comm_pub_arch_liquidation']) > 0:
 			self.result_json_dict['ind_comm_pub_arch_liquidation'] = self.result_json_dict['ind_comm_pub_arch_liquidation'][0]
-		CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.result_json_dict})
-
+		return json.dumps({self.ent_number: self.result_json_dict})
+		# CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.result_json_dict})
+"""
 if __name__ == '__main__':
 	sichuan = SichuanCrawler('./enterprise_crawler/sichuan.json')
 	sichuan.run('510181000035008')
@@ -449,3 +445,4 @@ if __name__ == '__main__':
 	# 	print line.split(',')[2].strip()
 	# 	sichuan.run(str(line.split(',')[2]).strip())
 	# f.close()
+"""

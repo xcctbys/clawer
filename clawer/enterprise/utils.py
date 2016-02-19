@@ -6,6 +6,7 @@ from enterprise.models import Province
 from .libs.beijing_crawler import BeijingCrawler
 from .libs.chongqing_crawler import ChongqingClawer
 from .libs.tianjin_crawler import TianjinCrawler
+##
 from .libs.zhejiang_crawler import ZhejiangCrawler
 from .libs.shandong_crawler import ShandongCrawler
 from .libs.xinjiang_crawler import XinjiangClawer
@@ -29,6 +30,17 @@ from .libs.guangdong_crawler import GuangdongClawer
 from .libs.guangxi_crawler import GuangxiCrawler
 from .libs.anhui_crawler import AnhuiCrawler
 from .libs.fujian_crawler import FujianCrawler
+##
+from .libs.guizhou_crawler import GuizhouCrawler
+from .libs.hebei_crawler import HebeiCrawler
+from .libs.hubei_crawler import HubeiCrawler
+from .libs.hunan_crawler import HunanCrawler
+from .libs.liaoning_crawler import LiaoningCrawler
+##
+# from .libs.ningxia_crawler import NingxiaClawer
+from .libs.qinghai_crawler import QinghaiCrawler
+from .libs.sichuan_crawler import SichuanCrawler
+from .libs.jiangxi_crawler import JiangxiCrawler
 
 
 from .libs import settings
@@ -63,6 +75,17 @@ class EnterpriseDownload(object):
         {'id': Province.GUANGXI, 'class': GuangxiCrawler},
         {'id': Province.ANHUI, 'class': AnhuiCrawler},
         {'id': Province.FUJIAN, 'class': FujianCrawler},
+        ###
+        {'id': Province.GUIZHOU, 'class': GuizhouCrawler},
+        {'id': Province.HEBEI, 'class': HebeiCrawler},
+        {'id': Province.HUBEI, 'class': HubeiCrawler},
+        {'id': Province.HUNAN, 'class': HunanCrawler},
+        {'id': Province.LIAONING, 'class': LiaoningCrawler},
+        ###
+        # {'id': Province.NINGXIA, 'class': NingxiaClawer},
+        {'id': Province.QINGHAI, 'class': QinghaiCrawler},
+        {'id': Province.SICHUAN, 'class': SichuanCrawler},
+        {'id': Province.JIANGXI, 'class': JiangxiCrawler},
 
     ]
 

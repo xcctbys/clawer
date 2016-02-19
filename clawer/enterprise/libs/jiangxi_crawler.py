@@ -24,14 +24,14 @@ class JiangxiClawer(Crawler):
     """甘肃工商公示信息网页爬虫
     """
     # html数据的存储路径
-    # html_restore_path = settings.html_restore_path + '/jiangxi/'
+    html_restore_path = settings.json_restore_path + '/jiangxi/'
 
     # 验证码图片的存储路径
     ckcode_image_path = settings.json_restore_path + '/jiangxi/ckcode.jpg'
 
     # 验证码文件夹
     ckcode_image_dir_path = settings.json_restore_path + '/jiangxi/'
-
+    code_cracker = CaptchaRecognition('ningxia')
     # 查询页面
     # search_page = html_restore_path + 'search_page.html'
 
@@ -99,10 +99,8 @@ class JiangxiClawer(Crawler):
         crawler = JiangxiClawer('./enterprise_crawler/jiangxi/jiangxi.json')
 
         crawler.ent_number = str(ent_number)
-        # 对每个企业都指定一个html的存储目录
-        # self.html_restore_path = self.html_restore_path + crawler.ent_number + '/'
-        # if settings.save_html and not os.path.exists(self.html_restore_path):
-        #     CrawlerUtils.make_dir(self.html_restore_path)
+        if not os.path.exists(self.html_restore_path):
+            os.makedirs(self.html_restore_path)
 
         crawler.json_dict = {}
         page = crawler.crawl_check_page()

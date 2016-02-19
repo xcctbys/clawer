@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 #encoding=utf-8
 import sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
 import requests
 import re
 import os,os.path
@@ -10,17 +8,14 @@ from crawler import CrawlerUtils
 from bs4 import BeautifulSoup
 import time
 import json
-import importlib
+from enterprise.libs.CaptchaRecognition import CaptchaRecognition
+from . import settings
+import logging
 
-ENT_CRAWLER_SETTINGS = os.getenv('ENT_CRAWLER_SETTINGS')
-if ENT_CRAWLER_SETTINGS:
-    settings = importlib.import_module(ENT_CRAWLER_SETTINGS)
-else:
-    import settings
 
 class GuizhouCrawler(object):
 	#html数据的存储路径
-	html_restore_path = settings.html_restore_path + '/guizhou/'
+	html_restore_path = settings.json_restore_path + '/guizhou/'
 	ckcode_image_path = settings.json_restore_path + '/guizhou/ckcode.jpg'
     	#write_file_mutex = threading.Lock()
 	def __init__(self, json_restore_path):
@@ -28,6 +23,7 @@ class GuizhouCrawler(object):
 		self.nbxh = None
 		self.reqst = requests.Session()
 		self.json_restore_path = json_restore_path
+		self.code_cracker = CaptchaRecognition('guizhou')
 		self.ckcode_image_path = settings.json_restore_path + '/guizhou/ckcode.jpg'
 		self.result_json_dict = {}
 		self.reqst.headers.update(
@@ -40,7 +36,7 @@ class GuizhouCrawler(object):
 				'search':'http://gsxt.gzgs.gov.cn/',
 				'searchList':'http://gsxt.gzgs.gov.cn/search!searchSczt.shtml',
 				'validateCode':'http://gsxt.gzgs.gov.cn/search!generateCode.shtml?validTag=searchImageCode&'}
-	
+
 		self.one_dict = {u'基本信息':'ind_comm_pub_reg_basic',
 				u'股东信息':'ind_comm_pub_reg_shareholder',
 				u'发起人信息':'ind_comm_pub_reg_shareholder',
@@ -113,9 +109,8 @@ class GuizhouCrawler(object):
 		# print self.ckcode_image_path
 		with open(self.ckcode_image_path, 'wb') as f:
 			f.write(resp.content)
-		from CaptchaRecognition import CaptchaRecognition
-		code_cracker = CaptchaRecognition('guizhou')
-		ck_code = code_cracker.predict_result(self.ckcode_image_path)
+
+		ck_code = self.code_cracker.predict_result(self.ckcode_image_path)
 
 		# return ck_code[1]
 		if not ck_code is None:
@@ -148,7 +143,7 @@ class GuizhouCrawler(object):
 				for key in alltds_keys:
 					if item[key] is False or item[key]=='' or item[key] == None:
 						temp_alltds.append(item[key])
-					else: 
+					else:
 						temp_alltds.append(item[key].strip())
 			return self.get_one_to_one_dict(allths, temp_alltds)
 
@@ -172,7 +167,7 @@ class GuizhouCrawler(object):
 							alltds = result_dict,
 							alltds_keys = [u'tzr', u'rjcze', u'rjczrq', u'rjczfs', u'sjcze', u'sjczrq', u'sjczfs'])
 		needdict[u'股东及出资信息'] = value
-		
+
 		result_dict = self.send_post_for_enter('http://gsxt.gzgs.gov.cn/nzgs/search!searchNbxx.shtml',self.nbxh, '0', '16', lsh)
 		value = self.get_dict_enter(allths = [u'资产总额', u'所有者权益合计', u'销售总额', u'利润总额', u'销售总额中主营业务收入', u'净利润', u'纳税总额', u'负债总额'],
 							alltds = result_dict,
@@ -228,7 +223,7 @@ class GuizhouCrawler(object):
 			break
 			count += 1
 		pass
-	
+
 
 	def get_one_to_one_dict(self, allths, alltds):
 		# if len(allths) == len(alltds):
@@ -282,7 +277,7 @@ class GuizhouCrawler(object):
 				self.result_json_dict[head] = self.get_one_to_one_dict(allths, temp_alltds)
 
 
-		pass			
+		pass
 	def get_json_two(self, allths, alltds, alltds_keys, head):
 		alltds = json.loads(alltds)
 		print alltds_keys
@@ -351,10 +346,8 @@ class GuizhouCrawler(object):
 	def run(self, findCode):
 
 		self.ent_number = str(findCode)
-		#对每个企业都指定一个html的存储目录
-		self.html_restore_path = self.html_restore_path + self.ent_number + '/'
-		if settings.save_html and not os.path.exists(self.html_restore_path):
-			CrawlerUtils.make_dir(self.html_restore_path)
+		if not os.path.exists(self.html_restore_path):
+			os.makedirs(self.html_restore_path)
 
 		nbxh = self.get_id_num(findCode)
 		self.nbxh = nbxh
@@ -499,9 +492,9 @@ class GuizhouCrawler(object):
 							alltds_keys = [],
 							head = 'judical_assist_pub_shareholder_modify')
 
-
-		CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.result_json_dict})
-
+		return  json.dumps({self.ent_number: self.result_json_dict})
+		#CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.result_json_dict})
+"""
 if __name__ == '__main__':
 	guizhou = GuizhouCrawler('./enterprise_crawler/guizhou.json')
 	# guizhou.run('520300000040573')
@@ -510,3 +503,4 @@ if __name__ == '__main__':
 		print line.split(',')[2].strip()
 		guizhou.run(str(line.split(',')[2]).strip())
 	f.close()
+"""
