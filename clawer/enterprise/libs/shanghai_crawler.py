@@ -4,6 +4,7 @@ from . import settings
 import threading
 from zongju_crawler import ZongjuCrawler
 from zongju_crawler import ZongjuParser
+from enterprise.libs.CaptchaRecognition import CaptchaRecognition
 
 class ShanghaiCrawler(ZongjuCrawler):
     """上海爬虫

@@ -4,6 +4,7 @@ from . import settings
 import threading
 from heilongjiang_crawler import HeilongjiangClawer
 from heilongjiang_crawler import HeilongjiangParser
+from enterprise.libs.CaptchaRecognition import CaptchaRecognition
 
 class ShanxiCrawler(HeilongjiangClawer):
     """山西爬虫
