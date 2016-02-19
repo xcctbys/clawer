@@ -20,7 +20,7 @@ class ZongjuCrawler(Crawler):
     """总局工商爬虫
     """
     # html数据的存储路径
-    # html_restore_path = settings.html_restore_path + '/zongju/'
+    html_restore_path = settings.json_restore_path + '/zongju/'
 
     # 验证码图片的存储路径
     ckcode_image_path = settings.json_restore_path + '/zongju/ckcode.jpg'
@@ -48,6 +48,8 @@ class ZongjuCrawler(Crawler):
     def run(self, ent_number=0):
         """爬取的主函数
         """
+        if not os.path.exists(self.html_restore_path):
+            os.makedirs(self.html_restore_path)
         Crawler.run(self, ent_number)
         '''
         self.ent_number = str(ent_number)

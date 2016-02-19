@@ -7,11 +7,13 @@ from . import settings
 from crawler import CrawlerUtils
 from zongju_crawler import ZongjuCrawler
 from zongju_crawler import ZongjuParser
+from enterprise.libs.CaptchaRecognition import CaptchaRecognition
+
 class FujianCrawler(ZongjuCrawler):
     """福建爬虫
     """
     #html数据的存储路径
-    # html_restore_path = settings.html_restore_path + '/fujian/'
+    html_restore_path = settings.json_restore_path + '/fujian/'
 
     #验证码图片的存储路径
     ckcode_image_path = settings.json_restore_path + '/fujian/ckcode.jpg'

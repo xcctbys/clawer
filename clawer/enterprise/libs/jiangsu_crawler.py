@@ -24,7 +24,7 @@ class JiangsuCrawler(Crawler):
     """江苏工商公示信息网页爬虫
     """
     #html数据的存储路径
-    #html_restore_path = settings.html_restore_path + '/jiangsu/'
+    html_restore_path = settings.json_restore_path + '/jiangsu/'
 
     #验证码图片的存储路径
     ckcode_image_path = settings.json_restore_path + '/jiangsu/ckcode.jpg'
@@ -102,6 +102,9 @@ class JiangsuCrawler(Crawler):
         }
 
     def run(self, ent_number=0):
+        if not os.path.exists(self.html_restore_path):
+            os.makedirs(self.html_restore_path)
+
         Crawler.run(self, ent_number)
         '''
         self.ent_number = str(ent_number)
