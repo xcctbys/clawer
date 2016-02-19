@@ -92,6 +92,7 @@ class AnhuiCrawler(object):
 
 	def get_id_num(self, findCode):
 		count = 0
+		mainId = None
 		while count < 20:
 			check_num = self.get_check_num()
 			print check_num
