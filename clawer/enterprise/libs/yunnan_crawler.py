@@ -21,7 +21,7 @@ class YunnanCrawler(object):
 		self.json_restore_path = json_restore_path
 		self.ckcode_image_path = settings.json_restore_path + '/yunnan/ckcode.jpg'
 		self.result_json_dict = {}
-		code_cracker = CaptchaRecognition('yunnan')
+		self.code_cracker = CaptchaRecognition('yunnan')
 		self.reqst.headers.update(
 			{'Accept': 'text/html, application/xhtml+xml, */*',
 			'Accept-Encoding': 'gzip, deflate',
