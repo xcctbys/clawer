@@ -31,7 +31,7 @@ class JiangxiClawer(Crawler):
 
     # 验证码文件夹
     ckcode_image_dir_path = settings.json_restore_path + '/jiangxi/'
-    code_cracker = CaptchaRecognition('ningxia')
+    code_cracker = CaptchaRecognition('jiangxi')
     # 查询页面
     # search_page = html_restore_path + 'search_page.html'
 

@@ -1567,7 +1567,7 @@ if __name__ == '__main__':
 
     #
     run.config_logging()
-    JiangxiClawer.code_cracker = CaptchaRecognition('ningxia')
+    JiangxiClawer.code_cracker = CaptchaRecognition('jiangxi')
     crawler = JiangxiClawer('./enterprise_crawler/jiangxi/jiangxi.json')
     enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/jiangxi.txt')
     # raw_input('hello')
