@@ -17,6 +17,13 @@ from .libs.hainan_crawler import HainanCrawler
 from .libs.jilin_crawler import JilinCrawler
 from .libs.xizang_crawler import XizangCrawler
 from .libs.shaanxi_crawler import ShaanxiCrawler
+##
+from .libs.shanghai_crawler import ShanghaiCrawler
+from .libs.zongju_crawler import ZongjuCrawler
+from .libs.jiangsu_crawler import JiangsuCrawler
+from .libs.heilongjiang_crawler import HeilongjiangClawer
+from .libs.shanxi_crawler import ShanxiCrawler
+
 
 from .libs import settings
 import urlparse
@@ -38,7 +45,12 @@ class EnterpriseDownload(object):
         {'id': Province.JILIN, 'class': JilinCrawler},
         {'id': Province.XIZANG, 'class': XizangCrawler},
         {'id': Province.SHAANXI, 'class': ShaanxiCrawler},
-
+        ####
+        {'id': Province.SHANGHAI, 'class': ShanghaiCrawler},
+        {'id': Province.ZONGJU, 'class': ZongjuCrawler},
+        {'id': Province.JIANGSU, 'class': JiangsuCrawler},
+        {'id': Province.HEILONGJIANG, 'class': HeilongjiangClawer},
+        {'id': Province.SHANXI, 'class': ShanxiCrawler},
     ]
 
     def __init__(self, url):

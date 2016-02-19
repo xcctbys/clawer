@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 #encoding=utf-8
-import os
-import threading
-from . import settings
-import logging
-from crawler import CrawlerUtils
 from heilongjiang_crawler import HeilongjiangClawer
 from heilongjiang_crawler import HeilongjiangParser
 
@@ -12,7 +7,7 @@ class ShanxiCrawler(HeilongjiangClawer):
     """山西爬虫
     """
     # html数据的存储路径
-    # html_restore_path = settings.html_restore_path + '/shanxi/'
+    html_restore_path = settings.json_restore_path + '/shanxi/'
 
     #验证码图片的存储路径
     ckcode_image_path = settings.json_restore_path + '/shanxi/ckcode.jpg'

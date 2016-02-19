@@ -19,7 +19,7 @@ class HeilongjiangClawer(Crawler):
     """黑龙江工商公示信息网页爬虫
     """
     # html数据的存储路径
-    # html_restore_path = settings.html_restore_path + '/heilongjiang/'
+    html_restore_path = settings.json_restore_path + '/heilongjiang/'
 
     # 验证码图片的存储路径
     ckcode_image_path = settings.json_restore_path + '/heilongjiang/ckcode.jpg'
@@ -57,6 +57,9 @@ class HeilongjiangClawer(Crawler):
     def run(self, ent_number=0):
         """爬取的主函数
         """
+        if not os.path.exists(self.html_restore_path):
+            os.makedirs(self.html_restore_path)
+
         Crawler.run(self, ent_number)
 
     def crawl_check_page(self):

@@ -1,20 +1,12 @@
 #!/usr/bin/env python
 #encoding=utf-8
-import os
-import threading
-from . import settings
-
-from crawler import CrawlerUtils
 from zongju_crawler import ZongjuCrawler
 from zongju_crawler import ZongjuParser
-import logging
 
 class ShanghaiCrawler(ZongjuCrawler):
     """上海爬虫
     """
-    #html数据的存储路径
-    # html_restore_path = settings.html_restore_path + '/shanghai/'
-
+    html_restore_path = settings.json_restore_path + '/shanghai/'
     #验证码图片的存储路径
     ckcode_image_path = settings.json_restore_path + '/shanghai/ckcode.jpg'
 
@@ -32,6 +24,9 @@ class ShanghaiCrawler(ZongjuCrawler):
             }
 
     def __init__(self, json_restore_path):
+        # path = json_restore_path+"/shanghai/"
+        # if not os.path.exists(path):
+        #     os.makedirs(path)
         ZongjuCrawler.__init__(self, json_restore_path)
         self.json_restore_path = json_restore_path
         self.parser = ShanghaiParser(self)
