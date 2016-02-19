@@ -25,7 +25,7 @@ class GansuClawer(Crawler):
     """甘肃工商公示信息网页爬虫
     """
     # html数据的存储路径
-    # html_restore_path = settings.html_restore_path + '/gansu/'
+    html_restore_path = settings.json_restore_path + '/gansu/'
 
     # 验证码图片的存储路径
     ckcode_image_path = settings.json_restore_path + '/gansu/ckcode.jpg'
@@ -76,6 +76,8 @@ class GansuClawer(Crawler):
         # self.html_restore_path = self.html_restore_path + crawler.ent_number + '/'
         # if settings.save_html and not os.path.exists(self.html_restore_path):
         #     CrawlerUtils.make_dir(self.html_restore_path)
+        if not os.path.exists(self.html_restore_path):
+            os.makedirs(self.html_restore_path)
 
         crawler.json_dict = {}
 

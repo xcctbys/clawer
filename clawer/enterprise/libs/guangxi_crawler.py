@@ -1,25 +1,21 @@
 #!/usr/bin/env python
 #encoding=utf-8
 import sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
+import logging
+import json
 import requests
 import re
 import os,os.path
 from crawler import CrawlerUtils
 from bs4 import BeautifulSoup
 import time
-import importlib
+from . import settings
+from enterprise.libs.CaptchaRecognition import CaptchaRecognition
 
-ENT_CRAWLER_SETTINGS = os.getenv('ENT_CRAWLER_SETTINGS')
-if ENT_CRAWLER_SETTINGS:
-    settings = importlib.import_module(ENT_CRAWLER_SETTINGS)
-else:
-    import settings
 
 class GuangxiCrawler(object):
 	#html数据的存储路径
-	html_restore_path = settings.html_restore_path + '/guangxi/'
+	html_restore_path = settings.json_restore_path + '/guangxi/'
 	ckcode_image_path = settings.json_restore_path + '/guangxi/ckcode.jpg'
     	#write_file_mutex = threading.Lock()
 	def __init__(self, json_restore_path):
@@ -28,6 +24,8 @@ class GuangxiCrawler(object):
 		self.reqst = requests.Session()
 		self.json_restore_path = json_restore_path
 		self.ckcode_image_path = settings.json_restore_path + '/guangxi/ckcode.jpg'
+		self.code_cracker = CaptchaRecognition('guangxi')
+
 		self.result_json_dict = {}
 		self.reqst.headers.update(
 			{'Accept': 'text/html, application/xhtml+xml, */*',
@@ -52,7 +50,7 @@ class GuangxiCrawler(object):
 				'next_head':'http://gxqyxygs.gov.cn/Query'
 
 		}
-	
+
 		self.one_dict = {u'基本信息':'ind_comm_pub_reg_basic',
 				u'股东信息':'ind_comm_pub_reg_shareholder',
 				u'发起人信息':'ind_comm_pub_reg_shareholder',
@@ -101,15 +99,13 @@ class GuangxiCrawler(object):
 			return None
 		with open(self.ckcode_image_path, 'wb') as f:
 			f.write(resp.content)
-		from CaptchaRecognition import CaptchaRecognition
-		code_cracker = CaptchaRecognition('guangxi')
-		ck_code = code_cracker.predict_result(self.ckcode_image_path)
+		ck_code = self.code_cracker.predict_result(self.ckcode_image_path)
 		if ck_code is None:
 			return None
 		else:
 			return ck_code[1]
 
-		
+
 
 	def get_id_num(self, findCode):
 		count = 0
@@ -138,7 +134,7 @@ class GuangxiCrawler(object):
 			count += 1
 
 		pass
-	
+
 
 	def get_one_to_one_dict(self, allths, alltds):
 		# if len(allths) == len(alltds):
@@ -361,7 +357,7 @@ class GuangxiCrawler(object):
 				if head == u'基本信息' or head == u'清算信息':
 					self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)[0]
 
-		pass			
+		pass
 	def get_json_two(self, mydict, tables):
 		count_table = len(tables)
 		print count_table
@@ -413,7 +409,7 @@ class GuangxiCrawler(object):
 				else:
 					self.do_with_nonext(table, tables[i+1])
 					pass
-		
+
 		pass
 	def get_json_three(self, mydict, tables):
 		count_table = len(tables)
@@ -429,7 +425,7 @@ class GuangxiCrawler(object):
 				self.test_print_head_ths_tds(head, allths, alltds)
 				if head != '':
 					self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
-		
+
 		pass
 	def get_json_four(self, mydict, tables):
 		count_table = len(tables)
@@ -450,9 +446,8 @@ class GuangxiCrawler(object):
 	def run(self, findCode):
 
 		self.ent_number = str(findCode)
-		#对每个企业都指定一个html的存储目录
-		self.html_restore_path = self.html_restore_path + self.ent_number + '/'
-		if settings.save_html and not os.path.exists(self.html_restore_path):
+
+		if not os.path.exists(self.html_restore_path):
 			CrawlerUtils.make_dir(self.html_restore_path)
 
 		self.result_json_dict = {}
@@ -474,8 +469,9 @@ class GuangxiCrawler(object):
 		soup = BeautifulSoup(resp.content)
 		self.get_json_four(self.four_dict, soup.find_all('table'))
 
-		CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.result_json_dict})
-
+		return json.dumps({self.ent_number: self.result_json_dict})
+		# CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.result_json_dict})
+"""
 if __name__ == '__main__':
 	guangxi = GuangxiCrawler('./enterprise_crawler/guangxi.json')
 	# guangxi.run('450200000016746')
@@ -485,3 +481,4 @@ if __name__ == '__main__':
 		print line.split(',')[2].strip()
 		guangxi.run(str(line.split(',')[2]).strip())
 	f.close()
+"""
