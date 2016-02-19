@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 #encoding=utf-8
+from . import settings
+import threading
 from zongju_crawler import ZongjuCrawler
 from zongju_crawler import ZongjuParser
 

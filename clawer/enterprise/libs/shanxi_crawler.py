@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 #encoding=utf-8
+from . import settings
+import threading
 from heilongjiang_crawler import HeilongjiangClawer
 from heilongjiang_crawler import HeilongjiangParser
 
