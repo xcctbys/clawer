@@ -9,7 +9,6 @@ import re
 from . import settings
 import json
 import codecs
-import unittest
 import threading
 from bs4 import BeautifulSoup
 from enterprise.libs.CaptchaRecognition import CaptchaRecognition
@@ -50,7 +49,7 @@ class JilinCrawler(object):
         #验证码图片的存储路径
         self.path_captcha = settings.json_restore_path + '/jilin/ckcode.jpg'
         #html数据的存储路径
-        #self.html_restore_path = settings.html_restore_path + '/jilin/'
+        self.html_restore_path = settings.json_restore_path + '/jilin/'
 
     #分析 展示页面， 获得搜索到的企业列表
     def analyze_showInfo(self, page):
@@ -1227,8 +1226,8 @@ class JilinCrawler(object):
             return {'page': text, 'url': urls}
 
     def run(self, ent_num):
-        # if not os.path.exists(self.html_restore_path):
-        #     os.makedirs(self.html_restore_path)
+        if not os.path.exists(self.html_restore_path):
+            os.makedirs(self.html_restore_path)
         json_dict = {}
         self.crawl_page_captcha(urls['page_search'], urls['page_Captcha'], urls['checkcode'], ent_num)
         data = self.crawl_page_main()

@@ -8,7 +8,6 @@ import re
 import os,os.path
 from crawler import CrawlerUtils
 from bs4 import BeautifulSoup
-import importlib
 import json
 
 from . import settings
@@ -22,6 +21,7 @@ class YunnanCrawler(object):
 		self.json_restore_path = json_restore_path
 		self.ckcode_image_path = settings.json_restore_path + '/yunnan/ckcode.jpg'
 		self.result_json_dict = {}
+		code_cracker = CaptchaRecognition('yunnan')
 		self.reqst.headers.update(
 			{'Accept': 'text/html, application/xhtml+xml, */*',
 			'Accept-Encoding': 'gzip, deflate',
@@ -79,9 +79,9 @@ class YunnanCrawler(object):
 			return None
 		with open(self.ckcode_image_path, 'wb') as f:
 			f.write(resp.content)
-		from CaptchaRecognition import CaptchaRecognition
-		code_cracker = CaptchaRecognition('yunnan')
-		ck_code = code_cracker.predict_result(self.ckcode_image_path)
+
+
+		ck_code = self.code_cracker.predict_result(self.ckcode_image_path)
 		if ck_code is None:
 			return None,None
 		else:

@@ -45,6 +45,9 @@ class XizangCrawler(HeilongjiangClawer):
 
 
     def __init__(self, json_restore_path):
+        path = json_restore_path+"/xizang/"
+        if not os.path.exists(path):
+            os.makedirs(path)
         HeilongjiangClawer.__init__(self, json_restore_path)
         self.json_restore_path = json_restore_path
         self.parser = XizangParser(self)

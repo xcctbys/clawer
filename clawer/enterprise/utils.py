@@ -37,7 +37,7 @@ class EnterpriseDownload(object):
         {'id': Province.HAINAN, 'class': HainanCrawler},
         {'id': Province.JILIN, 'class': JilinCrawler},
         {'id': Province.XIZANG, 'class': XizangCrawler},
-        {'id': Province.SHAANXI, 'class': NeimengguClawer},
+        {'id': Province.SHAANXI, 'class': ShaanxiCrawler},
 
     ]
 

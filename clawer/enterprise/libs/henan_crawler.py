@@ -8,16 +8,13 @@ import re
 import os,os.path
 from crawler import CrawlerUtils
 from bs4 import BeautifulSoup
-import importlib
-
-ENT_CRAWLER_SETTINGS = os.getenv('ENT_CRAWLER_SETTINGS')
-if ENT_CRAWLER_SETTINGS:
-    settings = importlib.import_module(ENT_CRAWLER_SETTINGS)
-else:
-    import settings
+from . import settings
+import json
+import logging
+from enterprise.libs.CaptchaRecognition import CaptchaRecognition
 
 class HenanCrawler(object):
-	html_restore_path = settings.html_restore_path + '/henan/'
+	html_restore_path = settings.json_restore_path + '/henan/'
 	ckcode_image_path = settings.json_restore_path + '/henan/ckcode.jpg'
 
 	def __init__(self, json_restore_path):
@@ -26,6 +23,7 @@ class HenanCrawler(object):
 		self.json_restore_path = json_restore_path
 		self.ckcode_image_path = settings.json_restore_path + '/henan/ckcode.jpg'
 		self.result_json_dict = {}
+		self.code_cracker = CaptchaRecognition('qinghai')
 
 		self.reqst.headers.update({'Accept': 'text/html, application/xhtml+xml, */*',
 			'Accept-Encoding': 'gzip, deflate',
@@ -89,9 +87,9 @@ class HenanCrawler(object):
 			return None
 		with open(self.ckcode_image_path, 'wb') as f:
 			f.write(resp.content)
-		from CaptchaRecognition import CaptchaRecognition
-		code_cracker = CaptchaRecognition('qinghai')
-		ck_code = code_cracker.predict_result(self.ckcode_image_path)
+		# from CaptchaRecognition import CaptchaRecognition
+
+		ck_code = self.code_cracker.predict_result(self.ckcode_image_path)
 		if ck_code is None:
 			return None
 		else:
@@ -102,7 +100,7 @@ class HenanCrawler(object):
 		while count < 30:
 			check_num = self.get_check_num()
 			if check_num is None:
-				count += 1 
+				count += 1
 				continue
 			data = {'checkNo':check_num, 'entName':findCode}
 			resp = self.reqst.post(self.search_dict['searchList'], data=data, timeout = 120)
@@ -217,7 +215,7 @@ class HenanCrawler(object):
 				# 	alltds = [None for th in allths]
 				tempdict[head] = self.get_one_to_one_dict(allths, alltds)
 		return tempdict
-# 
+#
 
 	def do_with_hasnext(self, mydict, head, table_th, table_a):
 		print 'hasnext', head
@@ -424,8 +422,7 @@ class HenanCrawler(object):
 
 	def run(self, findCode):
 		self.ent_number = str(findCode)
-		self.html_restore_path = self.html_restore_path + self.ent_number + '/'
-		if settings.save_html and not os.path.exists(self.html_restore_path):
+		if not os.path.exists(self.html_restore_path):
 			CrawlerUtils.make_dir(self.html_restore_path)
 
 		self.id = self.get_id_num(findCode)
@@ -440,10 +437,11 @@ class HenanCrawler(object):
 		tablefour = self.get_tables(self.search_dict['justiceAssistance'] + 'id=' +self.id)
 		self.get_json_four(self.four_dict, tablefour)
 
-		CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.result_json_dict})
+		return json.dumps({self.ent_number: self.result_json_dict})
+		# CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.result_json_dict})
 
 
-
+"""
 if __name__ == '__main__':
 	henan = HenanCrawler('./enterprise_crawler/henan.json')
 	# henan.run('410192000013162')
@@ -453,3 +451,4 @@ if __name__ == '__main__':
 		print line.split(',')[2].strip()
 		henan.run(str(line.split(',')[2]).strip())
 	f.close()
+"""
