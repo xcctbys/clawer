@@ -20,7 +20,7 @@ from . import settings
 from enterprise.libs.CaptchaRecognition import CaptchaRecognition
 import logging
 
-class JiangxiClawer(Crawler):
+class JiangxiCrawler(Crawler):
     """甘肃工商公示信息网页爬虫
     """
     # html数据的存储路径
@@ -96,7 +96,7 @@ class JiangxiClawer(Crawler):
         self.results = None
 
     def run(self, ent_number=0):
-        crawler = JiangxiClawer('./enterprise_crawler/jiangxi/jiangxi.json')
+        crawler = JiangxiCrawler('./enterprise_crawler/jiangxi/jiangxi.json')
 
         crawler.ent_number = str(ent_number)
         if not os.path.exists(self.html_restore_path):
@@ -172,7 +172,7 @@ class JiangxiClawer(Crawler):
         while count < 300:
             ck_code = self.crack_check_code(count)
             data = {'password': ck_code}
-            resp = self.reqst.post(JiangxiClawer.urls['post_checkCode'], data=data)
+            resp = self.reqst.post(JiangxiCrawler.urls['post_checkCode'], data=data)
             if resp.status_code != 200:
                 logging.error("crawl post check page failed!")
                 count += 1
@@ -195,7 +195,7 @@ class JiangxiClawer(Crawler):
             search_data['otherLoginInfo.password'] = ''
             search_data['otherLoginInfo.verificationCode'] = ''
             search_data['selectValue'] = self.ent_number
-            resp = self.reqst.post(JiangxiClawer.urls['post_checkCode2'], data=search_data)
+            resp = self.reqst.post(JiangxiCrawler.urls['post_checkCode2'], data=search_data)
             if resp.status_code != 200:
                 count -= 1
                 continue
@@ -210,7 +210,7 @@ class JiangxiClawer(Crawler):
         params = {}
         params['_'] = times
 
-        resp = self.reqst.get(JiangxiClawer.urls['get_checkcode'], params=params)
+        resp = self.reqst.get(JiangxiCrawler.urls['get_checkcode'], params=params)
         print 'image code', str(resp.status_code)
         if resp.status_code != 200:
             logging.error('failed to get get_checkcode')
@@ -260,7 +260,7 @@ class JiangxiClawer(Crawler):
         params = {}
         params['nbxh'] = self.results[0]
         params['qylx'] = self.results[1]
-        url = JiangxiClawer.urls['ind_comm_pub_reg_basic']
+        url = JiangxiCrawler.urls['ind_comm_pub_reg_basic']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -271,7 +271,7 @@ class JiangxiClawer(Crawler):
         params = {}
         params['nbxh'] = self.results[0]
         params['qylx'] = self.results[1]
-        url = JiangxiClawer.urls['ind_comm_pub_reg_shareholder']
+        url = JiangxiCrawler.urls['ind_comm_pub_reg_shareholder']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -282,7 +282,7 @@ class JiangxiClawer(Crawler):
         params = {}
         params['nbxh'] = self.results[0]
         params['qylx'] = self.results[1]
-        url = JiangxiClawer.urls['ind_comm_pub_reg_modify']
+        url = JiangxiCrawler.urls['ind_comm_pub_reg_modify']
         page = self.crawl_page_by_get_params(params=params, url=url)
 
         return page
@@ -294,7 +294,7 @@ class JiangxiClawer(Crawler):
         params = {}
         params['nbxh'] = self.results[0]
         params['qylx'] = self.results[1]
-        url = JiangxiClawer.urls['ind_comm_pub_arch_key_persons']
+        url = JiangxiCrawler.urls['ind_comm_pub_arch_key_persons']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -305,7 +305,7 @@ class JiangxiClawer(Crawler):
         params = {}
         params['nbxh'] = self.results[0]
         params['qylx'] = self.results[1]
-        url = JiangxiClawer.urls['ind_comm_pub_arch_branch']
+        url = JiangxiCrawler.urls['ind_comm_pub_arch_branch']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -316,7 +316,7 @@ class JiangxiClawer(Crawler):
         params = {}
         params['nbxh'] = self.results[0]
         params['qylx'] = self.results[1]
-        url = JiangxiClawer.urls['ind_comm_pub_arch_liquidation']
+        url = JiangxiCrawler.urls['ind_comm_pub_arch_liquidation']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -328,7 +328,7 @@ class JiangxiClawer(Crawler):
         params['nbxh'] = self.results[0]
         params['qymc'] = self.results[2]
         params['zch'] = self.results[3]
-        url = JiangxiClawer.urls['ind_comm_pub_movable_property_reg']
+        url = JiangxiCrawler.urls['ind_comm_pub_movable_property_reg']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -338,7 +338,7 @@ class JiangxiClawer(Crawler):
         """
         params = {}
         params['nbxh'] = self.results[0]
-        url = JiangxiClawer.urls['ind_comm_pub_equity_ownership_reg']
+        url = JiangxiCrawler.urls['ind_comm_pub_equity_ownership_reg']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -348,7 +348,7 @@ class JiangxiClawer(Crawler):
         """
         params = {}
         params['nbxh'] = self.results[0]
-        url = JiangxiClawer.urls['ind_comm_pub_administration_sanction']
+        url = JiangxiCrawler.urls['ind_comm_pub_administration_sanction']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -358,7 +358,7 @@ class JiangxiClawer(Crawler):
         """
         params = {}
         params['nbxh'] = self.results[0]
-        url = JiangxiClawer.urls['ind_comm_pub_business_exception']
+        url = JiangxiCrawler.urls['ind_comm_pub_business_exception']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -367,7 +367,7 @@ class JiangxiClawer(Crawler):
 
         """
         params = {}
-        url = JiangxiClawer.urls['ind_comm_pub_serious_violate_law']
+        url = JiangxiCrawler.urls['ind_comm_pub_serious_violate_law']
         page = self.crawl_page_by_get_params(url=url)
         return page
 
@@ -376,7 +376,7 @@ class JiangxiClawer(Crawler):
         """
         params = {}
         params['nbxh'] = self.results[0]
-        url = JiangxiClawer.urls['ind_comm_pub_spot_check']
+        url = JiangxiCrawler.urls['ind_comm_pub_spot_check']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -387,7 +387,7 @@ class JiangxiClawer(Crawler):
         params['nbxh'] = self.results[0]
         params['qymc'] = self.results[2]
         params['zch'] = self.results[3]
-        url = JiangxiClawer.urls['ent_pub_ent_annual_report']
+        url = JiangxiCrawler.urls['ent_pub_ent_annual_report']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -396,7 +396,7 @@ class JiangxiClawer(Crawler):
         """
         params = {}
         params['nbxh'] = self.results[0]
-        url = JiangxiClawer.urls['ent_pub_shareholder_capital_contribution']
+        url = JiangxiCrawler.urls['ent_pub_shareholder_capital_contribution']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -405,7 +405,7 @@ class JiangxiClawer(Crawler):
         """
         params = {}
         params['nbxh'] = self.results[0]
-        url = JiangxiClawer.urls['ent_pub_equity_change']
+        url = JiangxiCrawler.urls['ent_pub_equity_change']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -414,7 +414,7 @@ class JiangxiClawer(Crawler):
         """
         params = {}
         params['nbxh'] = self.results[0]
-        url = JiangxiClawer.urls['ent_pub_administration_license']
+        url = JiangxiCrawler.urls['ent_pub_administration_license']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -423,7 +423,7 @@ class JiangxiClawer(Crawler):
         """
         params = {}
         params['nbxh'] = self.results[0]
-        url = JiangxiClawer.urls['ent_pub_knowledge_property']
+        url = JiangxiCrawler.urls['ent_pub_knowledge_property']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -432,7 +432,7 @@ class JiangxiClawer(Crawler):
         """
         params = {}
         params['nbxh'] = self.results[0]
-        url = JiangxiClawer.urls['ent_pub_administration_sanction']
+        url = JiangxiCrawler.urls['ent_pub_administration_sanction']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -441,7 +441,7 @@ class JiangxiClawer(Crawler):
         """
         params = {}
         params['nbxh'] = self.results[0]
-        url = JiangxiClawer.urls['ent_pub_reg_modify']
+        url = JiangxiCrawler.urls['ent_pub_reg_modify']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -450,7 +450,7 @@ class JiangxiClawer(Crawler):
         """
         params = {}
         params['nbxh'] = self.results[0]
-        url = JiangxiClawer.urls['other_dept_pub_administration_license']
+        url = JiangxiCrawler.urls['other_dept_pub_administration_license']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -459,7 +459,7 @@ class JiangxiClawer(Crawler):
         """
         params = {}
         params['nbxh'] = self.results[0]
-        url = JiangxiClawer.urls['other_dept_pub_administration_sanction']
+        url = JiangxiCrawler.urls['other_dept_pub_administration_sanction']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -469,7 +469,7 @@ class JiangxiClawer(Crawler):
         params = {}
         params['nbxh'] = self.results[0]
         params['qylxFlag'] = self.results[4]
-        url = JiangxiClawer.urls['judical_assist_pub_equity_freeze']
+        url = JiangxiCrawler.urls['judical_assist_pub_equity_freeze']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -478,7 +478,7 @@ class JiangxiClawer(Crawler):
         """
         params = {}
         params['nbxh'] = self.results[0]
-        url = JiangxiClawer.urls['judical_assist_pub_shareholder_modify']
+        url = JiangxiCrawler.urls['judical_assist_pub_shareholder_modify']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -489,7 +489,7 @@ class JiangxiClawer(Crawler):
         params['gsryflag'] = ''
         params['njnd'] = year
         params['nbxh'] = self.results[0]
-        url = JiangxiClawer.urls['report_baseinfo']
+        url = JiangxiCrawler.urls['report_baseinfo']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -500,7 +500,7 @@ class JiangxiClawer(Crawler):
         params['gsryflag'] = ''
         params['njnd'] = year
         params['nbxh'] = self.results[0]
-        url = JiangxiClawer.urls['report_website']
+        url = JiangxiCrawler.urls['report_website']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -511,7 +511,7 @@ class JiangxiClawer(Crawler):
         params['gsryflag'] = ''
         params['njnd'] = year
         params['nbxh'] = self.results[0]
-        url = JiangxiClawer.urls['report_shareholder']
+        url = JiangxiCrawler.urls['report_shareholder']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -522,7 +522,7 @@ class JiangxiClawer(Crawler):
         params['gsryflag'] = ''
         params['njnd'] = year
         params['nbxh'] = self.results[0]
-        url = JiangxiClawer.urls['report_out_invest']
+        url = JiangxiCrawler.urls['report_out_invest']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -533,7 +533,7 @@ class JiangxiClawer(Crawler):
         params['gsryflag'] = ''
         params['njnd'] = year
         params['nbxh'] = self.results[0]
-        url = JiangxiClawer.urls['report_public_of_ent']
+        url = JiangxiCrawler.urls['report_public_of_ent']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -544,7 +544,7 @@ class JiangxiClawer(Crawler):
         params['gsryflag'] = ''
         params['njnd'] = year
         params['nbxh'] = self.results[0]
-        url = JiangxiClawer.urls['report_offer_security']
+        url = JiangxiCrawler.urls['report_offer_security']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -555,7 +555,7 @@ class JiangxiClawer(Crawler):
         params['gsryflag'] = ''
         params['njnd'] = year
         params['nbxh'] = self.results[0]
-        url = JiangxiClawer.urls['report_shareholder_change']
+        url = JiangxiCrawler.urls['report_shareholder_change']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -566,7 +566,7 @@ class JiangxiClawer(Crawler):
         params['gsryflag'] = ''
         params['njnd'] = year
         params['nbxh'] = self.results[0]
-        url = JiangxiClawer.urls['report_record_of_modifies']
+        url = JiangxiCrawler.urls['report_record_of_modifies']
         page = self.crawl_page_by_get_params(params=params, url=url)
         return page
 
@@ -1541,7 +1541,7 @@ class JiangxiParser(Parser):
 class TestParser(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
-        self.crawler = JiangxiClawer('./enterprise_crawler/jiangxi.json')
+        self.crawler = JiangxiCrawler('./enterprise_crawler/jiangxi.json')
         self.parser = self.crawler.parser
         self.crawler.json_dict = {}
         self.crawler.ent_number = '152704000000508'
@@ -1562,8 +1562,8 @@ if __name__ == '__main__':
 
     #
     run.config_logging()
-    JiangxiClawer.code_cracker = CaptchaRecognition('ningxia')
-    crawler = JiangxiClawer('./enterprise_crawler/jiangxi/jiangxi.json')
+    JiangxiCrawler.code_cracker = CaptchaRecognition('ningxia')
+    crawler = JiangxiCrawler('./enterprise_crawler/jiangxi/jiangxi.json')
     enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/jiangxi.txt')
     # raw_input('hello')
     for ent_number in enterprise_list:
