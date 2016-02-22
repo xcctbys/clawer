@@ -88,11 +88,7 @@ class TestEnterpriseDownload(TestCase):
         data = downloader.download()
         self.assertIsNotNone(data)
 
-    def test_run_shanghai(self):
-        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.SHANGHAI), u"海通证券股份有限公司", u'310000000016182')
-        downloader = EnterpriseDownload(url)
-        data = downloader.download()
-        self.assertIsNotNone(data)
+
 
     def test_run_hunan(self):
         url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.HUNAN), u"中科恒源科技股份有限公司", u'430000000039509')
@@ -117,6 +113,11 @@ class TestEnterpriseDownload(TestCase):
         The following crawler tests are OK
     """
     """
+    def test_run_shanghai(self):
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.SHANGHAI), u"海通证券股份有限公司", u'310000000016182')
+        downloader = EnterpriseDownload(url)
+        data = downloader.download()
+        self.assertIsNotNone(data)
     def test_run_qinghai(self):
         url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.QINGHAI), u"九州证券有限公司", u'630000100019052')
         downloader = EnterpriseDownload(url)

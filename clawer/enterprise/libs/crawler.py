@@ -139,7 +139,6 @@ class Crawler(object):
     code_cracker = None
 
     def __init__(self):
-
         pass
 
     def run(self, ent_number=0):
@@ -164,6 +163,9 @@ class Crawler(object):
         self.crawl_ent_pub_pages()
         self.crawl_other_dept_pub_pages()
         self.crawl_judical_assist_pub_pages()
+        print 'ent nt_number'
+        print self.ent_number
+        print self.json_dict
 
         return json.dumps({self.ent_number: self.json_dict})
 
