@@ -165,9 +165,6 @@ class Crawler(object):
         self.crawl_other_dept_pub_pages()
         self.crawl_judical_assist_pub_pages()
 
-        print ent_number
-        print self.json_dict
-
         return json.dumps({self.ent_number: self.json_dict})
 
     def crack_checkcode(self):
