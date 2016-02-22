@@ -78,18 +78,8 @@ class TestEnterpriseDownload(TestCase):
     def setUp(self):
         TestCase.setUp(self)
 
-    def test_run_guizhou(self):
-        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.GUIZHOU), u"贵州省福泉磷矿有限公司", u'522702000127342')
-        downloader = EnterpriseDownload(url)
-        data = downloader.download()
-        self.assertIsNotNone(data)
 
-    def test_run_hebei(self):
-        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.HEBEI), u"财达证券有限责任公司", u'130000000021709')
-        downloader = EnterpriseDownload(url)
-        data = downloader.download()
-        self.assertIsNotNone(data)
-
+    """
     def test_run_hubei(self):
         url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.HUBEI), u"华新水泥股份有限公司", u'420000400000283')
         downloader = EnterpriseDownload(url)
@@ -120,14 +110,32 @@ class TestEnterpriseDownload(TestCase):
         data = downloader.download()
         self.assertIsNotNone(data)
 
+    def test_run_guizhou(self):
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.GUIZHOU), u"贵州省福泉磷矿有限公司", u'522702000127342')
+        downloader = EnterpriseDownload(url)
+        data = downloader.download()
+        self.assertIsNotNone(data)
+
+    def test_run_hebei(self):
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.HEBEI), u"财达证券有限责任公司", u'130000000021709')
+        downloader = EnterpriseDownload(url)
+        data = downloader.download()
+        self.assertIsNotNone(data)
+
     def test_run_jiangxi(self):
         url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.JIANGXI), u"中航证券有限公司", u'360000110000996')
         downloader = EnterpriseDownload(url)
         data = downloader.download()
         self.assertIsNotNone(data)
     """
+    """
         The following crawler tests are not OK
     """
+    def test_run_heilongjiang(self):
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.HEILONGJIANG), u"江海证券有限公司", u'230100100019556')
+        downloader = EnterpriseDownload(url)
+        data = downloader.download()
+        self.assertIsNotNone(data)
     """
     def test_run(self):
         url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.BEIJING), u"北京高华证券有限责任公司", u'110000007552812')
@@ -153,11 +161,6 @@ class TestEnterpriseDownload(TestCase):
         data = downloader.download()
         self.assertIsNotNone(data)
 
-    def test_run_heilongjiang(self):
-        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.HEILONGJIANG), u"江海证券有限公司", u'230100100019556')
-        downloader = EnterpriseDownload(url)
-        data = downloader.download()
-        self.assertIsNotNone(data)
 
     def test_run_jiangsu(self):
         url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.JIANGSU), u"华泰证券股份有限公司", u'320000000000192')
