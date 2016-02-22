@@ -69,7 +69,7 @@ class BeijingCrawler(Crawler):
         """爬取的主函数
         """
         self.ent_id = ''
-        Crawler.run(self, ent_number)
+        return Crawler.run(self, ent_number)
 
         '''
         self.ent_number = str(ent_number)

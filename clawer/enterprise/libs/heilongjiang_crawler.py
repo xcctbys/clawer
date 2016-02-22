@@ -53,13 +53,12 @@ class HeilongjiangClawer(Crawler):
         self.json_restore_path = json_restore_path
         self.parser = HeilongjiangParser(self)
         self.img_count = 1
+        if not os.path.exists(self.html_restore_path):
+            os.makedirs(self.html_restore_path)
 
     def run(self, ent_number=0):
         """爬取的主函数
         """
-        if not os.path.exists(self.html_restore_path):
-            os.makedirs(self.html_restore_path)
-
         return Crawler.run(self, ent_number)
         # return super(HeilongjiangClawer, self).run(ent_number)
 

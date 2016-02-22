@@ -136,7 +136,7 @@ class TestEnterpriseDownload(TestCase):
         downloader = EnterpriseDownload(url)
         data = downloader.download()
         self.assertIsNotNone(data)
-    """
+
     def test_run(self):
         url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.BEIJING), u"北京高华证券有限责任公司", u'110000007552812')
         downloader = EnterpriseDownload(url)
@@ -191,6 +191,7 @@ class TestEnterpriseDownload(TestCase):
         downloader = EnterpriseDownload(url)
         data = downloader.download()
         self.assertIsNotNone(data)
+    """
     """
     """
         The following crawler tests are OK

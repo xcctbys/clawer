@@ -105,7 +105,7 @@ class JiangsuCrawler(Crawler):
         if not os.path.exists(self.html_restore_path):
             os.makedirs(self.html_restore_path)
 
-        Crawler.run(self, ent_number)
+        return Crawler.run(self, ent_number)
         '''
         self.ent_number = str(ent_number)
         #对每个企业都指定一个html的存储目录
