@@ -139,7 +139,7 @@ class Crawler(object):
     code_cracker = None
 
     def __init__(self):
-        self.json_dict = {}
+
         pass
 
     def run(self, ent_number=0):
@@ -148,7 +148,7 @@ class Crawler(object):
 
         # if self.save_html and os.path.exists(self.html_restore_path):
         #     CrawlerUtils.make_dir(self.html_restore_path)
-
+        self.json_dict = {}
         self.reqst = requests.Session()
         self.reqst.headers.update({
                 'Accept': 'text/html, application/xhtml+xml, */*',

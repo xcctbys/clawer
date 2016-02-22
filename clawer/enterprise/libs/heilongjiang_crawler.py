@@ -60,8 +60,8 @@ class HeilongjiangClawer(Crawler):
         if not os.path.exists(self.html_restore_path):
             os.makedirs(self.html_restore_path)
 
-        #Crawler.run(self, ent_number)
-        return super(HeilongjiangClawer, self).run(ent_number)
+        return Crawler.run(self, ent_number)
+        # return super(HeilongjiangClawer, self).run(ent_number)
 
     def crawl_check_page(self):
         """爬取验证码页面，包括下载验证码图片以及破解验证码
