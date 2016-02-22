@@ -78,8 +78,12 @@ class TestEnterpriseDownload(TestCase):
     def setUp(self):
         TestCase.setUp(self)
 
+    def test_run_anhui(self):
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.ANHUI), u"华安证券股份有限公司", u'340000000002071')
+        downloader = EnterpriseDownload(url)
+        data = downloader.download()
+        self.assertIsNotNone(data)
 
-    """
     def test_run_hubei(self):
         url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.HUBEI), u"华新水泥股份有限公司", u'420000400000283')
         downloader = EnterpriseDownload(url)
@@ -127,10 +131,16 @@ class TestEnterpriseDownload(TestCase):
         downloader = EnterpriseDownload(url)
         data = downloader.download()
         self.assertIsNotNone(data)
-    """
+
     """
         The following crawler tests are not OK
     """
+
+    """
+        The following crawler tests are OK
+    """
+    """
+
     def test_run_heilongjiang(self):
         url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.HEILONGJIANG), u"江海证券有限公司", u'230100100019556')
         downloader = EnterpriseDownload(url)
@@ -174,11 +184,7 @@ class TestEnterpriseDownload(TestCase):
         data = downloader.download()
         self.assertIsNotNone(data)
 
-    def test_run_anhui(self):
-        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.ANHUI), u"华安证券股份有限公司", u'340000000002071')
-        downloader = EnterpriseDownload(url)
-        data = downloader.download()
-        self.assertIsNotNone(data)
+
 
     def test_run_fujian(self):
         url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.FUJIAN), u"中国武夷实业股份有限公司", u'350000100029637')
@@ -191,12 +197,7 @@ class TestEnterpriseDownload(TestCase):
         downloader = EnterpriseDownload(url)
         data = downloader.download()
         self.assertIsNotNone(data)
-    """
-    """
-    """
-        The following crawler tests are OK
-    """
-    """
+
     def test_run_gansu(self):
         url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.GANSU), u"国投电力控股股份有限公司", u'620000000006064')
         downloader = EnterpriseDownload(url)
