@@ -27,7 +27,7 @@ class LiaoningCrawler(Crawler):
 
     #验证码图片的存储路径
     ckcode_image_path = settings.json_restore_path + '/liaoning/ckcode.jpg'
-
+    code_cracker = CaptchaRecognition('liaoning')
     #多线程爬取时往最后的json文件中写时的加锁保护
     write_file_mutex = threading.Lock()
 
@@ -47,7 +47,7 @@ class LiaoningCrawler(Crawler):
         if not os.path.exists(self.html_restore_path):
             os.makedirs(self.html_restore_path)
 
-        Crawler.run(self, ent_number)
+        return Crawler.run(self, ent_number)
 
     def crawl_check_page(self):
         """爬取验证码页面，包括获取验证码url，下载验证码图片，破解验证码并提交
@@ -867,7 +867,7 @@ class LiaoningParser(Parser):
 
         return total
 
-
+"""
 if __name__ == '__main__':
     from CaptchaRecognition import CaptchaRecognition
     import run
@@ -882,3 +882,4 @@ if __name__ == '__main__':
         ent_number = ent_number.rstrip('\n')
         logging.info('###################   Start to crawl enterprise with id %s   ###################\n' % ent_number)
         crawler.run(ent_number=ent_number)
+"""
