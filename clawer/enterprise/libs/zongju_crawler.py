@@ -50,6 +50,7 @@ class ZongjuCrawler(Crawler):
     def run(self, ent_number=0):
         """爬取的主函数
         """
+        print "in zongju"
         return Crawler.run(self, ent_number)
         '''
         self.ent_number = str(ent_number)
