@@ -22,4 +22,5 @@ numpy
 scipy
 scikit-learn
 chardet
+Markdown
 Django==1.4.15
