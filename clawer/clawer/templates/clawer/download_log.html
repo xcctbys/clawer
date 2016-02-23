@@ -32,7 +32,7 @@
     </thead>
     <thead>
         <tr>
-            <th data-options="field:'status_name'," >状态</th>
+            <th data-options="field:'status'," formatter="formatStatus">状态</th>
             <th data-options="field:'content_bytes'," formatter="formatBytes">下载内容大小</th>
             <th data-options="field:'uri'," formatter="formatUri">URI</th>
             <th data-options="field:'download_engine'," formatter="formatDownloadEngine">下载引擎</th>
@@ -83,6 +83,18 @@ function formatDownloadEngine(val, row) {
 		return "";
 	}
 	return row.task.download_engine;
+}
+
+function formatStatus(val) {
+	if(val == null) {
+		return "";
+	}
+	
+	if(val == 1) {
+		return "×";
+	} else if(val == 2) {
+		return "√";
+	}
 }
 
 function formatBytes(val) {
