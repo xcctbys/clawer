@@ -25,4 +25,7 @@ chardet
 Markdown
 uwsgi
 gunicorn
+greenlet
+eventlet
+gevent
 Django==1.4.15
