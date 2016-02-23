@@ -21,7 +21,6 @@ pandas
 supervisor
 numpy
 scipy
-pandas
 scikit-learn
 chardet
 Django==1.4.15
