@@ -68,7 +68,7 @@
 			</div>
 			
 			<div>
-				<button class="easyui-linkbutton" style="width: 50px" type="submit">保存</button>
+				<button class="easyui-linkbutton" style="width: 50px" type="submit" id="save_btn">保存</button>
 			</div>
 		
     </form>
@@ -203,6 +203,8 @@ $(document).ready(function(){
 	
 	
 	$("#new_form").submit(function(){
+		$("#new_form").find("#save_btn").linkbutton("disable");
+		
     	$(this).ajaxSubmit({
             dataType: "json",
             success: function(resp, status, xhr, frm) {
