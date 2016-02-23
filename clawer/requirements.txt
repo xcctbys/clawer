@@ -24,4 +24,5 @@ scikit-learn
 chardet
 Markdown
 uwsgi
+gunicorn
 Django==1.4.15
