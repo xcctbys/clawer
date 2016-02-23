@@ -1,4 +1,3 @@
-clawer
 MySQL-python 
 south 
 raven 
@@ -21,7 +20,8 @@ pandas
 supervisor
 numpy
 scipy
-pandas
 scikit-learn
 chardet
+Markdown
+uwsgi
 Django==1.4.15
