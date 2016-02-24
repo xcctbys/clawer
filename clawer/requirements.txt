@@ -28,4 +28,5 @@ gunicorn
 greenlet
 eventlet
 gevent
+django-smtp-ssl
 Django==1.4.15
