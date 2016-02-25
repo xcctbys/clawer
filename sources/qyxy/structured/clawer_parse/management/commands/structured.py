@@ -93,6 +93,7 @@ def is_first_run():
     return not is_first_run
 
 
+@wrapper_raven
 def parse(companies, prinvince):
     config_logging()
     worker = Parse(companies, prinvince)
