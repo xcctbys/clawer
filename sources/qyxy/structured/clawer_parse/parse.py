@@ -86,7 +86,10 @@ class Parse(object):
     def parse_dict(self, dict_in_company, mapping):
         for field in dict_in_company:
             if field in mapping:
-                self.company_result[mapping[field]] = dict_in_company[field]
+                if mapping[field] == "credit_code" and len(dict_in_company[field]) > 18:
+                    self.company_result[mapping[field]] = dict_in_company[field][18]
+                else:
+                    self.company_result[mapping[field]] = dict_in_company[field]
 
     def parse_list(self, key, list_in_company, mapping):
         keys_to_tables = configs.keys_to_tables
