@@ -43,7 +43,7 @@ class Command(BaseCommand):
                     p.apply_async(parse, args=(companies, prinvince))
 
         else:
-            for dec_day in reversed(range(0, 2)):
+            for dec_day in reversed(range(0, 20)):
                 yesterday = date.today() - timedelta(dec_day)
                 yesterday_str = yesterday.strftime("%Y/%m/%d")
 
