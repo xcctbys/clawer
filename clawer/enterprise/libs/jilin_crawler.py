@@ -87,7 +87,8 @@ class JilinCrawler(object):
         else:
             soup = BeautifulSoup(page, 'html5lib')
             self.csrf = soup.find('meta', {'name': '_csrf'})['content']
-
+        if not self.csrf :
+            return
         datas= {
                 'kw' : textfield,
                 '_csrf': self.csrf,

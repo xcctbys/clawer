@@ -81,7 +81,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'clawer',
         'USER': 'root',
-        'PASSWORD': 'poiuytre',
+        'PASSWORD': '12345678',
         'HOST': '127.0.0.1',
         'PORT': '3306',
     }
@@ -107,7 +107,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-JSONS_URL = 'http://clawer.princetechs.com/media/clawer_result/enterprise/json'
+#JSONS_URL = 'http://clawer.princetechs.com/media/clawer_result/enterprise/json'
+JSONS_URL = "http://clawer.princetechs.com/media/clawer_result/4"
 
 LOG_LEVEL = logging.DEBUG
 LOG_FORMAT = '%(asctime)s %(name)s %(levelname)s %(pathname)s:%(lineno)d:: %(message)s'
