@@ -837,7 +837,7 @@ class JiangsuParser(Parser):
                 table_data[u'实缴额'] = json_obj.get('listshijiao')[i].get('REAL_CAPI')
                 sub_dict[u'实缴出资额'] = json_obj.get('listshijiao')[i].get('REAL_CAPI')
                 sub_dict[u'实缴出资时间'] = json_obj.get('listshijiao')[i].get('REAL_CAPI_DATE')
-            table_data['list'] = sub_dict
+            table_data['list'] = [sub_dict]
             table_list.append(table_data)
         return {u'投资人及出资信息':table_list}
 
