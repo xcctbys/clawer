@@ -23,15 +23,18 @@ class Command(BaseCommand):
         base_url = settings.JSONS_URL
         provinces = configs.PROVINCES
         suffix = ".json.gz"
+        hours = ["00","01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24"]
+        prinvince = "test"
 
         config_logging()
 
         if not is_first_run():
-            yesterday = date.today() - timedelta(1)
+            yesterday = date.today() - timedelta(0)
             yesterday_str = yesterday.strftime("%Y/%m/%d")
 
-            for prinvince in provinces:
-                url = base_url + "/" + prinvince + "/" + yesterday_str + suffix
+            for hour in hours:
+                #url = base_url + "/" + prinvince + "/" + yesterday_str + suffix
+                url = base_url + "/" + yesterday_str + "/" + hour + suffix 
                 response = requests.get(url)
 
                 if int(response.status_code) == 200:
@@ -40,13 +43,15 @@ class Command(BaseCommand):
                     p.apply_async(parse, args=(companies, prinvince))
 
         else:
-            for dec_day in reversed(range(1, 20)):
+            for dec_day in reversed(range(0, 2)):
                 yesterday = date.today() - timedelta(dec_day)
                 yesterday_str = yesterday.strftime("%Y/%m/%d")
 
-                for prinvince in provinces:
-                    url = base_url+"/"+prinvince+"/"+yesterday_str+suffix
+                for hour in hours:
+                    #url = base_url+"/"+prinvince+"/"+yesterday_str+suffix
+                    url = base_url + "/" + yesterday_str + "/" + hour + suffix 
                     response = requests.get(url)
+                    print yesterday_str + "/" + hour + suffix
 
                     if int(response.status_code) == 200:
                         gz = gzip.GzipFile(fileobj=StringIO(response.content))
