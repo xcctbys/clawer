@@ -74,15 +74,15 @@ class SichuanCrawler(object):
 		self.result_json_dict = {}
 
 	def get_check_num(self):
-		print self.mydict['search']+self.cur_time
+		# print self.mydict['search']+self.cur_time
 		resp = self.reqst.get(self.mydict['search']+self.cur_time, timeout = 180)
 		if resp.status_code != 200:
-			print resp.status_code
+			# print resp.status_code
 			return None
-		#print BeautifulSoup(resp.content).prettify
+		# print BeautifulSoup(resp.content).prettify
 		resp = self.reqst.get(self.mydict['validateCode']+'&dt=%s&random=%s' % (self.cur_time, self.cur_time), timeout = 180)
 		if resp.status_code != 200:
-			print 'no validateCode'
+			# print 'no validateCode'
 			return None
 		with open(self.ckcode_image_path, 'wb') as f:
 			f.write(resp.content)
@@ -102,21 +102,21 @@ class SichuanCrawler(object):
 			if yzm is None:
 				count += 1
 				continue
-			print self.cur_time
+			# print self.cur_time
 			data = {'currentPageNo':'1', 'yzm':yzm, 'cxym':"cxlist", 'maent.entname':findCode}
 			resp = self.reqst.post(self.mydict['searchList']+self.cur_time, data=data, timeout = 180)
-			print resp.status_code
+			# print resp.status_code
 			divs = BeautifulSoup(resp.content).find_all('div', attrs={"style":"width:950px; padding:25px 20px 0px; overflow: hidden;float: left;"})
 			#print divs[0]
 			try:
 				onclick = divs[0].ul.li.a['onclick']
-				print onclick
+				# print onclick
 				m = re.search(r"openView\(\'(\w+?)\'", onclick)
 				if m:
 					return m.group(1)
 			except:
-				print count
-				print '*'*100
+				# print count
+				# print '*'*100
 				pass
 			count += 1
 
@@ -178,7 +178,7 @@ class SichuanCrawler(object):
 		# 	print 'i'*100
 
 	def get_head_ths_tds(self, table):
-		print table
+		# print table
 		try:
 			head = table.find_all('th')[0].get_text().strip().split('\n')[0].strip()
 		except:
@@ -345,7 +345,7 @@ class SichuanCrawler(object):
 			os.makedirs(self.html_restore_path)
 
 		self.pripid = self.get_id_num(findCode)
-		print findCode, self.pripid
+		# print findCode, self.pripid
 		self.result_json_dict = {}
 
 		data = {'method':'qyInfo', 'maent.pripid':self.pripid, 'czmk':'czmk1', 'random':self.cur_time}

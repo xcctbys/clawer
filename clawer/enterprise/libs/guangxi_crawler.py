@@ -87,15 +87,15 @@ class GuangxiCrawler(object):
 		self.result_json_dict = {}
 
 	def get_check_num(self):
-		print self.mydict['search']
+		# print self.mydict['search']
 		resp = self.reqst.get(self.mydict['search'], timeout = 120)
 		if resp.status_code != 200:
-			print resp.status_code
+			# print resp.status_code
 			return None
 		# print BeautifulSoup(resp.content).prettify
 		resp = self.reqst.get(self.mydict['validateCode'], timeout = 120)
 		if resp.status_code != 200:
-			print 'no validateCode'
+			# print 'no validateCode'
 			return None
 		with open(self.ckcode_image_path, 'wb') as f:
 			f.write(resp.content)
@@ -112,13 +112,13 @@ class GuangxiCrawler(object):
 		while count < 20:
 			# print self.cur_time
 			yzm = self.get_check_num()
-			print yzm
+			# print yzm
 			if yzm is None:
 				count += 1
 				continue
 			data = {'checkNo':yzm, 'entName':findCode}
 			resp = self.reqst.post(self.mydict['searchList'], data=data, timeout = 120)
-			print resp.status_code
+			# print resp.status_code
 			# print BeautifulSoup(resp.content).prettify()
 			if resp.status_code == 200:
 				soup = BeautifulSoup(resp.content)
@@ -203,7 +203,7 @@ class GuangxiCrawler(object):
 			if not any(alltds):
 				#alltds = [None for th in allths]
 				alltds = []
-			self.test_print_head_ths_tds(head, allths, alltds)
+			# self.test_print_head_ths_tds(head, allths, alltds)
 			if head == u'企业资产状况信息' or head == u'企业基本信息':
 				tempdict[head] = self.get_one_to_one_dict(allths, alltds)[0]
 				pass
@@ -218,7 +218,7 @@ class GuangxiCrawler(object):
 		allths = [th.get_text().strip() for th in table.find_all('th')]
 		head = allths[0]
 		alltds = [td.get_text().strip() if td.get_text() else None for td in table.find_all('td')]
-		self.test_print_head_ths_tds(head, allths[1:], alltds)
+		# self.test_print_head_ths_tds(head, allths[1:], alltds)
 		son_need_dict = {}
 		for key, value in zip(allths[6:], alltds[3:]):
 			son_need_dict[key] = value
@@ -237,7 +237,7 @@ class GuangxiCrawler(object):
 
 			if table.find_all('th') and not table.find_all('a'):
 				head = table.find_all('th')[0].get_text().strip()
-				print '----',head
+				# print '----',head
 				if head == u'动产抵押登记信息' or u'抵押权人概况' or u'被担保债权概况':
 					allths = [th.get_text().strip() for th in table.find_all('th')[1:] if th.get_text()]
 					alltds = [td.get_text().strip() if td.get_text() else None for td in table.find_all('td')]
@@ -263,7 +263,7 @@ class GuangxiCrawler(object):
 			alltds = []
 			for i in range(1, count_a+1):
 				urls = self.search_dict['next_head'] + where + 'List.jspx?pno=' + str(i) + '&mainId=' + self.id[3:]
-				print urls
+				# print urls
 				resp = self.reqst.get(urls, timeout = 120)
 				if resp.status_code == 200:
 					next_table = self.get_tables(urls)[0]
@@ -297,13 +297,15 @@ class GuangxiCrawler(object):
 						else:
 							alltds = alltds + [td.get_text().strip() if td.get_text() else None for td in next_table.find_all('td')]
 				else:
-					print 'get____error'
+					pass
+					# print 'get____error'
 		else:
-			print 'in hasnext no find search!'*3
+			pass
+			# print 'in hasnext no find search!'*3
 
 		# if len(alltds) == 0:
 		# 	alltds = [None for th in allths]
-		self.test_print_head_ths_tds(head, allths, alltds)
+		# self.test_print_head_ths_tds(head, allths, alltds)
 		return head, allths, alltds
 	def do_with_nonext(self, table_th, table_td):
 		head, allths = self.get_head_allths_alltds(table_th)[:2]
@@ -341,7 +343,7 @@ class GuangxiCrawler(object):
 
 	def get_json_one(self, mydict, tables):
 		count_table = len(tables)
-		print count_table
+		# print count_table
 		for i, table in enumerate(tables):
 			# print table
 			if table.find_all('th') and not table.find_all('a'):
@@ -352,7 +354,7 @@ class GuangxiCrawler(object):
 					head, allths, alltds = self.do_with_hasnext(table, tables[i+2])
 				elif i+1<count_table:
 					head, allths, alltds = self.do_with_nonext(table, tables[i+1])
-				self.test_print_head_ths_tds(head, allths, alltds)
+				# self.test_print_head_ths_tds(head, allths, alltds)
 				self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
 				if head == u'基本信息' or head == u'清算信息':
 					self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)[0]
@@ -360,12 +362,12 @@ class GuangxiCrawler(object):
 		pass
 	def get_json_two(self, mydict, tables):
 		count_table = len(tables)
-		print count_table
+		# print count_table
 		#self.test_print_table(tables)
 		for i, table in enumerate(tables):
 			if table.find_all('th'):
 				head = table.find_all('th')[0].get_text().split('\n')[0].strip()
-				print head
+				# print head
 				allths = [th.get_text().strip() for th in table.find_all('th')[1:] if th.get_text()]
 				alltds = [td.get_text().strip() if td.get_text() else None for td in table.find_all('td')]
 				if head == u'企业年报':
@@ -375,7 +377,7 @@ class GuangxiCrawler(object):
 						if td.get_text():
 							if td.find('a'):
 								alltds.append(td.get_text().strip())
-								print 'a-----:', td.get_text().strip()
+								# print 'a-----:', td.get_text().strip()
 								get_count = 0
 								enter_tables = None
 								while get_count < 10:
@@ -395,7 +397,7 @@ class GuangxiCrawler(object):
 							alltds.append(None)
 						# alltds.append(detail_enter_port_dict)
 					allths.insert(2,u'详情')
-					self.test_print_head_ths_tds(head, allths, alltds)
+					# self.test_print_head_ths_tds(head, allths, alltds)
 					self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
 					pass
 				elif head == u'行政许可信息' or head == u'股权变更信息':
@@ -403,7 +405,7 @@ class GuangxiCrawler(object):
 					pass
 				elif head == u'股东及出资信息':
 					allths = allths[:3]+allths[5:]
-					print '******', head
+					# print '******', head
 					self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
 					pass
 				else:
@@ -413,32 +415,32 @@ class GuangxiCrawler(object):
 		pass
 	def get_json_three(self, mydict, tables):
 		count_table = len(tables)
-		print count_table
+		# print count_table
 		for table in tables:
 			if table.find_all('th') and not table.find_all('a'):
 				head = table.find_all('th')[0].get_text().split('\n')[0].strip()
-				print head
+				# print head
 				allths = [th.get_text().strip() for th in table.find_all('th')[1:] if th.get_text()]
 				alltds = [td.get_text().strip() if td.get_text() else None for td in table.find_all('td')]
 				# if len(alltds) == 0:
 				# 	alltds = [None for th in allths]
-				self.test_print_head_ths_tds(head, allths, alltds)
+				# self.test_print_head_ths_tds(head, allths, alltds)
 				if head != '':
 					self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
 
 		pass
 	def get_json_four(self, mydict, tables):
 		count_table = len(tables)
-		print count_table
+		# print count_table
 		for table in tables:
 			if table.find_all('th') and not table.find_all('a'):
 				head = table.find_all('th')[0].get_text().split('\n')[0].strip()
-				print head
+				# print head
 				allths = [th.get_text().strip() for th in table.find_all('th')[1:] if th.get_text()]
 				alltds = [td.get_text().strip() if td.get_text() else None for td in table.find_all('td')]
 				# if len(alltds) == 0:
 				# 	alltds = [None for th in allths]
-				self.test_print_head_ths_tds(head, allths, alltds)
+				# self.test_print_head_ths_tds(head, allths, alltds)
 				if head != '':
 					self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
 		pass
@@ -452,7 +454,7 @@ class GuangxiCrawler(object):
 
 		self.result_json_dict = {}
 		self.id = self.get_id_num(findCode)
-		print self.id
+		# print self.id
 		resp = self.reqst.get('http://gxqyxygs.gov.cn/businessPublicity.jspx?' + self.id, timeout = 120)
 		soup = BeautifulSoup(resp.content)
 		self.get_json_one(self.one_dict, soup.find_all('table'))

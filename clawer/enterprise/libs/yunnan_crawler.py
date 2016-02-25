@@ -36,6 +36,7 @@ class YunnanCrawler(object):
 				u'股东信息':'ind_comm_pub_reg_shareholder',
 				u'发起人信息':'ind_comm_pub_reg_shareholder',
 				u'股东（发起人）信息':'ind_comm_pub_reg_shareholder',
+				u'合伙人信息':'ind_comm_pub_reg_shareholder',
 				u'变更信息':'ind_comm_pub_reg_modify',
 				u'主要人员信息':'ind_comm_pub_arch_key_persons',
 				u'分支机构信息':'ind_comm_pub_arch_branch',
@@ -75,7 +76,7 @@ class YunnanCrawler(object):
 
 		resp = self.reqst.get(self.mydict['validateCode'], timeout = 120)
 		if resp.status_code != 200:
-			print 'no validateCode'
+			# print 'no validateCode'
 			return None
 		with open(self.ckcode_image_path, 'wb') as f:
 			f.write(resp.content)
@@ -91,15 +92,15 @@ class YunnanCrawler(object):
 		count = 0
 		while count < 20:
 			check_num,session_token = self.get_check_num()
-			print check_num
+			# print check_num
 			if check_num is None:
 				count += 1
 				continue
 			data = {'searchType':'1','captcha':check_num, "session.token": session_token, 'condition.keyword':findCode}
 			resp = self.reqst.post(self.mydict['searchList'],data=data, timeout = 120)
 			if resp.status_code != 200:
-				print resp.status_code
-				print 'error...(get_id_num)'
+				# print resp.status_code
+				# print 'error...(get_id_num)'
 				count += 1
 				continue
 			else:
@@ -146,10 +147,10 @@ class YunnanCrawler(object):
 					if detail_head == u'股东及出资信息':
 						detail_content = self.reqst.get(td.a['href'], timeout = 120).content
 						detail_alltds = self.get_re_list_from_content(detail_content)
-					#print '---------------------------', len(detail_allths[:3]+detail_allths[5:]), len(detail_alltds)
+					# print '---------------------------', len(detail_allths[:3]+detail_allths[5:]), len(detail_alltds)
 						# tddict = self.get_one_to_one_dict(detail_allths[:3]+detail_allths[5:], detail_alltds)
 						detail_allths = detail_allths[:3] + detail_allths[5:]
-						self.test_print_all_ths_tds(detail_head, detail_allths, detail_alltds)
+						# self.test_print_all_ths_tds(detail_head, detail_allths, detail_alltds)
 						son_need_dict = {}
 						for key, value in zip(detail_allths[3:], detail_alltds[3:]):
 							son_need_dict[key] = value
@@ -193,7 +194,7 @@ class YunnanCrawler(object):
 				else:
 					tdlist.append(None)
 			allths.insert(2, u'详情')
-			self.test_print_all_ths_tds(head, allths, tdlist)
+			# self.test_print_all_ths_tds(head, allths, tdlist)
 			return head, allths, tdlist
 			pass
 		else:
@@ -249,7 +250,10 @@ class YunnanCrawler(object):
 		for table in tables:
 			head, allths, alltds = self.get_head_ths_tds(table)
 			#print head
-			self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
+			try:
+				self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
+			except:
+				pass
 			if head == u'基本信息':
 				self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)[0]
 			if head == u'清算信息':
@@ -291,7 +295,7 @@ class YunnanCrawler(object):
 			os.makedirs(html_restore_path)
 
 		self.uuid = self.get_id_num(findCode)
-		print self.uuid
+		# print self.uuid
 		self.result_json_dict = {}
 
 		tableone = self.get_tables(self.uuid + '&tab=01')

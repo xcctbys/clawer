@@ -88,7 +88,7 @@ class GuizhouCrawler(object):
 				search_count += 1
 				continue
 		if resp.status_code != 200:
-			print resp.status_code
+			# print resp.status_code
 			return None
 		# print BeautifulSoup(resp.content).prettify
 		validate_count = 0
@@ -104,7 +104,7 @@ class GuizhouCrawler(object):
 				validate_count += 1
 				continue
 		if resp.status_code != 200:
-			print 'no validateCode'
+			# print 'no validateCode'
 			return None
 		# print self.ckcode_image_path
 		with open(self.ckcode_image_path, 'wb') as f:
@@ -134,7 +134,7 @@ class GuizhouCrawler(object):
 				continue
 	def get_dict_enter(self, allths, alltds, alltds_keys):
 		alltds = json.loads(alltds)
-		print alltds_keys
+		# print alltds_keys
 		if not alltds[u'data']:
 			return []
 		else:
@@ -150,7 +150,7 @@ class GuizhouCrawler(object):
 	def help_get_dict_form_enter(self, lsh):
 		needdict={}
 		result_dict = self.send_post_for_enter('http://gsxt.gzgs.gov.cn/nzgs/search!searchNbxx.shtml',self.nbxh, '0', '14', lsh)
-		print result_dict
+		# print result_dict
 		value = self.get_dict_enter(allths = [u'注册号/统一社会信用代码', u'企业名称', u'企业联系电话', u'邮政编码', u'企业通信地址', u'企业电子邮箱', u'有限责任公司本年度是否发生股东股权转让', u'企业经营状态', u'是否有网站或网店', u'是否有投资信息或购买其他公司股权', u'从业人数'],
 							alltds = result_dict,
 							alltds_keys = [u'zch', u'qymc', u'lxdh', u'yzbm', u'dz', u'dzyx', u'sfzr', u'jyzt', u'sfww', u'sfdw', u'cyrs'],)
@@ -189,7 +189,7 @@ class GuizhouCrawler(object):
 		while count < 20:
 			# print self.cur_time
 			yzm = self.get_check_num()
-			print yzm
+			# print yzm
 			if yzm is None:
 				# print count,yzm
 				count += 1
@@ -210,7 +210,7 @@ class GuizhouCrawler(object):
 				result_dict = json.loads(resp.content)
 				# print result_dict
 				if result_dict[u'successed'] == 'true' or result_dict[u'successed'] == True:
-					print result_dict
+					# print result_dict
 					return result_dict[u'data'][0][u'nbxh']
 					break
 				else:
@@ -261,7 +261,7 @@ class GuizhouCrawler(object):
 
 	def get_json_one(self, allths, alltds, alltds_keys, head):
 		alltds = json.loads(alltds)
-		print alltds
+		# print alltds
 		if not alltds[u'data']:
 			self.result_json_dict[head] = []
 		else:
@@ -280,7 +280,7 @@ class GuizhouCrawler(object):
 		pass
 	def get_json_two(self, allths, alltds, alltds_keys, head):
 		alltds = json.loads(alltds)
-		print alltds_keys
+		# print alltds_keys
 		if not alltds[u'data']:
 			self.result_json_dict[head] = []
 		else:
@@ -304,7 +304,7 @@ class GuizhouCrawler(object):
 		pass
 	def get_json_three(self, allths, alltds, alltds_keys, head):
 		alltds = json.loads(alltds)
-		print alltds_keys
+		# print alltds_keys
 		if not alltds[u'data']:
 			self.result_json_dict[head] = []
 		else:
@@ -316,7 +316,7 @@ class GuizhouCrawler(object):
 		pass
 	def get_json_four(self, allths, alltds, alltds_keys, head):
 		alltds = json.loads(alltds)
-		print alltds_keys
+		# print alltds_keys
 		if not alltds[u'data']:
 			self.result_json_dict[head] = []
 		else:
