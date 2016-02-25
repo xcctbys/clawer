@@ -409,8 +409,10 @@ class GuangxiCrawler(object):
 					self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
 					pass
 				else:
-					self.do_with_nonext(table, tables[i+1])
-					pass
+					if i+1 < len(tables):
+						self.do_with_nonext(table, tables[i+1])
+					else:
+						pass
 
 		pass
 	def get_json_three(self, mydict, tables):
