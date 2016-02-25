@@ -88,8 +88,7 @@ class NeimengguClawer(Crawler):
         self.parser = NeimengguParser(self)
         self.credit_ticket = None
         # html数据的存储路径
-        self.save_html = False
-        self.html_restore_path = os.path.join(self.json_restore_path, "neimenggu", "html")
+        self.html_restore_path = os.path.join(self.json_restore_path, "neimenggu")
         if os.path.exists(self.html_restore_path) is False:
             os.makedirs(self.html_restore_path, 0775)
         # 验证码图片的存储路径
@@ -231,8 +230,8 @@ class NeimengguClawer(Crawler):
             logging.error('crawl page by url failed! url = %s' % url)
         page = resp.content
         time.sleep(random.uniform(0.2, 1))
-        if settings.save_html:
-            CrawlerUtils.save_page_to_file(self.html_restore_path + name, page)
+        # if settings.save_html:
+        #     CrawlerUtils.save_page_to_file(self.html_restore_path + name, page)
         return page
 
     def crawl_ind_comm_pub_basic_pages(self, page):
