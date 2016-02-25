@@ -14,8 +14,8 @@ DATABASES = {
     }
 }
 
-JSONS_URL = 'http://10.100.90.51:8080/media/clawer_result/enterprise/json'
-
+#JSONS_URL = 'http://10.100.90.51:8080/media/clawer_result/enterprise/json'
+JSONS_URL = "http://clawer.princetechs.com/media/clawer_result/4"
 LOG_LEVEL = logging.ERROR
 LOG_FORMAT = '%(asctime)s %(name)s %(levelname)s %(pathname)s:%(lineno)d:: %(message)s'
 LOG_FILE = 'structured.log'
@@ -28,5 +28,5 @@ EMAIL_HOST_PASSWORD = 'Robot0023'
 
 ADMINS = (
     ('admin', 'zhongyid@princetechs.com'),
-    ('admin', 'yijiadw@princetechs.com'),
+    ('admin', 'yijiaw@princetechs.com'),
 )
