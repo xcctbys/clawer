@@ -25,8 +25,11 @@ class Parse(object):
         for line in companies:
             company = json.loads(line)
             for key, value in company.iteritems():
-                if value:
-                    self.companies[key] = value
+                if key == "_url":
+                    pass
+                else:
+                    if value:
+                        self.companies[key] = value
 
     def parse_companies(self):
         for register_num in self.companies:
