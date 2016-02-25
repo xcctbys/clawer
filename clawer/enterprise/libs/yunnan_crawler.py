@@ -36,6 +36,7 @@ class YunnanCrawler(object):
 				u'股东信息':'ind_comm_pub_reg_shareholder',
 				u'发起人信息':'ind_comm_pub_reg_shareholder',
 				u'股东（发起人）信息':'ind_comm_pub_reg_shareholder',
+				u'合伙人信息':'ind_comm_pub_reg_shareholder',
 				u'变更信息':'ind_comm_pub_reg_modify',
 				u'主要人员信息':'ind_comm_pub_arch_key_persons',
 				u'分支机构信息':'ind_comm_pub_arch_branch',
@@ -249,7 +250,10 @@ class YunnanCrawler(object):
 		for table in tables:
 			head, allths, alltds = self.get_head_ths_tds(table)
 			#print head
-			self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
+			try:
+				self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
+			except:
+				pass
 			if head == u'基本信息':
 				self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)[0]
 			if head == u'清算信息':
