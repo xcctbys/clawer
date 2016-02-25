@@ -13,10 +13,33 @@ from datetime import date, timedelta
 from cStringIO import StringIO
 from configs import configs
 from clawer_parse import multiprocessing_logging
+from raven import Client
+
+try:
+    client = Client(settings.RAVEN_CONFIG["dsn"])
+except:
+    client = None
+
+
+def wrapper_raven(fun):
+    """
+    wrapper for raven to trace manager commands
+    """
+    def wrap(cls, *args, **kwargs):
+        try:
+            return fun(cls, *args, **kwargs)
+        except Exception, e:
+            if client:
+                client.captureException()
+            else:
+                raise e
+
+    return wrap
 
 
 class Command(BaseCommand):
 
+    @wrapper_raven
     def handle(self, *args, **options):
         begin = time.time()
         p = Pool(processes=4)
