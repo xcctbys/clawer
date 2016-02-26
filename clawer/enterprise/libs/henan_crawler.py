@@ -110,14 +110,19 @@ class HenanCrawler(object):
 				count += 1
 				continue
 			else:
-				divs = BeautifulSoup(resp.content).find_all('div', attrs={'style':'height:500px;'})
-				if divs:
-					href = divs[0].a['href']
-					# print href
-					first = href.find('id=')
-					return href[first+3:]
-				else:
-					count += 1
+				try:
+					divs = BeautifulSoup(resp.content).find_all('div', attrs={'style':'height:500px;'})
+					if divs:
+						href = divs[0].a['href']
+						# print href
+						first = href.find('id=')
+						return href[first+3:]
+					else:
+						count += 1
+				except:
+					return None
+		else:
+			return None
 
 	def test_print_head_ths_tds(self, head, allths, alltds):
 		print '-----', head, '-------'
@@ -427,6 +432,8 @@ class HenanCrawler(object):
 			CrawlerUtils.make_dir(self.html_restore_path)
 
 		self.id = self.get_id_num(findCode)
+		if self.id is None:
+			return json.dumps({self.ent_number:{}})
 		# print self.id
 		self.result_json_dict = {}
 		tableone = self.get_tables(self.search_dict['businessPublicity'] + 'id=' +self.id)
