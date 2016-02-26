@@ -15,7 +15,7 @@ from bs4 import BeautifulSoup
 urls = {
     'host': 'http://gsxt.gdgs.gov.cn/aiccips/',
     'prefix_url_0':'http://www.szcredit.com.cn/web/GSZJGSPT/',
-    'prefix_url_1':'http://121.8.226.101:7001/search/',
+    'prefix_url_1':'http://gsxt.gzaic.gov.cn:7001/search/',
     'page_search': 'http://gsxt.gdgs.gov.cn/aiccips/index',
     'page_Captcha': 'http://gsxt.gdgs.gov.cn/aiccips/verify.html',
     'page_showinfo': 'http://gsxt.gdgs.gov.cn/aiccips/CheckEntContext/showInfo.html',
@@ -170,13 +170,13 @@ class Crawler(object):
 
 #        datas = html_from_file('next.html')
         #self.analysis.parse_ent_pub_annual_report_page_2(datas, "_detail")
-        url = "http://121.8.226.101:7001/search/search!entityShow?entityVo.pripid=440100100012003051400230"
+        url = "http://gsxt.gzaic.gov.cn:7001/search/search!entityShow?entityVo.pripid=440100100012003051400230"
         sub_json = self.crawl_ind_comm_pub_pages(url, 1, {'pripid': '440100100012003051400230'})
-        #url = "http://121.8.226.101:7001/search/search!enterpriseShow?entityVo.pripid=440100100012003051400230#"
+        #url = "http://gsxt.gzaic.gov.cn:7001/search/search!enterpriseShow?entityVo.pripid=440100100012003051400230#"
         #sub_json = self.crawl_ent_pub_pages(url, 1)
-        #url = "http://121.8.226.101:7001/search/search!otherDepartShow?entityVo.pripid=440100100012003051400230"
+        #url = "http://gsxt.gzaic.gov.cn:7001/search/search!otherDepartShow?entityVo.pripid=440100100012003051400230"
         #sub_json = self.crawl_other_dept_pub_pages(url, 1)
-        #url = "http://121.8.226.101:7001/search/search!judicialShow?entityVo.pripid=440100100012003051400230"
+        #url = "http://gsxt.gzaic.gov.cn:7001/search/search!judicialShow?entityVo.pripid=440100100012003051400230"
         #sub_json = self.crawl_judical_assist_pub_pages(url, 1)
         #json_dump_to_file("json_dict.json", sub_json)
         """
@@ -191,13 +191,13 @@ class Crawler(object):
         sub_json_dict = {}
 
         pripid = ent[ent.index("pripid")+7: len(ent)]
-        url = "http://121.8.226.101:7001/search/search!entityShow?entityVo.pripid=" + pripid
+        url = "http://gsxt.gzaic.gov.cn:7001/search/search!entityShow?entityVo.pripid=" + pripid
         sub_json_dict.update(self.crawl_ind_comm_pub_pages(url, {'pripid': pripid}))
-        url = "http://121.8.226.101:7001/search/search!enterpriseShow?entityVo.pripid="+ pripid
+        url = "http://gsxt.gzaic.gov.cn:7001/search/search!enterpriseShow?entityVo.pripid="+ pripid
         sub_json_dict.update(self.crawl_ent_pub_pages(url))
-        url = "http://121.8.226.101:7001/search/search!otherDepartShow?entityVo.pripid=" + pripid
+        url = "http://gsxt.gzaic.gov.cn:7001/search/search!otherDepartShow?entityVo.pripid=" + pripid
         sub_json_dict.update(self.crawl_other_dept_pub_pages(url))
-        url = "http://121.8.226.101:7001/search/search!judicialShow?entityVo.pripid=" + pripid
+        url = "http://gsxt.gzaic.gov.cn:7001/search/search!judicialShow?entityVo.pripid=" + pripid
         sub_json_dict.update(self.crawl_judical_assist_pub_pages(url))
         return sub_json_dict
 
@@ -355,7 +355,7 @@ class Analyze(object):
             return columns
 
 
-    # 如果是第一种： http://121.8.226.101:7001/search/search!annalShow?annalVo.id=30307309
+    # 如果是第一种： http://gsxt.gzaic.gov.cn:7001/search/search!annalShow?annalVo.id=30307309
     def parse_ent_pub_annual_report_page_1(self, base_page, page_type):
         page_data = {}
         soup = BeautifulSoup(base_page, 'html5lib')
@@ -454,10 +454,10 @@ class Analyze(object):
                 item_array = []
                 # 这里注意unicode编码
                 next_dicts = {
-                    u"主要人员信息" : "http://121.8.226.101:7001/search/search!staffListShow?entityVo.pageSize=10&entityVo.curPage=%d&entityVo.pripid=%s",
-                    u"分支机构信息":  "http://121.8.226.101:7001/search/search!branchListShow?_=1451527284000&entityVo.curPage=%d&entityVo.pripid=%s",
-                    u"出资人及出资信息": "http://121.8.226.101:7001/search/search!investorListShow?_=1451527307501&entityVo.curPage=%d&entityVo.pripid=%s",
-                    u"变更信息" : "http://121.8.226.101:7001/search/search!changeListShow?_=1451527321304&entityVo.curPage=%d&entityVo.pripid=%s",
+                    u"主要人员信息" : "http://gsxt.gzaic.gov.cn:7001/search/search!staffListShow?entityVo.pageSize=10&entityVo.curPage=%d&entityVo.pripid=%s",
+                    u"分支机构信息":  "http://gsxt.gzaic.gov.cn:7001/search/search!branchListShow?_=1451527284000&entityVo.curPage=%d&entityVo.pripid=%s",
+                    u"出资人及出资信息": "http://gsxt.gzaic.gov.cn:7001/search/search!investorListShow?_=1451527307501&entityVo.curPage=%d&entityVo.pripid=%s",
+                    u"变更信息" : "http://gsxt.gzaic.gov.cn:7001/search/search!changeListShow?_=1451527321304&entityVo.curPage=%d&entityVo.pripid=%s",
                 }
                 if next_dicts.has_key(table_name) and post_data :
                     url = next_dicts[table_name]%(1,  post_data['pripid'])
