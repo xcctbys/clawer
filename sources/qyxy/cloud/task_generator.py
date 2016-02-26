@@ -58,7 +58,7 @@ class Generator(object):
         source_url: http://clawer.princetechs.com/enterprise/api/get/all/?page=1&rows=10&sort=id&order=asc
         """
         self.source_url = "http://clawer.princetechs.com/enterprise/api/get/all/"
-        self.step = 10
+        self.step = 1000
         self.history = History()
         self.history.load()
         self.enterprise_urls = []
