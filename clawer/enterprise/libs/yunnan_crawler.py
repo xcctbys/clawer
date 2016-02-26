@@ -298,7 +298,7 @@ class YunnanCrawler(object):
 
 		self.uuid = self.get_id_num(findCode)
 		if self.uuid is None:
-			return
+			return json.dumps({self.ent_number:{}})
 		# print self.uuid
 		self.result_json_dict = {}
 
