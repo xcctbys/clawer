@@ -15,10 +15,10 @@ from configs import configs
 from clawer_parse import multiprocessing_logging
 from raven import Client
 
-try:
-    client = Client(settings.RAVEN_CONFIG["dsn"])
-except:
-    client = None
+# try:
+#     client = Client(settings.RAVEN_CONFIG["dsn"])
+# except:
+#     client = None
 
 
 # def wrapper_raven(fun):
@@ -42,47 +42,82 @@ class Command(BaseCommand):
     #@wrapper_raven
     def handle(self, *args, **options):
         begin = time.time()
-        p = Pool(processes=4)
+        #p = Pool(processes=4)
         base_url = settings.JSONS_URL
         provinces = configs.PROVINCES
         suffix = ".json.gz"
         hours = ["00","01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24"]
         prinvince = "test"
+        multiprocess = settings.MULTIPROCESS
 
         config_logging()
-
-        if not is_first_run():
-            yesterday = date.today() - timedelta(0)
-            yesterday_str = yesterday.strftime("%Y/%m/%d")
-
-            for hour in hours:
-                #url = base_url + "/" + prinvince + "/" + yesterday_str + suffix
-                url = base_url + "/" + yesterday_str + "/" + hour + suffix 
-                response = requests.get(url)
-
-                if int(response.status_code) == 200:
-                    gz = gzip.GzipFile(fileobj=StringIO(response.content))
-                    companies = gz.readlines()
-                    p.apply_async(parse, args=(companies, prinvince))
-
-        else:
-            for dec_day in reversed(range(0, 10)):
-                yesterday = date.today() - timedelta(dec_day)
+        if multiprocess:
+            p = Pool(processes=4)
+            if not is_first_run():
+                yesterday = date.today() - timedelta(0)
                 yesterday_str = yesterday.strftime("%Y/%m/%d")
 
                 for hour in hours:
-                    #url = base_url+"/"+prinvince+"/"+yesterday_str+suffix
+                    #url = base_url + "/" + prinvince + "/" + yesterday_str + suffix
                     url = base_url + "/" + yesterday_str + "/" + hour + suffix 
                     response = requests.get(url)
-                    print yesterday_str + "/" + hour + suffix
 
                     if int(response.status_code) == 200:
                         gz = gzip.GzipFile(fileobj=StringIO(response.content))
                         companies = gz.readlines()
                         p.apply_async(parse, args=(companies, prinvince))
 
-        p.close()
-        p.join()
+            else:
+                for dec_day in reversed(range(0, 10)):
+                    yesterday = date.today() - timedelta(dec_day)
+                    yesterday_str = yesterday.strftime("%Y/%m/%d")
+
+                    for hour in hours:
+                        #url = base_url+"/"+prinvince+"/"+yesterday_str+suffix
+                        url = base_url + "/" + yesterday_str + "/" + hour + suffix 
+                        response = requests.get(url)
+                        print yesterday_str + "/" + hour + suffix
+
+                        if int(response.status_code) == 200:
+                            gz = gzip.GzipFile(fileobj=StringIO(response.content))
+                            companies = gz.readlines()
+                            p.apply_async(parse, args=(companies, prinvince))
+
+            p.close()
+            p.join()
+        else:
+            if not is_first_run():
+                yesterday = date.today() - timedelta(0)
+                yesterday_str = yesterday.strftime("%Y/%m/%d")
+
+                for hour in hours:
+                    #url = base_url + "/" + prinvince + "/" + yesterday_str + suffix
+                    url = base_url + "/" + yesterday_str + "/" + hour + suffix 
+                    response = requests.get(url)
+
+                    if int(response.status_code) == 200:
+                        gz = gzip.GzipFile(fileobj=StringIO(response.content))
+                        companies = gz.readlines()
+                        workerd = Parse(companies,prinvince)
+                        workerd.parse_companies()
+
+            else:
+                for dec_day in reversed(range(0, 20)):
+                    yesterday = date.today() - timedelta(dec_day)
+                    yesterday_str = yesterday.strftime("%Y/%m/%d")
+
+                    for hour in hours:
+                        #url = base_url+"/"+prinvince+"/"+yesterday_str+suffix
+                        url = base_url + "/" + yesterday_str + "/" + hour + suffix 
+                        response = requests.get(url)
+                        print yesterday_str + "/" + hour + suffix
+
+                        if int(response.status_code) == 200:
+                            gz = gzip.GzipFile(fileobj=StringIO(response.content))
+                            companies = gz.readlines()
+                            workerd = Parse(companies,prinvince)
+                            workerd.parse_companies()
+
         end = time.time()
         secs = round(end - begin)
         settings.logger.info("✅  Done! Cost " + str(secs) + "s ✅ ")
