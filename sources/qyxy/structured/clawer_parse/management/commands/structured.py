@@ -21,25 +21,25 @@ except:
     client = None
 
 
-def wrapper_raven(fun):
-    """
-    wrapper for raven to trace manager commands
-    """
-    def wrap(cls, *args, **kwargs):
-        try:
-            return fun(cls, *args, **kwargs)
-        except Exception, e:
-            if client:
-                client.captureException()
-            else:
-                raise e
+# def wrapper_raven(fun):
+#     """
+#     wrapper for raven to trace manager commands
+#     """
+#     def wrap(cls, *args, **kwargs):
+#         try:
+#             return fun(cls, *args, **kwargs)
+#         except Exception, e:
+#             if client:
+#                 client.captureException()
+#             else:
+#                 raise e
 
-    return wrap
+#     return wrap
 
 
 class Command(BaseCommand):
 
-    @wrapper_raven
+    #@wrapper_raven
     def handle(self, *args, **options):
         begin = time.time()
         p = Pool(processes=4)
@@ -66,7 +66,7 @@ class Command(BaseCommand):
                     p.apply_async(parse, args=(companies, prinvince))
 
         else:
-            for dec_day in reversed(range(0, 20)):
+            for dec_day in reversed(range(0, 10)):
                 yesterday = date.today() - timedelta(dec_day)
                 yesterday_str = yesterday.strftime("%Y/%m/%d")
 
@@ -93,7 +93,7 @@ def is_first_run():
     return not is_first_run
 
 
-@wrapper_raven
+#@wrapper_raven
 def parse(companies, prinvince):
     config_logging()
     worker = Parse(companies, prinvince)

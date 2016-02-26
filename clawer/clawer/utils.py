@@ -232,7 +232,8 @@ class Download(object):
         start = time.time()
         
         try:
-            self.content = EnterpriseDownload(self.url).download()
+            downloader = EnterpriseDownload(self.url)
+            self.content = downloader.download()
         except:
             self.failed = True
             self.failed_exception = traceback.format_exc(10)
