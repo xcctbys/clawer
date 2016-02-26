@@ -211,7 +211,11 @@ class GuizhouCrawler(object):
 				# print result_dict
 				if result_dict[u'successed'] == 'true' or result_dict[u'successed'] == True:
 					# print result_dict
-					return result_dict[u'data'][0][u'nbxh']
+					try:
+						re = result_dict[u'data'][0][u'nbxh']
+						return re
+					except:
+						return None
 					break
 				else:
 					count += 1
@@ -350,7 +354,10 @@ class GuizhouCrawler(object):
 			os.makedirs(self.html_restore_path)
 
 		nbxh = self.get_id_num(findCode)
+		if nbxh is None:
+			return json.dumps({self.ent_number: {}})
 		self.nbxh = nbxh
+
 
 		result_dict = self.send_post('http://gsxt.gzgs.gov.cn/nzgs/search!searchData.shtml',nbxh, '0', '5')
 		# print result_dict
