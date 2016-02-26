@@ -81,7 +81,6 @@ class YunnanCrawler(object):
 		with open(self.ckcode_image_path, 'wb') as f:
 			f.write(resp.content)
 
-
 		ck_code = self.code_cracker.predict_result(self.ckcode_image_path)
 		if ck_code is None:
 			return None,None
@@ -104,13 +103,16 @@ class YunnanCrawler(object):
 				count += 1
 				continue
 			else:
-				soup = BeautifulSoup(resp.content).find_all('div', attrs={'class':'link'})[0]
-				hrefa = soup.find('a', attrs={'target':'_blank'})
-				if hrefa:
-					return hrefa['href'].split('&')[0]
-				else:
-					count += 1
-					continue
+				try:
+					soup = BeautifulSoup(resp.content).find_all('div', attrs={'class':'link'})[0]
+					hrefa = soup.find('a', attrs={'target':'_blank'})
+					if hrefa:
+						return hrefa['href'].split('&')[0]
+					else:
+						count += 1
+						continue
+				except:
+					return None
 
 	def get_re_list_from_content(self, content):
 		m = re.search(r'investor\.invName = \"(.+)\"', content)
@@ -295,6 +297,8 @@ class YunnanCrawler(object):
 			os.makedirs(html_restore_path)
 
 		self.uuid = self.get_id_num(findCode)
+		if self.uuid is None:
+			return
 		# print self.uuid
 		self.result_json_dict = {}
 
