@@ -95,20 +95,20 @@ class AnhuiCrawler(object):
 		mainId = None
 		while count < 20:
 			check_num = self.get_check_num()
-			print check_num
+			# print check_num
 			if check_num is None:
 				count += 1
 				continue
 			data = {'name':findCode,'verifyCode':check_num}
 			resp = self.reqst.post(self.mydict['search'],data=data, timeout = 120)
 			if resp.status_code != 200:
-				print 'error...(get_id_num)'
+				# print 'error...(get_id_num)'
 				continue
 			if resp.content.find('true')>=0:
 				temp={'checkNo':check_num,'entName':findCode}
 				resp = self.reqst.post(self.mydict['searchList'],data=temp, timeout = 120)
 				if resp.status_code != 200:
-					print 'error...post'
+					# print 'error...post'
 					count += 1
 					continue
 				soup = BeautifulSoup(resp.content)
@@ -206,7 +206,8 @@ class AnhuiCrawler(object):
 									detail_soup = BeautifulSoup(temp.content)
 									specially_dict = self.do_with_specially(mydict, head, detail_soup.find_all('table')[0])
 								else:
-									print 'error...temp'
+									pass
+									# print 'error...temp'
 							else:
 								details.append(td.get_text().strip() if td.get_text() else None)
 						#print len(details), details, specially_dict
@@ -214,7 +215,8 @@ class AnhuiCrawler(object):
 						templist.append(self.get_one_to_one_dict(allths, details))
 
 				else :
-					print 'error...tempurl'
+					pass
+					# print 'error...tempurl'
 			self.result_json_dict[mydict[head]] = templist
 		# elif head == u'企业年报':
 		# 	pass
@@ -265,7 +267,8 @@ class AnhuiCrawler(object):
 							detail_soup = BeautifulSoup(temp.content)
 							specially_dict = self.do_with_specially(mydict, head, detail_soup.find_all('table')[0])
 						else:
-							print 'error...temp'
+							pass
+							# print 'error...temp'
 					else:
 						details.append(td.get_text().strip() if td.get_text() else None)
 				#print len(details), details, specially_dict
@@ -424,7 +427,9 @@ class AnhuiCrawler(object):
 			CrawlerUtils.make_dir(self.html_restore_path)
 
 		self.id = self.get_id_num(findCode)
-		print self.id
+		# print self.id
+		if self.id is None:
+			return json.dumps({self.ent_number: {}})
 		self.result_json_dict = {}
 		#self.result_json_dict[findCode] = {}
 		tableone = self.get_tables(self.mysearchdict['businessPublicity'] + 'id=' +self.id)

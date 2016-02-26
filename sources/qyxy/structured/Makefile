@@ -1,5 +1,5 @@
 USER=root
-PASSWORD=poiuytre
+PASSWORD=12345678
 CREATE_DATABASE=configs/mysql/create.sql
 DROP_DATABASE=configs/mysql/clear.sql
 
