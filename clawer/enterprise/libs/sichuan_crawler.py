@@ -117,9 +117,11 @@ class SichuanCrawler(object):
 			except:
 				# print count
 				# print '*'*100
+				return None
 				pass
 			count += 1
-
+		else:
+			return None
 		pass
 	def get_re_list_from_content(self, content):
 
@@ -345,6 +347,8 @@ class SichuanCrawler(object):
 			os.makedirs(self.html_restore_path)
 
 		self.pripid = self.get_id_num(findCode)
+		if self.pripid is None:
+			return json.dumps({self.ent_number:{}})
 		# print findCode, self.pripid
 		self.result_json_dict = {}
 
