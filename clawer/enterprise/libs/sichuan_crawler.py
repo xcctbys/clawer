@@ -145,8 +145,14 @@ class SichuanCrawler(object):
 		for i, table in enumerate(BeautifulSoup(resp.content).find_all('table')):
 			enter_head, enter_allths, enter_alltds = self.get_head_ths_tds(table)
 			if i == 0:
-				enter_head = enter_allths[0]
-				enter_allths = enter_allths[1:]
+				try:
+					enter_head = enter_allths[0]
+					enter_allths = enter_allths[1:]
+				except:
+					enter_head = u'企业基本信息'
+					enter_allths = [u'注册号/统一社会信用代码', u'企业名称', u'企业联系电话', u'邮政编码', \
+									u'企业通信地址', u'企业电子邮箱', u'有限责任公司本年度是否发生股东股权转让', u'企业经营状态', \
+									u'是否有网站或网店', u'是否有投资信息或购买其他公司股权', u'从业人数']
 			if enter_head == u'股东及出资信息':
 				enter_allths = [u'股东', u'认缴出资额（万元）', u'认缴出资时间', u'认缴出资方式', u'实缴出资额（万元）', u'出资时间', u'出资方式']
 			#self.test_print_all_ths_tds(enter_head, enter_allths, enter_alltds)
