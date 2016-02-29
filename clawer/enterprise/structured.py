@@ -2,9 +2,11 @@
 
 import json
 import time
+import raven
 import logging
 import datetime
 import traceback
+from django.conf import settings
 
 
 class Configs(object):
@@ -509,7 +511,7 @@ class Parse(object):
             passed = False
         else:
             is_null = self.is_data_null(value)
-            passed =  not is_null
+            passed = not is_null
 
         return passed
 
@@ -535,11 +537,15 @@ class Parse(object):
                 if len(str(register_num)) >= 15:
                     self.parse_company(company, register_num)
             except:
-                self.send_mail(register_num)
+                self.send_sentry()
                 self.write_log(register_num)
 
-    def send_mail(self, register_num):
-        pass
+    def send_sentry(self):
+        if settings.RAVEN_CONFIG and settings.RAVEN_CONFIG['dsn']:
+            if not self.sentry_client:
+                self.sentry_client = raven.Client(dsn=settings.RAVEN_CONFIG['dsn'])
+
+            self.sentry_client.captureException()
 
     def write_log(self, register_num):
         logger = logging.getLogger(__name__)
