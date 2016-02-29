@@ -104,9 +104,9 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 
 EMAIL_BACKEND = 'django_smtp_ssl.SSLEmailBackend'
 EMAIL_HOST = 'smtp.exmail.qq.com'
-EMAIL_PORT = 465   
-EMAIL_HOST_USER='robot@princetechs.com'  
-EMAIL_HOST_PASSWORD='Robot0023' 
+EMAIL_PORT = 465
+EMAIL_HOST_USER='robot@princetechs.com'
+EMAIL_HOST_PASSWORD='Robot0023'
 USE_TLS = True
 
 
@@ -138,3 +138,12 @@ INSTALLED_APPS = (
 CLAWER_TASK_URL_MULTIPLE_DAY = 7
 DOWNLOAD_JS = os.path.join(os.path.dirname(__file__), "../download.js")
 REDIS_DATA_COMPRESSED = True
+
+
+JSONS_URL = 'http://clawer.princetechs.com/media/clawer_result/enterprise/json'
+UPDATE_BY = "day" # Support "hour" | "day"
+
+# JSONS_URL = "http://clawer.princetechs.com/media/clawer_result/4"
+# UPDATE_BY = "hour" # Support "hour" | "day"
+
+MULTIPROCESS = True # True | False

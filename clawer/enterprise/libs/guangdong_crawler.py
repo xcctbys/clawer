@@ -20,7 +20,7 @@ from Guangdong2 import Guangdong2
 urls = {
     'host': 'http://gsxt.gdgs.gov.cn/aiccips/',
     'prefix_url_0':'http://www.szcredit.com.cn/web/GSZJGSPT/',
-    'prefix_url_1':'http://121.8.226.101:7001/search/',
+    'prefix_url_1':'http://gsxt.gzaic.gov.cn:7001/search/',
     'page_search': 'http://gsxt.gdgs.gov.cn/aiccips/index',
     'page_Captcha': 'http://gsxt.gdgs.gov.cn/aiccips/verify.html',
     'page_showinfo': 'http://gsxt.gdgs.gov.cn/aiccips/CheckEntContext/showInfo.html',
@@ -32,8 +32,9 @@ headers = { 'Connetion': 'Keep-Alive',
             'Accept-Language': 'en-US, en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"}
 
-#HOSTS =["www.szcredit.com.cn", "121.8.226.101:7001", "gsxt.gdgs.gov.cn/aiccips"]
-HOSTS =["www.szcredit.com.cn", "121.8.227.200:7001", "gsxt.gdgs.gov.cn/aiccips"]
+#HOSTS =["www.szcredit.com.cn", "gsxt.gzaic.gov.cn:7001", "gsxt.gdgs.gov.cn/aiccips"]
+HOSTS =["www.szcredit.com.cn", "gsxt.gzaic.gov.cn:7001", "gsxt.gdgs.gov.cn/aiccips"]
+
 class GuangdongClawer(object):
 
     #多线程爬取时往最后的json文件中写时的加锁保护
@@ -80,9 +81,10 @@ class GuangdongClawer(object):
         Ent = []
         soup = BeautifulSoup(self.html_showInfo, "html5lib")
         divs = soup.find_all("div", {"class":"list"})
-        for div in divs:
-            logging.debug(u"div.ul.li.a['href'] = %s\n", div.ul.li.a['href'])
-            Ent.append(div.ul.li.a['href'])
+        if divs:
+            for div in divs:
+                logging.debug(u"div.ul.li.a['href'] = %s\n", div.ul.li.a['href'])
+                Ent.append(div.ul.li.a['href'])
         self.ents = Ent
 
     # 破解验证码页面
@@ -162,7 +164,7 @@ class GuangdongClawer(object):
 
             for ent in self.ents:
                 #http://www.szcredit.com.cn/web/GSZJGSPT/ QyxyDetail.aspx?rid=acc04ef9ac0145ecb8c87dd5710c2f86
-                #http://121.8.226.101:7001/search/ search!entityShow?entityVo.pripid=440100100012003051400230
+                #http://gsxt.gzaic.gov.cn:7001/search/ search!entityShow?entityVo.pripid=440100100012003051400230
                 #http://gsxt.gdgs.gov.cn/aiccips /GSpublicity/GSpublicityList.html?service=entInfo_+8/Z3ukM3JcWEfZvXVt+QiLPiIqemiEqqq4l7n9oAh/FI+v6zW/DL40+AV4Hja1y-dA+Hj5oOjXjQTgAhKSP1lA==
 
                 #HOSTS =["www.szcredit.com.cn", "121.8.227.200:7001", "gsxt.gdgs.gov.cn/aiccips"]
@@ -178,7 +180,7 @@ class GuangdongClawer(object):
                             logging.info(u"This enterprise is type 0")
                             guangdong = Guangdong0()
                             sub_json_dict =  guangdong.run(ent)
-                        #"121.8.226.101:7001" ==>>>121.8.227.200:7001
+                        #"gsxt.gzaic.gov.cn:7001" ==>>>121.8.227.200:7001
                         elif i==1:
                             logging.info(u"This enterprise is type 1")
                             guangdong = Guangdong1()

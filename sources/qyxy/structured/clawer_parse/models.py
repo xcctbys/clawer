@@ -135,7 +135,7 @@ class Basic(models.Model):
     """公司基本类
     """
 
-    credit_code = models.CharField(max_length=20, null=True, blank=True)
+    credit_code = models.CharField(max_length=50, null=True, blank=True)
     enter_name = models.CharField(max_length=50, null=True, blank=True)
     enter_type = models.CharField(max_length=100, null=True, blank=True)
     corporation = models.CharField(max_length=30, null=True, blank=True)
@@ -147,7 +147,7 @@ class Basic(models.Model):
     business_scope = models.TextField(null=True)
     register_gov = models.CharField(max_length=50, null=True, blank=True)
     check_date = models.DateField(null=True)
-    register_status = models.CharField(max_length=20, null=True, blank=True)
+    register_status = models.CharField(max_length=50, null=True, blank=True)
     register_num = models.CharField(max_length=50, null=True, blank=True)
     version = models.IntegerField(default=1)
     timestamp = models.DateTimeField(default=timezone.now)

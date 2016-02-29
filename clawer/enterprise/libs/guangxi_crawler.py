@@ -132,7 +132,8 @@ class GuangxiCrawler(object):
 					count += 1
 					continue
 			count += 1
-
+		else:
+			return None
 		pass
 
 
@@ -409,8 +410,10 @@ class GuangxiCrawler(object):
 					self.result_json_dict[mydict[head]] = self.get_one_to_one_dict(allths, alltds)
 					pass
 				else:
-					self.do_with_nonext(table, tables[i+1])
-					pass
+					if i+1 < len(tables):
+						self.do_with_nonext(table, tables[i+1])
+					else:
+						pass
 
 		pass
 	def get_json_three(self, mydict, tables):
@@ -454,6 +457,8 @@ class GuangxiCrawler(object):
 
 		self.result_json_dict = {}
 		self.id = self.get_id_num(findCode)
+		if self.id is None:
+			return sjon.dumps({self.ent_number:{}})
 		# print self.id
 		resp = self.reqst.get('http://gxqyxygs.gov.cn/businessPublicity.jspx?' + self.id, timeout = 120)
 		soup = BeautifulSoup(resp.content)

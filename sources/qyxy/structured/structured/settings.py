@@ -109,6 +109,7 @@ STATIC_URL = '/static/'
 
 #JSONS_URL = 'http://clawer.princetechs.com/media/clawer_result/enterprise/json'
 JSONS_URL = "http://clawer.princetechs.com/media/clawer_result/4"
+MULTIPROCESS = False
 
 LOG_LEVEL = logging.DEBUG
 LOG_FORMAT = '%(asctime)s %(name)s %(levelname)s %(pathname)s:%(lineno)d:: %(message)s'
@@ -122,5 +123,7 @@ EMAIL_HOST_PASSWORD = 'Robot0023'
 
 ADMINS = (
     ('admin', 'yijiaw@princetechs.com'),
-    # ('admin', 'zhongyid@princetechs.com'),
+    ('admin', 'ziyangw@princetechs.com'),
+    ('admin', 'haijunt@princetechs.com'),
+    ('admin', 'liliw@princetechs.com'),
 )

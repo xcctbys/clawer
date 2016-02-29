@@ -61,7 +61,11 @@ headers = { 'Connetion': 'Keep-Alive',
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"}
 
 #HOSTS =["www.szcredit.com.cn", "121.8.226.101:7001", "gsxt.gdgs.gov.cn/aiccips"]
-HOSTS =["www.szcredit.com.cn", "121.8.227.200:7001", "gsxt.gdgs.gov.cn/aiccips"]
+#HOSTS =["www.szcredit.com.cn", "121.8.227.200:7001", "gsxt.gdgs.gov.cn/aiccips"]
+HOSTS =["www.szcredit.com.cn", "gsxt.gzaic.gov.cn:7001", "gsxt.gdgs.gov.cn/aiccips"]
+
+
+
 class GuangdongClawer(object):
 
     #多线程爬取时往最后的json文件中写时的加锁保护
@@ -109,9 +113,12 @@ class GuangdongClawer(object):
         Ent = []
         soup = BeautifulSoup(self.html_showInfo, "html5lib")
         divs = soup.find_all("div", {"class":"list"})
-        for div in divs:
-            settings.logger.debug(u"div.ul.li.a['href'] = %s\n", div.ul.li.a['href'])
-            Ent.append(div.ul.li.a['href'])
+        if divs:
+            for div in divs:
+                if div and div.find('a'):
+                    url = div.find('a')['href']
+                    settings.logger.debug(u"div.ul.li.a['href'] = %s\n", url)
+                    Ent.append(url)
         self.ents = Ent
 
     # 破解验证码页面
@@ -194,7 +201,7 @@ class GuangdongClawer(object):
                 #http://121.8.226.101:7001/search/ search!entityShow?entityVo.pripid=440100100012003051400230
                 #http://gsxt.gdgs.gov.cn/aiccips /GSpublicity/GSpublicityList.html?service=entInfo_+8/Z3ukM3JcWEfZvXVt+QiLPiIqemiEqqq4l7n9oAh/FI+v6zW/DL40+AV4Hja1y-dA+Hj5oOjXjQTgAhKSP1lA==
 
-                #HOSTS =["www.szcredit.com.cn", "121.8.227.200:7001", "gsxt.gdgs.gov.cn/aiccips"]
+                #HOSTS =["www.szcredit.com.cn", "gsxt.gzaic.gov.cn:7001", "gsxt.gdgs.gov.cn/aiccips"]
                 m = re.match('http', ent)
                 if m is None:
                     ent = urls['host']+ ent[3:]
@@ -208,6 +215,7 @@ class GuangdongClawer(object):
                             guangdong = Guangdong0()
                             sub_json_dict =  guangdong.run(ent)
                         #"121.8.226.101:7001" ==>>>121.8.227.200:7001
+                        #gsxt.gzaic.gov.cn:7001
                         elif i==1:
                             settings.logger.info(u"This enterprise is type 1")
                             guangdong = Guangdong1()
