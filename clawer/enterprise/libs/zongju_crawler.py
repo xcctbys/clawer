@@ -245,21 +245,21 @@ class ZongjuCrawler(Crawler):
     def crack_checkcode(self):
         """破解验证码"""
         checkcode_url = self.urls['get_checkcode'] + '&ra=' + str(random.random())
-
+        ckcode = ('', '')
         resp = self.reqst.get(checkcode_url, verify=False)
         if resp.status_code != 200:
-            logging.warn('failed to get checkcode img')
-            return
+            logging.error('failed to get checkcode img')
+            return ckcode
         page = resp.content
 
-        time.sleep(random.uniform(2, 4))
+        time.sleep(random.uniform(1, 2))
 
         self.write_file_mutex.acquire()
         with open(self.ckcode_image_path, 'wb') as f:
             f.write(page)
         if not self.code_cracker:
-            print 'invalid code cracker'
-            return ''
+            logging.error('invalid code cracker with ckcode= None')
+            return ckcode
         try:
             ckcode = self.code_cracker.predict_result(self.ckcode_image_path)
         except Exception as e:
