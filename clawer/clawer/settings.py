@@ -141,9 +141,9 @@ REDIS_DATA_COMPRESSED = True
 
 
 JSONS_URL = 'http://clawer.princetechs.com/media/clawer_result/enterprise/json'
-UPDATE_BY = "day" # Support "hour" | "day"
+UPDATE_BY = "day" # "hour" | "day"
 
 # JSONS_URL = "http://clawer.princetechs.com/media/clawer_result/4"
-# UPDATE_BY = "hour" # Support "hour" | "day"
+# UPDATE_BY = "hour" # "hour" | "day"
 
 MULTIPROCESS = True # True | False
