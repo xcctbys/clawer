@@ -9,118 +9,167 @@ from django.conf import settings
 from clawer_parse.parse import Parse
 from clawer_parse.models import Basic
 from multiprocessing import Pool
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from cStringIO import StringIO
 from configs import configs
 from clawer_parse import multiprocessing_logging
 from raven import Client
 
-# try:
-#     client = Client(settings.RAVEN_CONFIG["dsn"])
-# except:
-#     client = None
-
-
-# def wrapper_raven(fun):
-#     """
-#     wrapper for raven to trace manager commands
-#     """
-#     def wrap(cls, *args, **kwargs):
-#         try:
-#             return fun(cls, *args, **kwargs)
-#         except Exception, e:
-#             if client:
-#                 client.captureException()
-#             else:
-#                 raise e
-
-#     return wrap
-
 
 class Command(BaseCommand):
 
-    #@wrapper_raven
+
     def handle(self, *args, **options):
         begin = time.time()
         #p = Pool(processes=4)
         base_url = settings.JSONS_URL
-        provinces = configs.PROVINCES
+        # provinces = configs.PROVINCES
         suffix = ".json.gz"
-        hours = ["00","01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24"]
-        prinvince = "test"
-        multiprocess = settings.MULTIPROCESS
+        is_multiprocess = settings.MULTIPROCESS
+        update_by = settings.UPDATE_BY
 
         config_logging()
-        if multiprocess:
-            p = Pool(processes=4)
-            if not is_first_run():
-                yesterday = date.today() - timedelta(0)
-                yesterday_str = yesterday.strftime("%Y/%m/%d")
-
-                for hour in hours:
-                    #url = base_url + "/" + prinvince + "/" + yesterday_str + suffix
-                    url = base_url + "/" + yesterday_str + "/" + hour + suffix 
-                    response = requests.get(url)
-
-                    if int(response.status_code) == 200:
-                        gz = gzip.GzipFile(fileobj=StringIO(response.content))
-                        companies = gz.readlines()
-                        p.apply_async(parse, args=(companies, prinvince))
-
+        
+        if is_first_run():
+            if update_by == "hour":
+                first_update_by_hour(is_multiprocess, base_url, suffix)
             else:
-                for dec_day in reversed(range(0, 10)):
-                    yesterday = date.today() - timedelta(dec_day)
-                    yesterday_str = yesterday.strftime("%Y/%m/%d")
+                first_update_by_day(is_multiprocess, base_url, suffix)
 
-                    for hour in hours:
-                        #url = base_url+"/"+prinvince+"/"+yesterday_str+suffix
-                        url = base_url + "/" + yesterday_str + "/" + hour + suffix 
-                        response = requests.get(url)
-                        print yesterday_str + "/" + hour + suffix
+        elif update_by == "hour":
+            update_by_hour(is_multiprocess, base_url, suffix)
 
-                        if int(response.status_code) == 200:
-                            gz = gzip.GzipFile(fileobj=StringIO(response.content))
-                            companies = gz.readlines()
-                            p.apply_async(parse, args=(companies, prinvince))
-
-            p.close()
-            p.join()
         else:
-            if not is_first_run():
-                yesterday = date.today() - timedelta(0)
-                yesterday_str = yesterday.strftime("%Y/%m/%d")
-
-                for hour in hours:
-                    #url = base_url + "/" + prinvince + "/" + yesterday_str + suffix
-                    url = base_url + "/" + yesterday_str + "/" + hour + suffix 
-                    response = requests.get(url)
-
-                    if int(response.status_code) == 200:
-                        gz = gzip.GzipFile(fileobj=StringIO(response.content))
-                        companies = gz.readlines()
-                        workerd = Parse(companies,prinvince)
-                        workerd.parse_companies()
-
-            else:
-                for dec_day in reversed(range(0, 20)):
-                    yesterday = date.today() - timedelta(dec_day)
-                    yesterday_str = yesterday.strftime("%Y/%m/%d")
-
-                    for hour in hours:
-                        #url = base_url+"/"+prinvince+"/"+yesterday_str+suffix
-                        url = base_url + "/" + yesterday_str + "/" + hour + suffix 
-                        response = requests.get(url)
-                        print yesterday_str + "/" + hour + suffix
-
-                        if int(response.status_code) == 200:
-                            gz = gzip.GzipFile(fileobj=StringIO(response.content))
-                            companies = gz.readlines()
-                            workerd = Parse(companies,prinvince)
-                            workerd.parse_companies()
+            update_by_day(is_multiprocess, base_url, suffix)
 
         end = time.time()
         secs = round(end - begin)
         settings.logger.info("✅  Done! Cost " + str(secs) + "s ✅ ")
+
+
+def first_update_by_hour(is_multiprocess, base_url, suffix):
+   # base_url = settings.JSONS_URL
+   # suffix = ".json.gz"
+
+    if not is_multiprocess:
+        diff = date.today() - date(2016,2,23)
+        for dec_day in reversed(range(1, diff.days)):
+            d = date.today() - timedelta(dec_day)
+            d_str = d.strftime("%Y/%m/%d")
+
+            for hour in range(0, 25):
+                hour_str = "%02d" % hour
+                url = base_url + "/" + d_str + "/" + hour_str + suffix
+                print url 
+                json_data = requests_json(url)
+                parse(json_data)
+
+    else:
+        p = Pool(processes=4)
+        diff = date.today - date(2016, 2, 23)
+        for dec_day in reversed(range(1, diff.days)):
+            d = date.today() - timedelta(dec_day)
+            d_str = d.strftime("%Y/%m/%d")
+
+            for hour in range(0, 25):
+                hour_str = "%02d" % hour
+                url = base_url + "/" + d_str + "/" + hour_str + suffix
+                json_data = requests_json(url)
+                p.apply_async(parse, args=(json_data))
+
+        p.close()
+        p.join()
+
+
+def first_update_by_day(is_multiprocess, base_url, suffix):
+   # base_url = settings.JSONS_URL
+    provinces = Configs.PROVINCES
+   # suffix = ".json.gz"
+
+    if not is_multiprocess:
+        diff = date.today - date(2016, 2, 23)
+        for dec_day in reversed(range(1, diff.days)):
+            d = date.today() - timedelta(dec_day)
+            d_str = d.strftime("%Y/%m/%d")
+
+            for prinvince in provinces:
+                url = base_url + "/" + prinvince + "/" + d_str + suffix
+                json_data = requests_json(url)
+                parse(json_data, prinvince)
+    else:
+        p = Pool(processes=4)
+        today = date.today()
+        diff = today - date(2016, 2, 23)
+        for dec_day in reversed(range(1, diff.days)):
+            d = today - timedelta(dec_day)
+            d_str = d.strftime("%Y/%m/%d")
+
+            for prinvince in provinces:
+                url = base_url + "/" + prinvince + "/" + d_str + suffix
+                json_data = requests_json(url)
+                p.apply_async(parse, args=(json_data, prinvince))
+
+        p.close()
+        p.join()
+
+
+def update_by_hour(is_multiprocess, base_url, suffix):
+    # base_url = settings.JSONS_URL
+    # suffix = ".json.gz"
+    today = datetime.now()
+    today_str = today.strftime("%Y/%m/%d")
+    yesterday = today - timedelta(1)
+    yesterday_str = yesterday.strftime("%Y/%m/%d")
+    end_hour = today.hour
+
+    if end_hour < 4:
+        for hour in range(19, 24):
+            hour_str = "%02d" % hour
+            url = base_url + "/" + yesterday_str + "/" + hour_str + suffix
+            json_data = requests_json(url)
+            parse(json_data)
+    else:
+        begin_hour = end_hour - 4
+        for hour in range(begin_hour, end_hour):
+            hour_str = "%02d" % hour
+            url = base_url + "/" + today_str + "/" + hour_str + suffix
+            print url
+            json_data = requests_json(url)
+            parse(json_data)
+
+
+def update_by_day(is_multiprocess, base_url, suffix):
+   # base_url = settings.JSONS_URL
+    provinces = Configs.PROVINCES
+   # suffix = ".json.gz"
+    yesterday = date.today() - timedelta(1)
+    yesterday_str = yesterday.strftime("%Y/%m/%d")
+
+    if not is_multiprocess:
+        for prinvince in provinces:
+            url = base_url + "/" + prinvince + "/" + yesterday_str + suffix
+            json_data = requests_json(url)
+            parse(json_data, prinvince)
+    else:
+        p = Pool(processes=4)
+        for prinvince in provinces:
+            url = base_url + "/" + prinvince + "/" + yesterday_str + suffix
+            json_data = requests_json(url)
+            p.apply_async(parse, args=(json_data, prinvince))
+
+        p.close()
+        p.join()
+
+
+def requests_json(url):
+    json_data = ""
+
+    response = requests.get(url)
+    if int(response.status_code) == 200:
+        gz = gzip.GzipFile(fileobj=StringIO(response.content))
+        json_data = gz.readlines()
+
+    return json_data
 
 
 def is_first_run():
@@ -128,9 +177,8 @@ def is_first_run():
     return not is_first_run
 
 
-#@wrapper_raven
-def parse(companies, prinvince):
-    config_logging()
+def parse(companies, prinvince="None"):
+    #config_logging()
     worker = Parse(companies, prinvince)
     worker.parse_companies()
 

@@ -94,6 +94,7 @@ def first_update_by_day(is_multiprocess):
 
             for prinvince in provinces:
                 url = base_url + "/" + prinvince + "/" + d_str + suffix
+                print url
                 json_data = requests_json(url)
                 p.apply_async(parse, args=(json_data, prinvince))
 
