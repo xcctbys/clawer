@@ -2,6 +2,7 @@
 
 import json
 import time
+import logging
 import datetime
 import traceback
 
@@ -54,7 +55,6 @@ class Configs(object):
         "ind_comm_pub_business_exception",
         "ind_comm_pub_serious_violate_law",
         "ind_comm_pub_spot_check",
-
         "ent_pub_ent_annual_report",
         "ent_pub_shareholder_capital_contribution",
         "ent_pub_equity_change",
@@ -62,10 +62,8 @@ class Configs(object):
         "ent_pub_knowledge_property",
         "ent_pub_administration_sanction",
         "ent_pub_shareholder_modify",
-
         "other_dept_pub_administration_license",
         "other_dept_pub_administration_sanction",
-
         "judical_assist_pub_equity_freeze",
         "judical_assist_pub_shareholder_modify",
     )
@@ -520,10 +518,11 @@ class Parse(object):
         pass
 
     def write_log(self, register_num):
+        logger = logging.getLogger(__name__)
         title = (u"❌  === 省份: %s === 公司ID: %s 解析错误: ❌ "
                  % (self.prinvince, register_num.encode('utf-8')))
         error = traceback.format_exc()
-        print(title + error)
+        logger.error(title + error)
 
     def parse_company(self, company={}, register_num=0):
         keys = self.keys
@@ -778,7 +777,7 @@ class Parse(object):
         return True
 
     def write_to_mysql(self, data):
-        if not is_basic_null(data):
+        if not self.is_basic_null(data):
             from enterprise.models import Operation
             operation = Operation(data)
             operation.write_db_by_dict()
@@ -786,7 +785,7 @@ class Parse(object):
             pass
 
     def is_basic_null(self, data):
-
+        return False
 
     def conversion_type(self):
         company_result = self.company_result
