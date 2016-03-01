@@ -239,10 +239,10 @@ def dump_json_to_success_or_fail_file(abs_json_path, success_file_path, fail_fil
 				if key.isdigit():
 					if one_enter_dict[key]:
 						success_file.write(line)
-						success_dict[key[:2]].add(key)
+						success_dict[key[:2]].add(key.strip())
 					else:
 						fail_file.write(line)
-						fail_dict[key[:2]].add(key)
+						fail_dict[key[:2]].add(key.strip())
 	success_file.close()
 	fail_file.close()
 	pass
@@ -256,7 +256,7 @@ def get_total_dict_from_db():
 		for result in results:
 			# print result
 			if result[0]:
-				db_total_dict[result[0][:2]].add(result[0])
+				db_total_dict[result[0][:2]].add(result[0].strip())
 		cur.close()
 		conn.close()
 	except MySQLdb.Error, e:
@@ -271,7 +271,7 @@ def get_down_dict_from_db():
 		for result in results:
 			# print result
 			if result[0]:
-				db_down_dict[result[0][:2]].add(result[0])
+				db_down_dict[result[0][:2]].add(result[0].strip())
 		cur.close()
 		conn.close()
 	except MySQLdb.Error, e:
@@ -289,17 +289,17 @@ def alanysis_data():
         reportfile.close()
 
         #get_no_clawer_csv()
-        no_clawer_data_csv = codecs.open('no_clawer_data_csv.txt', 'wb', 'utf8')
-        have_clawer_data_csv = codecs.open('have_clawer_data_csv.txt', 'wb', 'utf8')
+        no_clawer_data_csv = codecs.open('no_clawer_data_csv.txt', 'wb+', 'utf8')
+        have_clawer_data_csv = codecs.open('have_clawer_data_csv.txt', 'wb+', 'utf8')
         for key, value in db_total_dict.items():
                 no_clawer_set = db_total_dict[key] - (success_dict[key] | fail_dict[key])
                 have_clawer_set = success_dict[key]
                 with open('all_data.txt', 'r') as f:
                         for line in f.readlines():
-                                if line.split(',')[-1] in no_clawer_set:
+                                if line.split(',')[-1].strip() in no_clawer_set:
                                         no_clawer_data_csv.write(line)
                                         no_clawer_data_csv.write('\n')
-                                if line.split(',')[-1] in have_clawer_set:
+                                if line.split(',')[-1].strip() in have_clawer_set:
                                         have_clawer_data_csv.write(line)
                                         have_clawer_data_csv.write('\n')
                 no_clawer_data_csv.write('\n')
@@ -307,17 +307,17 @@ def alanysis_data():
         no_clawer_data_csv.close()
         have_clawer_data_csv.close()
 
-        no_come_in_db_data_csv = codes.open('no_come_in_db_data_csv.txt', 'wb', 'utf8')
-        have_come_in_db_data_csv = codes.open('have_come_in_db_data_csv.txt', 'wb', 'utf8')
+        no_come_in_db_data_csv = codecs.open('no_come_in_db_data_csv.txt', 'wb+', 'utf8')
+        have_come_in_db_data_csv = codecs.open('have_come_in_db_data_csv.txt', 'wb+', 'utf8')
         for key, value in db_down_dict.items():
-                no_come_in_db_set = (success_dict[ke] | fail_dict[key]) - db_down_dict[key]
+                no_come_in_db_set = (success_dict[key] | fail_dict[key]) - db_down_dict[key]
                 have_come_in_db_set = db_down_dict[key]
                 with open('all_data.txt', 'r') as f:
                         for line in f.readlines():
-                                if line.split(',')[-1] in no_come_in_db_set:
+                                if line.split(',')[-1].strip() in no_come_in_db_set:
                                         no_come_in_db_data_csv.write(line)
                                         no_come_in_db_data_csv.write('\n')
-                                if line.split(',')[-1] in have_come_in_db_set:
+                                if line.split(',')[-1].strip() in have_come_in_db_set:
                                         have_come_in_db_data_csv.write(line)
                                         have_come_in_db_data_csv.write('\n')
                 no_come_in_db_data_csv.write('\n')
