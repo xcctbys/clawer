@@ -22,6 +22,7 @@ LOG_LEVEL = logging.ERROR
 LOG_FORMAT = '%(asctime)s %(name)s %(levelname)s %(pathname)s:%(lineno)d:: %(message)s'
 LOG_FILE = 'structured.log'
 logger = None
+UPDATE_BY = "hour"
 
 EMAIL_HOST = 'smtp.exmail.qq.com'
 EMAIL_PORT = 465
