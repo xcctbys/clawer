@@ -281,15 +281,15 @@ def alanysis_data():
 		# print trans_dict[key], '\t', key, '\t', len(db_total_dict[key]), '\t', len(success_dict[key]), '\t', len(db_down_dict[key])
                 print '%s     %s     %s     %s     %s     %s     %s    %s' %(trans_dict[key], key, len(success_dict[key]), len(fail_dict[key], \
                                                                         len(success_dict[key]))-len(fail_dict[key]), len(db_down_dict[key]), \
-                                                                        len(db_down_dict[key] & success_dict[key]), \
-                                                                        len(db_down_dict[key] & (success_dict[key] | fail_dict[key])))
+                                                                        len( (db_down_dict[key] & success_dict[key]) ), \
+                                                                        len( (db_down_dict[key] & (success_dict[key] | fail_dict[key])) ))
 	pass
 
 if __name__ == '__main__':
 	dowload_json_by_days(json_url)
 	dump_json_to_success_or_fail_file(one_json_file, success_json_file, fail_json_file)
-	# get_down_dict_from_db()
-	# get_total_dict_from_db()
+	get_down_dict_from_db()
+	get_total_dict_from_db()
 	alanysis_data()
 	print success_dict
 	print fail_dict
