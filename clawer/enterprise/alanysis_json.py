@@ -12,6 +12,7 @@ import codecs
 # import settings
 
 json_url = r'/data/clawer_result/7/2016/02/29/'
+json_url2 = r'/data/clawer_result/7/2016/02/28/'
 abs_json_path = './abs_json_path/'
 success_file_path = './success_file_path/'
 fail_file_path = './fail_file_path/'
@@ -363,6 +364,7 @@ def alanysis_data():
 
 if __name__ == '__main__':
 	dowload_json_by_days(json_url)
+        dowload_json_by_days(json_url2)
 	dump_json_to_success_or_fail_file(one_json_file, success_json_file, fail_json_file)
 	get_down_dict_from_db()
 	get_total_dict_from_db()
