@@ -283,7 +283,6 @@ def alanysis_data():
                                                                         len(success_dict[key])-len(fail_dict[key]), len(db_down_dict[key]), \
                                                                         len( (db_down_dict[key] & success_dict[key]) ), \
                                                                         len( (db_down_dict[key] & (success_dict[key] | fail_dict[key])) ))
-	pass
 
 if __name__ == '__main__':
 	dowload_json_by_days(json_url)
