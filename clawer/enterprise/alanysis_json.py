@@ -279,10 +279,11 @@ def get_down_dict_from_db():
 def alanysis_data():
 	for key, value in db_total_dict.items():
 		# print trans_dict[key], '\t', key, '\t', len(db_total_dict[key]), '\t', len(success_dict[key]), '\t', len(db_down_dict[key])
-                print '%s     %s     %s     %s     %s     %s     %s    %s' %(trans_dict[key], key, len(success_dict[key]), len(fail_dict[key], \
+                print '%s     %s     %s     %s     %s     %s     %s    %s' % (trans_dict[key], key, len(success_dict[key]), len(fail_dict[key]), \
                                                                         len(success_dict[key])-len(fail_dict[key]), len(db_down_dict[key]), \
                                                                         len( (db_down_dict[key] & success_dict[key]) ), \
-                                                                        len( (db_down_dict[key] & (success_dict[key] | fail_dict[key])) ))
+                                                                        len( (db_down_dict[key] & (success_dict[key] | fail_dict[key]))) )
+
 
 if __name__ == '__main__':
 	dowload_json_by_days(json_url)
