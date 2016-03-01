@@ -210,18 +210,21 @@ reqst.headers.update({'Accept': 'text/html, application/xhtml+xml, */*',
 					'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:39.0) Gecko/20100101 Firefox/39.0'})
 
 def dowload_json_by_days(url):
-	resp = None
-	# try:
-	resp = reqst.get(url)
-	for item in BeautifulSoup(resp.content).find_all('a')[1:]:
-		resp_gzip = reqst.get(''.join([url,item.get_text()]))
-		with open(abs_json_path+item.get_text(), 'wb') as f:
-			f.write(resp_gzip.content)
-		g = gzip.GzipFile(mode='rb', fileobj=open(abs_json_path+item.get_text(), 'rb'))
-		open(one_json_file, 'wb+').write(g.read())
+	# resp = None
+	# # try:
+	# resp = reqst.get(url)
+	# for item in BeautifulSoup(resp.content).find_all('a')[1:]:
+	# 	resp_gzip = reqst.get(''.join([url,item.get_text()]))
+	# 	with open(abs_json_path+item.get_text(), 'wb') as f:
+	# 		f.write(resp_gzip.content)
+	# 	g = gzip.GzipFile(mode='rb', fileobj=open(abs_json_path+item.get_text(), 'rb'))
+	# 	open(one_json_file, 'wb+').write(g.read())
 		# print resp.status_code
 	# except:
 	# 	print 'error-get-reqst-%s' % json_url
+        for item in os.listdir(url):
+                g = gzip.GzipFile(mode='rb', fileobj=open(os.path.join(url, item), 'rb'))
+                open(one_json_file, 'wb+').write(g.read())
 
 
 def dump_json_to_success_or_fail_file(abs_json_path, success_file_path, fail_file_path):
