@@ -285,6 +285,7 @@ def alanysis_data():
                                                                         len(success_dict[key])-len(fail_dict[key]), len(db_down_dict[key]), \
                                                                         len( (db_down_dict[key] & success_dict[key]) ), \
                                                                         len( (db_down_dict[key] & (success_dict[key] | fail_dict[key]))) )  )
+                reportfile.write('\n')
         reportfile.close()
 
 
