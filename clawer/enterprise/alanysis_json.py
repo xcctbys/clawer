@@ -289,8 +289,8 @@ def alanysis_data():
         reportfile.close()
 
         #get_no_clawer_csv()
-        no_clawer_data_csv = codecs.open('no_clawer_data_csv.txt', 'wb+', 'utf8')
-        have_clawer_data_csv = codecs.open('have_clawer_data_csv.txt', 'wb+', 'utf8')
+        no_clawer_data_csv = codecs.open('no_clawer_data_csv.txt', 'wb+')
+        have_clawer_data_csv = codecs.open('have_clawer_data_csv.txt', 'wb+')
         for key, value in db_total_dict.items():
                 no_clawer_set = db_total_dict[key] - (success_dict[key] | fail_dict[key])
                 have_clawer_set = success_dict[key]
@@ -307,8 +307,8 @@ def alanysis_data():
         no_clawer_data_csv.close()
         have_clawer_data_csv.close()
 
-        no_come_in_db_data_csv = codecs.open('no_come_in_db_data_csv.txt', 'wb+', 'utf8')
-        have_come_in_db_data_csv = codecs.open('have_come_in_db_data_csv.txt', 'wb+', 'utf8')
+        no_come_in_db_data_csv = codecs.open('no_come_in_db_data_csv.txt', 'wb+')
+        have_come_in_db_data_csv = codecs.open('have_come_in_db_data_csv.txt', 'wb+')
         for key, value in db_down_dict.items():
                 no_come_in_db_set = (success_dict[key] | fail_dict[key]) - db_down_dict[key]
                 have_come_in_db_set = db_down_dict[key]
