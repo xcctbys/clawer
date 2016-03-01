@@ -2,9 +2,11 @@
 
 import json
 import time
+import raven
 import logging
 import datetime
 import traceback
+from django.conf import settings
 
 
 class Configs(object):
@@ -497,11 +499,35 @@ class Parse(object):
         for line in companies:
             company = json.loads(line)
             for key, value in company.iteritems():
-                if key == "_url":
-                    pass
-                else:
-                    if value:
-                        self.companies[key] = value
+                if self.passed_validation(key, value):
+                    self.companies[key] = value
+
+    def passed_validation(self, key, value):
+        passed = True
+
+        if key == "_url":
+            passed = False
+        elif not value:
+            passed = False
+        else:
+            is_null = self.is_data_null(value)
+            passed = not is_null
+
+        return passed
+
+    def is_data_null(self, data):
+        null = False
+
+        if not data:
+            null = True
+
+        null = True
+        for key, value in data.iteritems():
+            if value:
+                null = False
+                break
+
+        return null
 
     def parse_companies(self):
         for register_num in self.companies:
@@ -511,11 +537,15 @@ class Parse(object):
                 if len(str(register_num)) >= 15:
                     self.parse_company(company, register_num)
             except:
-                self.send_mail(register_num)
+                self.send_sentry()
                 self.write_log(register_num)
 
-    def send_mail(self, register_num):
-        pass
+    def send_sentry(self):
+        if settings.RAVEN_CONFIG and settings.RAVEN_CONFIG['dsn']:
+            if not self.sentry_client:
+                self.sentry_client = raven.Client(dsn=settings.RAVEN_CONFIG['dsn'])
+
+            self.sentry_client.captureException()
 
     def write_log(self, register_num):
         logger = logging.getLogger(__name__)
@@ -537,6 +567,7 @@ class Parse(object):
                 if key in keys and key in mappings and company[key] is not None:
                     self.parse_list(key, company[key], mappings[key])
 
+        self.company_result["register_num"] = register_num
         self.conversion_type()
         self.write_to_mysql(self.company_result)
         self.company_result = {}
@@ -544,10 +575,7 @@ class Parse(object):
     def parse_dict(self, dict_in_company, mapping):
         for field in dict_in_company:
             if field in mapping:
-                if mapping[field] == "credit_code" and len(dict_in_company[field]) > 18:
-                    self.company_result[mapping[field]] = dict_in_company[field][18]
-                else:
-                    self.company_result[mapping[field]] = dict_in_company[field]
+                self.company_result[mapping[field]] = dict_in_company[field]
 
     def parse_list(self, key, list_in_company, mapping):
         keys_to_tables = Configs.keys_to_tables

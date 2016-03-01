@@ -72,24 +72,22 @@ class Parse(object):
             elif type(company[key] == list):
                 if key in keys and key in mappings and company[key] is not None:
                     self.parse_list(key, company[key], mappings[key])
+        
+        if self.company_result:
+            if self.company_result.get('credit_code') is None:
+                self.company_result['credit_code'] = register_num
+            if self.company_result.get('register_num') is None:
+                credit_code = self.company_result.get('credit_code')
+                self.company_result['register_num'] = credit_code
 
-        if self.company_result.get('credit_code') is None:
-            self.company_result['credit_code'] = register_num
-        if self.company_result.get('register_num') is None:
-            credit_code = self.company_result.get('credit_code')
-            self.company_result['register_num'] = credit_code
-
-        self.conversion_type()
-        self.write_to_mysql(self.company_result)
-        self.company_result = {}
+            self.conversion_type()
+            self.write_to_mysql(self.company_result)
+            self.company_result = {}
 
     def parse_dict(self, dict_in_company, mapping):
         for field in dict_in_company:
             if field in mapping:
-                if mapping[field] == "credit_code" and len(dict_in_company[field]) > 18:
-                    self.company_result[mapping[field]] = dict_in_company[field][18]
-                else:
-                    self.company_result[mapping[field]] = dict_in_company[field]
+                self.company_result[mapping[field]] = dict_in_company[field]
 
     def parse_list(self, key, list_in_company, mapping):
         keys_to_tables = configs.keys_to_tables
