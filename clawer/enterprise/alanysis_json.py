@@ -10,7 +10,7 @@ import MySQLdb
 
 # import settings
 
-json_url = 'http://clawer.princetechs.com:8080/media/clawer_result/4/2016/02/29/'
+json_url = r'/data/clawer_result/7/2016/02/29/'
 abs_json_path = './abs_json_path/'
 success_file_path = './success_file_path/'
 fail_file_path = './fail_file_path/'
