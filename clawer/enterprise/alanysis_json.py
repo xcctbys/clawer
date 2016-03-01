@@ -2,7 +2,7 @@
 #coding:utf8
 
 import json
-from bs4 import BeautifulSoup
+# from bs4 import BeautifulSoup
 import requests
 import gzip
 import MySQLdb
