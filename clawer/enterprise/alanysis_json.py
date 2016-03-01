@@ -281,7 +281,7 @@ def alanysis_data():
         reportfile = codecs.open('report.txt', 'wb', 'utf8')
 	for key, value in db_total_dict.items():
 		# print trans_dict[key], '\t', key, '\t', len(db_total_dict[key]), '\t', len(success_dict[key]), '\t', len(db_down_dict[key])
-                reportfile.write( '%s      %s     %s       %s      %s      %s      %s      %s     %s' % (key, trans_dict[key], len(db_total_dict[key]), len(success_dict[key]), len(fail_dict[key]), \
+                reportfile.write( '%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s' % (key, trans_dict[key], len(db_total_dict[key]), len(success_dict[key]), len(fail_dict[key]), \
                                                                         len(success_dict[key])-len(fail_dict[key]), len(db_down_dict[key]), \
                                                                         len( (db_down_dict[key] & success_dict[key]) ), \
                                                                         len( (db_down_dict[key] & (success_dict[key] | fail_dict[key]))) )  )
