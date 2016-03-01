@@ -2,6 +2,7 @@
 #coding:utf8
 
 import json
+import os, os.path
 # from bs4 import BeautifulSoup
 # import requests
 import gzip
