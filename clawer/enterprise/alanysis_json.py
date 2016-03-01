@@ -3,7 +3,7 @@
 
 import json
 # from bs4 import BeautifulSoup
-import requests
+# import requests
 import gzip
 import MySQLdb
 
@@ -205,9 +205,9 @@ db_down_dict = dict([('10',set()),
 
 reqst = requests.Session()
 reqst.headers.update({'Accept': 'text/html, application/xhtml+xml, */*',
-					'Accept-Encoding': 'gzip, deflate',
-					'Accept-Language': 'en-US, en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
-					'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:39.0) Gecko/20100101 Firefox/39.0'})
+			'Accept-Encoding': 'gzip, deflate',
+			'Accept-Language': 'en-US, en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
+			'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:39.0) Gecko/20100101 Firefox/39.0'})
 
 def dowload_json_by_days(url):
 	# resp = None
@@ -277,7 +277,11 @@ def get_down_dict_from_db():
 
 def alanysis_data():
 	for key, value in db_total_dict.items():
-		print trans_dict[key], '\t', key, '\t', len(db_total_dict[key]), '\t', len(success_dict[key]), '\t', len(db_down_dict[key])
+		# print trans_dict[key], '\t', key, '\t', len(db_total_dict[key]), '\t', len(success_dict[key]), '\t', len(db_down_dict[key])
+                print '%s     %s     %s     %s     %s     %s     %s    %s' %(trans_dict[key], key, len(success_dict[key]), len(fail_dict[key], \
+                                                                        len(success_dict[key]))-len(fail_dict[key]), len(db_down_dict[key]), \
+                                                                        len(db_down_dict[key] & success_dict[key]), \
+                                                                        len(db_down_dict[key] & (success_dict[key] | fail_dict[key])))
 	pass
 
 if __name__ == '__main__':
