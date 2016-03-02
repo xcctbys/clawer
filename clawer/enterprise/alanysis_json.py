@@ -14,6 +14,7 @@ import codecs
 json_url = r'/data/clawer_result/7/2016/02/29/'
 json_url2 = r'/data/clawer_result/7/2016/02/28/'
 json_url3 = r'/data/clawer_result/7/2016/02/27/'
+json_rul4 = r'/data/clawer_result/7/2016/03/01/'
 abs_json_path = './abs_json_path/'
 success_file_path = './success_file_path/'
 fail_file_path = './fail_file_path/'
@@ -284,99 +285,101 @@ def get_down_dict_from_db():
 		print 'Mysql error %d:%s' %(e.args[0], e.args[1])
 
 def alanysis_data():
-        total_enterprise_num = 0
-        total_clawer_not_none = 0
-        total_clawer_is_none = 0
-        total_clawer_num = 0
-        total_not_clawer_num = 0
-        total_come_in_db_num = 0
-        total_not_come_in_db_num = 0
-        total_clawer_not_none_and_come_in_db_num = 0
-        total_clawer_and_come_in_db_num = 0
-        reportfile = codecs.open('report.txt', 'wb', 'utf8')
-        reportfile.write('%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s'%(u'代号', u'省份', u'总共', u'爬取非空', u'爬取为空', u'共爬取',\
-                                                                        u'未爬取', u'入库数', u'未入库', u'爬取为非空并入库', u'爬取并入库'))
-        reportfile.write('\n')
-	for key, value in db_total_dict.items():
-		# print trans_dict[key], '\t', key, '\t', len(db_total_dict[key]), '\t', len(success_dict[key]), '\t', len(db_down_dict[key])
-                reportfile.write( '%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s' % (key, \
-                                                                                                trans_dict[key],\
-                                                                                                len(db_total_dict[key]), \
-                                                                                                len(success_dict[key]), \
-                                                                                                len(fail_dict[key]), \
-                                                                                                len(success_dict[key]) + len(fail_dict[key]),\
-                                                                                                len(db_total_dict[key])-len(success_dict[key]) -len(fail_dict[key]),\
-                                                                                                len(db_down_dict[key]), \
-                                                                                                len(success_dict[key]) +  len(fail_dict[key]) - len(db_down_dict[key]),\
-                                                                                                len( (db_down_dict[key] & success_dict[key]) ), \
-                                                                                                len( (db_down_dict[key] & (success_dict[key] | fail_dict[key]))) )  )
-                reportfile.write('\n')
-                total_enterprise_num += len(db_total_dict[key])
-                total_clawer_not_none += len(success_dict[key])
-                total_clawer_is_none += len(fail_dict[key])
-                total_clawer_num += (len(success_dict[key]) + len(fail_dict[key]))
-                total_not_clawer_num += (len(db_total_dict[key])-len(success_dict[key]))
-                total_come_in_db_num += len(db_down_dict[key])
-                total_not_come_in_db_num += (len((success_dict[key] | fail_dict[key])) - len(db_down_dict[key]))
-                total_clawer_not_none_and_come_in_db_num += len( (db_down_dict[key] & success_dict[key]) )
-                total_clawer_and_come_in_db_num += len( (db_down_dict[key] & (success_dict[key] | fail_dict[key])))
+    total_enterprise_num = 0
+    total_clawer_not_none = 0
+    total_clawer_is_none = 0
+    total_clawer_num = 0
+    total_not_clawer_num = 0
+    total_come_in_db_num = 0
+    total_not_come_in_db_num = 0
+    total_clawer_not_none_and_come_in_db_num = 0
+    total_clawer_and_come_in_db_num = 0
+
+    reportfile = codecs.open('report.txt', 'wb', 'utf8')
+    reportfile.write('%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s'%(u'代号', u'省份', u'总共', u'爬取非空', u'爬取为空', u'共爬取',\
+                                                                                u'未爬取', u'入库数', u'未入库', u'爬取为非空并入库', u'爬取并入库'))
+    reportfile.write('\n')
+    for key, value in db_total_dict.items():
+        reportfile.write( '%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s' % (key, \
+                        trans_dict[key],\
+                        len(db_total_dict[key]), \
+                        len(success_dict[key]), \
+                        len(fail_dict[key]), \
+                        len(success_dict[key]) + len(fail_dict[key]),\
+                        len(db_total_dict[key])-len(success_dict[key]) -len(fail_dict[key]),\
+                        len(db_down_dict[key]), \
+                        len(success_dict[key]) +  len(fail_dict[key]) - len(db_down_dict[key]),\
+                        len( (db_down_dict[key] & success_dict[key]) ), \
+                        len( (db_down_dict[key] & (success_dict[key] | fail_dict[key]))) )  )
 
         reportfile.write('\n')
-        reportfile.write('%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s' % (u'总计', len(db_total_dict.keys()), total_enterprise_num, total_clawer_not_none,\
-                                total_clawer_is_none, total_clawer_num, total_not_clawer_num, total_come_in_db_num, \
-                                total_not_come_in_db_num, total_clawer_not_none_and_come_in_db_num, total_clawer_and_come_in_db_num))
+        total_enterprise_num += len(db_total_dict[key])
+        total_clawer_not_none += len(success_dict[key])
+        total_clawer_is_none += len(fail_dict[key])
+        total_clawer_num += (len(success_dict[key]) + len(fail_dict[key]))
+        total_not_clawer_num += (len(db_total_dict[key])-len(success_dict[key]))
+        total_come_in_db_num += len(db_down_dict[key])
+        total_not_come_in_db_num += (len((success_dict[key] | fail_dict[key])) - len(db_down_dict[key]))
+        total_clawer_not_none_and_come_in_db_num += len( (db_down_dict[key] & success_dict[key]) )
+        total_clawer_and_come_in_db_num += len( (db_down_dict[key] & (success_dict[key] | fail_dict[key])))
 
-        reportfile.close()
+    reportfile.write('\n')
+    reportfile.write('%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s' % (u'总计', len(db_total_dict.keys()), total_enterprise_num, total_clawer_not_none,\
+                            total_clawer_is_none, total_clawer_num, total_not_clawer_num, total_come_in_db_num, \
+                            total_not_come_in_db_num, total_clawer_not_none_and_come_in_db_num, total_clawer_and_come_in_db_num))
 
-        #get_no_clawer_csv()
-        no_clawer_data_csv = codecs.open('no_clawer_data_csv.txt', 'wb')
-        have_clawer_data_csv = codecs.open('have_clawer_data_csv.txt', 'wb')
-        for key, value in db_total_dict.items():
-                no_clawer_set = db_total_dict[key] - (success_dict[key] | fail_dict[key])
-                have_clawer_set = success_dict[key]
-                with open('all_data.txt', 'r') as f:
-                        for line in f.readlines():
-                                if line.split(',')[-1].strip() in no_clawer_set:
-                                        no_clawer_data_csv.write(line)
-                                        # no_clawer_data_csv.write('\n')
-                                if line.split(',')[-1].strip() in have_clawer_set:
-                                        have_clawer_data_csv.write(line)
-                                        # have_clawer_data_csv.write('\n')
-                # no_clawer_data_csv.write('\n')
-                # have_clawer_data_csv.write('\n')
-        no_clawer_data_csv.close()
-        have_clawer_data_csv.close()
+    reportfile.close()
 
-        no_come_in_db_data_csv = codecs.open('no_come_in_db_data_csv.txt', 'wb')
-        have_come_in_db_data_csv = codecs.open('have_come_in_db_data_csv.txt', 'wb')
-        for key, value in db_down_dict.items():
-                no_come_in_db_set = (success_dict[key] | fail_dict[key]) - db_down_dict[key]
-                have_come_in_db_set = db_down_dict[key]
-                with open('all_data.txt', 'r') as f:
-                        for line in f.readlines():
-                                if line.split(',')[-1].strip() in no_come_in_db_set:
-                                        no_come_in_db_data_csv.write(line)
-                                        # no_come_in_db_data_csv.write('\n')
-                                if line.split(',')[-1].strip() in have_come_in_db_set:
-                                        have_come_in_db_data_csv.write(line)
-                                        # have_come_in_db_data_csv.write('\n')
-                # no_come_in_db_data_csv.write('\n')
-                # have_come_in_db_data_csv.write('\n')
-        no_come_in_db_data_csv.close()
-        have_come_in_db_data_csv.close()
+    #get_no_clawer_csv()
+    no_clawer_data_csv = codecs.open('no_clawer_data_csv.txt', 'wb')
+    have_clawer_data_csv = codecs.open('have_clawer_data_csv.txt', 'wb')
+    for key, value in db_total_dict.items():
+        no_clawer_set = db_total_dict[key] - (success_dict[key] | fail_dict[key])
+        have_clawer_set = success_dict[key]
+        with open('all_data.txt', 'r') as f:
+            for line in f.readlines():
+                if line.split(',')[-1].strip() in no_clawer_set:
+                    no_clawer_data_csv.write(line)
+                        # no_clawer_data_csv.write('\n')
+                if line.split(',')[-1].strip() in have_clawer_set:
+                    have_clawer_data_csv.write(line)
+                                    # have_clawer_data_csv.write('\n')
+            # no_clawer_data_csv.write('\n')
+            # have_clawer_data_csv.write('\n')
+    no_clawer_data_csv.close()
+    have_clawer_data_csv.close()
+
+    no_come_in_db_data_csv = codecs.open('no_come_in_db_data_csv.txt', 'wb')
+    have_come_in_db_data_csv = codecs.open('have_come_in_db_data_csv.txt', 'wb')
+    for key, value in db_down_dict.items():
+        no_come_in_db_set = (success_dict[key] | fail_dict[key]) - db_down_dict[key]
+        have_come_in_db_set = db_down_dict[key]
+        with open('all_data.txt', 'r') as f:
+            for line in f.readlines():
+                if line.split(',')[-1].strip() in no_come_in_db_set:
+                    no_come_in_db_data_csv.write(line)
+                        # no_come_in_db_data_csv.write('\n')
+                if line.split(',')[-1].strip() in have_come_in_db_set:
+                    have_come_in_db_data_csv.write(line)
+                                    # have_come_in_db_data_csv.write('\n')
+            # no_come_in_db_data_csv.write('\n')
+            # have_come_in_db_data_csv.write('\n')
+    no_come_in_db_data_csv.close()
+    have_come_in_db_data_csv.close()
 
 
 
 if __name__ == '__main__':
     f = open(one_json_file, 'wb+')
-	dowload_json_by_days(json_url, one_json_file, f)
+    dowload_json_by_days(json_url, one_json_file, f)
     dowload_json_by_days(json_url2, one_json_file, f)
     dowload_json_by_days(json_url3, one_json_file, f)
     dowload_json_by_days(json_rul4, one_json_file, f)
     f.close()
-	dump_json_to_success_or_fail_file(one_json_file, success_json_file, fail_json_file)
-	get_down_dict_from_db()
-	get_total_dict_from_db()
-	alanysis_data()
+    
+    dump_json_to_success_or_fail_file(one_json_file, success_json_file, fail_json_file)
+    get_down_dict_from_db()
+    get_total_dict_from_db()
+    alanysis_data()
 	# print success_dict
 	# print fail_dict
