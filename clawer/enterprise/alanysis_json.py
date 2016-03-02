@@ -340,7 +340,7 @@ def alanysis_data():
     for key, value in db_total_dict.items():
         no_clawer_set = db_total_dict[key] - (success_dict[key] | fail_dict[key])
         have_clawer_set = success_dict[key]
-        with open('all_data.txt', 'r') as f:
+        with open('/data/clawer_result/alanysis_7_json/all_data.txt', 'r') as f:
             for line in f.readlines():
                 if line.split(',')[-1].strip() in no_clawer_set:
                     no_clawer_data_csv.write(line)
@@ -358,7 +358,7 @@ def alanysis_data():
     for key, value in db_down_dict.items():
         no_come_in_db_set = (success_dict[key] | fail_dict[key]) - db_down_dict[key]
         have_come_in_db_set = db_down_dict[key]
-        with open('all_data.txt', 'r') as f:
+        with open('/data/clawer_result/alanysis_7_json/all_data.txt', 'r') as f:
             for line in f.readlines():
                 if line.split(',')[-1].strip() in no_come_in_db_set:
                     no_come_in_db_data_csv.write(line)
