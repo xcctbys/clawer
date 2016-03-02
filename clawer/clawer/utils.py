@@ -365,6 +365,20 @@ class DownloadQueue(object):
         self.jobs.append(job)
         return job.id
     
+    
+class SentryClient(object):
+    
+    def __init__(self):
+        self.client = None
+        if hasattr(settings, 'RAVEN_CONFIG'):
+            self.client = raven.Client(dsn=settings.RAVEN_CONFIG["dsn"])
+        
+    def capture(self):
+        if not self.client:
+            return
+        
+        self.client.captureException()
+    
 
 class DownloadClawerTask(object):
     
@@ -376,6 +390,7 @@ class DownloadClawerTask(object):
         self.monitor = RealTimeMonitor()
         self.background_queue = BackgroundQueue()
         self.headers = {"user-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:40.0) Gecko/20100101 Firefox/40.0"}
+        self.sentry = SentryClient()
         
         self.clawer_setting = clawer_setting
         
@@ -423,6 +438,7 @@ class DownloadClawerTask(object):
         except:
             failed = True
             self.download_log.failed_reason = traceback.format_exc(10)
+            self.sentry.capture()
             
         if failed:
             self.download_failed()
