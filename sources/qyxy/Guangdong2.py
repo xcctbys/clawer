@@ -16,9 +16,10 @@ import json
 import urlparse
 import codecs
 #import traceback
-import unittest
 from bs4 import BeautifulSoup
 import CaptchaRecognition as CR
+
+
 urls = {
     'host': 'http://gsxt.gdgs.gov.cn/aiccips/',
     'prefix_url':'http://www.szcredit.com.cn/web/GSZJGSPT/',
@@ -51,7 +52,7 @@ class Crawler(object):
         self.json_dict={}
 
     # 爬取 工商公示信息 页面
-    def crawl_ind_comm_pub_pages(self, url, types, post_data= {}):
+    def crawl_ind_comm_pub_pages(self, url, types=2, post_data= {}):
         sub_json_dict={}
         try:
 
@@ -116,7 +117,7 @@ class Crawler(object):
         finally:
             return sub_json_dict
     #爬取 企业公示信息 页面
-    def crawl_ent_pub_pages(self, url, types, post_data={}):
+    def crawl_ent_pub_pages(self, url, types=2, post_data={}):
         sub_json_dict = {}
         try:
             page = self.crawl_page_by_url_post("http://gsxt.gdgs.gov.cn/aiccips/BusinessAnnals/BusinessAnnalsList.html", post_data)['page']
@@ -132,7 +133,7 @@ class Crawler(object):
             sub_json_dict['ent_pub_administration_sanction'] = p[u'行政处罚情况'] if p.has_key(u'行政处罚情况') else []
 
             page = self.crawl_page_by_url_post("http://gsxt.gdgs.gov.cn/aiccips/ContributionCapitalMsg.html", post_data)['page']
-            p = self.analysis.parse_page_2(page, 'sifapanding', post_data)
+            p = self.analysis.parse_page(page, 'sifapanding', post_data)
             sub_json_dict['ent_pub_shareholder_capital_contribution'] = p[u'股东及出资信息'] if p.has_key(u'股东及出资信息') else []
             sub_json_dict['ent_pub_reg_modify'] = p[u'变更信息'] if p.has_key(u'变更信息') else []
 
@@ -151,7 +152,7 @@ class Crawler(object):
         #json_dump_to_file("json_dict.json", self.json_dict)
 
     #爬取 其他部门公示信息 页面
-    def crawl_other_dept_pub_pages(self, url, types, post_data={}):
+    def crawl_other_dept_pub_pages(self, url, types=2, post_data={}):
         sub_json_dict={}
         # titles =(   'other_dept_pub_administration_license',#行政许可信息
         #             'other_dept_pub_administration_sanction',#行政处罚信息
@@ -177,7 +178,7 @@ class Crawler(object):
         finally:
             return sub_json_dict
     #judical assist pub informations
-    def crawl_judical_assist_pub_pages(self, url, types, post_data= {}):
+    def crawl_judical_assist_pub_pages(self, url, types=2, post_data= {}):
         sub_json_dict={}
         # titles = (  'judical_assist_pub_equity_freeze', # 股权冻结信息
         #             'judical_assist_pub_shareholder_modify', #股东变更信息
@@ -240,12 +241,16 @@ class Crawler(object):
         """
         #url = "http://gsxt.gdgs.gov.cn/aiccips/GSpublicity/GSpublicityList.html?service=entInfo_06CAc+ibgylJZ6y3lp3JBNsJrQ1qA5gDU7qYIU/VOow9Am1tz4CcjiZg6BZzhZQU-QuOaBlqqlUykdKokb5yijg=="
         #东莞证券
-        url = "http://gsxt.gdgs.gov.cn/aiccips/GSpublicity/GSpublicityList.html?service=entInfo_GmjYOaEEX9Xx3eeM0JcrtOywZcfQzs3Ry0M6NPS1/iCr+cQwm+oHVoPBzdIqEiYb-7vusEl1hPU+qjV70QwcUXQ=="
-        page_entInfo = self.crawl_page_by_url(url)['page']
+        # url = "http://gsxt.gdgs.gov.cn/aiccips/GSpublicity/GSpublicityList.html?service=entInfo_GmjYOaEEX9Xx3eeM0JcrtOywZcfQzs3Ry0M6NPS1/iCr+cQwm+oHVoPBzdIqEiYb-7vusEl1hPU+qjV70QwcUXQ=="
+        print "work"
+        url = "http://gsxt.gdgs.gov.cn/aiccips/GSpublicity/GSpublicityList.html?service=entInfo_3au/If33vWye5UuPp+iY6u6FQtJGDUruMalngHz1ONi2UJ96uTS+QaKhmOwDSFMD-7kW54gFL28iQmsO8Qn3cTA=="
 
+        page_entInfo = self.crawl_page_by_url(url)['page']
         post_data = self.analysis.parse_page_data_2(page_entInfo)
-        #self.crawl_ind_comm_pub_pages(url, 2, post_data)
-        self.crawl_ent_pub_pages(url, 2, post_data)
+        print post_data
+        data = self.crawl_ind_comm_pub_pages(url, 2, post_data)
+        print data
+        # self.crawl_ent_pub_pages(url, 2, post_data)
         #
         #self.crawl_other_dept_pub_pages(url, 2)
         #self.crawl_judical_assist_pub_pages(url, 2)
@@ -556,9 +561,55 @@ class Analyze(object):
                 finally:
                     pass
         return page_data
+    def parse_page(self, page, div_id, post_data={}):
+        soup = BeautifulSoup(page, 'html5lib')
+        page_data = {}
+        if soup.body:
+            if soup.body.table:
+                try:
+                    divs = soup.body.find('div', {"id": div_id})
+                    table = None
+                    if not divs:
+                        table = soup.body.find('table')
+                    else :
+                        table = divs.find('table')
+                    #print table
+                    table_name = ""
+                    columns = []
+                    while table:
+                        if table.name == 'table':
+                            table_name = self.get_table_title(table)
+                            if table_name is None :
+                                table_name = div_id
+
+                            page_data[table_name] = []
+                            columns = self.get_columns_of_record_table(table, page, table_name)
+                            result =self.parse_table_2(table, columns, post_data, table_name)
+                            if  not columns and not result :
+                                del page_data[table_name]
+                            else:
+                                page_data[table_name] = result
+
+                        elif table.name == 'div':
+                            if not columns:
+                                settings.logger.error(u"Can not find columns when parsing page, table :%s"%div_id)
+                                break
+                            page_data[table_name] =  self.parse_table_2(table, columns, post_data, table_name)
+                            columns = []
+                        table = table.nextSibling
+
+
+                except Exception as e:
+                    settings.logger.error(u'parse failed, with exception %s' % e)
+                    raise e
+
+                finally:
+                    pass
+        return page_data
 
     def parse_table_2(self, bs_table, columns=[] , post_data= {}, table_name= ""):
         table_dict = None
+
         try:
             tbody = bs_table.find('tbody') or BeautifulSoup(page, 'html5lib').find('tbody')
             if columns:
@@ -574,9 +625,9 @@ class Analyze(object):
                 # <div> <table>数据</table><table>下一页</table> </div>
                 tables = bs_table.find_all('table')
                 if len(tables)==2 and tables[1].find('a'):
+
                     # 获取下一页的url
                     clickstr = tables[1].find('a')['onclick']
-
                     re1='.*?'   # Non-greedy match on filler
                     re2='\\\'.*?\\\''   # Uninteresting: strng
                     re3='.*?'   # Non-greedy match on filler
@@ -591,7 +642,9 @@ class Analyze(object):
                         string1=m.group(1)
                         string2=m.group(2)
                         url = string1.strip('\'')+string2.strip('\'')
-                        settings.logger.debug(u"url = %s\n" % url)
+                        print url
+                    else:
+                        print "Can not find"
                     data = {
                         "pageNo" : 2 ,
                         "entNo" : post_data["entNo"].encode('utf-8'),
@@ -628,15 +681,20 @@ class Analyze(object):
                         #print "股东信息"
                         d = json.loads(res['page'])
                         titles = [column[0] for column in columns]
-                        for i, model in enumerate(d['list']):
-                            data = [ model['invType'], model['inv'], model['certName'], mode['certNo']]
+                        surl = "http://gsxt.gdgs.gov.cn/aiccips/GSpublicity/invInfoDetails.html?"+"entNo="+ str(post_data['entNo'])+"&regOrg="+str(post_data['regOrg'])
+                        for model in (d['list']):
+                            # 详情
+                            nurl = surl+"&invNo="+str(model['invNo'])
+                            print nurl
+                            nres = self.crawler.crawl_page_by_url(nurl)['page']
+                            detail_page = self.parse_page_2(nres, table_name+'_detail')
+                            data = [ model['invType'], model['inv'], model['certName'], model['certNo'], detail_page]
                             item_array.append(dict(zip(titles, data)))
-                        pass
 
                     table_dict = item_array
 
                 else:
-
+                    #print "else "+table_name
                     if not tbody:
                         #records_tag = bs_table
                         records_tag = tables[0]
@@ -781,6 +839,7 @@ def html_from_file(path):
     return datas
 
 
+
 class Guangdong2(object):
     def __init__(self):
         self.analysis = Analyze()
@@ -792,11 +851,11 @@ class Guangdong2(object):
     def work(self):
         self.crawler.work()
 
-"""
-if __name__ == "__main__":
-    reload (sys)
-    sys.setdefaultencoding('utf8')
-    guangdong = Guangdong2()
-    guangdong.work()
 
-"""
+# if __name__ == "__main__":
+    # reload (sys)
+    # sys.setdefaultencoding('utf8')
+    # guangdong = Guangdong2()
+    # guangdong.work()
+
+
