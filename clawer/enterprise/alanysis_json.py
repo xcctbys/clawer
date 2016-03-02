@@ -213,7 +213,7 @@ db_down_dict = dict([('10',set()),
 # 			'Accept-Language': 'en-US, en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
 # 			'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:39.0) Gecko/20100101 Firefox/39.0'})
 
-def dowload_json_by_days(url, one_json_file):
+def dowload_json_by_days(url, one_json_file, f):
 	# resp = None
 	# # try:
 	# resp = reqst.get(url)
@@ -226,7 +226,6 @@ def dowload_json_by_days(url, one_json_file):
 		# print resp.status_code
 	# except:
 	# 	print 'error-get-reqst-%s' % json_url
-    f = open(one_json_file, 'wb+')
     for item in os.listdir(url):
         path = os.path.join(url, item)
         g = None
@@ -369,9 +368,12 @@ def alanysis_data():
 
 
 if __name__ == '__main__':
-	dowload_json_by_days(json_url, one_json_file)
-        # dowload_json_by_days(json_url2)
-        # dowload_json_by_days(json_url3)
+    f = open(one_json_file, 'wb+')
+	dowload_json_by_days(json_url, one_json_file, f)
+    dowload_json_by_days(json_url2, one_json_file, f)
+    dowload_json_by_days(json_url3, one_json_file, f)
+    dowload_json_by_days(json_rul4, one_json_file, f)
+    f.close()
 	dump_json_to_success_or_fail_file(one_json_file, success_json_file, fail_json_file)
 	get_down_dict_from_db()
 	get_total_dict_from_db()
