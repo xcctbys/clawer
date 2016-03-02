@@ -300,6 +300,7 @@ def alanysis_data():
                                                                                 u'未爬取', u'爬取率', u'入库数', u'未入库', u'爬取为非空并入库', u'爬取并入库'))
     reportfile.write('\n')
     for key, value in db_total_dict.items():
+        x = str(len(success_dict[key]) + len(fail_dict[key]))/float(len(db_total_dict[key])+0.1))[:4]
         reportfile.write( '%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s' % (key, \
                         trans_dict[key],\
                         len(db_total_dict[key]), \
@@ -307,7 +308,7 @@ def alanysis_data():
                         len(fail_dict[key]), \
                         len(success_dict[key]) + len(fail_dict[key]),\
                         len(db_total_dict[key])-len(success_dict[key]) -len(fail_dict[key]),\
-                        (len(success_dict[key]) + len(fail_dict[ke]))/float(len(db_total_dict)),\
+                        x,\
                         len(db_down_dict[key]), \
                         len(success_dict[key]) +  len(fail_dict[key]) - len(db_down_dict[key]),\
                         len( (db_down_dict[key] & success_dict[key]) ), \
