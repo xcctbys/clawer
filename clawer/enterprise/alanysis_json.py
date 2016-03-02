@@ -8,10 +8,12 @@ import os, os.path
 import gzip
 import MySQLdb
 import codecs
+import sys
+import datetime
 
 # import settings
 
-json_url = r'/data/clawer_result/7/2016/02/29/'
+json_url = r'/data/clawer_result/7/'
 json_url2 = r'/data/clawer_result/7/2016/02/28/'
 json_url3 = r'/data/clawer_result/7/2016/02/27/'
 json_rul4 = r'/data/clawer_result/7/2016/03/01/'
@@ -300,7 +302,7 @@ def alanysis_data():
                                                                                 u'未爬取', u'爬取率', u'入库数', u'未入库', u'爬取为非空并入库', u'爬取并入库'))
     reportfile.write('\n')
     for key, value in db_total_dict.items():
-        x = str(len(success_dict[key]) + len(fail_dict[key]))/float(len(db_total_dict[key])+0.1))[:4]
+        x = str( (len(success_dict[key]) + len(fail_dict[key])) / float(len(db_total_dict[key])+0.1) )[:4]
         reportfile.write( '%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s' % (key, \
                         trans_dict[key],\
                         len(db_total_dict[key]), \
@@ -338,7 +340,7 @@ def alanysis_data():
     for key, value in db_total_dict.items():
         no_clawer_set = db_total_dict[key] - (success_dict[key] | fail_dict[key])
         have_clawer_set = success_dict[key]
-        with open('all_data.txt', 'r') as f:
+        with open('/data/clawer_result/alanysis_7_json/all_data.txt', 'r') as f:
             for line in f.readlines():
                 if line.split(',')[-1].strip() in no_clawer_set:
                     no_clawer_data_csv.write(line)
@@ -356,7 +358,7 @@ def alanysis_data():
     for key, value in db_down_dict.items():
         no_come_in_db_set = (success_dict[key] | fail_dict[key]) - db_down_dict[key]
         have_come_in_db_set = db_down_dict[key]
-        with open('all_data.txt', 'r') as f:
+        with open('/data/clawer_result/alanysis_7_json/all_data.txt', 'r') as f:
             for line in f.readlines():
                 if line.split(',')[-1].strip() in no_come_in_db_set:
                     no_come_in_db_data_csv.write(line)
@@ -369,19 +371,39 @@ def alanysis_data():
     no_come_in_db_data_csv.close()
     have_come_in_db_data_csv.close()
 
-
+def make_dir(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc:
+        if os.path.exists(path) and os.path.isdir(path):
+            pass
+        else:
+            raise exc
 
 if __name__ == '__main__':
+    do_with_day = []
+    lastname = []
+    yesterday = str(datetime.date.today() - datetime.timedelta(days=1))
+    for i in sys.argv[1:]:
+        do_with_day.append(i)
+        lastname.append(i[-2:])
+    if not do_with_day:
+        do_with_day.append(yesterday)
+        lastname = [yesterday.split('-')[-1]]
+    print do_with_day
+    path_dir = os.path.join( os.path.join(os.getcwd(), '/'.join(yesterday.split('-')[:-1])), ''.join(lastname) )
+    print path_dir
+    make_dir(path_dir)
+    os.chdir(path_dir)
+
     f = open(one_json_file, 'wb+')
-    dowload_json_by_days(json_url, one_json_file, f)
-    dowload_json_by_days(json_url2, one_json_file, f)
-    dowload_json_by_days(json_url3, one_json_file, f)
-    dowload_json_by_days(json_rul4, one_json_file, f)
+    for day in do_with_day:
+        # print os.path.join(json_url, '/'.join(day.split('-')))
+        dowload_json_by_days(os.path.join(json_url, '/'.join(day.split('-'))), one_json_file, f)
     f.close()
 
     dump_json_to_success_or_fail_file(one_json_file, success_json_file, fail_json_file)
     get_down_dict_from_db()
     get_total_dict_from_db()
     alanysis_data()
-	# print success_dict
-	# print fail_dict
+	
