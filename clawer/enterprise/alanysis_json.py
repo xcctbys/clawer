@@ -226,13 +226,14 @@ def dowload_json_by_days(url, one_json_file):
 		# print resp.status_code
 	# except:
 	# 	print 'error-get-reqst-%s' % json_url
+    f = open(one_json_file, 'wb+')
     for item in os.listdir(url):
         path = os.path.join(url, item)
+        g = None
         g = gzip.GzipFile(mode='rb', fileobj=open(path, 'rb'))
-        f = open(one_json_file, 'wb+')
         f.write(g.read())
         f.flush()
-        f.close()
+        # f.close()
 
 
 def dump_json_to_success_or_fail_file(abs_json_path, success_file_path, fail_file_path):
