@@ -33,10 +33,6 @@ headers = { 'Connetion': 'Keep-Alive',
 class Crawler(object):
     def __init__(self, analysis):
         self.analysis = analysis
-        self.html_search = None
-        self.html_showInfo = None
-        self.Captcha = None
-        #self.opener = self.make_opener()
         self.requests = requests.Session()
         self.requests.headers.update(headers)
         self.ents = []
@@ -125,7 +121,7 @@ class Crawler(object):
             sub_json_dict['ent_pub_administration_sanction'] = p[u'行政处罚情况'] if p.has_key(u'行政处罚情况') else []
 
             page = self.crawl_page_by_url_post("http://gsxt.gdgs.gov.cn/aiccips/ContributionCapitalMsg.html", post_data)['page']
-            p = self.analysis.parse_page_2(page, 'sifapanding', post_data)
+            p = self.analysis.parse_page(page, 'sifapanding', post_data)
             sub_json_dict['ent_pub_shareholder_capital_contribution'] = p[u'股东及出资信息'] if p.has_key(u'股东及出资信息') else []
             sub_json_dict['ent_pub_reg_modify'] = p[u'变更信息'] if p.has_key(u'变更信息') else []
 
@@ -550,6 +546,52 @@ class Analyze(object):
                     pass
         return page_data
 
+    def parse_page(self, page, div_id, post_data={}):
+        soup = BeautifulSoup(page, 'html5lib')
+        page_data = {}
+        if soup.body:
+            if soup.body.table:
+                try:
+                    divs = soup.body.find('div', {"id": div_id})
+                    table = None
+                    if not divs:
+                        table = soup.body.find('table')
+                    else :
+                        table = divs.find('table')
+                    #print table
+                    table_name = ""
+                    columns = []
+                    while table:
+                        if table.name == 'table':
+                            table_name = self.get_table_title(table)
+                            if table_name is None :
+                                table_name = div_id
+
+                            page_data[table_name] = []
+                            columns = self.get_columns_of_record_table(table, page, table_name)
+                            result =self.parse_table_2(table, columns, post_data, table_name)
+                            if  not columns and not result :
+                                del page_data[table_name]
+                            else:
+                                page_data[table_name] = result
+
+                        elif table.name == 'div':
+                            if not columns:
+                                settings.logger.error(u"Can not find columns when parsing page, table :%s"%div_id)
+                                break
+                            page_data[table_name] =  self.parse_table_2(table, columns, post_data, table_name)
+                            columns = []
+                        table = table.nextSibling
+
+
+                except Exception as e:
+                    settings.logger.error(u'parse failed, with exception %s' % e)
+                    raise e
+
+                finally:
+                    pass
+        return page_data
+
     def parse_table_2(self, bs_table, columns=[] , post_data= {}, table_name= ""):
         table_dict = None
         try:
@@ -621,10 +663,15 @@ class Analyze(object):
                         #print "股东信息"
                         d = json.loads(res['page'])
                         titles = [column[0] for column in columns]
-                        for i, model in enumerate(d['list']):
-                            data = [ model['invType'], model['inv'], model['certName'], mode['certNo']]
+                        surl = "http://gsxt.gdgs.gov.cn/aiccips/GSpublicity/invInfoDetails.html?"+"entNo="+ str(post_data['entNo'])+"&regOrg="+str(post_data['regOrg'])
+                        for model in (d['list']):
+                            # 详情
+                            nurl = surl+"&invNo="+str(model['invNo'])
+                            print nurl
+                            nres = self.crawler.crawl_page_by_url(nurl)['page']
+                            detail_page = self.parse_page_2(nres, table_name+'_detail')
+                            data = [ model['invType'], model['inv'], model['certName'], model['certNo'], detail_page]
                             item_array.append(dict(zip(titles, data)))
-                        pass
 
                     table_dict = item_array
 
