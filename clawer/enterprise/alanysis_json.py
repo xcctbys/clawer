@@ -296,17 +296,18 @@ def alanysis_data():
     total_clawer_and_come_in_db_num = 0
 
     reportfile = codecs.open('report.txt', 'wb', 'utf8')
-    reportfile.write('%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s'%(u'代号', u'省份', u'总共', u'爬取非空', u'爬取为空', u'共爬取',\
-                                                                                u'未爬取', u'入库数', u'未入库', u'爬取为非空并入库', u'爬取并入库'))
+    reportfile.write('%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s'%(u'代号', u'省份', u'总共', u'爬取非空', u'爬取为空', u'共爬取',\
+                                                                                u'未爬取', u'爬取率', u'入库数', u'未入库', u'爬取为非空并入库', u'爬取并入库'))
     reportfile.write('\n')
     for key, value in db_total_dict.items():
-        reportfile.write( '%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s' % (key, \
+        reportfile.write( '%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s' % (key, \
                         trans_dict[key],\
                         len(db_total_dict[key]), \
                         len(success_dict[key]), \
                         len(fail_dict[key]), \
                         len(success_dict[key]) + len(fail_dict[key]),\
                         len(db_total_dict[key])-len(success_dict[key]) -len(fail_dict[key]),\
+                        (len(success_dict[key]) + len(fail_dict[ke]))/float(len(db_total_dict)),\
                         len(db_down_dict[key]), \
                         len(success_dict[key]) +  len(fail_dict[key]) - len(db_down_dict[key]),\
                         len( (db_down_dict[key] & success_dict[key]) ), \
@@ -324,8 +325,8 @@ def alanysis_data():
         total_clawer_and_come_in_db_num += len( (db_down_dict[key] & (success_dict[key] | fail_dict[key])))
 
     reportfile.write('\n')
-    reportfile.write('%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s' % (u'总计', len(db_total_dict.keys()), total_enterprise_num, total_clawer_not_none,\
-                            total_clawer_is_none, total_clawer_num, total_not_clawer_num, total_come_in_db_num, \
+    reportfile.write('%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s' % (u'总计', len(db_total_dict.keys()), total_enterprise_num, total_clawer_not_none,\
+                            total_clawer_is_none, total_clawer_num, total_not_clawer_num, u'未', total_come_in_db_num, \
                             total_not_come_in_db_num, total_clawer_not_none_and_come_in_db_num, total_clawer_and_come_in_db_num))
 
     reportfile.close()
@@ -376,7 +377,7 @@ if __name__ == '__main__':
     dowload_json_by_days(json_url3, one_json_file, f)
     dowload_json_by_days(json_rul4, one_json_file, f)
     f.close()
-    
+
     dump_json_to_success_or_fail_file(one_json_file, success_json_file, fail_json_file)
     get_down_dict_from_db()
     get_total_dict_from_db()
