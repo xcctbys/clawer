@@ -423,11 +423,11 @@ def alanysis_data():
                                                                                                                     len(success_dict[key]), \
                                                                                                                     len(fail_dict[key]), \
                                                                                                                     len(success_dict[key]) + len(fail_dict[key]),\
-                                                                                                                    len(db_except_dict[key])
+                                                                                                                    len(db_except_dict[key]),\
                                                                                                                     len(db_total_dict[key]) - len(db_except_dict[key]) - len(success_dict[key]) -len(fail_dict[key]),\
                                                                                                                     x, \
-                                                                                                                    len(db_update_dict[key])
-                                                                                                                    len(success_dict[key]) + len(fail_dict[key]) - len(do_update_dict[key])
+                                                                                                                    len(db_update_dict[key]),\
+                                                                                                                    len(success_dict[key]) + len(fail_dict[key]) - len(do_update_dict[key]),\
                                                                                                                     y, \
                                                                                                                     len(db_down_dict[key]), \
                                                                                                                     len(db_total_dict[key]) - len(db_down_dict[key]), \
