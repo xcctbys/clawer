@@ -431,7 +431,7 @@ def alanysis_data():
                                                                                                                     y, \
                                                                                                                     len(db_down_dict[key]), \
                                                                                                                     len(db_total_dict[key]) - len(db_down_dict[key]), \
-                                                                                                                    z,,\
+                                                                                                                    z, \
                                                                                                                     len( (db_down_dict[key] & success_dict[key]) ), \
                                                                                                                     len( (db_down_dict[key] & (success_dict[key] | fail_dict[key]))) )  )
 
