@@ -445,7 +445,7 @@ def alanysis_data():
         total_update_db_num += len(db_update_dict[key])
         total_not_update_db_num += len(success_dict[key]) + len(fail_dict[key]) - len(do_update_dict[key])
         total_come_in_db_num += len(db_down_dict[key])
-        total_not_come_in_db_num += len(db_total_dict[key]) - len(db_down_dict[key]))
+        total_not_come_in_db_num += len(db_total_dict[key]) - len(db_down_dict[key])
         total_clawer_not_none_and_come_in_db_num += len( (db_down_dict[key] & success_dict[key]) )
         total_clawer_and_come_in_db_num += len( (db_down_dict[key] & (success_dict[key] | fail_dict[key])))
 
