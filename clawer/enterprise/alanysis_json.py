@@ -417,8 +417,8 @@ def alanysis_data():
     reportfile.write('\n')
     for key, value in db_total_dict.items():
         x = str( (len(success_dict[key]) + len(fail_dict[key])) / float(len(db_total_dict[key])+0.1) )[:4]
-        y = str( (len(db_update_dict[key]) / float( len(success_dict[key]) + len(fail_dict[key])) + 0.1))[:4]
-        z = str(len(db_down_dict[key]) / float(len(db_total_dict[key])))[:4]
+        y = str( len(db_update_dict[key]) / float( len(success_dict[key]) + len(fail_dict[key])+0.1) )[:4]
+        z = str(len(db_down_dict[key]) / float(len(db_total_dict[key])+0.1)) [:4]
         reportfile.write( '%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s' % (key, \
                                                                                                                     trans_dict[key],\
                                                                                                                     len(db_total_dict[key]), \
