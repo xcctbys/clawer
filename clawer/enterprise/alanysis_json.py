@@ -366,7 +366,9 @@ def get_update_dict_from_db(yesterday):
         conn = MySQLdb.connect(host='10.100.80.50', user='cacti', passwd='cacti', db='enterprise', port=3306)
         cur = conn.cursor()
         for days in yesterday:
-            count = cur.execute('select register_num from basic where timestamp like "%s %"' % days)
+            sql = 'select register_num from basic where timestamp like \"%s %\" ' % days
+            print sql
+            count = cur.execute(sql)
             results = cur.fetchall()
             for result in results:
                 # print result
