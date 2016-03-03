@@ -6,6 +6,46 @@
 - RQ
 
 
+# Start Develop environment
+
+
+## Install Mariadb in CentOS 7
+
+      yum install -y mariadb*
+
+## Install some python libs
+
+Install python. Install virtualenv.
+
+    cd ~/Documents/pyenv/
+    virtualenv dj14 
+
+    cd ~/Documents/gitroom
+    
+    #clone code at here
+    
+    cd nice-clawer/clawer && ~/Documents/pyenv/dj14/bin/pip install -r requirements.txt
+    
+Migrate django db
+
+    ./bg_cmd.sh migrate
+
+Create super user. (admin:admin)
+
+    ./bg_cmd.sh createsuperuser admin
+
+    
+Create two group in http://localhost:8000/admin/
+
+    管理员
+    开发者
+    
+Run server. Then visit http://localhost:8000/
+
+    ./run.sh app
+    ./run.sh rq
+
+
 # Create Database on MySQL
 
        CREATE DATABASE `clawer` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;

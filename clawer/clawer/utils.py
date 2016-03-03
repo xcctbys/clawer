@@ -98,7 +98,7 @@ class Download(object):
         self.proxies = []
         self.cookies = {}
         self.js = None
-        self.sentry_client = None
+        self.sentry = SentryClient()
         
     def add_cookie(self, cookie):
         self.headers["Cookie"] = cookie
@@ -145,7 +145,7 @@ class Download(object):
         except:
             self.failed = True
             self.failed_exception = traceback.format_exc(10)
-            self._send_sentry()
+            self.sentry.capture()
         
         if self.failed:
             end = time.time()
@@ -211,7 +211,7 @@ class Download(object):
         except:
             self.failed_exception = traceback.format_exc(10)
             self.failed = True
-            self._send_sentry()
+            self.sentry.capture()
         finally:
             driver.close()
             driver.quit()
@@ -223,7 +223,7 @@ class Download(object):
                 shutil.rmtree(driver.profile.tempfolder)
         except:
             logging.error(traceback.format_exc(10))
-            self._send_sentry()
+            self.sentry.capture()
     
         end = time.time()
         self.spend_time = end - start
@@ -237,20 +237,12 @@ class Download(object):
         except:
             self.failed = True
             self.failed_exception = traceback.format_exc(10)
-            self._send_sentry()
+            self.sentry.capture()
             logging.warning(self.failed_exception)
             
         end = time.time()
         self.spend_time = end - start
         
-    def _send_sentry(self):
-        
-        if settings.RAVEN_CONFIG and settings.RAVEN_CONFIG['dsn']:
-            if not self.sentry_client:
-                self.sentry_client = raven.Client(dsn=settings.RAVEN_CONFIG['dsn'])
-            
-            self.sentry_client.captureException()
-            
             
 
 class SafeProcess(object):
