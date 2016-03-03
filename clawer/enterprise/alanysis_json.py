@@ -396,7 +396,7 @@ def alanysis_data():
     total_clawer_not_none_and_come_in_db_num = 0
     total_clawer_and_come_in_db_num = 0
 
-    reportfile = codecs.open('report.txt', 'wb', 'utf8')
+    reportfile = codecs.open('report.csv', 'wb', 'utf8')
     reportfile.write('%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s' %  (u'代号', 
                                                                                                                 u'省份', 
                                                                                                                 u'总共', 
