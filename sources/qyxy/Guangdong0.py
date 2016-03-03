@@ -602,6 +602,46 @@ class Analyze(object):
         return table_dict
 
     def parse_ent_pub_annual_report_page(self, page_dict, table_name):
+        page_data = {}
+        soup = BeautifulSoup(page_dict['page'], 'html5lib')
+        if soup.body.find('table'):
+            try:
+                #忽略第一行tr
+                detail_base_table = soup.body.find('table').find_all('tr')[1:]
+                table_name = self.get_raw_text_by_tag(detail_base_table[0])
+                sub_dict = {}
+                for tr in detail_base_table[1:]:
+                    if tr.find('th') and tr.find('td'):
+                        ths = tr.find_all('th')
+                        tds = tr.find_all('td')
+                        if len(ths) != len(tds):
+                            settings.logger.error(u'th size not equals td size in table %s, what\'s up??' % table_name)
+                            return
+                        else:
+                            for i in range(len(ths)):
+                                if self.get_raw_text_by_tag(ths[i]):
+                                    sub_dict[self.get_raw_text_by_tag(ths[i])] = self.get_raw_text_by_tag(tds[i])
+
+                page_data[table_name] = sub_dict
+            except Exception as e:
+                settings.logger.error(u"fail to get table name with exception %s" % (type(e)))
+            try:
+                tables = soup.body.find_all('table')[1:]
+                for table in tables:
+                        table_name = self.get_table_title(table)
+                        page_data[table_name] =self.parse_table(table, table_name, page_dict['page'])
+                        # print page_data[table_name]
+            except Exception as e:
+                settings.logger.error(u"fail to parse the rest tables with exception %s" %(type(e)))
+        else:
+            pass
+        return page_data
+
+    """
+    def parse_ent_pub_annual_report_page(self, page_dict, table_name):
+        '''
+            通过AJAX来获取表格数据，但是这在2016年3月3号就不能用了。
+        '''
         url = page_dict['url']
         page = page_dict['page']
         page_data= {}
@@ -681,7 +721,7 @@ class Analyze(object):
                 raise e
         #json_dump_to_file('report_json.json', page_data)
         return page_data
-
+"""
 
 def html_to_file(path, html):
     write_type = 'w'
