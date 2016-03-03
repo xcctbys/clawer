@@ -209,6 +209,81 @@ db_down_dict = dict([('10',set()),
                 ('82',set()),
                 ('91',set())])
 
+db_update_dict = dict([('10',set()),
+                ('11',set()),
+                ('12',set()),
+                ('13',set()),
+                ('14',set()),
+                ('15',set()),
+                ('21',set()),
+                ('22',set()),
+                ('23',set()),
+                ('31',set()),
+                ('32',set()),
+                ('33',set()),
+                ('34',set()),
+                ('35',set()),
+                ('36',set()),
+                ('37',set()),
+                ('41',set()),
+                ('42',set()),
+                ('43',set()),
+                ('44',set()),
+                ('45',set()),
+                ('46',set()),
+                ('50',set()),
+                ('51',set()),
+                ('52',set()),
+                ('53',set()),
+                ('54',set()),
+                ('61',set()),
+                ('62',set()),
+                ('63',set()),
+                ('64',set()),
+                ('65',set()),
+                ('71',set()),
+                ('81',set()),
+                ('82',set()),
+                ('91',set())])
+
+db_except_dict = dict([('10',set()),
+                ('11',set()),
+                ('12',set()),
+                ('13',set()),
+                ('14',set()),
+                ('15',set()),
+                ('21',set()),
+                ('22',set()),
+                ('23',set()),
+                ('31',set()),
+                ('32',set()),
+                ('33',set()),
+                ('34',set()),
+                ('35',set()),
+                ('36',set()),
+                ('37',set()),
+                ('41',set()),
+                ('42',set()),
+                ('43',set()),
+                ('44',set()),
+                ('45',set()),
+                ('46',set()),
+                ('50',set()),
+                ('51',set()),
+                ('52',set()),
+                ('53',set()),
+                ('54',set()),
+                ('61',set()),
+                ('62',set()),
+                ('63',set()),
+                ('64',set()),
+                ('65',set()),
+                ('71',set()),
+                ('81',set()),
+                ('82',set()),
+                ('91',set())])
+
+
 
 # reqst = requests.Session()
 # reqst.headers.update({'Accept': 'text/html, application/xhtml+xml, */*',
@@ -286,57 +361,118 @@ def get_down_dict_from_db():
 	except MySQLdb.Error, e:
 		print 'Mysql error %d:%s' %(e.args[0], e.args[1])
 
+def get_update_dict_from_db(yesterday):
+    try:
+        conn = MySQLdb.connect(host='10.100.80.50', user='cacti', passwd='cacti', db='enterprise', port=3306)
+        cur = conn.cursor()
+        for days in yesterday:
+            count = cur.execute('select register_num from basic where timestamp like "%s %"' % days)
+            results = cur.fetchall()
+            for result in results:
+                # print result
+                if result[0]:
+                    db_update_dict[result[0][:2]].add(result[0].strip())
+        cur.close()
+        conn.close()
+    except MySQLdb.Error, e:
+        print 'Mysql error %d:%s' %(e.args[0], e.args[1])
+
+def get_except_dict_from_db(yesterday):
+    pass
+
 def alanysis_data():
     total_enterprise_num = 0
     total_clawer_not_none = 0
     total_clawer_is_none = 0
     total_clawer_num = 0
+    total_clawer_except_num = 0
     total_not_clawer_num = 0
+    total_update_db_num = 0
+    total_not_update_db_num = 0
     total_come_in_db_num = 0
     total_not_come_in_db_num = 0
     total_clawer_not_none_and_come_in_db_num = 0
     total_clawer_and_come_in_db_num = 0
 
     reportfile = codecs.open('report.txt', 'wb', 'utf8')
-    reportfile.write('%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s'%(u'代号', u'省份', u'总共', u'爬取非空', u'爬取为空', u'共爬取',\
-                                                                                u'未爬取', u'爬取率', u'入库数', u'未入库', u'爬取为非空并入库', u'爬取并入库'))
+    reportfile.write('%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s' %  (u'代号', 
+                                                                                                                u'省份', 
+                                                                                                                u'总共', 
+                                                                                                                u'爬取非空', 
+                                                                                                                u'爬取为空', 
+                                                                                                                u'共爬取', 
+                                                                                                                u'爬取异常', 
+                                                                                                                u'未爬取', 
+                                                                                                                u'爬取率', 
+                                                                                                                u'入库数', 
+                                                                                                                u'未入库', 
+                                                                                                                u'入库率', 
+                                                                                                                u'库存量', 
+                                                                                                                u'缺少量', 
+                                                                                                                u'成功率', 
+                                                                                                                u'爬取为非空并入库', 
+                                                                                                                u'爬取并入库'))
     reportfile.write('\n')
     for key, value in db_total_dict.items():
         x = str( (len(success_dict[key]) + len(fail_dict[key])) / float(len(db_total_dict[key])+0.1) )[:4]
-        reportfile.write( '%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s' % (key, \
-                        trans_dict[key],\
-                        len(db_total_dict[key]), \
-                        len(success_dict[key]), \
-                        len(fail_dict[key]), \
-                        len(success_dict[key]) + len(fail_dict[key]),\
-                        len(db_total_dict[key])-len(success_dict[key]) -len(fail_dict[key]),\
-                        x,\
-                        len(db_down_dict[key]), \
-                        len(success_dict[key]) +  len(fail_dict[key]) - len(db_down_dict[key]),\
-                        len( (db_down_dict[key] & success_dict[key]) ), \
-                        len( (db_down_dict[key] & (success_dict[key] | fail_dict[key]))) )  )
+        y = str( (len(db_update_dict[key]) / float( len(success_dict[key]) + len(fail_dict[key])) + 0.1))[:4]
+        z = str(len(db_down_dict[key]) / float(len(db_total_dict[key])))[:4]
+        reportfile.write( '%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s' % (key, \
+                                                                                                                    trans_dict[key],\
+                                                                                                                    len(db_total_dict[key]), \
+                                                                                                                    len(success_dict[key]), \
+                                                                                                                    len(fail_dict[key]), \
+                                                                                                                    len(success_dict[key]) + len(fail_dict[key]),\
+                                                                                                                    len(db_except_dict[key])
+                                                                                                                    len(db_total_dict[key]) - len(db_except_dict[key]) - len(success_dict[key]) -len(fail_dict[key]),\
+                                                                                                                    x, \
+                                                                                                                    len(db_update_dict[key])
+                                                                                                                    len(success_dict[key]) + len(fail_dict[key]) - len(do_update_dict[key])
+                                                                                                                    y, \
+                                                                                                                    len(db_down_dict[key]), \
+                                                                                                                    len(db_total_dict[key]) - len(db_down_dict[key]), \
+                                                                                                                    z,,\
+                                                                                                                    len( (db_down_dict[key] & success_dict[key]) ), \
+                                                                                                                    len( (db_down_dict[key] & (success_dict[key] | fail_dict[key]))) )  )
 
         reportfile.write('\n')
         total_enterprise_num += len(db_total_dict[key])
         total_clawer_not_none += len(success_dict[key])
         total_clawer_is_none += len(fail_dict[key])
         total_clawer_num += (len(success_dict[key]) + len(fail_dict[key]))
-        total_not_clawer_num += (len(db_total_dict[key])-len(success_dict[key]))
+        total_clawer_except_num += len(db_except_dict[key])
+        total_not_clawer_num += (len(db_total_dict[key])-len(success_dict[key]))-len(fail_dict[key])
+        total_update_db_num += len(db_update_dict[key])
+        total_not_update_db_num += len(success_dict[key]) + len(fail_dict[key]) - len(do_update_dict[key])
         total_come_in_db_num += len(db_down_dict[key])
-        total_not_come_in_db_num += (len((success_dict[key] | fail_dict[key])) - len(db_down_dict[key]))
+        total_not_come_in_db_num += len(db_total_dict[key]) - len(db_down_dict[key]))
         total_clawer_not_none_and_come_in_db_num += len( (db_down_dict[key] & success_dict[key]) )
         total_clawer_and_come_in_db_num += len( (db_down_dict[key] & (success_dict[key] | fail_dict[key])))
 
     reportfile.write('\n')
-    reportfile.write('%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s%-10s' % (u'总计', len(db_total_dict.keys()), total_enterprise_num, total_clawer_not_none,\
-                            total_clawer_is_none, total_clawer_num, total_not_clawer_num, u'未', total_come_in_db_num, \
-                            total_not_come_in_db_num, total_clawer_not_none_and_come_in_db_num, total_clawer_and_come_in_db_num))
+    reportfile.write('%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s' % (u'总计', 
+                                                                                                                len(db_total_dict.keys()), 
+                                                                                                                total_enterprise_num, 
+                                                                                                                total_clawer_not_none,
+                                                                                                                total_clawer_is_none, 
+                                                                                                                total_clawer_num,
+                                                                                                                total_clawer_except_num, 
+                                                                                                                total_not_clawer_num, 
+                                                                                                                u'未', 
+                                                                                                                total_update_db_num,
+                                                                                                                total_not_update_db_num,
+                                                                                                                u'未',
+                                                                                                                total_come_in_db_num, 
+                                                                                                                total_not_come_in_db_num, 
+                                                                                                                u'未',
+                                                                                                                total_clawer_not_none_and_come_in_db_num, 
+                                                                                                                total_clawer_and_come_in_db_num))
 
     reportfile.close()
 
     #get_no_clawer_csv()
-    no_clawer_data_csv = codecs.open('no_clawer_data_csv.txt', 'wb')
-    have_clawer_data_csv = codecs.open('have_clawer_data_csv.txt', 'wb')
+    no_clawer_data_csv = codecs.open('no_clawer_data_csv.csv', 'wb')
+    have_clawer_data_csv = codecs.open('have_clawer_data_csv.csv', 'wb')
     for key, value in db_total_dict.items():
         no_clawer_set = db_total_dict[key] - (success_dict[key] | fail_dict[key])
         have_clawer_set = success_dict[key]
@@ -353,8 +489,8 @@ def alanysis_data():
     no_clawer_data_csv.close()
     have_clawer_data_csv.close()
 
-    no_come_in_db_data_csv = codecs.open('no_come_in_db_data_csv.txt', 'wb')
-    have_come_in_db_data_csv = codecs.open('have_come_in_db_data_csv.txt', 'wb')
+    no_come_in_db_data_csv = codecs.open('no_come_in_db_data_csv.csv', 'wb')
+    have_come_in_db_data_csv = codecs.open('have_come_in_db_data_csv.csv', 'wb')
     for key, value in db_down_dict.items():
         no_come_in_db_set = (success_dict[key] | fail_dict[key]) - db_down_dict[key]
         have_come_in_db_set = db_down_dict[key]
@@ -405,5 +541,15 @@ if __name__ == '__main__':
     dump_json_to_success_or_fail_file(one_json_file, success_json_file, fail_json_file)
     get_down_dict_from_db()
     get_total_dict_from_db()
+
+    if sys.argv[1:]:
+        yesterday = list(sys.argv[1:])
+    else:
+        yesterday = [yesterday]
+    get_update_dict_from_db(yesterday)
+    get_except_dict_from_db(yesterday)
+
     alanysis_data()
+
+    
 	
