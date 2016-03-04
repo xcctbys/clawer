@@ -549,18 +549,18 @@ def alanysis_except(count_except):
             results = cur.fetchall()
             for result in results:
                 num = result[1].strip().split('/')[-2]
-                print num
+                # print num
                 if reason_dict.has_key(result[0].strip()) is True:
-                    reason_dict[result[0].strip()].add(num)
+                    reason_dict[result[0].strip()].append(num)
                 else:
-                    reason_dict[result[0].strip()] = set()
-                    reason_dict[result[0].strip()].add(num)
+                    reason_dict[result[0].strip()] = list()
+                    reason_dict[result[0].strip()].append(num)
         cur.close()
         conn.close()
     except MySQLdb.Error, e:
         print 'Mysql error %d:%s' %(e.args[0], e.args[1])
     for key, value in reason_dict.items():
-        value = list(value).sort()
+        value = value.sort()
         try:
             count = len(value)
         except:
