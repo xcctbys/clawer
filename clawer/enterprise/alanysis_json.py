@@ -395,7 +395,7 @@ def get_except_dict_from_db(yesterday):
                     num = result[0][-2:-20:-1]
                     num = num[::-1]
                 # print result
-              
+                print num[:2],num.strip()
                 db_except_dict[num[:2]].add(num.strip())
         cur.close()
         conn.close()
