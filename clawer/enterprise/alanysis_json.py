@@ -58,8 +58,7 @@ trans_dict = dict(
                 ('65',u'新疆'),
                 ('71',u'台湾'),
                 ('81',u'香港'),
-                ('82',u'澳门'),
-                ('91',u'总局')])
+                ('82',u'澳门'),])
 
 db_total_dict = dict([('10',set()),
                 ('11',set()),
@@ -95,8 +94,7 @@ db_total_dict = dict([('10',set()),
                 ('65',set()),
                 ('71',set()),
                 ('81',set()),
-                ('82',set()),
-                ('91',set())])
+                ('82',set())])
 
 success_dict = dict([('10',set()),
                 ('11',set()),
@@ -132,8 +130,7 @@ success_dict = dict([('10',set()),
                 ('65',set()),
                 ('71',set()),
                 ('81',set()),
-                ('82',set()),
-                ('91',set())])
+                ('82',set())])
 
 fail_dict = dict([('10',set()),
                 ('11',set()),
@@ -169,8 +166,7 @@ fail_dict = dict([('10',set()),
                 ('65',set()),
                 ('71',set()),
                 ('81',set()),
-                ('82',set()),
-                ('91',set())])
+                ('82',set())])
 
 db_down_dict = dict([('10',set()),
                 ('11',set()),
@@ -206,8 +202,7 @@ db_down_dict = dict([('10',set()),
                 ('65',set()),
                 ('71',set()),
                 ('81',set()),
-                ('82',set()),
-                ('91',set())])
+                ('82',set())])
 
 db_update_dict = dict([('10',set()),
                 ('11',set()),
@@ -243,8 +238,7 @@ db_update_dict = dict([('10',set()),
                 ('65',set()),
                 ('71',set()),
                 ('81',set()),
-                ('82',set()),
-                ('91',set())])
+                ('82',set())])
 
 db_except_dict = dict([('10',set()),
                 ('11',set()),
@@ -280,10 +274,7 @@ db_except_dict = dict([('10',set()),
                 ('65',set()),
                 ('71',set()),
                 ('81',set()),
-                ('82',set()),
-                ('91',set())])
-
-
+                ('82',set())])
 
 # reqst = requests.Session()
 # reqst.headers.update({'Accept': 'text/html, application/xhtml+xml, */*',
@@ -323,10 +314,16 @@ def dump_json_to_success_or_fail_file(abs_json_path, success_file_path, fail_fil
 				if key.isdigit():
 					if one_enter_dict[key]:
 						success_file.write(line)
-						success_dict[key[:2]].add(key.strip())
+                        try:
+                            success_dict[key[:2]].add(key.strip())
+                        except KeyError as e:
+                            pass
 					else:
 						fail_file.write(line)
-						fail_dict[key[:2]].add(key.strip())
+                        try:
+                            fail_dict[key[:2]].add(key.strip())
+                        except KeyError as e:
+                            pass
 	success_file.close()
 	fail_file.close()
 	pass
@@ -340,7 +337,10 @@ def get_total_dict_from_db():
 		for result in results:
 			# print result
 			if result[0]:
-				db_total_dict[result[0][:2]].add(result[0].strip())
+                try:
+				    db_total_dict[result[0][:2]].add(result[0].strip())
+                except KeyError as e:
+                    pass
 		cur.close()
 		conn.close()
 	except MySQLdb.Error, e:
@@ -355,7 +355,10 @@ def get_down_dict_from_db():
 		for result in results:
 			# print result
 			if result[0]:
-				db_down_dict[result[0][:2]].add(result[0].strip())
+                try:
+				    db_down_dict[result[0][:2]].add(result[0].strip())
+                except KeyError as e:
+                    pass
 		cur.close()
 		conn.close()
 	except MySQLdb.Error, e:
@@ -373,20 +376,26 @@ def get_update_dict_from_db(yesterday):
             for result in results:
                 # print result
                 if result[0]:
-                    db_update_dict[result[0][:2]].add(result[0].strip())
+                    try:
+                        db_update_dict[result[0][:2]].add(result[0].strip())
+                    except KeyError as e:
+                        pass
         cur.close()
         conn.close()
     except MySQLdb.Error, e:
         print 'Mysql error %d:%s' %(e.args[0], e.args[1])
 
 def get_except_dict_from_db(yesterday):
+    count_except = 0
+    count_clawer = 0
     try:
         conn = MySQLdb.connect(host='10.100.80.50', user='cacti', passwd='cacti', db='clawer', port=3306)
         cur = conn.cursor()
         for days in yesterday:
             sql = 'select t.uri from  clawer_clawertask as t, clawer_clawerdownloadlog as l where  t.id=l.task_id and t.status=3 and t.clawer_id=7 and  l.add_datetime like \"%s %%\"' % days
+            sql2 = 'select t.uri from  clawer_clawertask as t, clawer_clawerdownloadlog as l where  t.id=l.task_id and t.status=2 and t.clawer_id=7 and  l.add_datetime like \"%s %%\"' % day
             print sql
-            count = cur.execute(sql)
+            count_except += cur.execute(sql)
             print count
             results = cur.fetchall()
             for result in results:
@@ -395,13 +404,15 @@ def get_except_dict_from_db(yesterday):
                     db_except_dict[num[:2]].add(num.strip())
                 except:
                     pass
+            count_clawer += cur.execute(sql2)
         cur.close()
         conn.close()
     except MySQLdb.Error, e:
         print 'Mysql error %d:%s' %(e.args[0], e.args[1])
+    return count_except, count_clawer
     pass
 
-def alanysis_data():
+def alanysis_data(count_except, count_clawer):
     total_enterprise_num = 0
     total_clawer_not_none = 0
     total_clawer_is_none = 0
@@ -462,7 +473,7 @@ def alanysis_data():
         total_clawer_is_none += len(fail_dict[key])
         total_clawer_num += (len(success_dict[key]) + len(fail_dict[key]))
         total_clawer_except_num += len(db_except_dict[key])
-        total_not_clawer_num += (len(db_total_dict[key])-len(success_dict[key]))-len(fail_dict[key])
+        total_not_clawer_num += (len(db_total_dict[key])-len(success_dict[key]))-len(fail_dict[key])-len(db_except_dict[key])
         total_update_db_num += len(db_update_dict[key])
         total_not_update_db_num += len(success_dict[key]) + len(fail_dict[key]) - len(db_update_dict[key])
         total_come_in_db_num += len(db_down_dict[key])
@@ -471,13 +482,13 @@ def alanysis_data():
         total_clawer_and_come_in_db_num += len( (db_down_dict[key] & (success_dict[key] | fail_dict[key])))
 
     reportfile.write('\n')
-    reportfile.write('%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s' % (u'总计', 
+    reportfile.write('%-15s,%-15s,%-15s,%-15s,%-15s,%-15s(%s),%-15s(%s),%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s' % (u'总计', 
                                                                                                                 len(db_total_dict.keys()), 
                                                                                                                 total_enterprise_num, 
                                                                                                                 total_clawer_not_none,
                                                                                                                 total_clawer_is_none, 
-                                                                                                                total_clawer_num,
-                                                                                                                total_clawer_except_num, 
+                                                                                                                total_clawer_num, count_clawer,
+                                                                                                                total_clawer_except_num, count_except,
                                                                                                                 total_not_clawer_num, 
                                                                                                                 u'未', 
                                                                                                                 total_update_db_num,
@@ -568,9 +579,9 @@ if __name__ == '__main__':
     else:
         yesterday = [yesterday]
     get_update_dict_from_db(yesterday)
-    get_except_dict_from_db(yesterday)
+    count_except, count_clawer = get_except_dict_from_db(yesterday)
 
-    alanysis_data()
+    alanysis_data(count_except, count_clawer)
 
     
 	
