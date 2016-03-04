@@ -311,7 +311,7 @@ def dump_json_to_success_or_fail_file(abs_json_path, success_file_path, fail_fil
 		for line in f.readlines():
 			one_enter_dict = json.loads(line)
 			for key, value in one_enter_dict.items():
-				if key.isdigit():
+				if key.isdigit() and key[:2]!='91':
 					if one_enter_dict[key]:
 						success_file.write(line)
 						success_dict[key[:2]].add(key.strip())
@@ -330,7 +330,7 @@ def get_total_dict_from_db():
 		results = cur.fetchall()
 		for result in results:
 			# print result
-			if result[0]:
+			if result[0] and result[0][:2] != '91':
 				db_total_dict[result[0][:2]].add(result[0].strip())
                 
 		cur.close()
@@ -346,7 +346,7 @@ def get_down_dict_from_db():
 		results = cur.fetchall()
 		for result in results:
 			# print result
-			if result[0]:
+			if result[0] and result[0][:2] != '91':
 				db_down_dict[result[0][:2]].add(result[0].strip())
                 
 		cur.close()
@@ -365,7 +365,7 @@ def get_update_dict_from_db(yesterday):
             results = cur.fetchall()
             for result in results:
                 # print result
-                if result[0]:
+                if result[0] and result[0][:2] != '91':
                     try:
                         db_update_dict[result[0][:2]].add(result[0].strip())
                     except KeyError as e:
