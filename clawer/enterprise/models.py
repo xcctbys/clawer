@@ -110,163 +110,163 @@ class Enterprise(models.Model):
         return result
 
 
-# class Operation(object):
-#     def __init__(self, data):
-#         self.data = data
-#         self.register_num = data.get('register_num')
-#         self.models = self.get_structured_models()
-#
-#     def write_db_by_dict(self):
-#         models = self.models
-#         logger = logging.getLogger(__name__)
-#
-#         if self.is_company_in_db():
-#             logger.info("Add " + self.register_num.encode('utf-8'))
-#             for model in models:
-#                 self.insert(model)
-#         else:
-#             logger.info("Update " + self.register_num.encode('utf-8'))
-#             for model in models:
-#                 self.update(model)
-#
-#     def is_company_in_db(self):
-#         register_num = self.register_num
-#
-#         query = Basic.objects.filter(register_num=register_num)
-#
-#         return not query
-#
-#     def insert(self, model):
-#         data = self.data
-#         special_tables = Configs.special_tables
-#         fields = model._meta.get_all_field_names()
-#         name = model._meta.db_table
-#         register_num = self.register_num
-#
-#         try:
-#             enter_id = Basic.objects.get(register_num=register_num).id
-#         except:
-#             enter_id = Configs.DEFAULT_ENTER_ID
-#
-#         try:
-#             version = Basic.objects.get(register_num=register_num).version
-#         except:
-#             version = Configs.DEFAULT_VERSION
-#
-#         if name in special_tables:
-#             self.insert_one_row(model, name, fields, enter_id, version, {})
-#         elif name in data:
-#             for row in data[name]:
-#                 self.insert_one_row(model, name, fields, enter_id, version, row)
-#
-#     def update(self, model):
-#         data = self.data
-#         basic = Configs.special_tables[0]
-#         fields = model._meta.get_all_field_names()
-#         name = model._meta.db_table
-#         register_num = data.get('register_num')
-#         version = Basic.objects.get(register_num=register_num).version
-#         enter_id = Basic.objects.get(register_num=register_num).id
-#
-#         if name == basic:
-#             query = Basic.objects.get(register_num=register_num)
-#             for field in fields:
-#                 value = data.get(field)
-#                 if value is not None:
-#                     setattr(query, field, value)
-#             query.version = version + 1
-#             query.timestamp = timezone.now()
-#             query.save()
-#
-#         else:
-#             self.update_rows(model, name, fields, enter_id, version)
-#
-#     def update_rows(self, model, name, fields, enter_id, version):
-#         data = self.data
-#         clear = Configs.special_tables[1]
-#
-#         model.objects.filter(enter_id=enter_id,
-#                              invalidation=False).update(invalidation=True)
-#
-#         if data.get(name) is not None:
-#             for row in data[name]:
-#                 self.insert_one_row(model, name, fields, enter_id, version, row)
-#         elif name == clear:
-#             self.insert_one_row(model, name, fields, enter_id, version, {})
-#         else:
-#             pass
-#
-#     def insert_one_row(self, model, name, fields, enter_id, version, row):
-#         data = self.data
-#         query = model()
-#         is_all_fields_null = True
-#
-#         for field in fields:
-#             if row is not None:
-#                 value = row.get(field) or data.get(field)
-#             else:
-#                 value = data.get(field)
-#
-#             if value is not None and value != u"":
-#                 setattr(query, field, value)
-#
-#                 if field != "year_report_id" and field != "enter_id":
-#                     is_all_fields_null = False
-#
-#         query.enter_id = enter_id
-#         query.version = version
-#         query.invalidation = False
-#         if not is_all_fields_null:
-#             query.save()
-#         else:
-#             del query
-#
-#     def get_structured_models(self):
-#         models = (
-#             Basic,
-#             IndustryCommerceAdministrativePenalty,
-#             IndustryCommerceBranch,
-#             IndustryCommerceChange,
-#             IndustryCommerceCheck,
-#             IndustryCommerceClear,
-#             IndustryCommerceDetailGuarantee,
-#             IndustryCommerceException,
-#             IndustryCommerceIllegal,
-#             IndustryCommerceMainperson,
-#             IndustryCommerceMortgage,
-#             IndustryCommerceMortgageDetailChange,
-#             IndustryCommerceMortgageDetailGuarantee,
-#             IndustryCommerceMortgageGuaranty,
-#             IndustryCommerceRevoke,
-#             IndustryCommerceShareholders,
-#             IndustryCommerceSharepledge,
-#             IndustryMortgageDetailMortgagee,
-#             EnterAdministrativeLicense,
-#             EnterAdministrativePenalty,
-#             EnterAnnualReport,
-#             EnterIntellectualPropertyPledge,
-#             EnterModification,
-#             EnterSharechange,
-#             EnterShareholder,
-#             JudicialShareFreeze,
-#             JudicialShareholderChange,
-#             OtherAdministrativeChange,
-#             OtherAdministrativeLicense,
-#             OtherAdministrativePenalty,
-#             OtherProductionSecurity,
-#             YearReportAssets,
-#             YearReportBasic,
-#             YearReportCorrect,
-#             YearReportInvestment,
-#             YearReportModification,
-#             YearReportOnline,
-#             YearReportSharechange,
-#             YearReportShareholder,
-#             YearReportWarrandice,
-#         )
-#
-#         return models
-#
+class Operation(object):
+    def __init__(self, data):
+        self.data = data
+        self.register_num = data.get('register_num')
+        self.models = self.get_structured_models()
+
+    def write_db_by_dict(self):
+        models = self.models
+        logger = logging.getLogger(__name__)
+
+        if self.is_company_in_db():
+            logger.info("Add " + self.register_num.encode('utf-8'))
+            for model in models:
+                self.insert(model)
+        else:
+            logger.info("Update " + self.register_num.encode('utf-8'))
+            for model in models:
+                self.update(model)
+
+    def is_company_in_db(self):
+        register_num = self.register_num
+
+        query = Basic.objects.filter(register_num=register_num)
+
+        return not query
+
+    def insert(self, model):
+        data = self.data
+        special_tables = Configs.special_tables
+        fields = model._meta.get_all_field_names()
+        name = model._meta.db_table
+        register_num = self.register_num
+
+        try:
+            enter_id = Basic.objects.get(register_num=register_num).id
+        except:
+            enter_id = Configs.DEFAULT_ENTER_ID
+
+        try:
+            version = Basic.objects.get(register_num=register_num).version
+        except:
+            version = Configs.DEFAULT_VERSION
+
+        if name in special_tables:
+            self.insert_one_row(model, name, fields, enter_id, version, {})
+        elif name in data:
+            for row in data[name]:
+                self.insert_one_row(model, name, fields, enter_id, version, row)
+
+    def update(self, model):
+        data = self.data
+        basic = Configs.special_tables[0]
+        fields = model._meta.get_all_field_names()
+        name = model._meta.db_table
+        register_num = data.get('register_num')
+        version = Basic.objects.get(register_num=register_num).version
+        enter_id = Basic.objects.get(register_num=register_num).id
+
+        if name == basic:
+            query = Basic.objects.get(register_num=register_num)
+            for field in fields:
+                value = data.get(field)
+                if value is not None:
+                    setattr(query, field, value)
+            query.version = version + 1
+            query.timestamp = timezone.now()
+            query.save()
+
+        else:
+            self.update_rows(model, name, fields, enter_id, version)
+
+    def update_rows(self, model, name, fields, enter_id, version):
+        data = self.data
+        clear = Configs.special_tables[1]
+
+        model.objects.filter(enter_id=enter_id,
+                             invalidation=False).update(invalidation=True)
+
+        if data.get(name) is not None:
+            for row in data[name]:
+                self.insert_one_row(model, name, fields, enter_id, version, row)
+        elif name == clear:
+            self.insert_one_row(model, name, fields, enter_id, version, {})
+        else:
+            pass
+
+    def insert_one_row(self, model, name, fields, enter_id, version, row):
+        data = self.data
+        query = model()
+        is_all_fields_null = True
+
+        for field in fields:
+            if row is not None:
+                value = row.get(field) or data.get(field)
+            else:
+                value = data.get(field)
+
+            if value is not None and value != u"":
+                setattr(query, field, value)
+
+                if field != "year_report_id" and field != "enter_id":
+                    is_all_fields_null = False
+
+        query.enter_id = enter_id
+        query.version = version
+        query.invalidation = False
+        if not is_all_fields_null:
+            query.save()
+        else:
+            del query
+
+    def get_structured_models(self):
+        models = (
+            Basic,
+            IndustryCommerceAdminiPenalty,
+            IndustryCommerceBranch,
+            IndustryCommerceChange,
+            IndustryCommerceCheck,
+            IndustryCommerceClear,
+            IndustryCommerceDetailGuarantee,
+            IndustryCommerceException,
+            IndustryCommerceIllegal,
+            IndustryCommerceMainperson,
+            IndustryCommerceMortgage,
+            IndustryCommerceMortgageChange,
+            IndustryCommerceMortgageGuarantee,
+            IndustryCommerceMortgageGuaranty,
+            IndustryCommerceRevoke,
+            IndustryCommerceShareholders,
+            IndustryCommerceSharepledge,
+            IndustryMortgageDetailMortgagee,
+            EnterAdministrativeLicense,
+            EnterAdministrativePenalty,
+            EnterAnnualReport,
+            EnterIntellectualPropertyPledge,
+            EnterModification,
+            EnterSharechange,
+            EnterShareholder,
+            JudicialShareFreeze,
+            JudicialShareholderChange,
+            OtherAdministrativeChange,
+            OtherAdministrativeLicense,
+            OtherAdministrativePenalty,
+            OtherProductionSecurity,
+            YearReportAssets,
+            YearReportBasic,
+            YearReportCorrect,
+            YearReportInvestment,
+            YearReportModification,
+            YearReportOnline,
+            YearReportSharechange,
+            YearReportShareholder,
+            YearReportWarrandice,
+        )
+
+        return models
+
 
 class Basic(models.Model):
     """公司基本类
