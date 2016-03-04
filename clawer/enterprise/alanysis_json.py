@@ -560,13 +560,13 @@ def alanysis_except(count_except):
     except MySQLdb.Error, e:
         print 'Mysql error %d:%s' %(e.args[0], e.args[1])
     for key, value in reason_dict.items():
-        value = value.sort()
+        values = value.sort()
         try:
-            count = len(value)
+            count = len(values)
         except:
             count = 0.0
         bit = str((count+0.1) / float(count_except))[:4]
-        json_dump_to_file('./reason.json', {key:value, 'count':count, 'bit':bit})
+        json_dump_to_file('./reason.json', {key:values, 'count':count, 'bit':bit})
     pass
 
 def make_dir(path):
