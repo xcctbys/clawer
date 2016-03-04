@@ -390,13 +390,7 @@ def get_except_dict_from_db(yesterday):
             print count
             results = cur.fetchall()
             for result in results:
-                num = result[0][-2:-17:-1]
-                num = num[::-1]
-                if num[:2]=='91':
-                    num = result[0][-2:-20:-1]
-                    num = num[::-1]
-                # print result
-                print num[:2],num.strip()
+                num = result[0].strip().split('/')[-2]
                 try:
                     db_except_dict[num[:2]].add(num.strip())
                 except:
