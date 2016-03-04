@@ -383,10 +383,10 @@ def get_except_dict_from_db(yesterday):
         cur = conn.cursor()
         for days in yesterday:
             sql = 'select t.uri from  clawer_clawertask as t, clawer_clawerdownloadlog as l where  t.id=l.task_id and t.status=3 and t.clawer_id=7 and  l.add_datetime like \"%s %%\"' % days
-            sql2 = 'select t.uri from  clawer_clawertask as t, clawer_clawerdownloadlog as l where  t.id=l.task_id and t.status=2 and t.clawer_id=7 and  l.add_datetime like \"%s %%\"' % day
+            sql2 = 'select t.uri from  clawer_clawertask as t, clawer_clawerdownloadlog as l where  t.id=l.task_id and t.status=2 and t.clawer_id=7 and  l.add_datetime like \"%s %%\"' % days
             print sql
             count_except += cur.execute(sql)
-            print count
+            # print count_except
             results = cur.fetchall()
             for result in results:
                 num = result[0].strip().split('/')[-2]
@@ -472,7 +472,7 @@ def alanysis_data(count_except, count_clawer):
         total_clawer_and_come_in_db_num += len( (db_down_dict[key] & (success_dict[key] | fail_dict[key])))
 
     reportfile.write('\n')
-    reportfile.write('%-15s,%-15s,%-15s,%-15s,%-15s,%-15s(%s),%-15s(%s),%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s' % (u'总计', 
+    reportfile.write('%-15s,%-15s,%-15s,%-15s,%-15s,%s(%s),%s(%s),%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s' % (u'总计', 
                                                                                                                 len(db_total_dict.keys()), 
                                                                                                                 total_enterprise_num, 
                                                                                                                 total_clawer_not_none,
