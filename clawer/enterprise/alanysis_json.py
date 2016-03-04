@@ -384,7 +384,7 @@ def get_except_dict_from_db(yesterday):
         conn = MySQLdb.connect(host='10.100.80.50', user='cacti', passwd='cacti', db='clawer', port=3306)
         cur = conn.cursor()
         for days in yesterday:
-            sql = 'select t.uri from  clawer_clawertask as t, clawer_clawerdownloadlog as l where  t.status=3 and t.clawer_id=7 and t.id=l.task_id and l.add_datetime like \"%s ?\"' % days
+            sql = 'select t.uri from  clawer_clawertask as t, clawer_clawerdownloadlog as l where  t.id=l.task_id and t.status=3 and t.clawer_id=7 and  l.add_datetime like \"%s ?\"' % days
             print sql
             count = cur.execute(sql)
             results = cur.fetchall()
