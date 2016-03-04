@@ -275,6 +275,7 @@ db_except_dict = dict([('10',set()),
                 ('71',set()),
                 ('81',set()),
                 ('82',set())])
+reason_dict = {}
 
 # reqst = requests.Session()
 # reqst.headers.update({'Accept': 'text/html, application/xhtml+xml, */*',
@@ -529,6 +530,40 @@ def alanysis_data(count_except, count_clawer):
     no_come_in_db_data_csv.close()
     have_come_in_db_data_csv.close()
 
+def json_dump_to_file(path, json_dict):
+    write_type = 'wb'
+    if os.path.exists(path):
+        write_type = 'a'
+    with codecs.open(path, write_type, 'utf-8') as f:
+        f.write(json.dumps(json_dict, ensure_ascii=False)+'\n')
+
+def alanysis_except(count_except):
+    try:
+        conn = MySQLdb.connect(host='10.100.80.50', user='cacti', passwd='cacti', db='clawer', port=3306)
+        cur = conn.cursor()
+        for days in yesterday:
+            sql = 'select t.uri from  clawer_clawertask as t, clawer_clawerdownloadlog as l where t.id=l.task_id and l.status=2 and t.clawer_id=7 and  l.add_datetime like \"%s %%\"' % days
+            sql = 'select l.failed_reason, t.uri, l.add_datetime   from  clawer_clawertask as t, clawer_clawerdownloadlog as l where t.id=l.task_id and l.status=1 and t.clawer_id=7 and l.add_datetime like "%s %%"' % days
+            count = cur.execute(sql)
+            results = cur.fetchall()
+            for result in results:
+                num = result[0].strip().split('/')[-2]
+                if reason_dict.has_key(result[0].strip()):
+                    reason_dict[result[0].strip()].add(num)
+                else:
+                    reason_dict.setdefault(result[0].strip(), default=set())
+                    reason_dict[result[0].strip()].add(num)
+        cur.close()
+        conn.close()
+    except MySQLdb.Error, e:
+        print 'Mysql error %d:%s' %(e.args[0], e.args[1])
+    for key, value in reason_dict.items():
+        value = list(value).sort()
+        count = len(value)
+        bit = count / float(count_except)
+        json_dump_to_file('reason.json', {key:value, 'count':count, 'bit':bit})
+    pass
+
 def make_dir(path):
     try:
         os.makedirs(path)
@@ -572,6 +607,7 @@ if __name__ == '__main__':
     count_except, count_clawer = get_except_dict_from_db(yesterday)
 
     alanysis_data(count_except, count_clawer)
+    alanysis_except(count_except)
 
     
 	
