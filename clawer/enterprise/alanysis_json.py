@@ -538,6 +538,7 @@ def json_dump_to_file(path, json_dict):
         f.write(json.dumps(json_dict, ensure_ascii=False)+'\n')
 
 def alanysis_except(count_except):
+    reason_dict = {}
     try:
         conn = MySQLdb.connect(host='10.100.80.50', user='cacti', passwd='cacti', db='clawer', port=3306)
         cur = conn.cursor()
@@ -549,7 +550,7 @@ def alanysis_except(count_except):
             for result in results:
                 num = result[1].strip().split('/')[-2]
                 print num
-                if reason_dict.has_key(result[0].strip()):
+                if reason_dict.has_key(result[0].strip()) is True:
                     reason_dict[result[0].strip()].add(num)
                 else:
                     reason_dict[result[0].strip()] = set()
@@ -564,7 +565,7 @@ def alanysis_except(count_except):
             count = len(value)
         except:
             count = 0.0
-        bit = (count+0.1) / float(count_except)
+        bit = str((count+0.1) / float(count_except))[:4]
         json_dump_to_file('./reason.json', {key:value, 'count':count, 'bit':bit})
     pass
 
