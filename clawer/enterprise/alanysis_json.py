@@ -312,18 +312,15 @@ def dump_json_to_success_or_fail_file(abs_json_path, success_file_path, fail_fil
 			one_enter_dict = json.loads(line)
 			for key, value in one_enter_dict.items():
 				if key.isdigit():
-					if one_enter_dict[key]:
-						success_file.write(line)
-                        try:
+                    try:
+    					if one_enter_dict[key]:
+    						success_file.write(line)
                             success_dict[key[:2]].add(key.strip())
-                        except KeyError as e:
-                            pass
-					else:
-						fail_file.write(line)
-                        try:
+                        else:
+    						fail_file.write(line)
                             fail_dict[key[:2]].add(key.strip())
-                        except KeyError as e:
-                            pass
+                    except KeyError as e:
+                        pass
 	success_file.close()
 	fail_file.close()
 	pass
