@@ -551,14 +551,14 @@ def alanysis_except(count_except):
                 if reason_dict.has_key(result[0].strip()):
                     reason_dict[result[0].strip()].add(num)
                 else:
-                    reason_dict.setdefault(result[0].strip(), default=set())
+                    reason_dict.setdefault(result[0].strip(), default=list())
                     reason_dict[result[0].strip()].add(num)
         cur.close()
         conn.close()
     except MySQLdb.Error, e:
         print 'Mysql error %d:%s' %(e.args[0], e.args[1])
     for key, value in reason_dict.items():
-        value = list(value).sort()
+        value = list(set(value)).sort()
         count = len(value)
         bit = count / float(count_except)
         json_dump_to_file('./reason.json', {key:value, 'count':count, 'bit':bit})
