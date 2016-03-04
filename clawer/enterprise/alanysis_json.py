@@ -418,7 +418,7 @@ def alanysis_data():
     total_clawer_and_come_in_db_num = 0
 
     reportfile = codecs.open('report.csv', 'wb', 'utf8')
-    reportfile.write('%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s' %  (u'代号', 
+    reportfile.write('%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s' %  (u'代号', 
                                                                                                                 u'省份', 
                                                                                                                 u'总共', 
                                                                                                                 u'爬取非空', 
@@ -440,7 +440,7 @@ def alanysis_data():
         x = str( (len(success_dict[key]) + len(fail_dict[key])) / float(len(db_total_dict[key])+0.1) )[:4]
         y = str( len(db_update_dict[key]) / float( len(success_dict[key]) + len(fail_dict[key])+0.1) )[:4]
         z = str(len(db_down_dict[key]) / float(len(db_total_dict[key])+0.1)) [:4]
-        reportfile.write( '%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s' % (key, \
+        reportfile.write( '%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s' % (key, \
                                                                                                                     trans_dict[key],\
                                                                                                                     len(db_total_dict[key]), \
                                                                                                                     len(success_dict[key]), \
@@ -473,7 +473,7 @@ def alanysis_data():
         total_clawer_and_come_in_db_num += len( (db_down_dict[key] & (success_dict[key] | fail_dict[key])))
 
     reportfile.write('\n')
-    reportfile.write('%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s' % (u'总计', 
+    reportfile.write('%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s' % (u'总计', 
                                                                                                                 len(db_total_dict.keys()), 
                                                                                                                 total_enterprise_num, 
                                                                                                                 total_clawer_not_none,
