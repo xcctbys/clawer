@@ -380,6 +380,27 @@ def get_update_dict_from_db(yesterday):
         print 'Mysql error %d:%s' %(e.args[0], e.args[1])
 
 def get_except_dict_from_db(yesterday):
+    try:
+        conn = MySQLdb.connect(host='10.100.80.50', user='cacti', passwd='cacti', db='clawer', port=3306)
+        cur = conn.cursor()
+        for days in yesterday:
+            sql = 'select t.uri from  clawer_clawertask as t, clawer_clawerdownloadlog as l where  t.status=3 and t.clawer_id=7 and t.id=l.task_id and l.add_datetime like \"%s ?\"' % days
+            print sql
+            count = cur.execute(sql)
+            results = cur.fetchall()
+            for result in results:
+                num = result[0][-2:-17:-1]
+                num = num[::-1]
+                if num[:2]=='91':
+                    num = result[0][-2:-20:-1]
+                    num = num[::-1]
+                # print result
+              
+                db_except_dict[num[0][:2]].add(num[0].strip())
+        cur.close()
+        conn.close()
+    except MySQLdb.Error, e:
+        print 'Mysql error %d:%s' %(e.args[0], e.args[1])
     pass
 
 def alanysis_data():
