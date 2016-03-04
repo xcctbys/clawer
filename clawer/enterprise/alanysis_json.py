@@ -472,14 +472,14 @@ def alanysis_data(count_except, count_clawer):
         total_clawer_and_come_in_db_num += len( (db_down_dict[key] & (success_dict[key] | fail_dict[key])))
 
     reportfile.write('\n')
-    reportfile.write('%-15s,%-15s,%-15s,%-15s,%-15s,%s(%s),%s(%s),%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s' % (u'总计', 
+    reportfile.write('%-15s,%-15s,%-15s,%-15s,%-15s,%s(%s),%s(%s),%s(%s),%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s' % (u'总计', 
                                                                                                                 len(db_total_dict.keys()), 
                                                                                                                 total_enterprise_num, 
                                                                                                                 total_clawer_not_none,
                                                                                                                 total_clawer_is_none, 
                                                                                                                 total_clawer_num, count_clawer,
                                                                                                                 total_clawer_except_num, count_except,
-                                                                                                                total_not_clawer_num, 
+                                                                                                                total_not_clawer_num, total_enterprise_num-count_clawer-count_except,
                                                                                                                 u'未', 
                                                                                                                 total_update_db_num,
                                                                                                                 total_not_update_db_num,
