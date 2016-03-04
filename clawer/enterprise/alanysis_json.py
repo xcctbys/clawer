@@ -561,7 +561,7 @@ def alanysis_except(count_except):
         value = list(value).sort()
         count = len(value)
         bit = count / float(count_except)
-        json_dump_to_file('reason.json', {key:value, 'count':count, 'bit':bit})
+        json_dump_to_file('./reason.json', {key:value, 'count':count, 'bit':bit})
     pass
 
 def make_dir(path):
