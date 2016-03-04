@@ -542,12 +542,13 @@ def alanysis_except(count_except):
         conn = MySQLdb.connect(host='10.100.80.50', user='cacti', passwd='cacti', db='clawer', port=3306)
         cur = conn.cursor()
         for days in yesterday:
-            sql = 'select t.uri from  clawer_clawertask as t, clawer_clawerdownloadlog as l where t.id=l.task_id and l.status=2 and t.clawer_id=7 and  l.add_datetime like \"%s %%\"' % days
+            # sql = 'select t.uri from  clawer_clawertask as t, clawer_clawerdownloadlog as l where t.id=l.task_id and l.status=2 and t.clawer_id=7 and  l.add_datetime like \"%s %%\"' % days
             sql = 'select l.failed_reason, t.uri, l.add_datetime   from  clawer_clawertask as t, clawer_clawerdownloadlog as l where t.id=l.task_id and l.status=1 and t.clawer_id=7 and l.add_datetime like "%s %%"' % days
             count = cur.execute(sql)
             results = cur.fetchall()
             for result in results:
-                num = result[0].strip().split('/')[-2]
+                num = result[1].strip().split('/')[-2]
+                print num
                 if reason_dict.has_key(result[0].strip()):
                     reason_dict[result[0].strip()].add(num)
                 else:
