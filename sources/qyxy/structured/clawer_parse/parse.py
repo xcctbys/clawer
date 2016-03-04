@@ -9,6 +9,7 @@ from configs.mappings import mappings
 from clawer_parse.models import Operation
 from django.conf import settings
 from clawer_parse.mail import SendMail
+from globalval import GlobalVal
 
 
 class Parse(object):
@@ -21,6 +22,7 @@ class Parse(object):
         self.prinvince = prinvince
         self.keys = configs.keys
         self.companies = {}
+        self.is_parse = True
 
         for line in companies:
             company = json.loads(line)
@@ -34,6 +36,8 @@ class Parse(object):
     def parse_companies(self):
         for register_num in self.companies:
             company = self.companies[register_num]
+            GlobalVal.count_all_plusone()
+            self.is_parse = True
 
             try:
                 self.parse_company(company, register_num)
@@ -62,18 +66,28 @@ class Parse(object):
 
     def parse_company(self, company={}, register_num=0):
         keys = self.keys
+        logger = settings.logger
 
         self.company_result = {}
 
         for key in company:
             if type(company[key]) == dict:
                 if key in keys and key in mappings:
-                    self.parse_dict(company[key], mappings[key])
+                    self.parse_dict(key, company[key], mappings[key])
             elif type(company[key] == list):
                 if key in keys and key in mappings and company[key] is not None:
                     self.parse_list(key, company[key], mappings[key])
+
+            if key == "ind_comm_pub_reg_basic":
+                if not company[key]:
+                    logger.info(register_num + "  The basic of the company is empty")
+                    self.is_parse = False
+                elif type(company[key]) == dict:
+                    if max(company[key].values()) == "":
+                        logger.info(register_num + " The basic of the company is empty")
+                        self.is_parse = False
         
-        if self.company_result:
+        if self.company_result and self.is_parse:
             if self.company_result.get('credit_code') is None:
                 self.company_result['credit_code'] = register_num
             if self.company_result.get('register_num') is None:
@@ -84,7 +98,7 @@ class Parse(object):
             self.write_to_mysql(self.company_result)
             self.company_result = {}
 
-    def parse_dict(self, dict_in_company, mapping):
+    def parse_dict(self, key, dict_in_company, mapping):
         for field in dict_in_company:
             if field in mapping:
                 self.company_result[mapping[field]] = dict_in_company[field]

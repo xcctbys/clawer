@@ -13,7 +13,7 @@ from datetime import date, timedelta, datetime
 from cStringIO import StringIO
 from configs import configs
 from clawer_parse import multiprocessing_logging
-from raven import Client
+from clawer_parse.globalval import GlobalVal
 
 
 class Command(BaseCommand):
@@ -21,18 +21,20 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         begin = time.time()
-        #p = Pool(processes=4)
         base_url = settings.JSONS_URL
-        # provinces = configs.PROVINCES
         suffix = ".json.gz"
         is_multiprocess = settings.MULTIPROCESS
         update_by = settings.UPDATE_BY
+
+        globalval = GlobalVal()
+        globalval.set_count_zero()
 
         config_logging()
         
         if is_first_run():
             if update_by == "hour":
                 first_update_by_hour(is_multiprocess, base_url, suffix)
+                #update_by_hour(is_multiprocess, base_url, suffix)
             else:
                 first_update_by_day(is_multiprocess, base_url, suffix)
 
@@ -42,9 +44,15 @@ class Command(BaseCommand):
         else:
             update_by_day(is_multiprocess, base_url, suffix)
 
+        count_parsed = globalval.get_count_parsed()
+        count_all = globalval.get_count_all()
+        count_update = globalval.get_count_update()
+
         end = time.time()
         secs = round(end - begin)
-        settings.logger.info("✅  Done! Cost " + str(secs) + "s ✅ ")
+        cost_time = "✅  Done! Cost " + str(secs) + "s ✅ " 
+        parse_information = " Done_num:" + str(count_parsed) +" All_num:" + str(count_all) + " Update_num:" + str(count_update)
+        settings.logger.info(cost_time + parse_information)
 
 
 def first_update_by_hour(is_multiprocess, base_url, suffix):
@@ -52,7 +60,7 @@ def first_update_by_hour(is_multiprocess, base_url, suffix):
    # suffix = ".json.gz"
 
     if not is_multiprocess:
-        diff = date.today() - date(2016,2,23)
+        diff = date.today() - date(2016,2,28)
         for dec_day in reversed(range(1, diff.days)):
             d = date.today() - timedelta(dec_day)
             d_str = d.strftime("%Y/%m/%d")

@@ -124,7 +124,7 @@ EMAIL_HOST_PASSWORD = 'Robot0023'
 
 ADMINS = (
     ('admin', 'yijiaw@princetechs.com'),
-    ('admin', 'ziyangw@princetechs.com'),
-    ('admin', 'haijunt@princetechs.com'),
-    ('admin', 'liliw@princetechs.com'),
+    # ('admin', 'ziyangw@princetechs.com'),
+    # ('admin', 'haijunt@princetechs.com'),
+    # ('admin', 'liliw@princetechs.com'),
 )

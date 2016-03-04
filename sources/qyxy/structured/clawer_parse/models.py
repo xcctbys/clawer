@@ -6,6 +6,7 @@ from django.conf import settings
 from configs import configs
 import sys
 import inspect
+from globalval import GlobalVal
 
 
 class Operation(object):
@@ -18,16 +19,20 @@ class Operation(object):
 
     def write_db_by_dict(self):
         models = self.models
-        logger = settings.logger
+        logger = settings.logger 
 
         if self.is_company_in_db():
+            GlobalVal.count_parsed_plusone()
             logger.info("Add " + self.register_num.encode('utf-8'))
             for model in models:
-                self.insert(model)
+                if model != GlobalVal:
+                    self.insert(model)
         else:
+            GlobalVal.count_update_plusone()
             logger.info("Update " + self.register_num.encode('utf-8'))
             for model in models:
-                self.update(model)
+                if model != GlobalVal:
+                    self.update(model)
 
     def is_company_in_db(self):
         register_num = self.register_num
@@ -55,6 +60,7 @@ class Operation(object):
 
         if name in special_tables:
             self.insert_one_row(model, name, fields, enter_id, version, {})
+
         elif name in data:
             for row in data[name]:
                 self.insert_one_row(model, name, fields, enter_id, version, row)
