@@ -314,11 +314,10 @@ def dump_json_to_success_or_fail_file(abs_json_path, success_file_path, fail_fil
 				if key.isdigit():
 					if one_enter_dict[key]:
 						success_file.write(line)
-                        success_dict[key[:2]].add(key.strip())
-                    else:
+						success_dict[key[:2]].add(key.strip())
+					else:
 						fail_file.write(line)
-                        fail_dict[key[:2]].add(key.strip())
-                    
+						fail_dict[key[:2]].add(key.strip())
 	success_file.close()
 	fail_file.close()
 	pass
@@ -332,10 +331,8 @@ def get_total_dict_from_db():
 		for result in results:
 			# print result
 			if result[0]:
-                try:
-				    db_total_dict[result[0][:2]].add(result[0].strip())
-                except KeyError as e:
-                    pass
+				db_total_dict[result[0][:2]].add(result[0].strip())
+                
 		cur.close()
 		conn.close()
 	except MySQLdb.Error, e:
@@ -350,10 +347,8 @@ def get_down_dict_from_db():
 		for result in results:
 			# print result
 			if result[0]:
-                try:
-				    db_down_dict[result[0][:2]].add(result[0].strip())
-                except KeyError as e:
-                    pass
+				db_down_dict[result[0][:2]].add(result[0].strip())
+                
 		cur.close()
 		conn.close()
 	except MySQLdb.Error, e:
