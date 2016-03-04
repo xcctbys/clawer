@@ -387,6 +387,7 @@ def get_except_dict_from_db(yesterday):
             sql = 'select t.uri from  clawer_clawertask as t, clawer_clawerdownloadlog as l where  t.id=l.task_id and t.status=3 and t.clawer_id=7 and  l.add_datetime like \"%s ?\"' % days
             print sql
             count = cur.execute(sql)
+            print count
             results = cur.fetchall()
             for result in results:
                 num = result[0][-2:-17:-1]
