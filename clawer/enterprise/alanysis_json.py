@@ -396,7 +396,7 @@ def get_except_dict_from_db(yesterday):
                     num = num[::-1]
                 # print result
               
-                db_except_dict[num[0][:2]].add(num[0].strip())
+                db_except_dict[num[:2]].add(num.strip())
         cur.close()
         conn.close()
     except MySQLdb.Error, e:
