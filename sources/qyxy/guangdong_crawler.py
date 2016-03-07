@@ -293,18 +293,20 @@ def read_ent_from_file(path):
     return lines
 
 
-
+"""
 if __name__ == "__main__":
     reload (sys)
     sys.setdefaultencoding('utf8')
     import run
     run.config_logging()
-    ents = read_ent_from_file("./enterprise_list/guangdong.txt")
+    # ents = read_ent_from_file("./enterprise_list/guangdong.txt")
     if not os.path.exists("./enterprise_crawler"):
         os.makedirs("./enterprise_crawler")
     guangdong = GuangdongClawer('./enterprise_crawler/Guangdong.json')
+    ents=[(1,2,'440000000000276')]
     for ent_str in ents:
         settings.logger.info(u'###################   Start to crawl enterprise with id %s   ###################\n' % ent_str[2])
         guangdong.run(ent_num = ent_str[2])
         settings.logger.info(u'###################   Enterprise with id Finished : %s   ###################\n' % ent_str[2])
 
+"""

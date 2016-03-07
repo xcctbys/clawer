@@ -111,8 +111,6 @@ class Enterprise(models.Model):
 
 
 class Operation(object):
-    "数据库多个表操作方法"
-
     def __init__(self, data):
         self.data = data
         self.register_num = data.get('register_num')
@@ -226,7 +224,7 @@ class Operation(object):
     def get_structured_models(self):
         models = (
             Basic,
-            IndustryCommerceAdministrativePenalty,
+            IndustryCommerceAdminiPenalty,
             IndustryCommerceBranch,
             IndustryCommerceChange,
             IndustryCommerceCheck,
@@ -236,8 +234,8 @@ class Operation(object):
             IndustryCommerceIllegal,
             IndustryCommerceMainperson,
             IndustryCommerceMortgage,
-            IndustryCommerceMortgageDetailChange,
-            IndustryCommerceMortgageDetailGuarantee,
+            IndustryCommerceMortgageChange,
+            IndustryCommerceMortgageGuarantee,
             IndustryCommerceMortgageGuaranty,
             IndustryCommerceRevoke,
             IndustryCommerceShareholders,
@@ -295,7 +293,7 @@ class Basic(models.Model):
         db_table = "basic"
 
 
-class IndustryCommerceAdministrativePenalty(models.Model):
+class IndustryCommerceAdminiPenalty(models.Model):
     """工商-行政处罚
     """
 
@@ -316,7 +314,7 @@ class IndustryCommerceAdministrativePenalty(models.Model):
     invalidation = models.BooleanField(default=False)
 
     class Meta:
-        db_table = "industry_commerce_administrative_penalty"
+        db_table = "industry_commerce_admini_penalty"
 
 
 class IndustryCommerceBranch(models.Model):
@@ -469,7 +467,7 @@ class IndustryCommerceMortgage(models.Model):
         db_table = "industry_commerce_mortgage"
 
 
-class IndustryCommerceMortgageDetailChange(models.Model):
+class IndustryCommerceMortgageChange(models.Model):
     """工商-抵押-详情-变更
     """
 
@@ -481,10 +479,10 @@ class IndustryCommerceMortgageDetailChange(models.Model):
     invalidation = models.BooleanField(default=False)
 
     class Meta:
-        db_table = "industry_commerce_mortgage_detail_change"
+        db_table = "industry_commerce_mortgage_change"
 
 
-class IndustryCommerceMortgageDetailGuarantee(models.Model):
+class IndustryCommerceMortgageGuarantee(models.Model):
     """工商-抵押-详情-抵押权人
     """
 
@@ -499,7 +497,7 @@ class IndustryCommerceMortgageDetailGuarantee(models.Model):
     invalidation = models.BooleanField(default=False)
 
     class Meta:
-        db_table = "industry_commerce_cortgage_detail_guarantee"
+        db_table = "industry_commerce_cortgage_guarantee"
 
 
 class IndustryCommerceMortgageGuaranty(models.Model):
@@ -1021,7 +1019,7 @@ class YearReportWarrandice(models.Model):
     """年报-对外提供保证担保
     """
 
-    creditor = models.CharField(max_length=200, null=True, blank=True)
+    creditor = models.CharField(max_length=100, null=True, blank=True)
     debtor = models.CharField(max_length=30, null=True, blank=True)
     main_creditor_right = models.CharField(max_length=30, null=True, blank=True)
     main_creditor_right_amount = models.FloatField(null=True)

@@ -407,10 +407,10 @@ class IndustryCommerceShareholders(models.Model):
     """工商-股东
     """
 
-    shareholder_type = models.CharField(max_length=20, null=True, blank=True)
+    shareholder_type = models.CharField(max_length=100, null=True, blank=True)
     shareholder_name = models.CharField(max_length=200, null=True, blank=True)
-    certificate_type = models.CharField(max_length=20, null=True, blank=True)
-    certificate_number = models.CharField(max_length=50, null=True, blank=True)
+    certificate_type = models.CharField(max_length=100, null=True, blank=True)
+    certificate_number = models.CharField(max_length=100, null=True, blank=True)
     subscription_amount = models.FloatField(null=True)
     paid_amount = models.FloatField(null=True)
     subscription_type = models.CharField(max_length=100, null=True, blank=True)

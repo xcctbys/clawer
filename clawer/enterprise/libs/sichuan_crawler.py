@@ -178,7 +178,7 @@ class SichuanCrawler(object):
 					tempdict[key] = value
 				onelist_dict = {}
 				for key, value in zip(detail_allths[3:], detail_alltds[3:]):
-					onelist_dict[key] = value
+					onelist_dict[key] = value.split('\n')[-1]
 				tempdict['list'] = [onelist_dict]
 				return {u'股东及出资信息':[tempdict]}
 				break

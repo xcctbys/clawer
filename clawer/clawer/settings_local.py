@@ -52,10 +52,11 @@ USE_TLS = True
 CAPTCHA_STORE = os.path.join(os.path.dirname(__file__), "captcha")
 
 
+"""
 RAVEN_CONFIG = {
     'dsn': '',
 }
-
+"""
 
 LOGGING = {
     'version': 1,
