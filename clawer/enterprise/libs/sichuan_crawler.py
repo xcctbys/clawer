@@ -194,7 +194,7 @@ class SichuanCrawler(object):
 			pass
 		allths = [th.get_text().strip() for th in table.find_all('th')[1:] if th.get_text()]
 		for i, th in enumerate(allths):
-			if th[:2] == '<<':
+			if th[:2] == '<<' or th[-2:] == '>>':
 				allths = allths[:i]
 				break
 		alltds = [td.get_text().strip() if td.get_text() else None for td in table.find_all('td')]
