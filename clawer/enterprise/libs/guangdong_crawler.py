@@ -20,7 +20,7 @@ from Guangdong2 import Guangdong2
 urls = {
     'host': 'http://gsxt.gdgs.gov.cn/aiccips/',
     'prefix_url_0':'http://www.szcredit.com.cn/web/GSZJGSPT/',
-    'prefix_url_1':'http://gsxt.gzaic.gov.cn:7001/search/',
+    'prefix_url_1':'http://gsxt.gzaic.gov.cn/search/',
     'page_search': 'http://gsxt.gdgs.gov.cn/aiccips/index',
     'page_Captcha': 'http://gsxt.gdgs.gov.cn/aiccips/verify.html',
     'page_showinfo': 'http://gsxt.gdgs.gov.cn/aiccips/CheckEntContext/showInfo.html',
@@ -32,14 +32,14 @@ headers = { 'Connetion': 'Keep-Alive',
             'Accept-Language': 'en-US, en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"}
 
-#HOSTS =["www.szcredit.com.cn", "gsxt.gzaic.gov.cn:7001", "gsxt.gdgs.gov.cn/aiccips"]
-HOSTS =["www.szcredit.com.cn", "gsxt.gzaic.gov.cn:7001", "gsxt.gdgs.gov.cn/aiccips"]
+#HOSTS =["www.szcredit.com.cn", "gsxt.gzaic.gov.cn", "gsxt.gdgs.gov.cn/aiccips"]
+HOSTS =["www.szcredit.com.cn", "gsxt.gzaic.gov.cn", "gsxt.gdgs.gov.cn/aiccips"]
 
 class GuangdongClawer(object):
 
     #多线程爬取时往最后的json文件中写时的加锁保护
     write_file_mutex = threading.Lock()
-    def __init__(self, json_restore_path):
+    def __init__(self, json_restore_path= None):
         self.html_search = None
         self.html_showInfo = None
         self.Captcha = None
@@ -112,7 +112,7 @@ class GuangdongClawer(object):
                     self.get_page_showInfo(url_showInfo, datas_showInfo)
                     break
                 else:
-                    logging.error(u"crack Captcha failed, the %d time(s)", count)
+                    logging.error(u"crack ID: %s Captcha failed, the %d time(s)"%(self.ent_num ,count))
                     if count > 15:
                         logging.error(u"ID: %s, crack Captcha failed after the %d times of trial" %( textfield,count))
                         break
@@ -165,7 +165,7 @@ class GuangdongClawer(object):
 
             for ent in self.ents:
                 #http://www.szcredit.com.cn/web/GSZJGSPT/ QyxyDetail.aspx?rid=acc04ef9ac0145ecb8c87dd5710c2f86
-                #http://gsxt.gzaic.gov.cn:7001/search/ search!entityShow?entityVo.pripid=440100100012003051400230
+                #http://gsxt.gzaic.gov.cn/search/ search!entityShow?entityVo.pripid=440100100012003051400230
                 #http://gsxt.gdgs.gov.cn/aiccips /GSpublicity/GSpublicityList.html?service=entInfo_+8/Z3ukM3JcWEfZvXVt+QiLPiIqemiEqqq4l7n9oAh/FI+v6zW/DL40+AV4Hja1y-dA+Hj5oOjXjQTgAhKSP1lA==
 
                 #HOSTS =["www.szcredit.com.cn", "121.8.227.200:7001", "gsxt.gdgs.gov.cn/aiccips"]
@@ -178,22 +178,21 @@ class GuangdongClawer(object):
 
                         #"www.szcredit.com.cn"
                         if i==0:
-                            logging.info(u"This enterprise is type 0")
-                            guangdong = Guangdong0()
+                            logging.error(u"This %s enterprise is type 0"%(self.ent_num))
+                            guangdong = Guangdong0(self.requests)
                             sub_json_dict =  guangdong.run(ent)
-                        #"gsxt.gzaic.gov.cn:7001" ==>>>121.8.227.200:7001
                         elif i==1:
-                            logging.info(u"This enterprise is type 1")
-                            guangdong = Guangdong1()
+                            logging.error(u"This %s enterprise is type 1"%(self.ent_num))
+                            guangdong = Guangdong1(self.requests)
                             sub_json_dict =  guangdong.run(ent)
                         # gsxt.gdgs.gov.cn/aiccips
                         elif i==2:
-                            logging.info(u"This enterprise is type 2")
-                            guangdong = Guangdong2()
+                            logging.error(u"This %s enterprise is type 2"%(self.ent_num))
+                            guangdong = Guangdong2(self.requests)
                             sub_json_dict = guangdong.run(ent)
                         break
                 else:
-                    logging.error(u"There are no response hosts:%s\n" % ent)
+                    logging.error(u"There are no response hosts:%s\n" % self.ent_num)
         except Exception as e:
             logging.error(u"An error ocurred when getting the main page, error: %s"% type(e))
             raise e
@@ -224,6 +223,7 @@ class GuangdongClawer(object):
         if not os.path.exists( self.dir_restore_path ):
             os.makedirs(self.dir_restore_path)
         json_dict = {}
+        self.ent_num = ent_num
         logging.error('crawl ID: %s\n'% ent_num)
         self.crawl_page_search(urls['page_search'])
         self.crawl_page_captcha(urls['page_Captcha'], urls['checkcode'], urls['page_showinfo'], ent_num)

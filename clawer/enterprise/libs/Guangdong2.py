@@ -30,12 +30,14 @@ headers = { 'Connetion': 'Keep-Alive',
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"}
 
 class Crawler(object):
-    def __init__(self, analysis):
+    def __init__(self, analysis, requests= None):
         self.analysis = analysis
-        self.requests = requests.Session()
-        self.requests.headers.update(headers)
+        if requests:
+            self.requests = requests
+        else:
+            self.requests = requests.Session()
+            self.requests.headers.update(headers)
         self.ents = []
-        self.main_host = ""
         self.json_dict={}
 
     # 爬取 工商公示信息 页面
@@ -821,9 +823,9 @@ def html_from_file(path):
 
 
 class Guangdong2(object):
-    def __init__(self):
+    def __init__(self, requests= None):
         self.analysis = Analyze()
-        self.crawler = Crawler(self.analysis)
+        self.crawler = Crawler(self.analysis, requests)
         self.analysis.crawler = self.crawler
 
     def run(self, url):

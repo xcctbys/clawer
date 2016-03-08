@@ -17,7 +17,6 @@ urls = {
     'host': 'http://gsxt.gdgs.gov.cn/aiccips/',
     'prefix_url':'http://www.szcredit.com.cn/web/GSZJGSPT/',
     'page_search': 'http://gsxt.gdgs.gov.cn/aiccips/index',
-    'page_Captcha': 'http://gsxt.gdgs.gov.cn/aiccips/verify.html',
     'page_showinfo': 'http://gsxt.gdgs.gov.cn/aiccips/CheckEntContext/showInfo.html',
     'checkcode':'http://gsxt.gdgs.gov.cn/aiccips/CheckEntContext/checkCode.html',
 }
@@ -27,15 +26,14 @@ headers = { 'Connetion': 'Keep-Alive',
             'Accept-Language': 'en-US, en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"}
 class Crawler(object):
-    def __init__(self, analysis):
+    def __init__(self, analysis, requests= None):
         self.analysis = analysis
-        self.html_search = None
-        self.html_showInfo = None
-        self.Captcha = None
-        self.requests = requests.Session()
-        self.requests.headers.update(headers)
+        if requests:
+            self.requests = requests
+        else:
+            self.requests = requests.Session()
+            self.requests.headers.update(headers)
         self.ents = []
-        self.main_host = ""
         self.json_dict={}
 
 
@@ -748,9 +746,9 @@ def html_from_file(path):
 
 
 class Guangdong0(object):
-    def __init__(self):
+    def __init__(self, requests= None):
         self.analysis = Analyze()
-        self.crawler = Crawler(self.analysis)
+        self.crawler = Crawler(self.analysis, requests)
         self.analysis.crawler = self.crawler
 
     def run(self, url):

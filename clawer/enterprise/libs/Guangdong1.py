@@ -15,9 +15,8 @@ from bs4 import BeautifulSoup
 urls = {
     'host': 'http://gsxt.gdgs.gov.cn/aiccips/',
     'prefix_url_0':'http://www.szcredit.com.cn/web/GSZJGSPT/',
-    'prefix_url_1':'http://gsxt.gzaic.gov.cn:7001/search/',
+    'prefix_url_1':'http://gsxt.gzaic.gov.cn/search/',
     'page_search': 'http://gsxt.gdgs.gov.cn/aiccips/index',
-    'page_Captcha': 'http://gsxt.gdgs.gov.cn/aiccips/verify.html',
     'page_showinfo': 'http://gsxt.gdgs.gov.cn/aiccips/CheckEntContext/showInfo.html',
     'checkcode':'http://gsxt.gdgs.gov.cn/aiccips/CheckEntContext/checkCode.html',
     'ind_comm_pub_reg_basic': 'http://gsxt.gdgs.gov.cn/aiccips/GSpublicity/GSpublicityList.html?service=entInfo',
@@ -30,14 +29,14 @@ headers = { 'Connetion': 'Keep-Alive',
             'Accept-Language': 'en-US, en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"}
 class Crawler(object):
-    def __init__(self, analysis):
+    def __init__(self, analysis, requests= None):
         self.analysis = analysis
-        self.html_search = None
-        self.html_showInfo = None
-        self.Captcha = None
-        #self.opener = self.make_opener()
-        self.requests = requests.Session()
-        self.requests.headers.update(headers)
+        if not requests:
+            self.requests = requests.Session()
+            self.requests.headers.update(headers)
+        else:
+            self.requests = requests
+
         self.ents = []
         self.json_dict={}
 
@@ -148,18 +147,7 @@ class Crawler(object):
 
     # main function
     def work(self):
-        """
-        ens = read_ent_from_file("./enterprise_list/guangdong1.txt")
-        #os.makedirs("./Guangdong")
-        for i, ent in enumerate(ens):
-            self.crawl_page_search(urls['page_search'])
-            self.crawl_page_captcha(urls['page_Captcha'], urls['checkcode'], urls['page_showinfo'], ent[2])
-            self.analyze_showInfo()
-            data = self.crawl_page_main()
-            self.json_dict[ent[0]] = data
-            json_dump_to_file("./guangdong/final_json_%s.json" % ent[0], self.json_dict)
-            logging.error(u"Now %s was finished\n"% ent[0])
-        """
+
         #url = "http://gsxt.gdgs.gov.cn/aiccips/GSpublicity/GSpublicityList.html?service=entInfo_06CAc+ibgylJZ6y3lp3JBNsJrQ1qA5gDU7qYIU/VOow9Am1tz4CcjiZg6BZzhZQU-QuOaBlqqlUykdKokb5yijg=="
         #东莞证券
         #url = "http://gsxt.gdgs.gov.cn/aiccips/GSpublicity/GSpublicityList.html?service=entInfo_06CAc+ibgylJZ6y3lp3JBNsJrQ1qA5gDU7qYIU/VOow9Am1tz4CcjiZg6BZzhZQU-QuOaBlqqlUykdKokb5yijg=="
@@ -170,13 +158,13 @@ class Crawler(object):
 
 #        datas = html_from_file('next.html')
         #self.analysis.parse_ent_pub_annual_report_page_2(datas, "_detail")
-        url = "http://gsxt.gzaic.gov.cn:7001/search/search!entityShow?entityVo.pripid=440100100012003051400230"
+        url = "http://gsxt.gzaic.gov.cn/search/search!entityShow?entityVo.pripid=440100100012003051400230"
         sub_json = self.crawl_ind_comm_pub_pages(url, 1, {'pripid': '440100100012003051400230'})
-        #url = "http://gsxt.gzaic.gov.cn:7001/search/search!enterpriseShow?entityVo.pripid=440100100012003051400230#"
+        #url = "http://gsxt.gzaic.gov.cn/search/search!enterpriseShow?entityVo.pripid=440100100012003051400230#"
         #sub_json = self.crawl_ent_pub_pages(url, 1)
-        #url = "http://gsxt.gzaic.gov.cn:7001/search/search!otherDepartShow?entityVo.pripid=440100100012003051400230"
+        #url = "http://gsxt.gzaic.gov.cn/search/search!otherDepartShow?entityVo.pripid=440100100012003051400230"
         #sub_json = self.crawl_other_dept_pub_pages(url, 1)
-        #url = "http://gsxt.gzaic.gov.cn:7001/search/search!judicialShow?entityVo.pripid=440100100012003051400230"
+        #url = "http://gsxt.gzaic.gov.cn/search/search!judicialShow?entityVo.pripid=440100100012003051400230"
         #sub_json = self.crawl_judical_assist_pub_pages(url, 1)
         #json_dump_to_file("json_dict.json", sub_json)
         """
@@ -191,13 +179,13 @@ class Crawler(object):
         sub_json_dict = {}
 
         pripid = ent[ent.index("pripid")+7: len(ent)]
-        url = "http://gsxt.gzaic.gov.cn:7001/search/search!entityShow?entityVo.pripid=" + pripid
+        url = "http://gsxt.gzaic.gov.cn/search/search!entityShow?entityVo.pripid=" + pripid
         sub_json_dict.update(self.crawl_ind_comm_pub_pages(url, {'pripid': pripid}))
-        url = "http://gsxt.gzaic.gov.cn:7001/search/search!enterpriseShow?entityVo.pripid="+ pripid
+        url = "http://gsxt.gzaic.gov.cn/search/search!enterpriseShow?entityVo.pripid="+ pripid
         sub_json_dict.update(self.crawl_ent_pub_pages(url))
-        url = "http://gsxt.gzaic.gov.cn:7001/search/search!otherDepartShow?entityVo.pripid=" + pripid
+        url = "http://gsxt.gzaic.gov.cn/search/search!otherDepartShow?entityVo.pripid=" + pripid
         sub_json_dict.update(self.crawl_other_dept_pub_pages(url))
-        url = "http://gsxt.gzaic.gov.cn:7001/search/search!judicialShow?entityVo.pripid=" + pripid
+        url = "http://gsxt.gzaic.gov.cn/search/search!judicialShow?entityVo.pripid=" + pripid
         sub_json_dict.update(self.crawl_judical_assist_pub_pages(url))
         return sub_json_dict
 
@@ -355,7 +343,7 @@ class Analyze(object):
             return columns
 
 
-    # 如果是第一种： http://gsxt.gzaic.gov.cn:7001/search/search!annalShow?annalVo.id=30307309
+    # 如果是第一种： http://gsxt.gzaic.gov.cn/search/search!annalShow?annalVo.id=30307309
     def parse_ent_pub_annual_report_page_1(self, base_page, page_type):
         page_data = {}
         soup = BeautifulSoup(base_page, 'html5lib')
@@ -454,10 +442,10 @@ class Analyze(object):
                 item_array = []
                 # 这里注意unicode编码
                 next_dicts = {
-                    u"主要人员信息" : "http://gsxt.gzaic.gov.cn:7001/search/search!staffListShow?entityVo.pageSize=10&entityVo.curPage=%d&entityVo.pripid=%s",
-                    u"分支机构信息":  "http://gsxt.gzaic.gov.cn:7001/search/search!branchListShow?_=1451527284000&entityVo.curPage=%d&entityVo.pripid=%s",
-                    u"出资人及出资信息": "http://gsxt.gzaic.gov.cn:7001/search/search!investorListShow?_=1451527307501&entityVo.curPage=%d&entityVo.pripid=%s",
-                    u"变更信息" : "http://gsxt.gzaic.gov.cn:7001/search/search!changeListShow?_=1451527321304&entityVo.curPage=%d&entityVo.pripid=%s",
+                    u"主要人员信息" : "http://gsxt.gzaic.gov.cn/search/search!staffListShow?entityVo.pageSize=10&entityVo.curPage=%d&entityVo.pripid=%s",
+                    u"分支机构信息":  "http://gsxt.gzaic.gov.cn/search/search!branchListShow?_=1451527284000&entityVo.curPage=%d&entityVo.pripid=%s",
+                    u"出资人及出资信息": "http://gsxt.gzaic.gov.cn/search/search!investorListShow?_=1451527307501&entityVo.curPage=%d&entityVo.pripid=%s",
+                    u"变更信息" : "http://gsxt.gzaic.gov.cn/search/search!changeListShow?_=1451527321304&entityVo.curPage=%d&entityVo.pripid=%s",
                 }
                 if next_dicts.has_key(table_name) and post_data :
                     url = next_dicts[table_name]%(1,  post_data['pripid'])
@@ -635,9 +623,9 @@ def html_from_file(path):
 
 
 class Guangdong1(object):
-    def __init__(self):
+    def __init__(self, requests):
         self.analysis = Analyze()
-        self.crawler = Crawler(self.analysis)
+        self.crawler = Crawler(self.analysis, requests)
         self.analysis.crawler = self.crawler
 
     def run(self, url):
