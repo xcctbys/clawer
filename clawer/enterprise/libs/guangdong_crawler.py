@@ -13,9 +13,9 @@ import codecs
 import threading
 from bs4 import BeautifulSoup
 from enterprise.libs.CaptchaRecognition import CaptchaRecognition
-from Guangdong0 import Guangdong0
-from Guangdong1 import Guangdong1
-from Guangdong2 import Guangdong2
+from .Guangdong0 import Guangdong0
+from .Guangdong1 import Guangdong1
+from .Guangdong2 import Guangdong2
 
 urls = {
     'host': 'http://gsxt.gdgs.gov.cn/aiccips/',
@@ -167,7 +167,6 @@ class GuangdongClawer(object):
                 #http://www.szcredit.com.cn/web/GSZJGSPT/ QyxyDetail.aspx?rid=acc04ef9ac0145ecb8c87dd5710c2f86
                 #http://gsxt.gzaic.gov.cn/search/ search!entityShow?entityVo.pripid=440100100012003051400230
                 #http://gsxt.gdgs.gov.cn/aiccips /GSpublicity/GSpublicityList.html?service=entInfo_+8/Z3ukM3JcWEfZvXVt+QiLPiIqemiEqqq4l7n9oAh/FI+v6zW/DL40+AV4Hja1y-dA+Hj5oOjXjQTgAhKSP1lA==
-
                 #HOSTS =["www.szcredit.com.cn", "121.8.227.200:7001", "gsxt.gdgs.gov.cn/aiccips"]
                 m = re.match('http', ent)
                 if m is None:
@@ -179,7 +178,7 @@ class GuangdongClawer(object):
                         #"www.szcredit.com.cn"
                         if i==0:
                             logging.error(u"This %s enterprise is type 0"%(self.ent_num))
-                            guangdong = Guangdong0(self.requests)
+                            guangdong = Guangdong0(self.requests, self.ent_num)
                             sub_json_dict =  guangdong.run(ent)
                         elif i==1:
                             logging.error(u"This %s enterprise is type 1"%(self.ent_num))
@@ -223,7 +222,7 @@ class GuangdongClawer(object):
         if not os.path.exists( self.dir_restore_path ):
             os.makedirs(self.dir_restore_path)
         json_dict = {}
-        self.ent_num = ent_num
+        self.ent_num = str(ent_num)
         logging.error('crawl ID: %s\n'% ent_num)
         self.crawl_page_search(urls['page_search'])
         self.crawl_page_captcha(urls['page_Captcha'], urls['checkcode'], urls['page_showinfo'], ent_num)

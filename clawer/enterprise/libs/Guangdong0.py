@@ -12,6 +12,8 @@ import json
 import urlparse
 import codecs
 from bs4 import BeautifulSoup
+import common_func as common_func
+import datetime
 
 urls = {
     'host': 'http://gsxt.gdgs.gov.cn/aiccips/',
@@ -26,10 +28,10 @@ headers = { 'Connetion': 'Keep-Alive',
             'Accept-Language': 'en-US, en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"}
 class Crawler(object):
-    def __init__(self, analysis, requests= None):
+    def __init__(self, analysis, req= None):
         self.analysis = analysis
-        if requests:
-            self.requests = requests
+        if req:
+            self.requests = req
         else:
             self.requests = requests.Session()
             self.requests.headers.update(headers)
@@ -55,9 +57,12 @@ class Crawler(object):
         sub_json_dict={}
         try:
             page = self.crawl_page_by_url(url)['page']
+            common_func.save_to_html(self.path, 'ind_comm_pub.html', page)
             #html_to_file("pub.html", page)
             page_xingzhengchufa = self.crawl_xingzhengchufa_page(url, page)
+            common_func.save_to_html(self.path, 'xingzhengchufa.html', page_xingzhengchufa)
             page_biangengxinxi = self.crawl_biangengxinxi_page(url, page_xingzhengchufa)
+            common_func.save_to_html(self.path, 'biangengxinxi.html', page_biangengxinxi)
 
             dict_jiben = self.analysis.parse_page(page, 'jibenxinxi')  #   基本信息, 投资人信息
             sub_json_dict['ind_comm_pub_reg_shareholder'] = dict_jiben[u'投资人信息'] if dict_jiben.has_key(u'投资人信息') else []
@@ -82,7 +87,7 @@ class Crawler(object):
             xzcf = self.analysis.parse_page(page_xingzhengchufa, 'xingzhengchufa')
             sub_json_dict['ind_comm_pub_administration_sanction'] = xzcf[u'行政处罚信息'] if xzcf.has_key(u'行政处罚信息') else []
         except Exception as e:
-            logging.error(u"An error ocurred in crawl_ind_comm_pub_pages: %s"% type(e))
+            logging.error(u"An error ocurred in crawl_ind_comm_pub_pages: %s, ID= %s"% (type(e), self.ent_num))
             raise e
         finally:
             return sub_json_dict
@@ -94,6 +99,7 @@ class Crawler(object):
         sub_json_dict = {}
         try:
             page = self.crawl_page_by_url(url)['page']
+            common_func.save_to_html(self.path, 'ent_pub_pages.html', page)
             p = self.analysis.parse_page(page, 'qiyenianbao')
             sub_json_dict['ent_pub_ent_annual_report'] = p[u'企业年报'] if p.has_key(u'企业年报') else []
             p = self.analysis.parse_page(page, 'touziren')
@@ -108,7 +114,7 @@ class Crawler(object):
             p = self.analysis.parse_page(page, 'zhishichanquan')
             sub_json_dict['ent_pub_knowledge_property'] = p[u'知识产权出质登记信息'] if p.has_key(u'知识产权出质登记信息') else []
         except Exception as e:
-            logging.error(u"An error ocurred in crawl_ent_pub_pages: %s"% type(e))
+            logging.error(u"An error ocurred in crawl_ent_pub_pages: %s, ID= %s"% (type(e), self.ent_num))
             raise e
         finally:
             return sub_json_dict
@@ -118,13 +124,14 @@ class Crawler(object):
         sub_json_dict={}
         try:
             page = self.crawl_page_by_url(url)['page']
+            common_func.save_to_html(self.path, 'other_dept_pub_pages.html', page)
             xk = self.analysis.parse_page(page, 'xingzhengxuke')
             sub_json_dict["other_dept_pub_administration_license"] =  xk[u'行政许可信息'] if xk.has_key(u'行政许可信息') else []  #行政许可信息
             xk = self.analysis.parse_page(page, 'xingzhengchufa')
             sub_json_dict["other_dept_pub_administration_sanction"] = xk[u'行政处罚信息'] if xk.has_key(u'行政处罚信息') else []  # 行政处罚信息
 
         except Exception as e:
-            logging.error(u"An error ocurred in crawl_other_dept_pub_pages: %s"% type(e))
+            logging.error(u"An error ocurred in crawl_other_dept_pub_pages: %s, ID= %s " %( type(e), self.ent_num))
             raise e
         finally:
             return sub_json_dict
@@ -141,6 +148,12 @@ class Crawler(object):
         return {'page' : r.text, 'url': r.url}
 
     def run(self, ent):
+
+        todaystr = datetime.datetime.now()
+        self.path = os.path.join(common_func.PATH, todaystr.strftime("%Y/%m/%d") , str(self.ent_num))
+        if not os.path.exists(self.path):
+            os.makedirs(self.path)
+
         sub_json_dict= {}
         rid = ent[ent.index("rid")+4: len(ent)]
         url = "http://www.szcredit.com.cn/web/GSZJGSPT/QyxyDetail.aspx?rid=" + rid
@@ -258,7 +271,7 @@ class Analyze(object):
             if td_tag.find('table'):
                 multi_col_tag = td_tag.find('table').find('tr')
             if not multi_col_tag:
-                logging.error('invalid multi_col_tag, multi_col_tag = %s', multi_col_tag)
+                logging.error('invalid multi_col_tag, multi_col_tag = %s, ID= %s '%(multi_col_tag, self.ent_num))
                 return data
             #数据表中会出现多出一空列的情况，fuck it。 要判断最后一列内容是否为空。
             tds = multi_col_tag.find_all('td', recursive = False)
@@ -267,7 +280,7 @@ class Analyze(object):
                 len_tds= len_tds - 1
 
             if len(columns) != len_tds:
-                logging.error('column head size != column data size, columns head = %s, columns data = %s' % (columns, multi_col_tag.contents))
+                logging.error('column head size != column data size, columns head = %s, columns data = %s, ID= %s' % (columns, multi_col_tag.contents, self.ent_num))
                 return data
 
             for id, col in enumerate(columns):
@@ -308,7 +321,7 @@ class Analyze(object):
                 tr = bs_table.find_all('tr')[1]
         #logging.error(u"get_columns_of_record_table->tr:%s\n", tr)
         ret_val=  self.get_record_table_columns_by_tr(tr, table_name)
-        #logging.error(u"ret_val->%s\n", ret_val)
+        # logging.error(u"ret_val->%s\n, ID = %s"%( ret_val, self.ent_num))
         return  ret_val
 
     def get_record_table_columns_by_tr(self, tr_tag, table_name):
@@ -318,7 +331,7 @@ class Analyze(object):
         try:
             sub_col_index = 0
             if len(tr_tag.find_all('th'))==0:
-                logging.error(u"The table %s has no columns"% table_name)
+                logging.error(u"The table %s has no columns , ID = %s "%(table_name, self.ent_num))
                 return columns
             count = 0
             for i, th in enumerate(tr_tag.find_all('th')):
@@ -336,7 +349,7 @@ class Analyze(object):
             if count == len(tr_tag.find_all('th'))/2:
                 columns= columns[: len(columns)/2]
         except Exception as e:
-            logging.error(u'exception occured in get_table_columns, except_type = %s, table_name = %s' % (type(e), table_name))
+            logging.error(u'exception occured in get_table_columns, except_type = %s, table_name = %s, ID = %s' % (type(e), table_name, self.ent_num))
         finally:
             return columns
 
@@ -364,7 +377,7 @@ class Analyze(object):
                         table = table.nextSibling
 
                 except Exception as e:
-                    logging.error(u'parse failed, with exception %s' % e)
+                    logging.error(u'parse failed, with exception %s, ID= %s' % (e, self.ent_num))
                     raise e
 
                 finally:
@@ -508,14 +521,14 @@ class Analyze(object):
                         ths = tr.find_all('th')
                         tds = tr.find_all('td')
                         if len(ths) != len(tds):
-                            logging.error(u'th size not equals td size in table %s, what\'s up??' % table_name)
+                            logging.error(u'th size not equals td size in table %s, what\'s up??, ID= %s' % (table_name, self.ent_num))
                             return
                         else:
                             for i in range(len(ths)):
                                 if self.get_raw_text_by_tag(ths[i]):
                                     table_dict[self.get_raw_text_by_tag(ths[i])] = self.get_raw_text_by_tag(tds[i])
         except Exception as e:
-            logging.error(u'parse table %s failed with exception %s' % (table_name, type(e)))
+            logging.error(u'parse table %s failed with exception %s, ID = %s' % (table_name, type(e), self.ent_num))
             raise e
         finally:
             return table_dict
@@ -585,7 +598,7 @@ class Analyze(object):
                 table_dict[table_name] = item
 
         except Exception as e:
-            logging.error(u"parse report table %s failed with exception %s\n"%(table_name, type(e)))
+            logging.error(u"parse report table %s failed with exception %s, ID= %s\n"%(table_name, type(e), self.ent_num))
             raise e
 
         return table_dict
@@ -621,7 +634,7 @@ class Analyze(object):
                         page_data[table_name] =self.parse_table(table, table_name, page_dict['page'])
                         # print page_data[table_name]
             except Exception as e:
-                logging.error(u"fail to parse the rest tables with exception %s" %(type(e)))
+                logging.error(u"fail to parse the rest tables with exception %s, ID= %s" %(type(e), self.ent_num))
         else:
             pass
         return page_data
@@ -746,10 +759,12 @@ def html_from_file(path):
 
 
 class Guangdong0(object):
-    def __init__(self, requests= None):
+    def __init__(self, req= None, ent_number= None):
         self.analysis = Analyze()
-        self.crawler = Crawler(self.analysis, requests)
+        self.crawler = Crawler(self.analysis, req)
         self.analysis.crawler = self.crawler
+        self.analysis.ent_num = ent_number
+        self.crawler.ent_num = ent_number
 
     def run(self, url):
         return self.crawler.run(url)
