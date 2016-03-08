@@ -62,7 +62,7 @@ class GuangdongClawer(object):
             logging.error(u"Something wrong when getting the url:%s , status_code=%d", url, r.status_code)
             return
         r.encoding = "utf-8"
-        #logging.debug("searchpage html :\n  %s", r.text)
+        #logging.error("searchpage html :\n  %s", r.text)
         self.html_search = r.text
     #获得搜索结果展示页面
     def get_page_showInfo(self, url, datas):
@@ -70,7 +70,7 @@ class GuangdongClawer(object):
         if r.status_code != 200:
             return False
         r.encoding = "utf-8"
-        #logging.debug("showInfo page html :\n  %s", r.text)
+        #logging.error("showInfo page html :\n  %s", r.text)
         self.html_showInfo = r.text
 
     #分析 展示页面， 获得搜索到的企业列表
@@ -83,7 +83,7 @@ class GuangdongClawer(object):
         divs = soup.find_all("div", {"class":"list"})
         if divs:
             for div in divs:
-                logging.debug(u"div.ul.li.a['href'] = %s\n", div.ul.li.a['href'])
+                logging.error(u"div.ul.li.a['href'] = %s\n", div.ul.li.a['href'])
                 Ent.append(div.ul.li.a['href'])
         self.ents = Ent
 
@@ -112,8 +112,9 @@ class GuangdongClawer(object):
                     self.get_page_showInfo(url_showInfo, datas_showInfo)
                     break
                 else:
-                    logging.debug(u"crack Captcha failed, the %d time(s)", count)
+                    logging.error(u"crack Captcha failed, the %d time(s)", count)
                     if count > 15:
+                        logging.error(u"ID: %s, crack Captcha failed after the %d times of trial" %( textfield,count))
                         break
         return
     #获得验证的结果信息
@@ -142,7 +143,7 @@ class GuangdongClawer(object):
         try:
             f.write(self.Captcha)
         except IOError:
-            logging.debug("%s can not be written", url_Captcha)
+            logging.error("%s can not be written", url_Captcha)
         finally:
             f.close
         self.write_file_mutex.release()
@@ -171,7 +172,7 @@ class GuangdongClawer(object):
                 m = re.match('http', ent)
                 if m is None:
                     ent = urls['host']+ ent[3:]
-                logging.debug(u"ent url:%s\n"% ent)
+                logging.error(u"ent url:%s\n"% ent)
                 for i, item in enumerate(HOSTS):
                     if ent.find(item) != -1:
 
@@ -192,7 +193,7 @@ class GuangdongClawer(object):
                             sub_json_dict = guangdong.run(ent)
                         break
                 else:
-                    logging.error(u"There are no response hosts\n")
+                    logging.error(u"There are no response hosts:%s\n" % ent)
         except Exception as e:
             logging.error(u"An error ocurred when getting the main page, error: %s"% type(e))
             raise e
@@ -223,7 +224,7 @@ class GuangdongClawer(object):
         if not os.path.exists( self.dir_restore_path ):
             os.makedirs(self.dir_restore_path)
         json_dict = {}
-
+        logging.error('crawl ID: %s\n'% ent_num)
         self.crawl_page_search(urls['page_search'])
         self.crawl_page_captcha(urls['page_Captcha'], urls['checkcode'], urls['page_showinfo'], ent_num)
         self.analyze_showInfo()

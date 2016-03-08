@@ -84,7 +84,7 @@ class Crawler(object):
             xzcf = self.analysis.parse_page(page_xingzhengchufa, 'xingzhengchufa')
             sub_json_dict['ind_comm_pub_administration_sanction'] = xzcf[u'行政处罚信息'] if xzcf.has_key(u'行政处罚信息') else []
         except Exception as e:
-            logging.debug(u"An error ocurred in crawl_ind_comm_pub_pages: %s"% type(e))
+            logging.error(u"An error ocurred in crawl_ind_comm_pub_pages: %s"% type(e))
             raise e
         finally:
             return sub_json_dict
@@ -110,7 +110,7 @@ class Crawler(object):
             p = self.analysis.parse_page(page, 'zhishichanquan')
             sub_json_dict['ent_pub_knowledge_property'] = p[u'知识产权出质登记信息'] if p.has_key(u'知识产权出质登记信息') else []
         except Exception as e:
-            logging.debug(u"An error ocurred in crawl_ent_pub_pages: %s"% type(e))
+            logging.error(u"An error ocurred in crawl_ent_pub_pages: %s"% type(e))
             raise e
         finally:
             return sub_json_dict
@@ -126,7 +126,7 @@ class Crawler(object):
             sub_json_dict["other_dept_pub_administration_sanction"] = xk[u'行政处罚信息'] if xk.has_key(u'行政处罚信息') else []  # 行政处罚信息
 
         except Exception as e:
-            logging.debug(u"An error ocurred in crawl_other_dept_pub_pages: %s"% type(e))
+            logging.error(u"An error ocurred in crawl_other_dept_pub_pages: %s"% type(e))
             raise e
         finally:
             return sub_json_dict
@@ -308,9 +308,9 @@ class Analyze(object):
                 tr = bs_table.find_all('tr')[0]
             elif bs_table.find_all('tr')[1].find('th') and not bs_table.find_all('tr')[1].find('td') and len(bs_table.find_all('tr')[1].find_all('th')) > 1:
                 tr = bs_table.find_all('tr')[1]
-        #logging.debug(u"get_columns_of_record_table->tr:%s\n", tr)
+        #logging.error(u"get_columns_of_record_table->tr:%s\n", tr)
         ret_val=  self.get_record_table_columns_by_tr(tr, table_name)
-        #logging.debug(u"ret_val->%s\n", ret_val)
+        #logging.error(u"ret_val->%s\n", ret_val)
         return  ret_val
 
     def get_record_table_columns_by_tr(self, tr_tag, table_name):
@@ -324,7 +324,7 @@ class Analyze(object):
                 return columns
             count = 0
             for i, th in enumerate(tr_tag.find_all('th')):
-                #logging.debug(u"th in get_record_table_columns_by_tr =\n %s", th)
+                #logging.error(u"th in get_record_table_columns_by_tr =\n %s", th)
                 col_name = self.get_raw_text_by_tag(th)
                 if col_name :
                     if ((col_name, col_name) in columns) :
@@ -414,7 +414,7 @@ class Analyze(object):
                                     detail_page = self.crawler.crawl_page_by_url(next_url)
                                     #html_to_file("next.html", detail_page['page'])
                                     if table_name == u'企业年报':
-                                        #logging.debug(u"next_url = %s, table_name= %s\n", detail_page['url'], table_name)
+                                        #logging.error(u"next_url = %s, table_name= %s\n", detail_page['url'], table_name)
                                         page_data = self.parse_ent_pub_annual_report_page(detail_page, table_name + '_detail')
                                         item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
                                         item[u'详情'] = page_data
@@ -449,7 +449,7 @@ class Analyze(object):
                                     #html_to_file("next.html", detail_page['page'])
 
                                     if table_name == u'企业年报':
-                                        #logging.debug(u"2next_url = %s, table_name= %s\n", next_url, table_name)
+                                        #logging.error(u"2next_url = %s, table_name= %s\n", next_url, table_name)
 
                                         page_data = self.parse_ent_pub_annual_report_page(detail_page, table_name + '_detail')
                                         item[columns[col_count][0]] = self.get_column_data(columns[col_count][1], td)
@@ -623,7 +623,7 @@ class Analyze(object):
                         page_data[table_name] =self.parse_table(table, table_name, page_dict['page'])
                         # print page_data[table_name]
             except Exception as e:
-                settings.logger.error(u"fail to parse the rest tables with exception %s" %(type(e)))
+                logging.error(u"fail to parse the rest tables with exception %s" %(type(e)))
         else:
             pass
         return page_data
@@ -664,7 +664,7 @@ class Analyze(object):
             content_table = soup.find_all('table')[1:]
             for table in content_table:
                 table_name = self.get_table_title(table)
-                #logging.debug(u"annual report table_name= %s\n", table_name)
+                #logging.error(u"annual report table_name= %s\n", table_name)
                 table_data = self.parse_report_table(table, table_name)
                 page_data[table_name] = table_data
         except Exception as e:
@@ -699,7 +699,7 @@ class Analyze(object):
                 content_table = soup.find_all('table')[1:]
                 for table in content_table:
                     table_name = self.get_table_title(table)
-                    #logging.debug(u"annual report table_name= %s\n", table_name)
+                    #logging.error(u"annual report table_name= %s\n", table_name)
                     table_data = self.parse_report_table(table, table_name)
                     #json_dump_to_file('report_json.json', table_data)
                     page_data[table_name] = table_data

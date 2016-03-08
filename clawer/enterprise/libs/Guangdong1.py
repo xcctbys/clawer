@@ -68,7 +68,7 @@ class Crawler(object):
             dj = self.analysis.parse_page_1(page, 'xingzhengchufa', post_data)
             sub_json_dict['ind_comm_pub_administration_sanction'] = dj[u'行政处罚信息'] if dj.has_key(u'行政处罚信息') else []
         except Exception as e:
-            logging.debug(u"An error ocurred in crawl_ind_comm_pub_pages: %s, type is %d"% (type(e), types))
+            logging.error(u"An error ocurred in crawl_ind_comm_pub_pages: %s, type is %d"% (type(e), types))
             raise e
         finally:
             return sub_json_dict
@@ -91,7 +91,7 @@ class Crawler(object):
             p = self.analysis.parse_page_1(page, 'zhishichanquanchuzidengji')
             sub_json_dict['ent_pub_knowledge_property'] = p[u'知识产权出质登记信息'] if p.has_key(u'知识产权出质登记信息') else []
         except Exception as e:
-            logging.debug(u"An error ocurred in crawl_ent_pub_pages: %s, types = %d"% (type(e), types))
+            logging.error(u"An error ocurred in crawl_ent_pub_pages: %s, types = %d"% (type(e), types))
             raise e
         finally:
             return sub_json_dict
@@ -107,7 +107,7 @@ class Crawler(object):
             xk =self.analysis.parse_page_1(page, 'xingzhengchufa')
             sub_json_dict["other_dept_pub_administration_sanction"] = xk[u'行政处罚结果信息'] if xk.has_key(u'行政处罚结果信息') else []  # 行政处罚信息
         except Exception as e:
-            logging.debug(u"An error ocurred in crawl_other_dept_pub_pages: %s, types = %d"% (type(e), types))
+            logging.error(u"An error ocurred in crawl_other_dept_pub_pages: %s, types = %d"% (type(e), types))
             raise e
         finally:
             return sub_json_dict
@@ -122,7 +122,7 @@ class Crawler(object):
             xz = self.analysis.parse_page_1(page, 'gudongbiangeng')
             sub_json_dict['judical_assist_pub_shareholder_modify'] = xz[u'司法股东变更登记信息'] if xz.has_key(u'司法股东变更登记信息') else []
         except Exception as e:
-            logging.debug(u"An error ocurred in crawl_other_dept_pub_pages: %s, types = %d"% (type(e), types))
+            logging.error(u"An error ocurred in crawl_other_dept_pub_pages: %s, types = %d"% (type(e), types))
             raise e
         finally:
             return sub_json_dict
@@ -158,7 +158,7 @@ class Crawler(object):
             data = self.crawl_page_main()
             self.json_dict[ent[0]] = data
             json_dump_to_file("./guangdong/final_json_%s.json" % ent[0], self.json_dict)
-            logging.debug(u"Now %s was finished\n"% ent[0])
+            logging.error(u"Now %s was finished\n"% ent[0])
         """
         #url = "http://gsxt.gdgs.gov.cn/aiccips/GSpublicity/GSpublicityList.html?service=entInfo_06CAc+ibgylJZ6y3lp3JBNsJrQ1qA5gDU7qYIU/VOow9Am1tz4CcjiZg6BZzhZQU-QuOaBlqqlUykdKokb5yijg=="
         #东莞证券
@@ -316,10 +316,10 @@ class Analyze(object):
                 tr = bs_table.find_all('tr')[0]
             elif bs_table.find_all('tr')[1].find('th') and not bs_table.find_all('tr')[1].find('td') and len(bs_table.find_all('tr')[1].find_all('th')) > 1:
                 tr = bs_table.find_all('tr')[1]
-        #logging.debug(u"get_columns_of_record_table->tr:%s\n", tr)
+        #logging.error(u"get_columns_of_record_table->tr:%s\n", tr)
         ret_val=  self.get_record_table_columns_by_tr(tr, table_name)
-        #logging.debug(u"table columns:%s\n"% table_name)
-        #logging.debug(u"ret_val->%s\n", ret_val)
+        #logging.error(u"table columns:%s\n"% table_name)
+        #logging.error(u"ret_val->%s\n", ret_val)
         return  ret_val
 
     def get_record_table_columns_by_tr(self, tr_tag, table_name):
