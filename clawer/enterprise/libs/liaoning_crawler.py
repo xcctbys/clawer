@@ -53,7 +53,7 @@ class LiaoningCrawler(Crawler):
         """爬取验证码页面，包括获取验证码url，下载验证码图片，破解验证码并提交
         """
         count = 0
-        while count < 20:
+        while count < 30:
             count += 1
 
             ckcode = self.crack_checkcode()
@@ -68,7 +68,7 @@ class LiaoningCrawler(Crawler):
             next_url = self.urls['post_checkcode']
             resp = self.reqst.post(next_url, data=post_data)
             if resp.status_code != 200:
-                logging.warn('failed to get crackcode image by url %s, fail count = %d' % (next_url, count))
+                logging.error('failed to get crackcode image by url %s, fail count = %d' % (next_url, count))
                 continue
             # logging.info('crack code = %s, %s, response =  %s' %(ckcode[0], ckcode[1], resp.content))
             m = re.search(r'codevalidator= \"(.*)\"', resp.content)
@@ -89,9 +89,9 @@ class LiaoningCrawler(Crawler):
 
                     return True
                 else:
+                    logging.error('crack checkcode failed, total fail count = %d' % (count))
 
-                    logging.debug('crack checkcode failed, total fail count = %d' % count)
-
+            time.sleep(random.uniform(2, 4))
         return False
 
     def crack_checkcode(self):
@@ -103,8 +103,6 @@ class LiaoningCrawler(Crawler):
             logging.warn('failed to get checkcode img')
             return
         page = resp.content
-
-        time.sleep(random.uniform(2, 4))
 
         self.write_file_mutex.acquire()
         with open(self.ckcode_image_path, 'wb') as f:
