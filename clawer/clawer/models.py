@@ -19,7 +19,7 @@ from django.core.cache import cache
 from clawer.utils import Download, UrlCache, DownloadQueue
 from html5helper import redis_cluster
 
-        
+
 
 class Clawer(models.Model):
     (STATUS_ON, STATUS_OFF) = range(1, 3)
@@ -32,10 +32,10 @@ class Clawer(models.Model):
     customer = models.CharField(max_length=128, blank=True, null=True)
     status = models.IntegerField(default=STATUS_ON, choices=STATUS_CHOICES)
     add_datetime = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
         app_label = "clawer"
-        
+
     def as_json(self):
         result = {"id": self.id,
             "name": self.name,
@@ -46,59 +46,59 @@ class Clawer(models.Model):
             "result_url": self.result_url(),
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S")
         }
-        
+
         runing =  self.runing_task_generator()
         result["runing_task_generator"] = runing.as_json() if runing else None
-            
+
         analysis = self.runing_analysis()
         result["runing_analysis"] = analysis.as_json() if analysis else None
-        
+
         result["setting"] = self.settings().as_json()
-        
+
         return result
-    
+
     def runing_task_generator(self):
         try:
             result = ClawerTaskGenerator.objects.filter(clawer=self, status=ClawerTaskGenerator.STATUS_ON)[0]
         except:
             result = None
-        
+
         return result
-    
+
     def runing_analysis(self):
         try:
             result = ClawerAnalysis.objects.filter(clawer=self, status=ClawerAnalysis.STATUS_ON)[0]
         except:
             result = None
-        
+
         return result
-    
+
     def status_name(self):
         for item in self.STATUS_CHOICES:
             if item[0] == self.status:
                 return item[1]
-            
+
         return ""
-    
+
     def settings(self):
         return ClawerSetting.objects.get_or_create(clawer=self)[0]
-    
+
     def cached_settings(self):
         key = "%d_cached_setting" % self.id
         cache_time = 3600
         result = cache.get(key)
         if result:
             return result
-        
+
         result = self.settings()
         if result:
             cache.set(key, result, cache_time)
         return result
-    
+
     def result_url(self):
         return urlparse.urljoin(settings.CLAWER_RESULT_URL, "%d" % self.id)
-        
-        
+
+
 class ClawerAnalysis(models.Model):
     (STATUS_ON, STATUS_OFF) = range(1, 3)
     STATUS_CHOICES = (
@@ -109,10 +109,10 @@ class ClawerAnalysis(models.Model):
     code = models.TextField()  #python code
     status = models.IntegerField(default=STATUS_ON, choices=STATUS_CHOICES)
     add_datetime = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
         app_label = "clawer"
-        
+
     def as_json(self):
         result = {"id": self.id,
             "code": self.code,
@@ -121,29 +121,29 @@ class ClawerAnalysis(models.Model):
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }
         return result
-    
+
     def status_name(self):
         for item in self.STATUS_CHOICES:
             if item[0] == self.status:
                 return item[1]
-            
+
         return ""
-    
+
     def code_dir(self):
         path = os.path.join(settings.MEDIA_ROOT, "codes")
         if os.path.exists(path) is False:
             os.makedirs(path, 0775)
         return path
-    
+
     def product_path(self):
         return os.path.join(self.code_dir(), "%d_analysis.py" % self.clawer_id)
-    
+
     def write_code(self, path):
         if os.path.exists(path):
             os.remove(path)
         with codecs.open(path, "w", "utf-8") as f:
             f.write(self.code)
-    
+
 
 class ClawerAnalysisLog(models.Model):
     (STATUS_FAIL, STATUS_SUCCESS) = range(1, 3)
@@ -155,14 +155,14 @@ class ClawerAnalysisLog(models.Model):
     analysis = models.ForeignKey(ClawerAnalysis)
     task = models.ForeignKey('ClawerTask')
     status = models.IntegerField(default=0, choices=STATUS_CHOICES)
-    failed_reason = models.CharField(max_length=1024, null=True, blank=True)
+    failed_reason = models.CharField(max_length=10240, null=True, blank=True)
     hostname = models.CharField(null=True, blank=True, max_length=16)
     result = models.TextField(null=True, blank=True)
     add_datetime = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
         app_label = "clawer"
-        
+
     def as_json(self):
         result = {"id":self.id,
             "clawer": self.clawer.as_json(),
@@ -176,20 +176,20 @@ class ClawerAnalysisLog(models.Model):
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }
         return result
-    
+
     def status_name(self):
         for item in self.STATUS_CHOICES:
             if item[0] == self.status:
                 return item[1]
-            
+
         return ""
-    
+
     def result_path(self):
         parent = os.path.join("/tmp", "clawer_analysis")
         if os.path.exists(parent) is False:
             os.mkdir(parent)
         return os.path.join(parent, "%d.analysis" % self.task.id)
-    
+
 
 class ClawerDownloadLog(models.Model):
     (STATUS_FAIL, STATUS_SUCCESS) = range(1, 3)
@@ -200,16 +200,16 @@ class ClawerDownloadLog(models.Model):
     clawer = models.ForeignKey(Clawer)
     task = models.ForeignKey('ClawerTask')
     status = models.IntegerField(default=0, choices=STATUS_CHOICES)
-    failed_reason = models.CharField(max_length=1024, null=True, blank=True)
+    failed_reason = models.CharField(max_length=10240, null=True, blank=True)
     content_bytes = models.IntegerField(default=0)
     content_encoding = models.CharField(null=True, blank=True, max_length=32)
     hostname = models.CharField(null=True, blank=True, max_length=16)
     spend_time = models.IntegerField(default=0) #unit is microsecond
     add_datetime = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         app_label = "clawer"
-        
+
     def as_json(self):
         result = {"id":self.id,
             "clawer": self.clawer.as_json(),
@@ -224,14 +224,14 @@ class ClawerDownloadLog(models.Model):
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }
         return result
-    
+
     def status_name(self):
         for item in self.STATUS_CHOICES:
             if item[0] == self.status:
                 return item[1]
-            
+
         return ""
-    
+
 
 class ClawerTaskGenerator(models.Model):
     (STATUS_ALPHA, STATUS_BETA, STATUS_PRODUCT, STATUS_ON, STATUS_OFF, STATUS_TEST_FAIL) = range(1, 7)
@@ -248,11 +248,11 @@ class ClawerTaskGenerator(models.Model):
     cron = models.CharField(max_length=128)
     status = models.IntegerField(default=STATUS_ALPHA, choices=STATUS_CHOICES)
     add_datetime = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
         app_label = "clawer"
         ordering = ["-id"]
-        
+
     def as_json(self):
         result = {"id": self.id,
             "clawer_id": self.clawer_id,
@@ -263,25 +263,25 @@ class ClawerTaskGenerator(models.Model):
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }
         return result
-    
+
     def status_name(self):
         for item in self.STATUS_CHOICES:
             if item[0] == self.status:
                 return item[1]
         return ""
-    
+
     def code_dir(self):
         path = os.path.join(settings.MEDIA_ROOT, "codes")
         if os.path.exists(path) is False:
             os.makedirs(path, 0775)
         return path
-    
+
     def alpha_path(self):
         return os.path.join(self.code_dir(), "%d_alpha.py" % self.clawer_id)
-    
+
     def product_path(self):
         return os.path.join(self.code_dir(), "%d_product.py" % self.clawer_id)
-    
+
     def write_code(self, path):
         with codecs.open(path, "w", "utf-8") as f:
             f.write(self.code)
@@ -296,21 +296,21 @@ class ClawerGenerateLog(models.Model):
     clawer = models.ForeignKey(Clawer)
     task_generator = models.ForeignKey(ClawerTaskGenerator)
     status = models.IntegerField(default=0, choices=STATUS_CHOICES)
-    failed_reason = models.CharField(max_length=1024, null=True, blank=True)
+    failed_reason = models.CharField(max_length=10240, null=True, blank=True)
     content_bytes = models.IntegerField(default=0)
     spend_msecs = models.IntegerField(default=0) #unit is microsecond
     hostname = models.CharField(null=True, blank=True, max_length=16)
     add_datetime = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         app_label = "clawer"
-        
+
     def status_name(self):
         for item in self.STATUS_CHOICES:
             if item[0] == self.status:
                 return item[1]
         return ""
-        
+
     def as_json(self):
         result = {
             "id":self.id,
@@ -324,7 +324,7 @@ class ClawerGenerateLog(models.Model):
             "hostname": self.hostname,
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }
-        
+
         return result
 
 
@@ -336,7 +336,7 @@ class LoggerCategory(object):
     UPDATE_SETTING = u"更新爬虫参数"
     TASK_RESET = u"重设任务"
     ADD_CLAWER = u"增加爬虫"
-    
+
 
 class Logger(models.Model):
     """用户操作记录表
@@ -347,7 +347,7 @@ class Logger(models.Model):
     content = models.TextField() # must is json format
     from_ip = models.IPAddressField()
     add_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         app_label = "clawer"
 
@@ -362,7 +362,7 @@ class Logger(models.Model):
             "add_at": self.add_at.strftime("%Y-%m-%d %H:%M:%S"),
         }
         return result
-        
+
 
 class ClawerTask(models.Model):
     (STATUS_LIVE, STATUS_PROCESS, STATUS_FAIL, STATUS_SUCCESS, STATUS_ANALYSIS_FAIL, STATUS_ANALYSIS_SUCCESS) = range(1, 7)
@@ -382,11 +382,11 @@ class ClawerTask(models.Model):
     status = models.IntegerField(default=STATUS_LIVE, choices=STATUS_CHOICES)
     store = models.CharField(max_length=512, blank=True, null=True)
     add_datetime = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
         app_label = "clawer"
         ordering = ["-id"]
-        
+
     def as_json(self):
         result = {"id":self.id,
             "clawer": self.clawer.as_json(),
@@ -399,19 +399,19 @@ class ClawerTask(models.Model):
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }
         return result
-    
+
     def status_name(self):
         for item in self.STATUS_CHOICES:
             if item[0] == self.status:
                 return item[1]
-        
+
         return ""
-    
+
     def store_path(self):
         now = datetime.datetime.now()
         return os.path.join(settings.CLAWER_SOURCE, now.strftime("%Y/%m/%d"), "%d.txt" % self.id)
 
-    
+
 
 class ClawerSetting(models.Model):
     (PRIOR_NORMAL, PRIOR_URGENCY, PRIOR_FOREIGN) = range(0, 3)
@@ -420,7 +420,7 @@ class ClawerSetting(models.Model):
         (PRIOR_URGENCY, "urgency"),
         (PRIOR_FOREIGN, "foreign"),
     )
-    
+
     clawer = models.ForeignKey(Clawer)
     dispatch = models.IntegerField(u"每次分发下载任务数", default=100)
     analysis = models.IntegerField(u"每次分析任务数", default=200)
@@ -432,18 +432,18 @@ class ClawerSetting(models.Model):
     last_update_datetime = models.DateTimeField(auto_now_add=True, auto_now=True)
     report_mails = models.CharField(blank=True, null=True, max_length=256)
     add_datetime = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
         app_label = "clawer"
         ordering = ["-id"]
-        
+
     def prior_name(self):
         for item in self.PRIOR_CHOICES:
             if item[0] == self.prior:
                 return item[1]
-        
+
         return ""
-    
+
     def prior_to_queue_name(self):
         if self.prior == self.PRIOR_NORMAL:
             return DownloadQueue.QUEUE_NAME
@@ -453,10 +453,10 @@ class ClawerSetting(models.Model):
             return DownloadQueue.FOREIGN_QUEUE_NAME
         else:
             return DownloadQueue.QUEUE_NAME
-        
+
     def valid_report_mails(self):
         valid = []
-        
+
         if not self.report_mails:
             return []
         mails = self.report_mails.split(" ")
@@ -464,9 +464,9 @@ class ClawerSetting(models.Model):
             if mail.find("@") == -1:
                 continue
             valid.append(mail)
-            
+
         return valid
-                
+
     def as_json(self):
         result = {
             "dispatch": self.dispatch,
@@ -482,14 +482,14 @@ class ClawerSetting(models.Model):
             "add_datetime": self.add_datetime.strftime("%Y-%m-%d %H:%M:%S"),
         }
         return result
-    
+
 
 class RealTimeMonitor(object):
     POINT_COUNT = 24*60
-    
+
     def __init__(self, redis_url=settings.MONITOR_REDIS):
         self.redis = redis_cluster.PickledRedis.from_url(redis_url)
-        
+
     def load_task_stat(self, status):
         result = {}
         now = datetime.datetime.now().replace(second=0, microsecond=0)
@@ -497,23 +497,23 @@ class RealTimeMonitor(object):
         if in_data and len(in_data["data"].keys()) >= self.POINT_COUNT:
             result = in_data
         else:
-            result = {"end_datetime": now, 
+            result = {"end_datetime": now,
                 "data":{}
             }
             for i in range(self.POINT_COUNT):
                 t = result["end_datetime"] - datetime.timedelta(minutes=i)
                 result["data"][t] = {"count": 0}
-        
+
         self.shrink(result, status)
         #logging.debug("result is: %s", result)
         return result
-    
+
     def task_key(self, status):
         return "realtime_monitor_task_%d" % status
-    
+
     def task_incr_key(self, status):
         return "realtime_monitor_task_incr_%d" % status
-    
+
     def trace_task_status(self, clawer_task):
         result = self.load_task_stat(clawer_task.status)
         now = datetime.datetime.now().replace(second=0, microsecond=0)
@@ -523,13 +523,13 @@ class RealTimeMonitor(object):
             old["count"] += 1
         else:
             result["data"][now] = {"count":1}
-        
+
         self.redis.set(self.task_key(clawer_task.status), result)
         self.redis.incr(self.task_incr_key(clawer_task.status))
-        
+
         logging.debug("trace task %d, status %s, count is %d", clawer_task.id, clawer_task.status_name(), result["data"][now]["count"])
         return result
-    
+
     def shrink(self, result, status):
         now = datetime.datetime.now().replace(second=0, microsecond=0)
         if result["end_datetime"] < now:
@@ -539,7 +539,7 @@ class RealTimeMonitor(object):
                 if dt not in result["data"]:
                     result["data"][dt] = {"count": 0}
                 old_end += datetime.timedelta(minutes=1)
-                
+
         dts = sorted(result["data"].keys())
         excess = len(dts) - self.POINT_COUNT
         if excess <= 0:
@@ -547,27 +547,27 @@ class RealTimeMonitor(object):
         for i in range(excess):
             dt = dts[i]
             del result["data"][dt]
-                
+
         self.redis.set(self.task_key(status), result)
         self.redis.incr(self.task_incr_key(status))
-    
+
         return result
-    
-    
+
+
 class UserProfile(models.Model):
     (GROUP_MANAGER, GROUP_DEVELOPER) = (u"管理员", u"开发者")
     user = models.OneToOneField(DjangoUser)
     nickname = models.CharField(max_length=64)
-    
+
     class Meta:
         app_label = "clawer"
-        
+
     def as_json(self):
         return {"id": self.user.id,
             "nickname": self.nickname,
             "username": self.user.username,
         }
-        
+
 
 
 class ClawerHourMonitor(models.Model):
@@ -576,11 +576,11 @@ class ClawerHourMonitor(models.Model):
     bytes = models.IntegerField(default=0)
     is_exception = models.BooleanField(default=False)
     add_datetime = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
-        app_label = "clawer"     
+        app_label = "clawer"
         ordering = ["-id"]
-    
+
     def as_json(self):
         data = {"id": self.id,
             "hour": self.hour.strftime("%Y-%m-%d %H:%M:%S"),
@@ -591,18 +591,18 @@ class ClawerHourMonitor(models.Model):
         }
         return data
 
-    
+
 class ClawerDayMonitor(models.Model):
     clawer = models.ForeignKey(Clawer)
     day = models.DateField()  #only to hour
     bytes = models.IntegerField(default=0)
     is_exception = models.BooleanField(default=False)
     add_datetime = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
-        app_label = "clawer"     
+        app_label = "clawer"
         ordering = ["-id"]
-    
+
     def as_json(self):
         data = {"id": self.id,
             "day": self.day.strftime("%Y-%m-%d"),
@@ -618,12 +618,12 @@ class ClawerDayMonitor(models.Model):
 class MenuPermission:
     GROUP_MANAGER = UserProfile.GROUP_MANAGER
     GROUP_DEVELOPER = UserProfile.GROUP_DEVELOPER
-    
+
     GROUPS = [
         GROUP_MANAGER,
         GROUP_DEVELOPER,
     ]
-    
+
     MENUS = [
         {"id":1, "text": u"爬虫管理", "url":"", "children": [
             {"id":101, "text":u"爬虫代码配置", "url":"clawer.views.home.clawer_all", "groups":GROUPS},
@@ -641,13 +641,13 @@ class MenuPermission:
             {"id":301, "text":u"小时结果", "url":"clawer.views.monitor.hour", "groups":GROUPS},
             {"id":301, "text":u"每日结果", "url":"clawer.views.monitor.day", "groups":GROUPS},
         ]},
-        
+
         {"id":2, "text": u"系统管理", "url":"", "children": [
             {"id":201, "text":u"爬虫参数", "url":"clawer.views.home.clawer_setting", "groups":[GROUP_MANAGER]},
             {"id":201, "text":u"操作日志", "url":"clawer.views.logger.index", "groups":[GROUP_MANAGER]},
         ]},
     ]
-    
+
     @classmethod
     def has_perm_to_enter(cls, user):
         ret = False
@@ -655,9 +655,9 @@ class MenuPermission:
             if group.name in cls.GROUPS:
                 ret = True
                 break
-        
+
         return ret
-    
+
     @classmethod
     def user_menus(cls, user):
         """ Return list of menus, format is:
@@ -666,20 +666,20 @@ class MenuPermission:
         ]
         """
         from django.core.urlresolvers import reverse
-        
+
         menus = []
         user_group_names = set([x.name for x in user.groups.all()])
-        
+
         def has_group(menu_groups):
             for name in user_group_names:
                 if name in menu_groups:
                     return True
             return False
-        
-        for item in cls.MENUS: 
+
+        for item in cls.MENUS:
             new_item = copy.deepcopy(item)
             new_item["children"] = []
-            
+
             for menu in item["children"]:
                 if has_group(menu["groups"]):
                     new_menu = copy.deepcopy(menu)
@@ -688,9 +688,9 @@ class MenuPermission:
                             new_menu["url"] = reverse(menu["url"])
                     except:
                         new_menu["url"] = menu["url"]
-                        
+
                     del new_menu["groups"]
                     new_item["children"].append(new_menu)
             menus.append(new_item)
-        
+
         return menus

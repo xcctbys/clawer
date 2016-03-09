@@ -48,7 +48,7 @@ class JiangsuCrawler(Crawler):
             'ci_detail': 'http://www.jsgsj.gov.cn:58888/ecipplatform/ciServlet.json?ciDetail=true'
             }
 
-    def __init__(self, json_restore_path):
+    def __init__(self, json_restore_path= None):
         """
         初始化函数
         Args:
@@ -136,19 +136,19 @@ class JiangsuCrawler(Crawler):
         :return true or false
         """
         count = 0
-        while count < 10:
+        while count < 20:
 
             ckcode = self.crack_checkcode()
             data = {'name': self.ent_number, 'verifyCode': ckcode[1]}
             resp = self.reqst.post(self.urls['post_checkcode'], data=data)
             if resp.status_code != 200:
-                logging.error("crawl post check page failed!")
+                logging.error("crawl post check page failed! count number= %d\n"%(count))
                 count += 1
                 continue
             if resp.content.find("onclick") >= 0 and self.parse_post_check_page(resp.content):
                     return True
             else:
-                logging.error("crawl post check page failed!")
+                logging.error("crawl post check page failed! count number = %d\n"%(count))
                 count += 1
                 continue
         return False

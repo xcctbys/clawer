@@ -7,6 +7,7 @@ import sys
 import time
 import re
 from . import settings
+import random
 
 import json
 import codecs
@@ -116,6 +117,7 @@ class GuangdongClawer(object):
                     if count > 15:
                         logging.error(u"ID: %s, crack Captcha failed after the %d times of trial" %( textfield,count))
                         break
+            time.sleep(random.uniform(1, 4))
         return
     #获得验证的结果信息
     def get_check_response(self, url, datas):
