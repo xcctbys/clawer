@@ -114,26 +114,26 @@ class BeijingCrawler(Crawler):
             next_url = self.urls['post_checkcode']
             resp = self.reqst.post(next_url, data=post_data)
             if resp.status_code != 200:
-                logging.warn('failed to get crackcode image by url %s, fail count = %d' % (next_url, count))
+                logging.error('failed to get crackcode image by url %s, fail count = %d' % (next_url, count))
                 continue
 
-            logging.info('crack code = %s, %s, response =  %s' %(ckcode[0], ckcode[1], resp.content))
+            logging.error('crack code = %s, %s, response =  %s' %(ckcode[0], ckcode[1], resp.content))
 
             if resp.content == 'fail':
-                logging.debug('crack checkcode failed, total fail count = %d' % count)
+                logging.error('crack checkcode failed, total fail count = %d' % count)
                 continue
 
             next_url = self.urls['open_info_entry']
             resp = self.reqst.post(next_url, data=post_data)
             if resp.status_code != 200:
-                logging.warn('failed to open info entry by url %s, fail count = %d' % (next_url, count))
+                logging.error('failed to open info entry by url %s, fail count = %d' % (next_url, count))
                 continue
 
             crack_result = self.parse_post_check_page(resp.content)
             if crack_result:
                 return True
             else:
-                logging.debug('crack checkcode failed, total fail count = %d' % count)
+                logging.error('crack checkcode failed, total fail count = %d' % count)
             time.sleep(random.uniform(2,4))
         return False
 
@@ -224,7 +224,7 @@ class BeijingCrawler(Crawler):
                 #parse the pre check page, get useful information
                 self.parse_pre_check_page(response)
                 return checkcode_url
-            logging.debug('get crackable checkcode img failed')
+            logging.error('get crackable checkcode img failed')
         return None
 
     def parse_post_check_page(self, page):
@@ -243,7 +243,7 @@ class BeijingCrawler(Crawler):
         if r:
             ent = r[0]['onclick']
         else:
-            logging.debug('fail to find openEntInfo')
+            logging.error('fail to find openEntInfo')
             return False
 
         m = re.search(r'\'([\w]*)\'[ ,]+\'([\w]*)\'[ ,]+\'([\w]*)\'', ent)
@@ -255,7 +255,7 @@ class BeijingCrawler(Crawler):
         if r:
             self.time_stamp = r[0]['value']
         else:
-            logging.debug('fail to get time stamp')
+            logging.error('fail to get time stamp')
         return True
 
     def parse_pre_check_page(self, page):
@@ -348,10 +348,10 @@ class BeijingCrawler(Crawler):
                                             'clear':'true',
                                             'str':tab
                                             })
-        logging.info('get %s, url:\n%s\n' % (type, url))
+        logging.error('get %s, url:\n%s\n' % (type, url))
         resp = self.reqst.get(url)
         if resp.status_code != 200:
-            logging.warn('get page failed by url %s' % url)
+            logging.error('get page failed by url %s' % url)
             return
         page = resp.content
         time.sleep(random.uniform(0.2, 1))
@@ -364,7 +364,7 @@ class BeijingCrawler(Crawler):
         checkcode_url = self.get_checkcode_url()
         resp = self.reqst.get(checkcode_url)
         if resp.status_code != 200:
-            logging.warn('failed to get checkcode img')
+            logging.error('failed to get checkcode img')
             return
         page = resp.content
 
@@ -379,7 +379,7 @@ class BeijingCrawler(Crawler):
         try:
             ckcode = self.code_cracker.predict_result(self.ckcode_image_path)
         except Exception as e:
-            logging.warn('exception occured when crack checkcode')
+            logging.error('exception occured when crack checkcode')
             ckcode = ('', '')
         finally:
             pass
@@ -502,7 +502,7 @@ class BeijingParser(Parser):
             m = pat.search(base_page)
             if m:
                 next_url = self.crawler.urls['host'] + m.group(1)
-                logging.info('get annual report, url:\n%s\n' % next_url)
+                logging.error('get annual report, url:\n%s\n' % next_url)
                 page = self.crawler.crawl_page_by_url(next_url)
                 pages = self.crawler.get_all_pages_of_a_section(page, page_type, next_url)
 
@@ -614,6 +614,6 @@ if __name__ == '__main__':
     enterprise_list = ['110000005791844'] #'110000005791844', '110000410227029',
     for ent_number in enterprise_list:
         ent_number = ent_number.rstrip('\n')
-        logging.info('###################   Start to crawl enterprise with id %s   ###################\n' % ent_number)
+        logging.error('###################   Start to crawl enterprise with id %s   ###################\n' % ent_number)
         crawler.run(ent_number=ent_number)
 """
