@@ -58,7 +58,7 @@ class Generator(object):
         source_url: http://clawer.princetechs.com/enterprise/api/get/all/?page=1&rows=10&sort=id&order=asc
         """
         self.source_url = "http://10.100.90.51/enterprise/api/get/all/"
-        self.step = 1000
+        self.step = 10
         self.history = History()
         self.history.load()
         self.enterprise_urls = []
@@ -69,6 +69,7 @@ class Generator(object):
             
         for _ in range(1, self.step):
             self.history.current_page += 1
+            self.history.save()
             query = urllib.urlencode({'page':self.history.current_page, 'rows': 10, 'sort': 'id', 'order': 'asc'})
             r = requests.get(self.source_url, query)
             if r.status_code != 200:
