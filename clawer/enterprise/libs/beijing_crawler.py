@@ -105,9 +105,11 @@ class BeijingCrawler(Crawler):
         """爬取验证码页面，包括获取验证码url，下载验证码图片，破解验证码并提交
         """
         count = 0
-        while count < 10:
+        while count < 20:
             count += 1
             ckcode = self.crack_checkcode()
+            if not ckcode[1]:
+                continue
             post_data = {'currentTimeMillis': self.time_stamp, 'credit_ticket': self.credit_ticket, 'checkcode': ckcode[1], 'keyword': self.ent_number};
             next_url = self.urls['post_checkcode']
             resp = self.reqst.post(next_url, data=post_data)
@@ -132,6 +134,7 @@ class BeijingCrawler(Crawler):
                 return True
             else:
                 logging.debug('crack checkcode failed, total fail count = %d' % count)
+            time.sleep(random.uniform(2,4))
         return False
 
     def crawl_ind_comm_pub_pages(self):
@@ -151,6 +154,7 @@ class BeijingCrawler(Crawler):
                      'ind_comm_pub_spot_check'        # 抽查检查信息
             ):
             self.get_page_json_data(item, 1)
+        time.sleep(random.uniform(0,3))
 
     def crawl_ent_pub_pages(self):
         """爬取企业公示信息页面
@@ -163,6 +167,7 @@ class BeijingCrawler(Crawler):
                     'ent_pub_administration_sanction' #行政许可信息
                     ):
             self.get_page_json_data(item, 2)
+        time.sleep(random.uniform(0,3))
 
     def crawl_other_dept_pub_pages(self):
         """爬取其他部门公示信息页面
