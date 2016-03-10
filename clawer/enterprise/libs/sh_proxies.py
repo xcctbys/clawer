@@ -82,9 +82,10 @@ print http_list
 
 if not os.path.exists(set_path):
 	os.makedirs(set_path)
-f = file(os.path.join(set_path, timestamp), 'wb')
-pickle.dump(http_list, f, True)
-f.close()
+if http_list:
+	f = file(os.path.join(set_path, timestamp), 'wb')
+	pickle.dump(http_list, f, True)
+	f.close()
 
 # f = file(os.path.join(os.getcwd(), 'proxies/'+ timestamp), 'rb')
 # http_list = pickle.load(f)
