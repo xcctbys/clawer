@@ -17,6 +17,9 @@ from crawler import Parser
 from crawler import CrawlerUtils
 
 
+from enterprise.libs.proxies import Proxies
+
+
 
 class BeijingCrawler(Crawler):
     """北京工商爬虫
@@ -64,6 +67,9 @@ class BeijingCrawler(Crawler):
         self.credit_ticket = None
         if not os.path.exists(self.html_restore_path):
             os.makedirs(self.html_restore_path)
+        # 获得代理
+        self.proxies = Proxies().get_proxies()
+
 
     def run(self, ent_number=0):
         """爬取的主函数
@@ -100,11 +106,16 @@ class BeijingCrawler(Crawler):
         CrawlerUtils.json_dump_to_file(self.json_restore_path, {self.ent_number: self.json_dict})
         self.write_file_mutex.release()
         '''
+    def crawl_page_by_url(self, url):
+        return self.reqst.get( url, proxies = self.proxies)
+
+    def crawl_page_by_url_post(self, url, data):
+        return self.reqst.post(url, data, proxies = self.proxies)
 
     def crawl_check_page(self):
         """爬取验证码页面，包括获取验证码url，下载验证码图片，破解验证码并提交
         """
-        resp = self.reqst.get(self.urls['official_site'])
+        resp = self.crawl_page_by_url(self.urls['official_site'])
         if resp.status_code != 200:
             logging.error('failed to get official site page!')
             return False
@@ -118,7 +129,7 @@ class BeijingCrawler(Crawler):
 
             post_data = {'currentTimeMillis': self.time_stamp, 'credit_ticket': self.credit_ticket, 'checkcode': ckcode[1], 'keyword': self.ent_number};
             next_url = self.urls['post_checkcode']
-            resp = self.reqst.post(next_url, data=post_data)
+            resp = self.crawl_page_by_url_post(next_url, data=post_data)
             if resp.status_code != 200:
                 logging.error('failed to get crackcode image by url %s, fail count = %d' % (next_url, count))
                 continue
@@ -131,7 +142,7 @@ class BeijingCrawler(Crawler):
                 continue
 
             next_url = self.urls['open_info_entry']
-            resp = self.reqst.post(next_url, data=post_data)
+            resp = self.crawl_page_by_url_post(next_url, data=post_data)
             if resp.status_code != 200:
                 logging.error('failed to open info entry by url %s, fail count = %d' % (next_url, count))
                 continue
@@ -213,7 +224,7 @@ class BeijingCrawler(Crawler):
         count  = 0
         while count < 5:
             count+=1
-            resp = self.reqst.get(self.urls['official_site'])
+            resp = self.crawl_page_by_url(self.urls['official_site'])
             time.sleep(random.uniform(5, 10))
             if resp.status_code != 200:
                 logging.error('failed to get crackcode url')
@@ -278,11 +289,9 @@ class BeijingCrawler(Crawler):
         self.credit_ticket = soup.find_all('input',id='credit_ticket')[0].get('value')
         self.time_stamp = re_currenttime_millis.findall(ckimg_src)[0]
         # self.time_stamp = self.generate_time_stamp()
-
+    """
     def crawl_page_by_url(self, url):
-        """通过url直接获取页面
-        """
-        resp = self.reqst.get(url)
+        resp = self.crawl_page_by_url(url)
         if resp.status_code != 200:
             logging.error('failed to crawl page by url' % url)
             return
@@ -291,7 +300,7 @@ class BeijingCrawler(Crawler):
         # if saveingtml:
         #     CrawlerUtils.save_page_to_file(self.html_restore_path + 'detail.html', page)
         return page
-
+    """
     def get_all_pages_of_a_section(self, page, type, url=None):
         """获取页面上含有 上一页、下一页跳转链接的区域的所有的数据
         Args:
@@ -328,7 +337,7 @@ class BeijingCrawler(Crawler):
         for p in range(1, page_count):
             post_data = {'pageNos': str(p+1), 'clear': '', 'pageNo': str(p), 'pageSize': str(page_size), 'ent_id': self.ent_id}
             try:
-                resp = self.reqst.post(next_url, data=post_data)
+                resp = self.crawl_page_by_url_post(next_url, data=post_data)
                 if resp.status_code != 200:
                     logging.error('failed to get all page of a section')
                     return pages_data
@@ -360,7 +369,7 @@ class BeijingCrawler(Crawler):
                                             'str':tab
                                             })
         logging.error('get %s, url:\n%s\n' % (type, url))
-        resp = self.reqst.get(url)
+        resp = self.crawl_page_by_url(url)
         if resp.status_code != 200:
             logging.error('get page failed by url %s' % url)
             return
@@ -374,7 +383,7 @@ class BeijingCrawler(Crawler):
         checkcode_url = self.get_checkcode_url()
         if checkcode_url == None:
             return ckcode
-        resp = self.reqst.get(checkcode_url)
+        resp = self.crawl_page_by_url(checkcode_url)
         if resp.status_code != 200:
             logging.error('failed to get checkcode img')
             return ckcode
@@ -460,7 +469,7 @@ class BeijingParser(Parser):
                     next_url = self.get_detail_link(td.find('a'), page)
                     #has detail link
                     if next_url:
-                        detail_page = self.crawler.crawl_page_by_url(next_url)
+                        detail_page = self.crawler.crawl_page_by_url(next_url).content
                         if table_name == 'ent_pub_ent_annual_report':
                             page_data = self.parse_ent_pub_annual_report_page(detail_page, table_name + '_detail')
                             item[u'报送年度'] = CrawlerUtils.get_raw_text_in_bstag(td)
@@ -513,7 +522,7 @@ class BeijingParser(Parser):
             if m:
                 next_url = self.crawler.urls['host'] + m.group(1)
                 logging.error('get annual report, url:\n%s\n' % next_url)
-                page = self.crawler.crawl_page_by_url(next_url)
+                page = self.crawler.crawl_page_by_url(next_url).content
                 pages = self.crawler.get_all_pages_of_a_section(page, page_type, next_url)
 
                 table_name = item[1]
@@ -556,7 +565,7 @@ class BeijingParser(Parser):
                             next_url = self.get_detail_link(td.find('a'), page)
                             #has detail link
                             if next_url:
-                                detail_page = self.crawler.crawl_page_by_url(next_url)
+                                detail_page = self.crawler.crawl_page_by_url(next_url).content
                                 detail_soup = BeautifulSoup(detail_page, 'html.parser')
                                 before_modify_table = detail_soup.body.find_all('table')[1]
                                 table_data = self.parse_table(before_modify_table, 'before_modify', detail_page)

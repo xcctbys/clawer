@@ -18,6 +18,7 @@ from bs4 import BeautifulSoup
 from crawler import Crawler
 from crawler import CrawlerUtils
 from crawler import Parser
+from enterprise.libs.proxies import Proxies
 
 
 class JiangsuCrawler(Crawler):
@@ -56,6 +57,7 @@ class JiangsuCrawler(Crawler):
              需要在写入文件的时候加锁
         Returns:
         """
+        self.proxies = Proxies().get_proxies()
         self.json_restore_path = json_restore_path
 
         self.parser = JiangsuParser(self)
@@ -135,8 +137,8 @@ class JiangsuCrawler(Crawler):
         """爬取验证码页面，包括下载验证码图片以及破解验证码
         :return true or false
         """
-        resp = self.reqst.get(self.urls['official_site'])
-        if resp.status_code != 200:
+        resp = self.crawl_page_by_url(self.urls['official_site'])
+        if not resp:
             logging.error("crawl the first page page failed!\n")
             return False
         count = 0
@@ -147,11 +149,9 @@ class JiangsuCrawler(Crawler):
                 logging.error("crawl checkcode failed! count number = %d\n"%(count))
                 continue
             data = {'name': self.ent_number, 'verifyCode': ckcode[1]}
-            resp = self.reqst.post(self.urls['post_checkcode'], data=data)
-            if resp.status_code != 200:
-                logging.error("crawl post check page failed! count number= %d\n"%(count))
-                continue
-            if resp.content.find("onclick") >= 0 and self.parse_post_check_page(resp.content):
+            resp = self.crawl_page_by_url_post(self.urls['post_checkcode'], data=data)
+
+            if resp.find("onclick") >= 0 and self.parse_post_check_page(resp):
                 return True
             else:
                 logging.error("crawl post check page failed! count number = %d\n"%(count))
@@ -275,19 +275,19 @@ class JiangsuCrawler(Crawler):
             post_data: post方式获取数据，返回的如果是一个列表，则将列表的所有元素都获得才返回
         Returns:
         """
-        resp = self.reqst.post(url, data=post_data)
-        if resp.status_code != 200:
+        resp = self.crawl_page_by_url_post(url, data=post_data)
+        if not resp:
             logging.error('get all pages of a section failed!')
             return
         else:
-            json_obj = json.loads(resp.content)
+            json_obj = json.loads(resp)
             if type(json_obj) == dict and json_obj.get('total', None) and int(json_obj.get('total')) > 5:
                 post_data['pageSize'] = json_obj.get('total')
-                resp = self.reqst.post(url, data=post_data)
-                if resp.status_code != 200:
+                resp = self.crawl_page_by_url_post(url, data=post_data)
+                if not resp :
                     logging.error('get all pages of a section failed!')
                     return
-        return resp.content
+        return resp
 
     def crawl_skeleton_page(self, name):
         """爬取网页表格的框架页面，在江苏的网页中， 工商公示信息, 企业公示信息，其他部门公示信息，司法协助信息
@@ -297,11 +297,11 @@ class JiangsuCrawler(Crawler):
         post_data = {'org': self.corp_org, 'id': self.corp_id, 'seq_id': self.corp_seq_id,
                      'reg_no': self.ent_number, 'name': self.ent_number,
                      'containContextPath': 'ecipplatform', 'corp_name': self.ent_number}
-        resp = self.reqst.post(url, data=post_data)
-        if resp.status_code != 200:
-            logging.error('crawl %s page failed, error code = %d' % (name, resp.status_code))
+        resp = self.crawl_page_by_url_post(url, data=post_data)
+        if not resp :
+            logging.error('crawl %s page failed, error code.\n' % (name))
             return False
-        return resp.content
+        return resp
 
     def parse_post_check_page(self, page):
         """解析提交验证码之后的页面，提取所需要的信息，比如corp id等
@@ -363,8 +363,8 @@ class JiangsuCrawler(Crawler):
         """破解验证码
         :return 破解后的验证码
         """
-        resp = self.reqst.get(self.urls['get_checkcode'])
-        if resp.status_code != 200:
+        resp = self.crawl_page_by_url(self.urls['get_checkcode'])
+        if not resp :
             logging.error('Failed, exception occured when getting checkcode')
             return ('', '')
         time.sleep(random.uniform(2, 4))
@@ -372,7 +372,7 @@ class JiangsuCrawler(Crawler):
         self.write_file_mutex.acquire()
         ckcode = ('', '')
         with open(self.ckcode_image_path, 'wb') as f:
-            f.write(resp.content)
+            f.write(resp)
         try:
             ckcode = self.code_cracker.predict_result(self.ckcode_image_path)
         except Exception as e:
@@ -386,14 +386,29 @@ class JiangsuCrawler(Crawler):
     def crawl_page_by_url(self, url):
         """根据url直接爬取页面
         """
-        resp = self.reqst.get(url)
-        if self.reqst.status_code != 200:
-            logging.error('crawl page by url failed! url = %s' % url)
-        page = resp.content
+        try:
+            resp = self.reqst.get(url, proxies= self.proxies)
+            if resp.status_code != 200:
+                logging.error('crawl page by url failed! url = %s' % url)
+            page = resp.content
+            time.sleep(random.uniform(0.2, 1))
+            # if saveingtml:
+            #     CrawlerUtils.save_page_to_file(self.html_restore_path + 'detail.html', page)
+            return page
+        except Exception as e:
+            logging.error("crawl page by url exception %s"%(type(e)))
+
+        return None
+
+    def crawl_page_by_url_post(self, url, data):
+        """ 根据url和post数据爬取页面
+        """
+        r = self.reqst.post(url, data, proxies = self.proxies)
         time.sleep(random.uniform(0.2, 1))
-        # if saveingtml:
-        #     CrawlerUtils.save_page_to_file(self.html_restore_path + 'detail.html', page)
-        return page
+        if r.status_code != 200:
+            logging.error(u"Getting page by url with post:%s\n, return status %s\n"% (url, r.status_code))
+            return False
+        return r.content
 
     def get_annual_report_detail(self, report_year, report_id):
         """获取企业年报的详细信息

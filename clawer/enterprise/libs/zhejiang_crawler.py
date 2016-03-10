@@ -14,6 +14,7 @@ from enterprise.libs.CaptchaRecognition import CaptchaRecognition
 from . import settings
 import time
 import random
+from enterprise.libs.proxies import Proxies
 
 urls = {
     'host': 'http://gsxt.zjaic.gov.cn/',
@@ -35,7 +36,7 @@ headers = { 'Connetion': 'Keep-Alive',
 
 class ZhejiangCrawler(object):
     """浙江省爬虫代码"""
-    def __init__(self, json_restore_path):
+    def __init__(self, json_restore_path=None):
         self.CR = CaptchaRecognition("zhejiang")
         self.requests = requests.Session()
         self.requests.headers.update(headers)
@@ -49,6 +50,7 @@ class ZhejiangCrawler(object):
         self.regNo = ""
         self.reportNo = ""
         self.year = ""
+        self.proxies = Proxies().get_proxies()
 
     # 破解搜索页面
     def crawl_page_search(self, url):
@@ -1140,7 +1142,7 @@ class ZhejiangCrawler(object):
             return self.get_raw_text_by_tag(td_tag)
 
     def crawl_page_by_url(self, url):
-        r = self.requests.get( url)
+        r = self.requests.get( url, proxies= self.proxies)
         if r.status_code != 200:
             logging.error(u"Getting page by url:%s\n, return status %s\n"% (url, r.status_code))
             return False
@@ -1149,9 +1151,9 @@ class ZhejiangCrawler(object):
 
     def crawl_page_by_url_post(self, url, data, header={}):
         if header:
-            r = self.requests.post(url, data, headers= header)
+            r = self.requests.post(url, data, headers= header, proxies = self.proxies)
         else :
-            r = self.requests.post(url, data)
+            r = self.requests.post(url, data, proxies = self.proxies)
         if r.status_code != 200:
             logging.error(u"Getting page by url with post:%s\n, return status %s\n"% (url, r.status_code))
             return False
