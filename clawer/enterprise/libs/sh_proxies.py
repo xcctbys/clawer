@@ -17,7 +17,7 @@ xici_url = 'http://www.xicidaili.com/'
 sixsix_url = 'http://www.66ip.cn/areaindex_'
 
 set_path = '/tmp/proxies/proxies.pik'
-set_path = './proxies/proxies.pik'
+#set_path = './proxies/proxies.pik'
 
 reqst = requests.Session()
 reqst.headers.update(
