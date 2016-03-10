@@ -119,23 +119,20 @@ class ZongjuCrawler(Crawler):
             return False
 
         while count < 30:
-            # cur_time = datetime.now()
-            # if cur_time >= staringcrawl_time + max_ingawl_time:
-            #     logging.info('crawl time over, exit!')
-            #     return False
-
             count += 1
             ckcode = self.crack_checkcode()
+            if not ckcode[1]:
+                continue
             post_data = {'captcha': ckcode[1], 'session.token': self.session_token};
             next_url = self.urls['post_checkcode']
             resp = self.reqst.post(next_url, data=post_data, verify=False)
             if resp.status_code != 200:
-                logging.warn('failed to get crackcode image by url %s, fail count = %d' % (next_url, count))
+                logging.error('failed to get crackcode image by url %s, fail count = %d' % (next_url, count))
                 continue
 
-            logging.info('crack code = %s, %s, response =  %s' % (ckcode[0], ckcode[1], resp.content))
+            logging.error('crack code = %s, %s, response =  %s' % (ckcode[0], ckcode[1], resp.content))
             if resp.content == '0':
-                logging.error('crack checkcode failed!')
+                logging.error('crack checkcode failed!count = %d' % (count))
                 continue
 
             next_url = self.urls['get_info_entry']
@@ -152,10 +149,10 @@ class ZongjuCrawler(Crawler):
 
             if self.parse_post_check_page(resp.content):
                 return True
-            else:
-                logging.debug('crack checkcode failed, total fail count = %d' % count)
-                # if count == 3:
-                #     break
+
+            logging.error('crack checkcode failed, total fail count = %d' % count)
+
+            time.sleep(random.uniform(5,10))
         return False
 
     def crawl_ind_comm_pub_pages(self):

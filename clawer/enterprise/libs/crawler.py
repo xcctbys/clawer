@@ -158,6 +158,7 @@ class Crawler(object):
         if not self.crawl_check_page():
             logging.error('crack check code failed, stop to crawl enterprise %s' % self.ent_number)
             return
+        time.sleep(random.uniform(5, 10))
 
         self.crawl_ind_comm_pub_pages()
         self.crawl_ent_pub_pages()
