@@ -135,22 +135,27 @@ class JiangsuCrawler(Crawler):
         """爬取验证码页面，包括下载验证码图片以及破解验证码
         :return true or false
         """
+        resp = self.reqst.get(self.urls['official_site'])
+        if resp.status_code != 200:
+            logging.error("crawl the first page page failed!\n")
+            return False
         count = 0
-        while count < 20:
-
+        while count < 15:
+            count += 1
             ckcode = self.crack_checkcode()
+            if not ckcode[1]:
+                logging.error("crawl checkcode failed! count number = %d\n"%(count))
+                continue
             data = {'name': self.ent_number, 'verifyCode': ckcode[1]}
             resp = self.reqst.post(self.urls['post_checkcode'], data=data)
             if resp.status_code != 200:
                 logging.error("crawl post check page failed! count number= %d\n"%(count))
-                count += 1
                 continue
             if resp.content.find("onclick") >= 0 and self.parse_post_check_page(resp.content):
-                    return True
+                return True
             else:
                 logging.error("crawl post check page failed! count number = %d\n"%(count))
-                count += 1
-                continue
+            time.sleep(random.uniform(5, 8))
         return False
 
     def get_page_data(self, page_name, real_post_data=None):
@@ -358,22 +363,20 @@ class JiangsuCrawler(Crawler):
         """破解验证码
         :return 破解后的验证码
         """
-        resp = self.reqst.get(self.urls['official_site'])
-        if resp.status_code != 200:
-            return None
-
         resp = self.reqst.get(self.urls['get_checkcode'])
         if resp.status_code != 200:
-            return None
+            logging.error('Failed, exception occured when getting checkcode')
+            return ('', '')
         time.sleep(random.uniform(2, 4))
 
         self.write_file_mutex.acquire()
+        ckcode = ('', '')
         with open(self.ckcode_image_path, 'wb') as f:
             f.write(resp.content)
         try:
             ckcode = self.code_cracker.predict_result(self.ckcode_image_path)
         except Exception as e:
-            logging.warn('exception occured when crack checkcode')
+            logging.error('exception occured when crack checkcode')
             ckcode = ('', '')
         finally:
             pass

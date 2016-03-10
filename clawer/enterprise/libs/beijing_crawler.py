@@ -58,7 +58,7 @@ class BeijingCrawler(Crawler):
             'shareholder_detail': 'http://qyxy.baic.gov.cn/gjjbj/gjjQueryCreditAction!touzirenInfo.dhtml?'
             }
 
-    def __init__(self, json_restore_path):
+    def __init__(self, json_restore_path= None):
         self.json_restore_path = json_restore_path
         self.parser = BeijingParser(self)
         self.credit_ticket = None
@@ -104,12 +104,18 @@ class BeijingCrawler(Crawler):
     def crawl_check_page(self):
         """爬取验证码页面，包括获取验证码url，下载验证码图片，破解验证码并提交
         """
+        resp = self.reqst.get(self.urls['official_site'])
+        if resp.status_code != 200:
+            logging.error('failed to get official site page!')
+            return False
         count = 0
-        while count < 20:
+        while count < 15:
             count += 1
             ckcode = self.crack_checkcode()
             if not ckcode[1]:
+                logging.error('failed to get crackcode result, fail count = %d' % (count))
                 continue
+
             post_data = {'currentTimeMillis': self.time_stamp, 'credit_ticket': self.credit_ticket, 'checkcode': ckcode[1], 'keyword': self.ent_number};
             next_url = self.urls['post_checkcode']
             resp = self.reqst.post(next_url, data=post_data)
@@ -120,7 +126,8 @@ class BeijingCrawler(Crawler):
             logging.error('crack code = %s, %s, response =  %s' %(ckcode[0], ckcode[1], resp.content))
 
             if resp.content == 'fail':
-                logging.error('crack checkcode failed, total fail count = %d' % count)
+                logging.error('crack checkcode failed, response content = failed, total fail count = %d' % count)
+                time.sleep(random.uniform(0.1,2))
                 continue
 
             next_url = self.urls['open_info_entry']
@@ -134,7 +141,7 @@ class BeijingCrawler(Crawler):
                 return True
             else:
                 logging.error('crack checkcode failed, total fail count = %d' % count)
-            time.sleep(random.uniform(2,4))
+            time.sleep(random.uniform(3,5))
         return False
 
     def crawl_ind_comm_pub_pages(self):
@@ -203,29 +210,32 @@ class BeijingCrawler(Crawler):
                     self.json_dict[page_name] += json_data
 
     def get_checkcode_url(self):
-        """获取验证码的url
-        """
-        while True:
+        count  = 0
+        while count < 5:
+            count+=1
             resp = self.reqst.get(self.urls['official_site'])
+            time.sleep(random.uniform(5, 10))
             if resp.status_code != 200:
                 logging.error('failed to get crackcode url')
                 continue
             response = resp.content
-            time.sleep(random.uniform(0.2, 1))
             soup = BeautifulSoup(response, 'html.parser')
             ckimg_src = soup.find_all('img', id='MzImgExpPwd')[0].get('src')
             ckimg_src = str(ckimg_src)
             re_checkcode_captcha=re.compile(r'/([\s\S]*)\?currentTimeMillis')
-            re_currenttime_millis=re.compile(r'/CheckCodeCaptcha\?currentTimeMillis=([\s\S]*)')
+            # re_currenttime_millis=re.compile(r'/CheckCodeCaptcha\?currentTimeMillis=([\s\S]*)')
             checkcode_type = re_checkcode_captcha.findall(ckimg_src)[0]
 
             if checkcode_type == 'CheckCodeCaptcha':
-                checkcode_url= self.urls['get_checkcode'] + ckimg_src
                 #parse the pre check page, get useful information
                 self.parse_pre_check_page(response)
+                checkcode_url= self.urls['get_checkcode'] + ckimg_src
                 return checkcode_url
-            logging.error('get crackable checkcode img failed')
+
+            # elif checkcode_type == 'CheckCodeYunSuan':
+            logging.error('can not get CheckCodeCaptcha type of checkcode img, count times = %d \n'%(count))
         return None
+
 
     def parse_post_check_page(self, page):
         """解析提交验证码之后的页面，获取必要的信息
@@ -267,6 +277,7 @@ class BeijingCrawler(Crawler):
         re_currenttime_millis = re.compile(r'/CheckCodeCaptcha\?currentTimeMillis=([\s\S]*)')
         self.credit_ticket = soup.find_all('input',id='credit_ticket')[0].get('value')
         self.time_stamp = re_currenttime_millis.findall(ckimg_src)[0]
+        # self.time_stamp = self.generate_time_stamp()
 
     def crawl_page_by_url(self, url):
         """通过url直接获取页面
@@ -355,27 +366,26 @@ class BeijingCrawler(Crawler):
             return
         page = resp.content
         time.sleep(random.uniform(0.2, 1))
-        # if saveingtml:
-        #     CrawlerUtils.save_page_to_file(self.html_restore_path + type + '.html', page)
         return page
 
     def crack_checkcode(self):
         """破解验证码"""
+        ckcode = ('', '')
         checkcode_url = self.get_checkcode_url()
+        if checkcode_url == None:
+            return ckcode
         resp = self.reqst.get(checkcode_url)
         if resp.status_code != 200:
             logging.error('failed to get checkcode img')
-            return
+            return ckcode
         page = resp.content
-
-        time.sleep(random.uniform(2, 4))
-
+        time.sleep(random.uniform(1,2))
         self.write_file_mutex.acquire()
         with open(self.ckcode_image_path, 'wb') as f:
             f.write(page)
         if not self.code_cracker:
-            print 'invalid code cracker'
-            return ''
+            logging.error('invalid code cracker\n')
+            return ckcode
         try:
             ckcode = self.code_cracker.predict_result(self.ckcode_image_path)
         except Exception as e:
