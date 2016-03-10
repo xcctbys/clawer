@@ -16,8 +16,8 @@ import cPickle as pickle
 xici_url = 'http://www.xicidaili.com/'
 sixsix_url = 'http://www.66ip.cn/areaindex_'
 
-set_path = '/tmp/proxies/'
-set_path = './proxies'
+set_path = '/tmp/proxies/proxies.pik'
+set_path = './proxies/proxies.pik'
 
 reqst = requests.Session()
 reqst.headers.update(
@@ -80,10 +80,10 @@ timestamp = str(int(time.time()))
 print http_list
 # print https_list
 
-if not os.path.exists(set_path):
-	os.makedirs(set_path)
+if not os.path.exists(os.path.dirname(set_path)):
+	os.makedirs(os.path.dirname(set_path))
 if http_list:
-	f = file(os.path.join(set_path, timestamp), 'wb')
+	f = file(set_path, 'wb')
 	pickle.dump(http_list, f, True)
 	f.close()
 
