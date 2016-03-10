@@ -15,6 +15,10 @@ import cPickle as pickle
 
 xici_url = 'http://www.xicidaili.com/'
 sixsix_url = 'http://www.66ip.cn/areaindex_'
+
+set_path = '/tmp/proxies/'
+set_path = './proxies'
+
 reqst = requests.Session()
 reqst.headers.update(
 			{'Accept': 'text/html, application/xhtml+xml, */*',
@@ -22,9 +26,11 @@ reqst.headers.update(
 			'Accept-Language': 'en-US, en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
 			'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:39.0) Gecko/20100101 Firefox/39.0'})
 
+http_list = []
+https_list = []
+
 def test_OK(http):
-	proxies = {'http':http,
-				'https':http}
+	proxies = {'http':http,'https':http}
 	try:
 		resp = reqst.get('http://www.baidu.com',timeout=5, proxies=proxies)
 		if resp.status_code == 200:
@@ -32,10 +38,6 @@ def test_OK(http):
 		return False
 	except:
 		return False
-	
-http_list = []
-https_list = []
-
 
 
 def get_list_from_xici(trs):
@@ -43,17 +45,15 @@ def get_list_from_xici(trs):
 		tds = [td.get_text() for td in tr.find_all('td')]
 		if tds[5] == 'HTTP':
 			http =  "%s://%s:%s" % (tds[5].lower(),tds[1],tds[2])
-			print http
+			# print http
 			if test_OK(http):
 				http_list.append(http)
 		elif tds[5] == 'HTTPS':
 			https = "%s://%s:%s" % (tds[5].lower(),tds[1],tds[2])
-			print https
+			# print https
 			if test_OK(https):
 				http_list.append(https)
 
-
-	
 
 resp = reqst.get(xici_url, timeout=10)
 trs = BeautifulSoup(resp.content).find_all('tr')[:11]
@@ -76,22 +76,18 @@ for i in range(1,33):
 
 
 timestamp = str(int(time.time()))
-print timestamp
-# http_list = ['http://182.90.41.165:80',
-# 					'http://120.27.131.178:80',
-# 					'http://115.46.68.144:8123',
-# 					"http://121.31.50.48:8123",
-# 					'http://113.7.130.59:80',
-# 					'http://182.90.63.13:8123']
+# print timestamp
 print http_list
-print https_list
-#http_list =['123', '456']
-f = file(os.path.join(os.getcwd(), 'proxies/'+ timestamp), 'wb')
+# print https_list
+
+if not os.path.exists(set_path):
+	os.makedirs(set_path)
+f = file(os.path.join(set_path, timestamp), 'wb')
 pickle.dump(http_list, f, True)
 f.close()
 
-f = file(os.path.join(os.getcwd(), 'proxies/'+ timestamp), 'rb')
-http_list = pickle.load(f)
-print http_list
-f.close()
+# f = file(os.path.join(os.getcwd(), 'proxies/'+ timestamp), 'rb')
+# http_list = pickle.load(f)
+# print http_list
+# f.close()
 
