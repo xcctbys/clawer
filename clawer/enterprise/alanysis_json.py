@@ -48,6 +48,7 @@ trans_dict = dict(
                 ('45',u'广西'),
                 ('46',u'海南'),
                 ('49',u'UnKnow'),
+                ('40',u'UnKnow'),
                 ('50',u'重庆'),
                 ('51',u'四川'),
                 ('52',u'贵州'),
@@ -98,7 +99,8 @@ db_total_dict = dict([('10',set()),
                 ('65',set()),
                 ('71',set()),
                 ('81',set()),
-                ('82',set())])
+                ('82',set()),
+                ('40',set())])
 
 success_dict = dict([('10',set()),
                 ('11',set()),
@@ -136,7 +138,8 @@ success_dict = dict([('10',set()),
                 ('81',set()),
                 ('82',set()),
                 ('30',set()),
-                ('49',set())])
+                ('49',set()),
+                ('40',set())])
 
 fail_dict = dict([('10',set()),
                 ('11',set()),
@@ -174,7 +177,8 @@ fail_dict = dict([('10',set()),
                 ('81',set()),
                 ('82',set()),
                 ('30',set()),
-                ('49',set())])
+                ('49',set()),
+                ('40',set())])
 
 db_down_dict = dict([('10',set()),
                 ('11',set()),
@@ -212,7 +216,8 @@ db_down_dict = dict([('10',set()),
                 ('81',set()),
                 ('82',set()),
                 ('30',set()),
-                ('49',set())])
+                ('49',set()),
+                ('40',set())])
 
 db_update_dict = dict([('10',set()),
                 ('11',set()),
@@ -250,7 +255,8 @@ db_update_dict = dict([('10',set()),
                 ('81',set()),
                 ('82',set()),
                 ('30',set()),
-                ('49',set())])
+                ('49',set()),
+                ('40',set())])
 
 db_except_dict = dict([('10',set()),
                 ('11',set()),
@@ -288,7 +294,8 @@ db_except_dict = dict([('10',set()),
                 ('81',set()),
                 ('82',set()),
                 ('30',set()),
-                ('49',set())])
+                ('49',set()),
+                ('40',set())])
 reason_dict = {}
 
 # reqst = requests.Session()
