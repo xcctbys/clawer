@@ -68,8 +68,10 @@ class BeijingCrawler(Crawler):
         if not os.path.exists(self.html_restore_path):
             os.makedirs(self.html_restore_path)
         # 获得代理
-        self.proxies = Proxies().get_proxies()
-
+        p = Proxies()
+        # p.filename = "/Users/princetechs5/crawler/nice-clawer/clawer/enterprise/libs/proxies/1457663081"
+        self.proxies = p.get_proxies()
+        self.timeout = 20
 
     def run(self, ent_number=0):
         """爬取的主函数
@@ -107,10 +109,33 @@ class BeijingCrawler(Crawler):
         self.write_file_mutex.release()
         '''
     def crawl_page_by_url(self, url):
-        return self.reqst.get( url, proxies = self.proxies)
+        resp = None
+        try:
+            resp = self.reqst.get( url, timeout= self.timeout, proxies = self.proxies)
+        except requests.exceptions.ConnectionError :
+            self.proxies = Proxies().get_proxies()
+            logging.error("get method self.proxies changed ")
+            return self.crawl_page_by_url( url)
+        except requests.exceptions.Timeout:
+            self.timeout += 5
+            logging.error("get method self.timeout plus timeout = %d"%(self.timeout) )
+            return self.crawl_page_by_url( url)
+        return resp
+
 
     def crawl_page_by_url_post(self, url, data):
-        return self.reqst.post(url, data, proxies = self.proxies)
+        resp = None
+        try:
+            resp = self.reqst.post(url, data, timeout=self.timeout, proxies = self.proxies)
+        except requests.exceptions.ConnectionError :
+            self.proxies = Proxies().get_proxies()
+            logging.error("post method self.proxies changed ")
+            return self.crawl_page_by_url_post(url ,data)
+        except requests.exceptions.Timeout:
+            self.timeout += 5
+            logging.error("post method self.timeout plus, timeout= %d"%(self.timeout))
+            return self.crawl_page_by_url_post(url ,data)
+        return resp
 
     def crawl_check_page(self):
         """爬取验证码页面，包括获取验证码url，下载验证码图片，破解验证码并提交
@@ -138,7 +163,7 @@ class BeijingCrawler(Crawler):
 
             if resp.content == 'fail':
                 logging.error('crack checkcode failed, response content = failed, total fail count = %d' % count)
-                time.sleep(random.uniform(0.1,2))
+                # time.sleep(random.uniform(0.1,2))
                 continue
 
             next_url = self.urls['open_info_entry']
@@ -152,7 +177,7 @@ class BeijingCrawler(Crawler):
                 return True
             else:
                 logging.error('crack checkcode failed, total fail count = %d' % count)
-            time.sleep(random.uniform(3,5))
+            # time.sleep(random.uniform(3,5))
         return False
 
     def crawl_ind_comm_pub_pages(self):
@@ -172,7 +197,7 @@ class BeijingCrawler(Crawler):
                      'ind_comm_pub_spot_check'        # 抽查检查信息
             ):
             self.get_page_json_data(item, 1)
-        time.sleep(random.uniform(0,3))
+        # time.sleep(random.uniform(0,3))
 
     def crawl_ent_pub_pages(self):
         """爬取企业公示信息页面
@@ -185,7 +210,7 @@ class BeijingCrawler(Crawler):
                     'ent_pub_administration_sanction' #行政许可信息
                     ):
             self.get_page_json_data(item, 2)
-        time.sleep(random.uniform(0,3))
+        # time.sleep(random.uniform(0,3))
 
     def crawl_other_dept_pub_pages(self):
         """爬取其他部门公示信息页面
@@ -225,7 +250,7 @@ class BeijingCrawler(Crawler):
         while count < 5:
             count+=1
             resp = self.crawl_page_by_url(self.urls['official_site'])
-            time.sleep(random.uniform(5, 10))
+            # time.sleep(random.uniform(5, 10))
             if resp.status_code != 200:
                 logging.error('failed to get crackcode url')
                 continue
@@ -296,7 +321,7 @@ class BeijingCrawler(Crawler):
             logging.error('failed to crawl page by url' % url)
             return
         page = resp.content
-        time.sleep(random.uniform(0.2, 1))
+        # time.sleep(random.uniform(0.2, 1))
         # if saveingtml:
         #     CrawlerUtils.save_page_to_file(self.html_restore_path + 'detail.html', page)
         return page
@@ -342,7 +367,7 @@ class BeijingCrawler(Crawler):
                     logging.error('failed to get all page of a section')
                     return pages_data
                 page = resp.content
-                time.sleep(random.uniform(0.2, 1))
+                # time.sleep(random.uniform(0.2, 1))
             except Exception as e:
                 logging.error('open new tab page failed, url = %s, page_num = %d' % (next_url, p+1))
                 page = None
@@ -374,7 +399,7 @@ class BeijingCrawler(Crawler):
             logging.error('get page failed by url %s' % url)
             return
         page = resp.content
-        time.sleep(random.uniform(0.2, 1))
+        # time.sleep(random.uniform(0.2, 1))
         return page
 
     def crack_checkcode(self):
@@ -388,7 +413,7 @@ class BeijingCrawler(Crawler):
             logging.error('failed to get checkcode img')
             return ckcode
         page = resp.content
-        time.sleep(random.uniform(1,2))
+        # time.sleep(random.uniform(1,2))
         self.write_file_mutex.acquire()
         with open(self.ckcode_image_path, 'wb') as f:
             f.write(page)
