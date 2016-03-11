@@ -15,7 +15,7 @@ import cPickle as pickle
 
 proxy_url = 'http://proxy.ipcn.org/country/'
 
-set_path = '/tmp/proxies/proxies.pik'
+set_path = '/tmp/proxies/proxies_2.pik'
 
 
 reqst = requests.Session()
@@ -48,7 +48,7 @@ tds = [td.get_text().strip() for td in table.find_all('td')[:30]]
 # print tds
 for td in tds:
 	if test_OK(td):
-		http_list.append(td)
+		http_list.append('http://'+td)
 
 
 
