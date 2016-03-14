@@ -147,6 +147,8 @@ class ZhejiangCrawler(object):
     """
     def crawl_page_main(self ):
         sub_json_dict= {}
+        del self.requests.headers['Referer']
+
         if not self.ents:
             logging.error(u"Get no search result\n")
         try:
@@ -1142,7 +1144,8 @@ class ZhejiangCrawler(object):
             return self.get_raw_text_by_tag(td_tag)
 
     def crawl_page_by_url(self, url):
-        r = self.requests.get( url, proxies= self.proxies)
+        r = self.requests.get( url, timeout= 20, proxies= self.proxies)
+
         if r.status_code != 200:
             logging.error(u"Getting page by url:%s\n, return status %s\n"% (url, r.status_code))
             return False
@@ -1151,9 +1154,9 @@ class ZhejiangCrawler(object):
 
     def crawl_page_by_url_post(self, url, data, header={}):
         if header:
-            r = self.requests.post(url, data, headers= header, proxies = self.proxies)
+            r = self.requests.post(url, data, timeout=20, headers= header, proxies = self.proxies)
         else :
-            r = self.requests.post(url, data, proxies = self.proxies)
+            r = self.requests.post(url, data, timeout = 20, proxies = self.proxies)
         if r.status_code != 200:
             logging.error(u"Getting page by url with post:%s\n, return status %s\n"% (url, r.status_code))
             return False

@@ -6,6 +6,7 @@ from django.test.client import Client
 from enterprise.models import Enterprise, Province
 import json
 import os
+import codecs
 from enterprise.utils import EnterpriseDownload
 
 
@@ -240,9 +241,12 @@ class TestEnterpriseDownload(TestCase):
         self.assertIsNotNone(data)
 
     def test_run_zhejiang(self):
-        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.ZHEJIANG), u"万向钱潮股份有限公司", u'330000000050426')
+        ent_num = u'330000000050426'
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.ZHEJIANG), u"万向钱潮股份有限公司", ent_num )
         downloader = EnterpriseDownload(url)
         data = downloader.download()
+        paths = os.path.join('/Users/princetechs5/2016/ZhejiangCrawler', ent_num+'.json')
+        json_dump_to_file(paths, data)
         self.assertIsNotNone(data)
 
     def test_run_shaanxi(self):
@@ -264,3 +268,12 @@ class TestEnterpriseDownload(TestCase):
         data = downloader.download()
         self.assertIsNotNone(data)
 
+def json_dump_to_file(path, json_dict):
+    write_type = 'w'
+    parpath = os.path.dirname(path)
+    if not os.path.exists(parpath):
+        os.makedirs(parpath)
+    else:
+        write_type = 'a'
+    with codecs.open(path, write_type, 'utf-8') as f:
+        f.write(json.dumps(json_dict, ensure_ascii=False)+'\n')
