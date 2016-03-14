@@ -66,22 +66,16 @@ case "$1" in
         fi
     ;;
     stop)
-        echo -n "Gracefully shutting down ${NAME} " 
-
-        if [ ! -r $PID ] ; then
-            echo "warning, no pid file found - ${NAME} is not running ?" 
-            exit 1
-        fi
-
-        kill `cat ${PID}`
-        wait_for_pid removed $PID
-        if [ -n "$try" ] ; then
-            echo " failed. Use force-exit" 
-            killall -9 ${NAME}
-            exit 1
+        if [ -f ${PID} ]; then
+            pid=`cat ${PID}`
         else
-            echo " done" 
+            pid=`ps aux | grep ${NAME} | grep -v grep | awk -F " " '{print $2}' | head -n 1`
         fi
+        
+        rm -f ${PID}
+        kill ${pid}
+
+        echo "Gracefully shutting down ${NAME}, PID ${pid}" 
     ;;
     restart)
         $0 stop
