@@ -14,6 +14,8 @@ from bs4 import BeautifulSoup
 from enterprise.libs.CaptchaRecognition import CaptchaRecognition
 import hashlib #验证码是MD5加密的，调用此包
 #import simplejson
+from enterprise.libs.proxies import Proxies
+
 
 urls = {
     'host': 'http://218.57.139.24/pub/',
@@ -45,17 +47,10 @@ class ShandongCrawler(object):
         self.path_captcha = settings.json_restore_path + '/shandong/ckcode.jpeg'
         #html数据的存储路径
         self.html_restore_path = settings.json_restore_path + '/shandong/'
+        p = Proxies()
+        self.proxies = p.get_proxies()
+        self.timeout = 15
 
-
-    # 破解搜索页面
-    def crawl_page_search(self, url):
-        r = self.requests.get( url)
-        if r.status_code != 200:
-            logging.error(u"Something wrong when getting the url:%s , status_code=%d", url, r.status_code)
-            return
-        r.encoding = "utf-8"
-        #logging.debug("searchpage html :\n  %s", r.text)
-        return r.text
 
     #分析 展示页面， 获得搜索到的企业列表
     def analyze_showInfo(self, page):
@@ -70,18 +65,18 @@ class ShandongCrawler(object):
 
     # 破解验证码页面
     def crawl_page_captcha(self, url_search, url_Captcha, url_CheckCode,url_showInfo,  textfield= '370000018067809'):
-
-        html_search = self.crawl_page_search(url_search)
+        # get 搜索页面
+        html_search = self.crawl_page_by_url(url_search)['page']
         count = 0
-        while True:
+        while count < 15:
             count+= 1
-            r = self.requests.get( url_Captcha)
+            r = self.requests.get( url_Captcha, proxies = self.proxies, timeout = self.timeout )
             if r.status_code != 200:
-                logging.error(u"Something wrong when getting the Captcha url:%s , status_code=%d", url_Captcha, r.status_code)
+                logging.error(u"Something wrong when getting the Captcha url:%s , status_code=%d, ID= %s\n" %( url_Captcha, r.status_code, textfield))
                 return
-            #logging.debug("Captcha page html :\n  %s", self.Captcha)
+            #logging.error("Captcha page html :\n  %s", self.Captcha)
             if self.save_captcha(r.content):
-                logging.info("Captcha is saved successfully \n" )
+
                 result = self.crack_captcha()
                 secode = hashlib.md5(str(result)).hexdigest() # MD5 encode
                 if not html_search:
@@ -94,6 +89,7 @@ class ShandongCrawler(object):
                         '_csrf': csrf,
                         'secode': secode,
                 }
+                logging.error(u"check code post datas = %s, ID= %s" %( datas, textfield) )
                 page=  self.crawl_page_by_url_post(url_CheckCode, datas)['page']
                 # 如果验证码正确，就返回一种页面，否则返回主页面
 
@@ -101,9 +97,10 @@ class ShandongCrawler(object):
                     self.analyze_showInfo(page)
                     break
                 else:
-                    logging.debug(u"crack Captcha failed, the %d time(s)", count)
-                    if count> 15:
-                        break
+                    logging.error(u"crack Captcha failed, the %d time(s), ID= %s" %( count, textfield) )
+            else:
+                logging.error("Captcha is not saved successfully \n" )
+
         return
 
     # 判断是否成功搜索页面
@@ -131,7 +128,7 @@ class ShandongCrawler(object):
         try:
             f.write(Captcha)
         except IOError:
-            logging.debug("%s can not be written", url_Captcha)
+            logging.error("%s can not be written", url_Captcha)
         finally:
             f.close
         self.write_file_mutex.release()
@@ -150,8 +147,8 @@ class ShandongCrawler(object):
                 m = re.match('http', ent)
                 if m is None:
                     ent = urls['host']+ ent
-                #logging.debug(u"ent url:%s\n"% ent)
-                logging.info(u"crawl main url:%s"% ent)
+                #logging.error(u"ent url:%s\n"% ent)
+                logging.error(u"crawl main url:%s"% ent)
                 #ent_num = ent[ent.index('entId=')+6 :]
                 #工商公示信息
                 url = ent
@@ -181,7 +178,7 @@ class ShandongCrawler(object):
         try:
             #url = "http://218.57.139.24/pub/gsgsdetail/1223/6e0948678bfeed4ac8115d5cafef819ad6951a24f0c0188cd6c047570329c9b6"
             #page = html_from_file('next.html')
-            logging.info( u"crawl the crawl_ind_comm_pub_pages page %s."%(url))
+            logging.error( u"crawl the crawl_ind_comm_pub_pages page %s."%(url))
             page = self.crawl_page_by_url(url)['page']
             entpripid = url[url.rfind('/')+1:]
             post_data = {'encrpripid' : entpripid}
@@ -207,7 +204,7 @@ class ShandongCrawler(object):
             cyjc= self.parse_page(page, 'chouchaxinxi', post_data)
             sub_json_dict['ind_comm_pub_spot_check'] = cyjc[u'抽查检查信息'] if cyjc.has_key(u'抽查检查信息') else []
         except Exception as e:
-            logging.debug(u"An error ocurred in crawl_ind_comm_pub_pages: %s"% type(e))
+            logging.error(u"An error ocurred in crawl_ind_comm_pub_pages: %s"% type(e))
             raise e
         finally:
             return sub_json_dict
@@ -215,7 +212,7 @@ class ShandongCrawler(object):
     def crawl_ent_pub_pages(self, url):
         sub_json_dict = {}
         try:
-            logging.info( u"crawl the crawl_ent_pub_pages page %s."%(url))
+            logging.error( u"crawl the crawl_ent_pub_pages page %s."%(url))
             page = self.crawl_page_by_url(url)['page']
             #html_to_file('next.html', page)
             entpripid = url[url.rfind('/')+1:]
@@ -235,7 +232,7 @@ class ShandongCrawler(object):
             zscq = self.parse_page_qygs(page, 'zhishichanquan', post_data)
             sub_json_dict['ent_pub_knowledge_property'] = zscq[u'知识产权出质登记信息'] if zscq.has_key(u'知识产权出质登记信息') else []
         except Exception as e:
-            logging.debug(u"An error ocurred in crawl_ent_pub_pages: %s"% type(e))
+            logging.error(u"An error ocurred in crawl_ent_pub_pages: %s"% type(e))
             raise e
         finally:
             return sub_json_dict
@@ -243,7 +240,7 @@ class ShandongCrawler(object):
     def crawl_other_dept_pub_pages(self, url):
         sub_json_dict = {}
         try:
-            logging.info( u"crawl the crawl_other_dept_pub_pages page %s."%(url))
+            logging.error( u"crawl the crawl_other_dept_pub_pages page %s."%(url))
             page = self.crawl_page_by_url(url)['page']
             #html_to_file('next.html', page)
             # entpripid = url[url.rfind('/')+1:]
@@ -253,7 +250,7 @@ class ShandongCrawler(object):
             cf = self.parse_page_qtbm(page, "xingzhengchufa")  # 行政处罚信息
             sub_json_dict["other_dept_pub_administration_sanction"] = cf[u'行政处罚信息'] if cf.has_key(u'行政处罚信息') else []
         except Exception as e:
-            logging.debug(u"An error ocurred in crawl_other_dept_pub_pages: %s"% (type(e)))
+            logging.error(u"An error ocurred in crawl_other_dept_pub_pages: %s"% (type(e)))
             raise e
         finally:
             return sub_json_dict
@@ -263,7 +260,7 @@ class ShandongCrawler(object):
         """
         sub_json_dict = {}
         try:
-            logging.info( u"crawl the crawl_judical_assist_pub_pages page %s."%(url))
+            logging.error( u"crawl the crawl_judical_assist_pub_pages page %s."%(url))
             page = self.crawl_page_by_url(url)['page']
             #html_to_file('next.html', page)
             xz = self.parse_page_sfxz(page, 'sifaxiezhu')
@@ -271,7 +268,7 @@ class ShandongCrawler(object):
             gd = self.parse_page_sfxz(page, 'sifagudong')
             sub_json_dict['judical_assist_pub_shareholder_modify'] = gd[u'司法股东变更登记信息'] if gd.has_key(u'司法股东变更登记信息') else []
         except Exception as e:
-            logging.debug(u"An error ocurred in crawl_judical_assist_pub_pages: %s"% (type(e)))
+            logging.error(u"An error ocurred in crawl_judical_assist_pub_pages: %s"% (type(e)))
             raise e
         finally:
             return sub_json_dict
@@ -369,7 +366,6 @@ class ShandongCrawler(object):
             elif bs_table.find_all('tr')[1].find('th') and not bs_table.find_all('tr')[1].find('td') and len(bs_table.find_all('tr')[1].find_all('th')) > 1:
                 tr = bs_table.find_all('tr')[1]
         ret_val=  self.get_record_table_columns_by_tr(tr, table_name)
-        #logging.debug(u"ret_val->%s\n", ret_val)
         return  ret_val
 
     def get_record_table_columns_by_tr(self, tr_tag, table_name):
@@ -384,7 +380,6 @@ class ShandongCrawler(object):
             count = 0
             if len(tr_tag.find_all('th'))>0 :
                 for th in tr_tag.find_all('th'):
-                    #logging.debug(u"th in get_record_table_columns_by_tr =\n %s", th)
                     col_name = self.get_raw_text_by_tag(th)
                     if col_name :
                         if ((col_name, col_name) in columns) :
@@ -456,7 +451,7 @@ class ShandongCrawler(object):
                         for i, item in enumerate(gqxxlist):
 
                             link = urls['webroot']+'pub/sfgsgqxxdetail/'+encrpripid+'/'+enttype+'/'+str(item['pid'])+'/'+ str(item['frozstate'])
-                            logging.info( u"crawl the link %s, table_name is %s"%(link, table_name))
+                            logging.error( u"crawl the link %s, table_name is %s"%(link, table_name))
                             link_page = self.crawl_page_by_url(link)['page']
                             link_data = self.parse_page_sfxz(link_page)
                             datas = [i+1, item['inv'], str(item['froam'])+ (u"万股" if enttype.find('12') != -1 and enttype.find('52')!=-1 and enttype.find('62')!= -1 else u"万元"), \
@@ -744,7 +739,7 @@ class ShandongCrawler(object):
             #print type(res)
             ls = json.loads(res)
             for i, l in enumerate(ls):
-                #logging.info( u"crawl the link %s, table_name is %s"%(link, table_name))
+                #logging.error( u"crawl the link %s, table_name is %s"%(link, table_name))
                 czxx = l['czxx']
                 rjxxs= l['rjxx']
                 sjxxs= l['sjxx']
@@ -795,7 +790,7 @@ class ShandongCrawler(object):
             for rows in ls:
                 for i, l in enumerate(rows['bgxx']):
                     date_from = l['altdate']
-                    #logging.info( u"crawl the link %s, table_name is %s"%(link, table_name))
+                    #logging.error( u"crawl the link %s, table_name is %s"%(link, table_name))
                     # 这里注意type
                     datas = [i+1, l['altitem'], self.SetJsonTime(date_from), l['altbe'], l['altaf'] ]
                     sub_json_list.append(dict(zip(titles, datas)))
@@ -819,7 +814,7 @@ class ShandongCrawler(object):
                 date_to = l['pleregperto']
                 link = urls['webroot']+"pub/jszscqdetail/"+post_data['encrpripid']+"/"+l['pid']+"/"+l['type']
                 link_page = self.crawl_page_by_url(link)['page']
-                logging.info( u"crawl the link %s, table_name is %s"%(link, table_name))
+                logging.error( u"crawl the link %s, table_name is %s"%(link, table_name))
                 link_data = self.parse_page_qygs(link_page)
                 # 这里注意type
                 datas = [i+1, l['tmregno'], l['tmname'], l['kinds'], l['pledgor'], l['imporg'],  self.SetJsonTime(date_from) +" - " + self.SetJsonTime(date_to) , '有效' if int(l['type'])==1 else '无效', link_data]
@@ -842,7 +837,7 @@ class ShandongCrawler(object):
             ls = json.loads(res)
             for i, l in enumerate(ls):
                 date_from = l['altdate']
-                #logging.info( u"crawl the link %s, table_name is %s"%(link, table_name))
+                #logging.error( u"crawl the link %s, table_name is %s"%(link, table_name))
                 # 这里注意type
                 datas = [i+1, l['inv'], l['transamprpre'], l['transampraft'] , self.SetJsonTime(date_from)]
                 sub_json_list.append(dict(zip(titles, datas)))
@@ -864,7 +859,7 @@ class ShandongCrawler(object):
             ls = json.loads(res)
             for i, l in enumerate(ls):
                 date_from = l['pendecissdate']
-                #logging.info( u"crawl the link %s, table_name is %s"%(link, table_name))
+                #logging.error( u"crawl the link %s, table_name is %s"%(link, table_name))
                 # 这里注意type
                 datas = [i+1, l['pendecno'], self.getCfType(l['pentype']),l['penauth'] , self.SetJsonTime(date_from), l['remark']]
                 sub_json_list.append(dict(zip(titles, datas)))
@@ -889,7 +884,7 @@ class ShandongCrawler(object):
                 date_to   = l['valto']
                 link = urls['webroot']+"pub/jsxzxkdetail/"+post_data['encrpripid']+"/"+l['pid']+"/"+l['type']
                 #link_page = self.crawl_page_by_url(link)['page']
-                #logging.info( u"crawl the link %s, table_name is %s"%(link, table_name))
+                #logging.error( u"crawl the link %s, table_name is %s"%(link, table_name))
                 #link_data = self.parse_page_qygs(link_page)
                 link_data = u"无"
                 # 这里注意type
@@ -994,9 +989,9 @@ class ShandongCrawler(object):
             ls = json.loads(res)
             for i, l in enumerate(ls):
                 date_abn = l['pendecissdate']
-                #logging.info( u"crawl the link %s, table_name is %s"%(link, table_name))
+                #logging.error( u"crawl the link %s, table_name is %s"%(link, table_name))
                 link = urls['webroot']+"pub/gsxzcfdetail/"+post_data['encrpripid']+"/"+l['caseno']
-                logging.info( u"crawl the link %s, table_name is %s"%(link, table_name))
+                logging.error( u"crawl the link %s, table_name is %s"%(link, table_name))
                 link_page = self.crawl_page_by_url(link)['page']
                 ########!!!!!!!!!!!!!!这里的link_page没有做
                 link_data = self.parse_page(link_page)
@@ -1041,7 +1036,7 @@ class ShandongCrawler(object):
             ls = json.loads(res)
             for i, l in enumerate(ls):
                 date_abn = l['insdate']
-                #logging.info( u"crawl the link %s, table_name is %s"%(link, table_name))
+                #logging.error( u"crawl the link %s, table_name is %s"%(link, table_name))
 
                 # 这里注意type
                 datas = [i+1, l['insauth'], l['instype'],self.SetJsonTime(date_abn), l['insres']]
@@ -1064,7 +1059,7 @@ class ShandongCrawler(object):
             for i, l in enumerate(ls):
                 date_abn = l['abntime']
                 date_rem = l['remdate']
-                #logging.info( u"crawl the link %s, table_name is %s"%(link, table_name))
+                #logging.error( u"crawl the link %s, table_name is %s"%(link, table_name))
                 # 这里注意type
                 datas = [i+1, l['serillrea'],self.SetJsonTime(date_abn), l['remexcpres'],self.SetJsonTime(date_rem), l['decorg']]
                 sub_json_list.append(dict(zip(titles, datas)))
@@ -1107,7 +1102,7 @@ class ShandongCrawler(object):
             for i, l in enumerate(ls):
                 date_dict = l['equpledate']
                 link = urls['webroot']+"pub/gsgqczdetail/"+post_data['encrpripid']+"/"+str(l['equityno'])+"/"+str(l['type'])
-                logging.info( u"crawl the link %s, table_name is %s"%(link, table_name))
+                logging.error( u"crawl the link %s, table_name is %s"%(link, table_name))
                 link_page = self.crawl_page_by_url(link)['page']
                 #print link_page
                 ########!!!!!!!!!!!!!!这里的link_page没有做
@@ -1328,13 +1323,13 @@ class ShandongCrawler(object):
                             if td.find('a'):
                                 #try to retrieve detail link from page
                                 next_url = self.get_detail_link(td.find('a'))
-                                logging.info(u'crawl detail url: %s'% next_url)
+                                logging.error(u'crawl detail url: %s'% next_url)
                                 if next_url:
                                     detail_page = self.crawl_page_by_url(next_url)
                                     #html_to_file("test.html", detail_page['page'])
                                     #print "table_name : "+ table_name
                                     if table_name == u'企业年报':
-                                        #logging.debug(u"next_url = %s, table_name= %s\n", detail_page['url'], table_name)
+                                        #logging.error(u"next_url = %s, table_name= %s\n", detail_page['url'], table_name)
                                         page_data = self.parse_ent_pub_annual_report_page(detail_page['page'])
 
                                         item[columns[col_count][0]] = page_data #this may be a detail page data
@@ -1399,27 +1394,48 @@ class ShandongCrawler(object):
         text = ""
         urls = ""
         try:
-            r = self.requests.get( url)
+            r = self.requests.get( url, proxies = self.proxies, timeout= self.timeout)
             if r.status_code != 200:
                 logging.error(u"Getting page by url:%s, return status %s\n"% (url, r.status_code))
             text = r.text
             urls = r.url
             # 为了防止页面间接跳转，获取最终目标url
+        except requests.exceptions.ConnectionError :
+            self.proxies = Proxies().get_proxies()
+            logging.error("get method self.proxies changed proxies = %s\n"%(self.proxies))
+            return self.crawl_page_by_url( url)
+        except requests.exceptions.Timeout:
+            self.timeout += 5
+            logging.error("get method self.timeout plus timeout = %d, proxies= %s\n"%(self.timeout, self.proxies) )
+            if self.timeout >25:
+                logging.error("post method self.timeout plus timeout > 100 , proxies= %s\n"%(self.proxies) )
+                self.proxies = Proxies().get_proxies()
+            return self.crawl_page_by_url( url)
         except Exception as e:
             logging.error(u"Cann't get page by url:%s, exception is %s"%(url, type(e)))
-        finally:
-            return {'page' : text, 'url': urls}
+        return {'page' : text, 'url': urls}
 
     def crawl_page_by_url_post(self, url, data, header={}):
         text = ""
         urls = ""
         try:
             self.requests.headers.update(header)
-            r = self.requests.post(url, data)
+            r = self.requests.post(url, data, proxies = self.proxies, timeout= self.timeout)
             if r.status_code != 200:
                 logging.error(u"Getting page by url with post:%s, return status %s\n"% (url, r.status_code))
             text = r.text
             urls = r.url
+        except requests.exceptions.ConnectionError :
+            self.proxies = Proxies().get_proxies()
+            logging.error("post method self.proxies changed proxies = %s\n"%(self.proxies))
+            return self.crawl_page_by_url_post( url, data, header)
+        except requests.exceptions.Timeout:
+            self.timeout += 5
+            logging.error("post method self.timeout plus timeout = %d, proxies= %s\n"%(self.timeout, self.proxies) )
+            if self.timeout >25:
+                self.proxies = Proxies().get_proxies()
+                logging.error("post method self.timeout plus timeout > 100 , proxies= %s\n"%(self.proxies) )
+            return self.crawl_page_by_url_post( url, data, header)
         except Exception as e:
             logging.error(u"Cann't post page by url:%s, exception is %s"%(url, type(e)))
         return {'page': text, 'url': urls}
@@ -1497,7 +1513,7 @@ if __name__ == "__main__":
     #shandong.work('370000018067809')
     shandong.work('371400400000937')
 
-"""
+
 if __name__ == "__main__":
     reload (sys)
     sys.setdefaultencoding('utf8')
@@ -1509,8 +1525,8 @@ if __name__ == "__main__":
     ents = read_ent_from_file("./enterprise_list/shandong.txt")
     shandong = ShandongCrawler('./enterprise_crawler/shandong.json')
     for ent_str in ents:
-        logging.info(u'###################   Start to crawl enterprise with id %s   ###################\n' % ent_str[2])
+        logging.error(u'###################   Start to crawl enterprise with id %s   ###################\n' % ent_str[2])
         shandong.run(ent_num = ent_str[2])
-        logging.info(u'###################   Enterprise with id  %s Finished!  ###################\n' % ent_str[2])
+        logging.error(u'###################   Enterprise with id  %s Finished!  ###################\n' % ent_str[2])
 
-
+"""
