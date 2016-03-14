@@ -15,6 +15,7 @@ from datetime import datetime, timedelta
 from . import settings
 from enterprise.libs.CaptchaRecognition import CaptchaRecognition
 import logging
+from enterprise.libs.proxies import Proxies
 
 class ZongjuCrawler(Crawler):
     """总局工商爬虫
