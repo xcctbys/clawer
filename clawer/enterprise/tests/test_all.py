@@ -105,9 +105,10 @@ class TestEnterpriseDownload(TestCase):
         self.assertIsNotNone(data)
 
     def test_run_shanghai(self):
-        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.SHANGHAI), u"海通证券股份有限公司", u'310000000016182')
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.SHANGHAI), u"钧锋投资管理咨询（上海）有限公司", u'310000400542355')
         downloader = EnterpriseDownload(url)
         data = downloader.download()
+        print data
         self.assertIsNotNone(data)
     def test_run_qinghai(self):
         url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.QINGHAI), u"九州证券有限公司", u'630000100019052')
