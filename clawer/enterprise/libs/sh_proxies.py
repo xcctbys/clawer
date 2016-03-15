@@ -30,17 +30,6 @@ reqst.headers.update(
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:39.0) Gecko/20100101 Firefox/39.0'})
 
 def get_proxy_from_proxy_url(proxy_url):
-	'''
-	get a ip list from proxy_url 
-	Args:
-		proxy_url : site source url
-
-	Returns:
-		list: all ip proxy list from proxy_url but not validation absolute
-
-	Raises:
-		HttpErrors 
-	'''
     resp = reqst.get(proxy_url, timeout=60)
     table = BeautifulSoup(resp.content).find_all('table', attrs={'border':'1', 'size':'85%'})[-1]
     # print [td.get_text().strip() for td in table.find_all('td')[:40]]
