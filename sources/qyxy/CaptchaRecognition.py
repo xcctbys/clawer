@@ -97,7 +97,8 @@ class CaptchaRecognition(object):
             self.to_calculate = True
             self.label_list = [u"零", u"壹", u"贰", u"叁", u"肆", u"伍", u"陆", u"柒", u"捌", u"玖", u"拾", u"加", u"减", u"乘", u"除",
                                u"等", u"于", u"以", u"上", u"去", u"?", u"0", u"1", u"2", u"3", u"4", u"5", u"6", u"7", u"8",
-                               u"9", u"的", u"一", u"二", u"三", u"四", u"五", u"六", u"七", u"八", u"九", u"十", u"〇", u"是"]
+                               u"9", u"的", u"一", u"二", u"三", u"四", u"五", u"六", u"七", u"八", u"九", u"十", u"〇", u"是",
+                               u"=", u"*", u"+"]
         if captcha_type == "jiangsu":
             self.image_label_count = 6
             self.image_start = 0
@@ -260,15 +261,15 @@ class CaptchaRecognition(object):
             self.masker = 410
             self.to_summarized = True
         elif captcha_type == "ningxia":
-            self.image_label_count = 6
-            self.masker = 100
+            self.image_label_count = 5
+            self.masker = 110
             self.customized_postisions = True
-            self.position_left = [15, 40, 70, 89, 126, 144]
-            self.position_right = [40, 72, 89, 126, 144, 160]
-            self.image_top = 0
-            self.image_height = 40
+            self.position_left = [20, 45, 70, 95, 120]
+            self.position_right = [35, 60, 85, 110, 135]
+            self.image_top = 7
+            self.image_height = 27
             self.to_denoise = False
-            self.to_calculate = True
+            self.to_calculate = False
             self.to_binarized = True
             self.customized_width = 40
             self.double_denoise = False
@@ -497,7 +498,7 @@ class CaptchaRecognition(object):
             return 2
         elif len(numbers) == 1:
             first_num = self.__convert_to_number__(numbers[0])
-            if results.__contains__(u"乘"):
+            if results.__contains__(u"乘") or results.__contains__(u"*"):
                 if first_num == 0:
                     return 0
                 else:
@@ -508,13 +509,13 @@ class CaptchaRecognition(object):
         first_num = self.__convert_to_number__(numbers[0])
         second_num = self.__convert_to_number__(numbers[1])
 
-        if results.__contains__(u"加"):
+        if results.__contains__(u"加") or results.__contains__(u"+"):
             return first_num + second_num
-        elif results.__contains__(u"减"):
+        elif results.__contains__(u"减") or results.__contains__(u"-"):
             return first_num - second_num
-        elif results.__contains__(u"乘"):
+        elif results.__contains__(u"乘") or results.__contains__(u"*"):
             return first_num * second_num
-        elif results.__contains__(u"除"):
+        elif results.__contains__(u"除") or results.__contains__(u"/"):
             if second_num == 0:
                 return 0
             return first_num / second_num
