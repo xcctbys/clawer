@@ -142,12 +142,8 @@ class TestEnterpriseDownload(TestCase):
         url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.JIANGXI), u"中航证券有限公司", ent_num)
         downloader = EnterpriseDownload(url)
         data = downloader.download()
-<<<<<<< HEAD
-        print data
-=======
         paths = os.path.join('/Users/princetechs5/2016/JiangxiCrawler', ent_num+'.json')
         json_dump_to_file(paths, data)
->>>>>>> 40aa2ca39a5ab72acb12b55369c84abdbd6bae98
         self.assertIsNotNone(data)
 
     def test_run_heilongjiang(self):
@@ -156,10 +152,13 @@ class TestEnterpriseDownload(TestCase):
         data = downloader.download()
         self.assertIsNotNone(data)
 
-    def test_run(self):
-        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.BEIJING), u"北京高华证券有限责任公司", u'110000007552812')
+    def test_run_beijing(self):
+        ent_num = u'110101013510699'
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.BEIJING), u"北京高华证券有限责任公司", ent_num )
         downloader = EnterpriseDownload(url)
         data = downloader.download()
+        paths = os.path.join('/Users/princetechs5/2016/BeijingCrawler', ent_num+'.json')
+        json_dump_to_file(paths, data)
         self.assertIsNotNone(data)
 
     def test_run_xizang(self):
@@ -236,9 +235,12 @@ class TestEnterpriseDownload(TestCase):
         self.assertIsNotNone(data)
 
     def test_run_guangdong(self):
-        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.GUANGDONG), u"广发证券股份有限公司", u'222400000001337')
+        ent_num = u'440600000036507'
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.GUANGDONG), u"广发证券股份有限公司", ent_num)
         downloader = EnterpriseDownload(url)
         data = downloader.download()
+        paths = os.path.join('/Users/princetechs5/2016/GuangdongCrawler', ent_num+'.json')
+        json_dump_to_file(paths, json.loads(data))
         self.assertIsNotNone(data)
 
     def test_run_tianjin(self):
