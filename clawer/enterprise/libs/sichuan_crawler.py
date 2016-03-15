@@ -199,7 +199,7 @@ class SichuanCrawler(object):
 				allths = allths[:i]
 				break
 		alltds = [td.get_text().strip() if td.get_text() else None for td in table.find_all('td')]
-		if head == u'变更信息' or head == u'修改记录':
+		if head == u'变更信息' or head == u'修改记录' or head == u'行政处罚信息':
 			alltds = []
 			for td in table.find_all('td'):
 				if td.get_text():
