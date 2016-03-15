@@ -16,6 +16,7 @@ import types
 import urlparse
 import json
 
+from enterprise.libs.proxies import Proxies
 from . import settings
 from enterprise.libs.CaptchaRecognition import CaptchaRecognition
 import logging
@@ -92,6 +93,10 @@ class JiangxiCrawler(Crawler):
             'Accept-Language': 'en-US, en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:39.0) Gecko/20100101 Firefox/39.0'})
         self.json_dict = {}
+        p = Proxies()
+        # p.filename = "/Users/princetechs5/crawler/nice-clawer/clawer/enterprise/libs/proxies/1457663081"
+        self.proxies = p.get_proxies()
+        self.timeout = 30
         self.ent_number = None
         self.results = None
 

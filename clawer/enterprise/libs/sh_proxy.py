@@ -44,11 +44,9 @@ def test_OK(http):
 resp = reqst.get(proxy_url, timeout=10)
 table = BeautifulSoup(resp.content).find_all('table', attrs={'border':'1', 'size':'85%'})[-1]
 # print table
-tds = [td.get_text().strip() for td in table.find_all('td')[:30]]
+tds = ['http://' + td.get_text().strip() for td in table.find_all('td')[:50]]
+print tds
 # print tds
-for td in tds:
-	if test_OK(td):
-		http_list.append('http://'+td)
 
 
 
@@ -58,12 +56,12 @@ for td in tds:
 print http_list
 # print https_list
 
-if not os.path.exists(os.path.dirname(set_path)):
-	os.makedirs(os.path.dirname(set_path))
-if http_list:
-	f = file(set_path, 'wb')
-	pickle.dump(http_list, f, True)
-	f.close()
+# if not os.path.exists(os.path.dirname(set_path)):
+# 	os.makedirs(os.path.dirname(set_path))
+# if http_list:
+# 	f = file(set_path, 'wb')
+# 	pickle.dump(http_list, f, True)
+# 	f.close()
 
 # f = file(os.path.join(os.getcwd(), 'proxies/'+ timestamp), 'rb')
 # http_list = pickle.load(f)
