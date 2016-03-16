@@ -93,7 +93,7 @@ if __name__ == '__main__':
     pool_output = pool.map(test_OK, a_list)
     pool.close()
     pool.join()
- 
+
     http_list = filter(lambda x: x is not None, pool_output)
     # print http_list
 
