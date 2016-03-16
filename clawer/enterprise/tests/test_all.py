@@ -177,9 +177,12 @@ class TestEnterpriseDownload(TestCase):
 
 
     def test_run_jiangsu(self):
-        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.JIANGSU), u"华泰证券股份有限公司", u'320000000000192')
+        ent_num = u'320500000089310'
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.JIANGSU), u"华泰证券股份有限公司", ent_num)
         downloader = EnterpriseDownload(url)
         data = downloader.download()
+        paths = os.path.join('/Users/princetechs5/2016/JiangsuCrawler', ent_num+'.json')
+        json_dump_to_file(paths, data)
         self.assertIsNotNone(data)
 
     def test_run_shanxi(self):
