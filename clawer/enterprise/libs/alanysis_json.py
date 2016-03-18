@@ -317,6 +317,8 @@ def dowload_json_by_days(url, one_json_file, f):
 		# print resp.status_code
 	# except:
 	# 	print 'error-get-reqst-%s' % json_url
+
+	#直接从本地得到json.gz并解压，保存到一个文件里。
     for item in os.listdir(url):
         path = os.path.join(url, item)
         g = None
@@ -327,6 +329,7 @@ def dowload_json_by_days(url, one_json_file, f):
 
 
 def dump_json_to_success_or_fail_file(abs_json_path, success_file_path, fail_file_path):
+	#将json数据为空的与非空的分别保存到两个文件。
 	success_file = open(success_file_path, 'w+')
 	fail_file = open(fail_file_path, 'w+')
 	with open(abs_json_path, 'rb') as f:
@@ -345,6 +348,7 @@ def dump_json_to_success_or_fail_file(abs_json_path, success_file_path, fail_fil
 	pass
 
 def get_total_dict_from_db():
+	#得到每个省份要得到的企业的总数。
 	try:
 		conn = MySQLdb.connect(host='10.100.80.50', user='cacti', passwd='cacti', db='clawer', port=3306)
 		cur = conn.cursor()
@@ -352,31 +356,36 @@ def get_total_dict_from_db():
 		results = cur.fetchall()
 		for result in results:
 			# print result
-			if result[0] and result[0][:2] != '91' and result[0][:2] != '16' and result[0][:2]!='97':
-				db_total_dict[result[0][:2]].add(result[0].strip())
-                
+			if result[0]:
+				try:
+					db_total_dict[result[0][:2]].add(result[0].strip())
+				except KeyError as e:
+					pass  
 		cur.close()
 		conn.close()
 	except MySQLdb.Error, e:
 		print 'Mysql error %d:%s' %(e.args[0], e.args[1])
 
 def get_down_dict_from_db():
+	#得到全部已经下载的数据。
 	try:
 		conn = MySQLdb.connect(host='10.100.80.50', user='cacti', passwd='cacti', db='enterprise', port=3306)
 		cur = conn.cursor()
 		count = cur.execute('select register_num from basic')
 		results = cur.fetchall()
 		for result in results:
-			# print result
-			if result[0] and result[0][:2] != '91'  and result[0][:2] != '97' and result[0][:2] != '16':
-				db_down_dict[result[0][:2]].add(result[0].strip())
-                
+			if result[0]:
+				try:
+					db_down_dict[result[0][:2]].add(result[0].strip())
+				except KeyError as e:
+					pass
 		cur.close()
 		conn.close()
 	except MySQLdb.Error, e:
 		print 'Mysql error %d:%s' %(e.args[0], e.args[1])
 
 def get_update_dict_from_db(yesterday):
+	#得到当天已经下载的数据。
     try:
         conn = MySQLdb.connect(host='10.100.80.50', user='cacti', passwd='cacti', db='enterprise', port=3306)
         cur = conn.cursor()
@@ -387,7 +396,7 @@ def get_update_dict_from_db(yesterday):
             results = cur.fetchall()
             for result in results:
                 # print result
-                if result[0] and result[0][:2] != '91' and result[0][:2] != '97' and result[0][:2] != '16':
+                if result[0] :
                     try:
                         db_update_dict[result[0][:2]].add(result[0].strip())
                     except KeyError as e:
@@ -398,6 +407,7 @@ def get_update_dict_from_db(yesterday):
         print 'Mysql error %d:%s' %(e.args[0], e.args[1])
 
 def get_except_dict_from_db(yesterday):
+	#得到总爬取，总异常。及各个省份的爬取，异常情况。
     count_except = 0
     count_clawer = 0
     try:
@@ -425,18 +435,19 @@ def get_except_dict_from_db(yesterday):
     pass
 
 def alanysis_data(count_except, count_clawer):
-    total_enterprise_num = 0
-    total_clawer_not_none = 0
-    total_clawer_is_none = 0
-    total_clawer_num = 0
-    total_clawer_except_num = 0
-    total_not_clawer_num = 0
-    total_update_db_num = 0
-    total_not_update_db_num = 0
-    total_come_in_db_num = 0
-    total_not_come_in_db_num = 0
-    total_clawer_not_none_and_come_in_db_num = 0
-    total_clawer_and_come_in_db_num = 0
+	#分析数据。
+    total_enterprise_num = 0  #所有企业数量
+    total_clawer_not_none = 0 #所有爬取到且非空的数据量。
+    total_clawer_is_none = 0  #爬取了，但数据是空的数据量。
+    total_clawer_num = 0   #爬取总数。
+    total_clawer_except_num = 0  #所有异常总数
+    total_not_clawer_num = 0  #所有未爬取量
+    total_update_db_num = 0   #当天所有入数据库量
+    total_not_update_db_num = 0  #当天爬取了但没有入库量
+    total_come_in_db_num = 0    #库存量
+    total_not_come_in_db_num = 0  #库存缺少量
+    total_clawer_not_none_and_come_in_db_num = 0  #数据爬取非空且入库量。
+    total_clawer_and_come_in_db_num = 0  #灵气爬取包括空值的入库量。
 
     reportfile = codecs.open('report.csv', 'wb', 'utf8')
     reportfile.write('%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s,%-15s' %  (u'代号', 
@@ -552,6 +563,7 @@ def alanysis_data(count_except, count_clawer):
     have_come_in_db_data_csv.close()
 
 def json_dump_to_file(path, json_dict):
+	#将异常原因(json)
     write_type = 'wb'
     if os.path.exists(path):
         write_type = 'a'
@@ -559,6 +571,7 @@ def json_dump_to_file(path, json_dict):
         f.write(json.dumps(json_dict, ensure_ascii=False)+'\n')
 
 def alanysis_except(count_except):
+	#分析异常原因，也是从数据库里读数据。
     reason_dict = {}
     try:
         conn = MySQLdb.connect(host='10.100.80.50', user='cacti', passwd='cacti', db='clawer', port=3306)
@@ -600,6 +613,8 @@ def make_dir(path):
             raise exc
 
 if __name__ == '__main__':
+    #得到要分析的日期，可以自己加参数如，python alanysis_json.py 2016-03-12 [...],
+    #不加参数则自动获得昨天日期为要分析的日期
     do_with_day = []
     lastname = []
     yesterday = str(datetime.date.today() - datetime.timedelta(days=1))
@@ -618,21 +633,30 @@ if __name__ == '__main__':
     f = open(one_json_file, 'wb+')
     for day in do_with_day:
         # print os.path.join(json_url, '/'.join(day.split('-')))
+        # 从本地得到 json.gz 文件 并解压至一个 .json 文件。
         dowload_json_by_days(os.path.join(json_url, '/'.join(day.split('-'))), one_json_file, f)
     f.close()
 
+    # 分开数据为空的，不为空的分别保存到两个文件。
     dump_json_to_success_or_fail_file(one_json_file, success_json_file, fail_json_file)
+
+    #从数据库里得到各个企业的下载量
     get_down_dict_from_db()
+    #从数据库里得到 各个省份的企业总数。
     get_total_dict_from_db()
 
     if sys.argv[1:]:
         yesterday = list(sys.argv[1:])
     else:
         yesterday = [yesterday]
+    #得到昨天各个省份 企业的下载量。
     get_update_dict_from_db(yesterday)
+    #得到爬取总数，及出现的异常总数。还有各个省份的爬取总数，异常总数。
     count_except, count_clawer = get_except_dict_from_db(yesterday)
 
+    #分析每个省份的下载量，异常量，各效率。
     alanysis_data(count_except, count_clawer)
+    #得到所有省份的异常原因，并用 json保存。
     alanysis_except(count_except)
 
     
