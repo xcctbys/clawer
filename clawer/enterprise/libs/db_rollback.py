@@ -45,7 +45,7 @@ def update_db_clawertask():
 	try:
 		conn = MySQLdb.connect(host='10.100.80.50', user='cacti', passwd='cacti', db='clawer', port=3306)
 		cur = conn.cursor()
-		count = cur.execute('delete from clawer_clawertask as t1, clawer_clawerdownloadlog as t2 where t1.id = t2.id and clawer_id=7 and (status=1 or status=2)')
+		count = cur.execute('delete from clawer_clawertask as task, clawer_clawerdownloadlog as log where task.id = log.task_id and task.clawer_id=7 and (task.status=1 or task.status=2)')
 		conn.commit()
 		cur.close()
 		conn.close()
