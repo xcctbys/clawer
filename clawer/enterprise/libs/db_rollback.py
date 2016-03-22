@@ -40,6 +40,17 @@ def get_down_dict_from_db():
 	except MySQLdb.Error, e:
 		print 'Mysql error %d:%s' %(e.args[0], e.args[1])
 
+def update_db_clawertask():
+	try:
+		conn = MySQLdb.connect(host='10.100.80.50', user='cacti', passwd='cacti', db='clawer', port=3306)
+		cur = conn.cursor()
+		count = cur.execute('delete * from clawer_clawertask where clawer_id=7 and (status=1 or status=2)')
+		conn.commit()
+		cur.close()
+		conn.close()
+	except MySQLdb.Error, e:
+		print 'Mysql error %d:%s' %(e.args[0], e.args[1])
+
 get_total_dict_from_db()
 get_down_dict_from_db()
 total_set = set(db_total_list)
@@ -49,8 +60,14 @@ print 'down_set lengths:', len(down_set)
 diff_set = total_set - down_set
 print 'diff_set lengths:', len(diff_set)
 
+uri = []
 with open('all_data.txt', 'r') as f:
 	for line in f.readlines():
 		if line.split(',')[-1].strip() not in diff_set:
-			print line
+			info = [item.strip().decode('utf8') for item in line.strip().split(',')]
+			uri.append(u'enterprise://%s/%s/%s' % tuple(info))
+
+update_db_clawertask()
+
+
 
