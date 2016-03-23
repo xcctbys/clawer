@@ -45,12 +45,32 @@ def update_db_clawertask():
 	try:
 		conn = MySQLdb.connect(host='10.100.80.50', user='cacti', passwd='cacti', db='clawer', port=3306)
 		cur = conn.cursor()
-		count = cur.execute('delete from clawer_clawertask as task, clawer_clawerdownloadlog as log where task.id = log.task_id and task.clawer_id=7 and (task.status=1 or task.status=2)')
+		count = cur.execute('delete from clawer_clawertask as task where task.clawer_id=7 and task.status=1')
+		conn.commit()
+		count = cur.execute('delete clawer_clawerdownloadlog from clawer_clawertask, clawer_clawerdownloadlog where clawer_clawerdownloadlog.task_id = clawer_clawertask.id and clawer_clawertask.clawer_id=7 and clawer_clawertask.status=2')
+		conn.commit()
+		count = cur.execute('delete clawer_clawertask from clawer_clawertask where clawer_clawertask.clawer_id=7 and clawer_clawertask.status=2')
 		conn.commit()
 		cur.close()
 		conn.close()
 	except MySQLdb.Error, e:
 		print 'Mysql error %d:%s' %(e.args[0], e.args[1])
+
+def update_db_clawertask(uri):
+	try:
+		conn = MySQLdb.connect(host='10.100.80.50', user='cacti', passwd='cacti', db='clawer', port=3306)
+		cur = conn.cursor()
+		for item in uri:
+			count = cur.execute(“insert into clawer_clawertask(clawer_id, uri, status, add_datetime,  task_generator_id, store, cookie, args) \
+														values (%d, '%s', %d, '%s',  %d, %s, %s, %s)” % (7, item, 1, '2016-03-23 16:26:00', 30, 'NULL', 'NULL', 'NULL'))
+			conn.commit()
+		
+		cur.close()
+		conn.close()
+	except MySQLdb.Error, e:
+		print 'Mysql error %d:%s' %(e.args[0], e.args[1])
+
+
 
 get_total_dict_from_db()
 get_down_dict_from_db()
@@ -69,6 +89,7 @@ with open('all_data.txt', 'r') as f:
 			uri.append(u'enterprise://%s/%s/%s' % tuple(info))
 
 update_db_clawertask()
+add_db_clawertask([u'enterprise://广东/深圳市前海美丽神州基金管理有限公司/440301111798558/'])
 
 
 
