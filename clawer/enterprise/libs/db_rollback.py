@@ -56,7 +56,7 @@ def update_db_clawertask():
 	except MySQLdb.Error, e:
 		print 'Mysql error %d:%s' %(e.args[0], e.args[1])
 
-def update_db_clawertask(uri):
+def add_db_clawertask(uri):
 	try:
 		conn = MySQLdb.connect(host='10.100.80.50', user='cacti', passwd='cacti', db='clawer', port=3306)
 		cur = conn.cursor()
