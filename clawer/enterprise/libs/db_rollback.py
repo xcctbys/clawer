@@ -89,7 +89,7 @@ with open('all_data.txt', 'r') as f:
 			uri.append(u'enterprise://%s/%s/%s' % tuple(info))
 
 update_db_clawertask()
-add_db_clawertask([u'enterprise://广东/深圳市前海美丽神州基金管理有限公司/440301111798558/'])
+add_db_clawertask(uri)
 
 
 
