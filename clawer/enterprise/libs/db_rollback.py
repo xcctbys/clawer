@@ -62,7 +62,7 @@ def add_db_clawertask(uri):
 		cur = conn.cursor()
 		for item in uri:
 			item = item.encode('latin1')
-			count = cur.execute("insert into clawer_clawertask(clawer_id, uri, status, add_datetime,  task_generator_id, store, cookie, args) values (%d, '%s', %d, '%s',  %d, %s, %s, %s)" % (7, item, 1, '2016-03-23 16:26:00', 30, 'NULL', 'NULL', 'NULL'))
+			count = cur.execute("insert into clawer_clawertask(clawer_id, uri, status, add_datetime,  task_generator_id, store, cookie, args) values (%d, '%s', %d, '%s',  %d, %s, %s, %s)" % (7, unicode(item), 1, '2016-03-23 16:26:00', 30, 'NULL', 'NULL', 'NULL'))
 			conn.commit()
 		
 		cur.close()
