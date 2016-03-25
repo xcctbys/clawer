@@ -50,7 +50,7 @@ class NingxiaClawer(Crawler):
             'ind_comm_pub_skeleton': 'http://www.nmgs.gov.cn:7001/aiccips/GSpublicity/GSpublicityList.html',
             }
 
-    def __init__(self, json_restore_path):
+    def __init__(self, json_restore_path=None):
         """
         初始化函数
         Args:
@@ -121,7 +121,7 @@ class NingxiaClawer(Crawler):
         :return true or false
         """
         count = 0
-        while count < 300:
+        while count < 15:
             ck_code = self.crack_check_code(count)
             data = {'password': ck_code}
             resp = self.reqst.post(NingxiaClawer.urls['post_checkCode'], data=data)
@@ -172,9 +172,9 @@ class NingxiaClawer(Crawler):
             os.makedirs(self.ckcode_image_dir_path)
         with open(self.ckcode_image_path, 'wb') as f:
             f.write(resp.content)
-        if count is not None:
-            with open(self.ckcode_image_dir_path + 'ckcode' + str(count) + '.jpg', 'wb') as f:
-                f.write(resp.content)
+        # if count is not None:
+        #     with open(self.ckcode_image_dir_path + 'ckcode.jpg', 'wb') as f:
+        #         f.write(resp.content)
         # Test
         # with open(self.ckcode_image_dir_path + 'image' + str(i) + '.jpg', 'wb') as f:
         #     f.write(resp.content)
@@ -188,7 +188,7 @@ class NingxiaClawer(Crawler):
         finally:
             pass
         self.write_file_mutex.release()
-
+        print ckcode
         return ckcode[1]
 
     def crawl_page_by_post_data(self, data, name='detail.html', url=None):
@@ -1195,6 +1195,7 @@ if __name__ == '__main__':
     crawler = NingxiaClawer('./enterprise_crawler/ningxia/ningxia.json')
     enterprise_list = CrawlerUtils.get_enterprise_list('./enterprise_list/ningxia.txt')
     i = 0
+    enterprise_list=['640200200005857']
     for ent_number in enterprise_list:
         ent_number = ent_number.rstrip('\n')
         settings.logger.info(

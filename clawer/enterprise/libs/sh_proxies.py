@@ -18,6 +18,7 @@ import multiprocessing
 proxy_url = 'http://proxy.ipcn.org/country/'  #国内 IPCN 免费代理
 xici_url = 'http://www.xicidaili.com/'			#西刺代理
 sixsix_url = 'http://www.66ip.cn/areaindex_'    #66代理
+zdaye_url = 'http://ip.zdaye.com/?ip=&port=&adr=&checktime=&sleep=&cunhuo=&nport=&nadr=&dengji=&https=&yys=&gb=4&post=Ö§³Ö&px='
 
 set_path = '/tmp/proxies/proxies.pik'  # pickle 文件保存位置
 http_list = []  #用于保存最终有效 ip代理，元素为 'http://x.x.x.x:x'
@@ -31,13 +32,13 @@ reqst.headers.update(
 
 def get_proxy_from_proxy_url(proxy_url):
     resp = reqst.get(proxy_url, timeout=60)
-    table = BeautifulSoup(resp.content).find_all('table', attrs={'border':'1', 'size':'85%'})[-1]
+    table = BeautifulSoup(resp.content, 'html.parser').find_all('table', attrs={'border':'1', 'size':'85%'})[-1]
     # print [td.get_text().strip() for td in table.find_all('td')[:40]]
-    return [td.get_text().strip() for td in table.find_all('td')[:40]]
+    return [td.get_text().strip() for td in table.find_all('td')[:50]]
 
 def get_proxy_from_xici_url(xici_url):
     resp = reqst.get(xici_url, timeout=60)
-    trs = BeautifulSoup(resp.content).find_all('tr')[:6]
+    trs = BeautifulSoup(resp.content, 'html.parser').find_all('tr')[:10]
     a_list = []
     for tr in trs[2:]:
         tds = [td.get_text().strip() for td in tr.find_all('td')]
@@ -54,14 +55,24 @@ def get_proxy_from_sixsix_url(sixsix_url):
             resp = reqst.get(url, timeout=30)
         except:
             continue
-        table = BeautifulSoup(resp.content).find_all('table', attrs={'width':'100%', 'border':"2px", 'cellspacing':"0px", 'bordercolor':"#6699ff"})[0]
-        trs = table.find_all('tr')[1:3]
+        table = BeautifulSoup(resp.content, 'html.parser').find_all('table', attrs={'width':'100%', 'border':"2px", 'cellspacing':"0px", 'bordercolor':"#6699ff"})[0]
+        trs = table.find_all('tr')[1:4]
         for tr in trs:
             tds = [td.get_text() for td in tr.find_all('td')]
             http = "%s:%s" % (tds[0],tds[1])
             a_list.append(http)
     # print a_list
     return a_list
+def get_proxy_from_zdaye_url(zdaye_url):
+    a_list = []
+    resp = reqst.get(zdaye_url, timeout=30)
+    table = BeautifulSoup(resp.content, 'html.parser').find_all('table', attrs={'class':'table table-hover panel-default panel ctable'})[0]
+    trs = table.find_all('tr')[1:6]
+    for tr in trs:
+        tds = [td.get_text().strip() for td in tr.find_all('td')]
+        print tds[0], tds[1], tds[2]
+        # print tr
+
 
 def test_OK(http):
     print http
@@ -78,6 +89,7 @@ def test_OK(http):
 if __name__ == '__main__':
     a_list = []
     # http_list = []
+    # get_proxy_from_zdaye_url(zdaye_url)
     temp_list = get_proxy_from_proxy_url(proxy_url)
     a_list.extend(temp_list)
     temp_list = get_proxy_from_sixsix_url(sixsix_url)
@@ -86,8 +98,8 @@ if __name__ == '__main__':
     a_list.extend(temp_list)
 
     # a_list = [u'119.254.84.90:80', u'122.95.4.75:8118',  u'110.117.204.40:8118',  u'222.39.64.74:8118', u'121.69.36.122:8118', u'121.42.220.79:8088', u'121.69.45.162:8118']
-
     # print a_list
+
     pool_size = multiprocessing.cpu_count() * 2
     pool = multiprocessing.Pool(processes= pool_size)
     pool_output = pool.map(test_OK, a_list)

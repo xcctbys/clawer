@@ -269,7 +269,7 @@ class CaptchaRecognition(object):
             self.image_top = 7
             self.image_height = 27
             self.to_denoise = False
-            self.to_calculate = False
+            self.to_calculate = True
             self.to_binarized = True
             self.customized_width = 40
             self.double_denoise = False
