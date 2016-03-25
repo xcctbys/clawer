@@ -8,6 +8,9 @@ DISK_USAGE=80
 function shrink_clawer() 
 {
      used=`df -h | grep vda1 | awk '{print int($5)}'`
+     if [ -z ${used} ]; then
+          used=`df -h | grep xvdb1 | awk '{print int($5)}'`
+     fi
      if [ ${used} -gt ${DISK_USAGE} ]; then
          #remove 7 days ago file
          for (( i=${DAY_AGO}; i<=30; i++ )) 
