@@ -544,6 +544,7 @@ class GenerateClawerTask(object):
         self.end_time = None
         self.content_bytes = 0
         self.url_cache = UrlCache()
+        self.sentry_client = SentryClient()
         
     def run(self):
         from clawer.models import ClawerTaskGenerator, Clawer, ClawerTask, ClawerGenerateLog
@@ -562,6 +563,7 @@ class GenerateClawerTask(object):
             p = safe_process.run(1800)
         except Exception, e:
             self.failed(e.child_traceback)
+            self.sentry_client.capture()
             return False
         
         err = p.stderr.read()
@@ -591,6 +593,7 @@ class GenerateClawerTask(object):
             except:
                 logging.error("add %s failed: %s", line, traceback.format_exc(10))
                 self.failed(traceback.format_exc(10))
+                self.sentry_client.capture()
         
         out_f.close()
         os.remove(self.out_path)
