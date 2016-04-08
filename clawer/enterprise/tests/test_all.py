@@ -6,6 +6,7 @@ from django.test.client import Client
 from enterprise.models import Enterprise, Province
 import json
 import os
+import codecs
 from enterprise.utils import EnterpriseDownload
 
 
@@ -98,15 +99,23 @@ class TestEnterpriseDownload(TestCase):
         self.assertIsNotNone(data)
     """
     def test_run_sichuan(self):
-        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.SICHUAN), u"中信产业投资基金管理有限公司", u'510708000002128')
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.SICHUAN), u"四川省壹泽投资管理有限责任公司", u'510000000356616')
         downloader = EnterpriseDownload(url)
         data = downloader.download()
+        print data
+        ent_num = '510000000356616'
+        paths = os.path.join('/Users/princetechs3/2016/Sichuan', ent_num+'.json')
+        json_dump_to_file(paths, json.loads(data))
         self.assertIsNotNone(data)
 
     def test_run_shanghai(self):
-        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.SHANGHAI), u"海通证券股份有限公司", u'310000000016182')
+        ent_num = '310000400542355'
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.SHANGHAI), u"钧锋投资管理咨询（上海）有限公司", u'310000400542355')
         downloader = EnterpriseDownload(url)
         data = downloader.download()
+        # print data
+        # paths = os.path.join('/Users/princetechs3/2016/ShanghaiCrawler', ent_num+'.json')
+        # json_dump_to_file(paths, data)
         self.assertIsNotNone(data)
     def test_run_qinghai(self):
         url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.QINGHAI), u"九州证券有限公司", u'630000100019052')
@@ -132,20 +141,34 @@ class TestEnterpriseDownload(TestCase):
         self.assertIsNotNone(data)
 
     def test_run_jiangxi(self):
-        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.JIANGXI), u"中航证券有限公司", u'360000110000996')
+        ent_num = u'360000110000996'
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.JIANGXI), u"中航证券有限公司", ent_num)
         downloader = EnterpriseDownload(url)
         data = downloader.download()
+<<<<<<< HEAD
+
+        paths = os.path.join('/Users/princetechs5/2016/JiangxiCrawler', ent_num+'.json')
+        json_dump_to_file(paths, data)
+
+=======
+        paths = os.path.join('/Users/princetechs5/2016/JiangxiCrawler', ent_num+'.json')
+        json_dump_to_file(paths, data)
+>>>>>>> 8b436c68bae403ba47fd4cc5c15be91f8e19b18f
         self.assertIsNotNone(data)
+
     def test_run_heilongjiang(self):
         url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.HEILONGJIANG), u"江海证券有限公司", u'230100100019556')
         downloader = EnterpriseDownload(url)
         data = downloader.download()
         self.assertIsNotNone(data)
 
-    def test_run(self):
-        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.BEIJING), u"北京高华证券有限责任公司", u'110000007552812')
+    def test_run_beijing(self):
+        ent_num = u'110101013510699'
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.BEIJING), u"北京高华证券有限责任公司", ent_num )
         downloader = EnterpriseDownload(url)
         data = downloader.download()
+        paths = os.path.join('/Users/princetechs5/2016/BeijingCrawler', ent_num+'.json')
+        json_dump_to_file(paths, data)
         self.assertIsNotNone(data)
 
     def test_run_xizang(self):
@@ -164,9 +187,12 @@ class TestEnterpriseDownload(TestCase):
 
 
     def test_run_jiangsu(self):
-        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.JIANGSU), u"华泰证券股份有限公司", u'320000000000192')
+        ent_num = u'320500000089310'
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.JIANGSU), u"华泰证券股份有限公司", ent_num)
         downloader = EnterpriseDownload(url)
         data = downloader.download()
+        paths = os.path.join('/Users/princetechs5/2016/JiangsuCrawler', ent_num+'.json')
+        json_dump_to_file(paths, data)
         self.assertIsNotNone(data)
 
     def test_run_shanxi(self):
@@ -222,9 +248,12 @@ class TestEnterpriseDownload(TestCase):
         self.assertIsNotNone(data)
 
     def test_run_guangdong(self):
-        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.GUANGDONG), u"广发证券股份有限公司", u'222400000001337')
+        ent_num = u'440600000036507'
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.GUANGDONG), u"广发证券股份有限公司", ent_num)
         downloader = EnterpriseDownload(url)
         data = downloader.download()
+        paths = os.path.join('/Users/princetechs5/2016/GuangdongCrawler', ent_num+'.json')
+        json_dump_to_file(paths, json.loads(data))
         self.assertIsNotNone(data)
 
     def test_run_tianjin(self):
@@ -234,15 +263,21 @@ class TestEnterpriseDownload(TestCase):
         self.assertIsNotNone(data)
 
     def test_run_shandong(self):
-        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.SHANDONG), u"中泰证券股份有限公司", u'370000018067809')
+        ent_num = u'370683200037960'
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.SHANDONG), u"中泰证券股份有限公司", ent_num)
         downloader = EnterpriseDownload(url)
         data = downloader.download()
+        paths = os.path.join('/Users/princetechs5/2016/ShandongCrawler', ent_num+'.json')
+        json_dump_to_file(paths, json.loads(data))
         self.assertIsNotNone(data)
 
     def test_run_zhejiang(self):
-        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.ZHEJIANG), u"万向钱潮股份有限公司", u'330000000050426')
+        ent_num = u'330000000050426'
+        url = u"enterprise://%s/%s/%s/" % (Province.to_name(Province.ZHEJIANG), u"万向钱潮股份有限公司", ent_num )
         downloader = EnterpriseDownload(url)
         data = downloader.download()
+        paths = os.path.join('/Users/princetechs5/2016/ZhejiangCrawler', ent_num+'.json')
+        json_dump_to_file(paths, json.loads(data))
         self.assertIsNotNone(data)
 
     def test_run_shaanxi(self):
@@ -264,3 +299,12 @@ class TestEnterpriseDownload(TestCase):
         data = downloader.download()
         self.assertIsNotNone(data)
 
+def json_dump_to_file(path, json_dict):
+    write_type = 'w'
+    parpath = os.path.dirname(path)
+    if not os.path.exists(parpath):
+        os.makedirs(parpath)
+    else:
+        write_type = 'a'
+    with codecs.open(path, write_type, 'utf-8') as f:
+        f.write(json.dumps(json_dict, ensure_ascii=False)+'\n')

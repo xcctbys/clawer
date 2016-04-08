@@ -299,7 +299,7 @@ class IndustryCommerceAdminiPenalty(models.Model):
 
     penalty_decision_num = models.CharField(max_length=30, null=True, blank=True)
     illegal_type = models.CharField(max_length=100, null=True, blank=True)
-    penalty_content = models.CharField(max_length=50, null=True, blank=True)
+    penalty_content = models.CharField(max_length=1024, null=True, blank=True)
     penalty_decision_gov = models.CharField(max_length=50, null=True, blank=True)
     penalty_decision_date = models.DateField(null=True)
     detail = models.TextField(null=True, blank=True)
@@ -635,7 +635,7 @@ class EnterAdministrativePenalty(models.Model):
     administrative_penalty_content = models.CharField(max_length=30, null=True, blank=True)
     decision_gov = models.CharField(max_length=30, null=True, blank=True)
     decision_date = models.DateField(null=True)
-    penalty_comment = models.CharField(max_length=50, null=True, blank=True)
+    penalty_comment = models.CharField(max_length=1024, null=True, blank=True)
     penalty_publicit_date = models.DateField(null=True)
     enter_id = models.CharField(max_length=20, null=True, blank=True)
     bas_id = models.IntegerField(null=True)
@@ -831,7 +831,7 @@ class OtherAdministrativePenalty(models.Model):
 
     penalty_decision_num = models.IntegerField(null=True)
     illegal_type = models.CharField(max_length=100, null=True, blank=True)
-    penalty_content = models.CharField(max_length=50, null=True, blank=True)
+    penalty_content = models.CharField(max_length=1024, null=True, blank=True)
     penalty_decision_gov = models.CharField(max_length=50, null=True, blank=True)
     penalty_decision_date = models.DateField(null=True)
     detail = models.TextField(null=True, blank=True)

@@ -93,6 +93,7 @@ Run server. Then visit http://localhost:8000/
       */5    *    *    *    * cd /home/webapps/nice-clawer/confs/cr;./bg_cmd.sh task_generator_install
       20    *    *    *    * cd /home/webapps/nice-clawer/confs/cr;./bg_cmd.sh clawer_monitor_hour
       40    3    *    *    * cd /home/webapps/nice-clawer/confs/cr;./bg_cmd.sh clawer_monitor_day
+      */50 * * * * cd /home/webapps/nice-clawer/sources/qyxy/structured/scripts/production/; sh run.sh structured
       ### for nginx user
       */5    *    *    *    * cd /home/webapps/nice-clawer/confs/cr;./bg_cmd.sh task_dispatch
       30     *    *    *    * cd /home/webapps/nice-clawer/confs/cr;./bg_cmd.sh task_analysis_merge

@@ -54,22 +54,14 @@ class ZhejiangCrawler(object):
 
     # 破解搜索页面
     def crawl_page_search(self, url):
-        r = self.requests.get( url)
-        if r.status_code != 200:
-            logging.error(u"Something wrong when getting the url:%s , status_code=%d", url, r.status_code)
-            return
-        r.encoding = "utf-8"
-        #logging.debug("searchpage html :\n  %s", r.text)
-        return r.text
+        return self.crawl_page_by_url(url)['page']
+
 
     #分析 展示页面， 获得搜索到的企业列表
     def analyze_showInfo(self, url, datas):
-        r = self.requests.post( url, datas )
-        if r.status_code != 200:
-            logging.error(u"Getting Page ShowInfo failed\n")
-            return False
+        content = self.crawl_page_by_url_post(url, datas)['page']
         Ent = []
-        soup = BeautifulSoup(r.text, "html5lib")
+        soup = BeautifulSoup(content, "html5lib")
         divs = soup.find_all("dl", {"class":"list"})
         if divs:
             for div in divs:
@@ -83,7 +75,7 @@ class ZhejiangCrawler(object):
         if not html_search:
             logging.error(u"There is no search page")
         count = 0
-        while True:
+        while count < 40:
             count+= 1
             r = self.requests.get( url_Captcha)
             if r.status_code != 200:
@@ -91,7 +83,6 @@ class ZhejiangCrawler(object):
                 return
             if self.save_captcha(r.content):
                 result = self.crack_captcha()
-                #print result
                 datas= {
                         'name': textfield,
                         'verifyCode': result,
@@ -104,8 +95,6 @@ class ZhejiangCrawler(object):
                     break
                 else:
                     logging.debug(u"crack Captcha failed, the %d time(s)", count)
-                    if count> 25:
-                        break
             time.sleep(random.uniform(1, 4))
         return
     def get_check_response(self, url, datas):
@@ -147,6 +136,8 @@ class ZhejiangCrawler(object):
     """
     def crawl_page_main(self ):
         sub_json_dict= {}
+        del self.requests.headers['Referer']
+
         if not self.ents:
             logging.error(u"Get no search result\n")
         try:
@@ -1142,18 +1133,16 @@ class ZhejiangCrawler(object):
             return self.get_raw_text_by_tag(td_tag)
 
     def crawl_page_by_url(self, url):
-        r = self.requests.get( url, proxies= self.proxies)
+        r = self.requests.get( url)
+
         if r.status_code != 200:
             logging.error(u"Getting page by url:%s\n, return status %s\n"% (url, r.status_code))
             return False
         # 为了防止页面间接跳转，获取最终目标url
         return {'page' : r.text, 'url': r.url}
 
-    def crawl_page_by_url_post(self, url, data, header={}):
-        if header:
-            r = self.requests.post(url, data, headers= header, proxies = self.proxies)
-        else :
-            r = self.requests.post(url, data, proxies = self.proxies)
+    def crawl_page_by_url_post(self, url, data):
+        r = self.requests.post(url, data)
         if r.status_code != 200:
             logging.error(u"Getting page by url with post:%s\n, return status %s\n"% (url, r.status_code))
             return False

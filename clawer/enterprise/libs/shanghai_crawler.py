@@ -5,6 +5,7 @@ import threading
 from zongju_crawler import ZongjuCrawler
 from zongju_crawler import ZongjuParser
 from enterprise.libs.CaptchaRecognition import CaptchaRecognition
+from enterprise.libs.proxies import Proxies
 
 class ShanghaiCrawler(ZongjuCrawler):
     """上海爬虫
@@ -33,6 +34,10 @@ class ShanghaiCrawler(ZongjuCrawler):
         ZongjuCrawler.__init__(self, json_restore_path)
         self.json_restore_path = json_restore_path
         self.parser = ShanghaiParser(self)
+        p = Proxies()
+        self.proxies = p.get_proxies()
+        self.timeout = 20
+
 
 
 class ShanghaiParser(ZongjuParser):

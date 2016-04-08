@@ -16,9 +16,12 @@ import types
 import urlparse
 import json
 
+from enterprise.libs.proxies import Proxies
 from . import settings
 from enterprise.libs.CaptchaRecognition import CaptchaRecognition
 import logging
+from enterprise.libs.proxies import Proxies
+
 
 class JiangxiCrawler(Crawler):
     """甘肃工商公示信息网页爬虫
@@ -38,6 +41,7 @@ class JiangxiCrawler(Crawler):
     # 多线程爬取时往最后的json文件中写时的加锁保护
     write_file_mutex = threading.Lock()
     urls = {'host': 'http://gsxt.jxaic.gov.cn',
+            'main': 'http://gsxt.jxaic.gov.cn/ECPS/',
             'get_checkcode': 'http://gsxt.jxaic.gov.cn/ECPS/verificationCode.jsp?',
             'post_checkCode': 'http://gsxt.jxaic.gov.cn/ECPS/qyxxgsAction_checkVerificationCode.action?',
             'post_checkCode2': 'http://gsxt.jxaic.gov.cn/ECPS/qyxxgsAction_queryXyxx.action?',
@@ -74,7 +78,7 @@ class JiangxiCrawler(Crawler):
             'report_record_of_modifies': 'http://gsxt.jxaic.gov.cn/ECPS/qyNbxxAction_xgjlxx.action?',
             }
 
-    def __init__(self, json_restore_path):
+    def __init__(self, json_restore_path=None):
         """
         初始化函数
         Args:
@@ -92,8 +96,14 @@ class JiangxiCrawler(Crawler):
             'Accept-Language': 'en-US, en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:39.0) Gecko/20100101 Firefox/39.0'})
         self.json_dict = {}
+        p = Proxies()
+        # p.filename = "/Users/princetechs5/crawler/nice-clawer/clawer/enterprise/libs/proxies/1457663081"
+        self.proxies = p.get_proxies()
+        self.timeout = 30
         self.ent_number = None
         self.results = None
+        p = Proxies()
+        self.proxies = p.get_proxies()
 
     def run(self, ent_number=0):
         crawler = JiangxiCrawler('./enterprise_crawler/jiangxi/jiangxi.json')
@@ -103,8 +113,12 @@ class JiangxiCrawler(Crawler):
             os.makedirs(self.html_restore_path)
 
         crawler.json_dict = {}
+        # get main page
+        resp = self.reqst.get(JiangxiCrawler.urls['main'], proxies= self.proxies, timeout= 20)
+        if resp.status_code != 200:
+            logging.error('failed to get main page')
+            return None
         page = crawler.crawl_check_page()
-
         if page is None:
             logging.error(
                 'According to the registration number does not search to the company %s' % self.ent_number)
@@ -169,10 +183,10 @@ class JiangxiCrawler(Crawler):
         :return true or false
         """
         count = 0
-        while count < 300:
+        while count < 15:
             ck_code = self.crack_check_code(count)
             data = {'password': ck_code}
-            resp = self.reqst.post(JiangxiCrawler.urls['post_checkCode'], data=data)
+            resp = self.reqst.post(JiangxiCrawler.urls['post_checkCode'], data=data, proxies = self.proxies, timeout= 20)
             if resp.status_code != 200:
                 logging.error("crawl post check page failed!")
                 count += 1
@@ -195,7 +209,7 @@ class JiangxiCrawler(Crawler):
             search_data['otherLoginInfo.password'] = ''
             search_data['otherLoginInfo.verificationCode'] = ''
             search_data['selectValue'] = self.ent_number
-            resp = self.reqst.post(JiangxiCrawler.urls['post_checkCode2'], data=search_data)
+            resp = self.reqst.post(JiangxiCrawler.urls['post_checkCode2'], data=search_data, proxies= self.proxies, timeout = 20)
             if resp.status_code != 200:
                 count -= 1
                 continue
@@ -210,7 +224,7 @@ class JiangxiCrawler(Crawler):
         params = {}
         params['_'] = times
 
-        resp = self.reqst.get(JiangxiCrawler.urls['get_checkcode'], params=params)
+        resp = self.reqst.get(JiangxiCrawler.urls['get_checkcode'], params=params, proxies= self.proxies, timeout= 20)
         print 'image code', str(resp.status_code)
         if resp.status_code != 200:
             logging.error('failed to get get_checkcode')
@@ -244,7 +258,7 @@ class JiangxiCrawler(Crawler):
         """
         通过传入不同的参数获得不同的页面
         """
-        resp = self.reqst.get(url=url, params=params)
+        resp = self.reqst.get(url=url, params=params, proxies= self.proxies, timeout= 20)
         # print str(resp.status_code)
         if resp.status_code != 200:
             logging.error('crawl page by url failed! url = %s' % url)
