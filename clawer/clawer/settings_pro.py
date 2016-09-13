@@ -1,7 +1,6 @@
-#encoding=utf-8
+# encoding=utf-8
 
-from settings import *
-
+from settings import *  # noqa
 
 
 DEBUG = False
@@ -9,12 +8,12 @@ TEMPLATE_DEBUG = DEBUG
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'clawer',                      # Or path to database file if using sqlite3.
-        'USER': 'dev',                      # Not used with sqlite3.
-        'PASSWORD': 'dev012131',                  # Not used with sqlite3.
-        'HOST': 'rds023qjrzl93g2hjq61.mysql.rds.aliyuncs.com',                      # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
+        'ENGINE': 'django.db.backends.mysql',                   # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': 'clawer',                                       # Or path to database file if using sqlite3.
+        'USER': 'dachengmysqlserver%%dacheng',                  # Not used with sqlite3.
+        'PASSWORD': 'daCheng!0527',                             # Not used with sqlite3.
+        'HOST': 'dachengmysqlserver.mysqldb.chinacloudapi.cn',  # Set to empty string for localhost. Not used with sqlite3.
+        'PORT': '',                                             # Set to empty string for default. Not used with sqlite3.
     }
 }
 
@@ -31,9 +30,9 @@ CACHES = {
 
 EMAIL_BACKEND = 'django_smtp_ssl.SSLEmailBackend'
 EMAIL_HOST = 'smtp.exmail.qq.com'
-EMAIL_PORT = 465   
-EMAIL_HOST_USER='robot@princetechs.com'  
-EMAIL_HOST_PASSWORD='Robot0023' 
+EMAIL_PORT = 465
+EMAIL_HOST_USER = 'robot@princetechs.com'
+EMAIL_HOST_PASSWORD = 'Robot0023'
 USE_TLS = True
 
 
@@ -47,14 +46,13 @@ CLAWER_RESULT = "/data/clawer_result/"
 CLAWER_RESULT_URL = "http://clawer.princetechs.com/media/clawer_result/"
 
 
-REDIS = "redis://10.171.34.147/0"
-URL_REDIS = "redis://10.172.241.155/0"
-MONITOR_REDIS = "redis://10.171.34.147/0"
+REDIS = "redis://:hGw18oyfN275k5l0lwZWTtfIQ3hS/RCL5pCi4GbGgeQ=@dacheng-redis.redis.cache.chinacloudapi.cn/0"
+URL_REDIS = "redis://:hGw18oyfN275k5l0lwZWTtfIQ3hS/RCL5pCi4GbGgeQ=@dacheng-redis.redis.cache.chinacloudapi.cn/1"
+MONITOR_REDIS = "redis://:hGw18oyfN275k5l0lwZWTtfIQ3hS/RCL5pCi4GbGgeQ=@dacheng-redis.redis.cache.chinacloudapi.cn/2"
 
 
 CRONTAB_HOME = "/home/webapps/nice-clawer/confs/production"
 
-#captcha
 CAPTCHA_STORE = "/data/media/captcha"
 
 
@@ -80,12 +78,12 @@ LOGGING = {
     },
     'handlers': {
         'null': {
-            'level':'DEBUG',
-            'class':'django.utils.log.NullHandler',
+            'level': 'DEBUG',
+            'class': 'django.utils.log.NullHandler',
         },
-        'console':{
-            'level':'DEBUG',
-            'class':'logging.StreamHandler',
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
             'formatter': 'simple'
         },
         'mail_admins': {
@@ -104,14 +102,14 @@ LOGGING = {
     },
     'loggers': {
         '': {
-            'handlers':['file'],
+            'handlers': ['file'],
             'propagate': True,
-            'level':'ERROR',
+            'level': 'ERROR',
         },
         'django': {
-            'handlers':['null'],
+            'handlers': ['null'],
             'propagate': True,
-            'level':'ERROR',
+            'level': 'ERROR',
         },
         'django.request': {
             'handlers': ['file'],
