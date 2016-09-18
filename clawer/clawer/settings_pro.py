@@ -10,7 +10,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',                   # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
         'NAME': 'clawer',                                       # Or path to database file if using sqlite3.
-        'USER': 'dachengmysqlserver%%dacheng',                  # Not used with sqlite3.
+        'USER': 'dachengmysqlserver%dacheng',                  # Not used with sqlite3.
         'PASSWORD': 'daCheng!0527',                             # Not used with sqlite3.
         'HOST': 'dachengmysqlserver.mysqldb.chinacloudapi.cn',  # Set to empty string for localhost. Not used with sqlite3.
         'PORT': '',                                             # Set to empty string for default. Not used with sqlite3.
