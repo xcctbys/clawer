@@ -1,4 +1,4 @@
-#encoding=utf-8
+# encoding=utf-8
 
 from settings import *
 
@@ -7,18 +7,28 @@ from settings import *
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+#         'NAME': 'clawer',                      # Or path to database file if using sqlite3.
+#         'USER': 'dev',                      # Not used with sqlite3.
+#         'PASSWORD': 'dev012131',                  # Not used with sqlite3.
+#         'HOST': '123.57.22.110',                      # Set to empty string for localhost. Not used with sqlite3.
+#         'PORT': '3066',                      # Set to empty string for default. Not used with sqlite3.
+#         'CONN_MAX_AGE': 10,
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'clawer',                      # Or path to database file if using sqlite3.
-        'USER': 'dev',                      # Not used with sqlite3.
-        'PASSWORD': 'dev012131',                  # Not used with sqlite3.
-        'HOST': '123.57.22.110',                      # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '3066',                      # Set to empty string for default. Not used with sqlite3.
-        'CONN_MAX_AGE': 10,
+        'ENGINE': 'django.db.backends.mysql',                   # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': 'clawer',                                       # Or path to database file if using sqlite3.
+        'USER': 'dachengmysqlserver%dacheng',                  # Not used with sqlite3.
+        'PASSWORD': 'daCheng!0527',                             # Not used with sqlite3.
+        'HOST': 'dachengmysqlserver.mysqldb.chinacloudapi.cn',  # Set to empty string for localhost. Not used with sqlite3.
+        'PORT': '',                                             # Set to empty string for default. Not used with sqlite3.
     }
 }
-
 
 CACHES = {
     'default': {
@@ -39,11 +49,9 @@ CRONTAB_HOME = "/home/webapps/nice-clawer/confs/production"
 CLAWER_SOURCE = "/data/clawer/"
 CLAWER_RESULT = "/data/clawer_result/"
 
-
-REDIS = "redis://123.57.141.157:6699/0"
-URL_REDIS = "redis://123.57.22.110:6799/0"
-MONITOR_REDIS = "redis://123.57.141.157:6699/0"
-
+REDIS = "redis://:uwKQJUC1RJxoKGtcP69oGLhyY2XumrfYp4WYtxgT9vU=@dacheng-redis.redis.cache.chinacloudapi.cn/0"
+URL_REDIS = "redis://:uwKQJUC1RJxoKGtcP69oGLhyY2XumrfYp4WYtxgT9vU=@dacheng-redis.redis.cache.chinacloudapi.cn/0"
+MONITOR_REDIS = "redis://:uwKQJUC1RJxoKGtcP69oGLhyY2XumrfYp4WYtxgT9vU=@dacheng-redis.redis.cache.chinacloudapi.cn/0"
 
 #captcha
 CAPTCHA_STORE = "/data/media/captcha"

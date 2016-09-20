@@ -47,8 +47,8 @@ CLAWER_RESULT_URL = "http://clawer.princetechs.com/media/clawer_result/"
 
 
 REDIS = "redis://:uwKQJUC1RJxoKGtcP69oGLhyY2XumrfYp4WYtxgT9vU=@dacheng-redis.redis.cache.chinacloudapi.cn/0"
-URL_REDIS = "redis://:uwKQJUC1RJxoKGtcP69oGLhyY2XumrfYp4WYtxgT9vU=@dacheng-redis.redis.cache.chinacloudapi.cn/1"
-MONITOR_REDIS = "redis://:uwKQJUC1RJxoKGtcP69oGLhyY2XumrfYp4WYtxgT9vU=@dacheng-redis.redis.cache.chinacloudapi.cn/2"
+URL_REDIS = "redis://:uwKQJUC1RJxoKGtcP69oGLhyY2XumrfYp4WYtxgT9vU=@dacheng-redis.redis.cache.chinacloudapi.cn/0"
+MONITOR_REDIS = "redis://:uwKQJUC1RJxoKGtcP69oGLhyY2XumrfYp4WYtxgT9vU=@dacheng-redis.redis.cache.chinacloudapi.cn/0"
 
 
 CRONTAB_HOME = "/home/webapps/nice-clawer/confs/production"
