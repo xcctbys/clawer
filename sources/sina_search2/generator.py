@@ -83,7 +83,7 @@ class History(object):
     def __init__(self):
         self.current_url_num = 1
         self.current_keyword_num = 0
-        self.current_media_num = 0
+        # self.current_media_num = 0
         self.path = "/tmp/sina_search2"
         try:
             pwname = pwd.getpwnam("nginx")
@@ -100,7 +100,7 @@ class History(object):
             old = pickle.load(f)
             self.current_url_num = old.current_url_num
             self.current_keyword_num = old.current_keyword_num
-            self.current_media_num = old.current_media_num
+            # self.current_media_num = old.current_media_num
 
     def save(self):
         with open(self.path, "w") as f:
@@ -122,20 +122,14 @@ class Generator(object):
     def search_url(self):
         for each in keywords[self.history.current_keyword_num:]:
             keyword = each
-            for each in medias[self.history.current_media_num:]:
-                media = each
-                self.page_url(keyword, media)
-                if not self.flag:
-                    return
-                if self.history.current_media_num == 0:
-                    self.history.current_media_num = 1
-                else:
-                    self.history.current_media_num = 0
-                self.history.save()
+            self.page_url(keyword)
+            if not self.flag:
+                return
+            self.history.save()
             self.history.current_keyword_num += 1
             self.history.save()
 
-    def page_url(self, keyword, media):
+    def page_url(self, keyword, media = ''):
         # url = self.HOST + urllib.urlencode({"q": keyword.encode("gbk")}) + '+O%3A'\
         #            + urllib.quote(media.encode("gbk")) + '&range=all&num=10'
         url = self.HOST + urllib.urlencode({"q": keyword.encode("gbk")}) + '&range=all&num=10'
