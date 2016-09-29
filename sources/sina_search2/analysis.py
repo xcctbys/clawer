@@ -2,6 +2,7 @@
 """sina_search
 
 hits: http://finance.sina.com.cn/stock/jsy/20141125/043020909481.shtml
+http://finance.sina.com.cn/roll/2016-09-28/doc-ifxwevww1794871.shtml"
 """
 
 import json
@@ -39,6 +40,8 @@ class Analysis(object):
     def parse(self):
         if os.path.exists(self.path) is False:
             url_time = re.search(r'\d{8}', self.url)
+            url_time = re.search(r'([0-9]{4})-([0-9]{2})-([0-9]{2})', self.url)
+            #2016-09-28  数据格式变了
             if url_time != None:
                 self.parse_url(url_time.group(0))
                 self.parse_comment_url()
@@ -49,34 +52,40 @@ class Analysis(object):
                     self.result["total"] = ''
                     self.result["comment_contents"] = ''
             else:
-                self.result = {"media_name": "", "title": "", "show": "", "content": "", "time": "", "keywords": "", "total": "", "comment_contents": ""}
+                self.result = {"media_name": "", "title": "", "show": "", "content": "", "time": "", "keywords": "", "total": "", "comment_contents": "", "fail_reason": []}
                 return self.result
         else:
             with open(self.path, "r") as f:
+                self.result["fail_reason"] = []
                 self.text = f.read()
                 url_time = re.search(r'\d{8}', self.url)
+                url_time = re.search(r'([0-9]{4})-([0-9]{2})-([0-9]{2})', self.url)
                 if url_time != None:
                     self.parse_url(url_time.group(0))
                     self.parse_comment_url()
                     if self.comment_id != None:
                         self.parse_comment_content()
+                        self.result["fail_reason"].append('if self.comment_id != None:######')
                     else:
                         self.result["show"] = ''
                         self.result["total"] = ''
                         self.result["comment_contents"] = ''
+                        self.result["fail_reason"].append('else self.comment_id != None:######')
                     if int(url_time.group(0)) > 20121031:
                         self.soup = BeautifulSoup(self.text, "html5lib")
                         try:
                             self.soup = BeautifulSoup(self.text.decode('gbk'), "html5lib")
                         except:
                             self.soup = BeautifulSoup(self.text, "html5lib")
+                            self.result["fail_reason"].append('self.soup = BeautifulSoup(self.text, "html5lib") except#####')
                     else:
                         try:
                             self.soup = BeautifulSoup(self.text.decode('gbk'), "html.parser")
                         except:
                             self.soup = BeautifulSoup(self.text, "html.parser")
+                            self.result["fail_reason"].append('self.soup = BeautifulSoup(self.text.decode(gbk), html.parser) except########')
                 else:
-                    self.result = {"media_name": "", "title": "", "show": "", "content": "", "time": "", "keywords": "", "total": "", "comment_contents": ""}
+                    self.result = {"media_name": "", "title": "", "show": "", "content": "", "time": "", "keywords": "", "total": "", "comment_contents": "" , "fail_reason":'url_time = None'}
                     return self.result
 
         self.parse_title()
@@ -130,6 +139,8 @@ class Analysis(object):
             self.result["show"] = ''
             self.result["total"] = ''
             self.result["comment_contents"] = ''
+            self.result["fail_reason"].append('parse_comment_content except########')
+
 
     def parse_title(self):
         h1 = self.soup.find("h1", {"id": "artibodyTitle"})
@@ -137,6 +148,7 @@ class Analysis(object):
             self.result["title"] = h1.get_text().strip()
         else:
             self.result["title"] = ''
+            self.result["fail_reason"].append('parse_title= None:######')
 
     def parse_time(self):
         span = self.soup.find("span", {"id": "pub_date"})
@@ -144,6 +156,7 @@ class Analysis(object):
             self.result["time"] = span.get_text().strip()
         else:
             self.result["time"] = ''
+            self.result["fail_reason"].append('parse_time= None:######')
 
     def parse_media_name(self):
         span = self.soup.find("span", {"id": "media_name"})
@@ -154,6 +167,7 @@ class Analysis(object):
                 self.result["media_name"] = span.a.get_text().strip()
         else:
             self.result["media_name"] = ''
+            self.result["fail_reason"].append('parse_media_name= None:######')
 
     def parse_keywords(self):
         keyword = ''
@@ -163,6 +177,7 @@ class Analysis(object):
             for a in p:
                 keyword += a.string
         self.result["keywords"] = keyword
+
 
     def parse_content(self):
         div = self.soup.find("div", {"id": "artibody"})

@@ -84,12 +84,26 @@ medias = [
         u'新华社'
 ]
 
+url1 = 'http://finance.sina.com.cn/stock/jsy/20141125/043020909481.shtml'
+url2 = 'http://finance.sina.com.cn/roll/2016-09-28/doc-ifxwevww1794871.shtml'
+
+def page_url(self, keywords, media):
+    for keyword in keywords:
+        url = HOST + urllib.urlencode({"q": keyword.encode("gbk")}) + '+O%3A'\
+                   + urllib.quote(media.encode("gbk")) + '&range=all&num=10'
+        print url
 
 
-    def page_url(self, keywords, media):
-        for keyword in keywords:
-            url = HOST + urllib.urlencode({"q": keyword.encode("gbk")}) + '+O%3A'\
-                       + urllib.quote(media.encode("gbk")) + '&range=all&num=10'
-            print url
+def parse_time(url):
+    url_time = re.search(r'([0-9]{4})-([0-9]{2})-([0-9]{2})', url)
+    if url_time != None:
+        url_time = url_time.group(0)
+        print url_time
+        print type(url_time)
+        url_time = str(url_time)
+        print url_time.spilt('-')
+        if int(url_time) > 20121031:
+            print 'hahahhahhah'
 
-
+if __name__ == '__main__':
+    parse_time(url2)
