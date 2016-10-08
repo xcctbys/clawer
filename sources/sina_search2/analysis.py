@@ -40,10 +40,15 @@ class Analysis(object):
     def parse(self):
         if os.path.exists(self.path) is False:
             url_time = re.search(r'\d{8}', self.url)
-            url_time = re.search(r'([0-9]{4})-([0-9]{2})-([0-9]{2})', self.url)
+            if url_time:
+                url_time = url_time.group(0)
+            else:
+                url_time = re.search(r'([0-9]{4})-([0-9]{2})-([0-9]{2})', self.url)
+                url_time = url_time.group(0)
+                url_time = ''.join(url_time.split('-'))
             #2016-09-28  数据格式变了
             if url_time != None:
-                self.parse_url(url_time.group(0))
+                self.parse_url(url_time)
                 self.parse_comment_url()
                 if self.comment_id != None:
                     self.parse_comment_content()
@@ -59,9 +64,14 @@ class Analysis(object):
                 self.result["fail_reason"] = []
                 self.text = f.read()
                 url_time = re.search(r'\d{8}', self.url)
-                url_time = re.search(r'([0-9]{4})-([0-9]{2})-([0-9]{2})', self.url)
+                if url_time:
+                    url_time = url_time.group(0)
+                else:
+                    url_time = re.search(r'([0-9]{4})-([0-9]{2})-([0-9]{2})', self.url)
+                    url_time = url_time.group(0)
+                    url_time = ''.join(url_time.split('-'))
                 if url_time != None:
-                    self.parse_url(url_time.group(0))
+                    self.parse_url(url_time)
                     self.parse_comment_url()
                     if self.comment_id != None:
                         self.parse_comment_content()
@@ -71,7 +81,7 @@ class Analysis(object):
                         self.result["total"] = ''
                         self.result["comment_contents"] = ''
                         self.result["fail_reason"].append('else self.comment_id != None:######')
-                    if int(url_time.group(0)) > 20121031:
+                    if int(url_time) > 20121031:
                         self.soup = BeautifulSoup(self.text, "html5lib")
                         try:
                             self.soup = BeautifulSoup(self.text.decode('gbk'), "html5lib")

@@ -99,11 +99,10 @@ def parse_time(url):
     if url_time != None:
         url_time = url_time.group(0)
         print url_time
-        print type(url_time)
-        url_time = str(url_time)
-        print url_time.spilt('-')
-        if int(url_time) > 20121031:
-            print 'hahahhahhah'
+        datetime = ''.join(url_time.split('-'))
+        print datetime
+        # if int(url_time) > 20121031:
+
 
 if __name__ == '__main__':
     parse_time(url2)
