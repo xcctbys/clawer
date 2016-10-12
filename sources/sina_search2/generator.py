@@ -153,8 +153,9 @@ class Generator(object):
                 self.flag = False
                 return
             #col=1_7 限定财经频道
-            page = url + '&col=1_7&source=&from=&country=&size=&time=&a=&page=' + str((self.history.current_url_num-1)/10+1) + \
-                   '&pf=2131425492&ps=2132080888&dpc=1'
+            # page = url + '&col=1_7&source=&from=&country=&size=&time=&a=&page=' + str((self.history.current_url_num-1)/10+1) + \
+            #        '&pf=2131425492&ps=2132080888&dpc=1'
+            page = url + '&col=1_7&source=&from=&country=&size=&time=&a=&page=' + str((self.history.current_url_num-1)/10+1)
             try:
                 r = requests.get(page, headers={"user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5)\
              AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36"})

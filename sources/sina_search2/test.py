@@ -12,6 +12,7 @@ import traceback
 import os
 import time
 import cPickle as pickle
+import sys
 try:
     import pwd
 except:
@@ -105,4 +106,15 @@ def parse_time(url):
 
 
 if __name__ == '__main__':
+    argv0_list = sys.argv[0].split("\\")
+    print argv0_list
+    script_name = argv0_list[len(argv0_list) - 1]# get script file name self
+    print script_name
+    script_name = script_name[0:-3]
+    print script_name
+
+    script_name = sys.argv[0].split('\\')[-1][0:-3].split('/')[-1]
+    logfilename = '%s/%s%s%s%s' % ('/home/logs', script_name, '_', '_'.join(str(datetime.date.today()).split('-')), '.log')
+    logging.basicConfig(level=level, format="[%(asctime)s] [line:%(lineno)d] [%(levelname)s]:: %(message)s", filename=logfilename, filemod='a')
+
     parse_time(url2)
