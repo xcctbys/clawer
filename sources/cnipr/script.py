@@ -8,21 +8,22 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 class Crawler(object):
-    def __init__(self):
+    def __init__(self,ent_name = "北京百度网讯科技有限公司"):
         self.reqst = requests.Session()
         self.reqst.headers = {
             'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:49.0) Gecko/20100101 Firefox/49.0",
             'Accept': "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
         }
-        self.ent_num = "北京百度网讯科技有限公司"
+        self.ent_name = ent_name
+        self.result_list = []
 
-    def do_post(self):
+    def do_post(self, startnum="1"):
         # 'strWhere': "北京百度网讯科技有限公司",
         data = {
-            'start': "1",
+            'start': startnum,
             # 'limit': "10",
             'limit': "10",
-            'strWhere': self.ent_num,
+            'strWhere': self.ent_name,
             'yuyijs': "",
             'saveFlag': "1",
             'keyword2Save': "",
@@ -72,8 +73,8 @@ class Crawler(object):
 
             print item.find('li',attrs={'class': 'g_li'}).get_text().strip()
             print item.find('li',attrs={'class': 'g_li'})['title']
-
             print item.find('li',attrs={'class': 'g_li1'}).get_text().strip()
+
             #cor1有效 cor2在审  cor3无效
             if item.find('li',attrs={'class': 'g_li2 cor1'}):
                 print item.find('li',attrs={'class': 'g_li2 cor1'}).get_text().strip()
@@ -81,7 +82,8 @@ class Crawler(object):
                 print item.find('li',attrs={'class': 'g_li2 cor2'}).get_text().strip()
             elif item.find('li',attrs={'class': 'g_li2 cor3'}):
                 print item.find('li',attrs={'class': 'g_li2 cor3'}).get_text().strip()
-            self.parse_item_content(item,content_dict)
+            self.result_list.append(self.parse_item_content(item,content_dict))
+            print self.result_list
 
 
     def parse_item_content(self,item, content_dict):
@@ -104,7 +106,6 @@ class Crawler(object):
                         u"摘要："]
             index = 0
             for td in tds:
-
                 print '--------0'
                 print td
                 print '---------1'
@@ -113,16 +114,20 @@ class Crawler(object):
                 print type(td.get_text())
                 print key_list[index]
                 print td.get_text().replace(key_list[index],'',1).strip()
-                # str.replace(old, new[, max])
-                # print td['span']
-                # print td.get_text().strip('').split('：')
-                # td_key = td.get_text().strip('').split('：')[0]
-                # td_value = td.get_text().strip('').split('：')[1]
-                # content_dict[td_key] = td_value
                 print '--------2'
                 content_dict[key_list[index]] = td.get_text().replace(key_list[index],'',1).strip()
                 index +=1
             print content_dict
+            return content_dict
+
+    def run(self,startnum="1"):
+        self.do_post(startnum)
+        self.get_iprnum()
+        # self.get_initPagination()
+        its = cl.get_item()
+        self.parse_item(its)
+
+
     def test(self):
             index = 0
             key_list = [u"申请号：",
@@ -142,9 +147,15 @@ class Crawler(object):
 
 if __name__ == '__main__':
     cl = Crawler()
-    cl.do_post()
-    cl.get_iprnum()
-    cl.get_initPagination()
-    its = cl.get_item()
-    cl.parse_item(its)
-    
+    cl.run()
+    count = cl.get_initPagination()
+    # for i in count-1:
+    #     cl.run(str(i+1))
+
+    for i in range(10):
+        print i
+        print type(i)
+        cl.run(str(i+1))
+
+
+
