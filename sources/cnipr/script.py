@@ -36,6 +36,7 @@ class Crawler(object):
         print self.resp.content
         print '##########',self.resp.status_code
 
+
     def get_iprnum(self):
         print self.resp.status_code
         soup = BeautifulSoup(self.resp.content, 'html.parser')
@@ -47,6 +48,8 @@ class Crawler(object):
                 print '#####iprnum'
                 print targets[0].find('span').get_text().strip('()')
 
+
+    #得到总页码数量,之后将每次爬取页记pickle或redis,总的pagecount做限制。
     def get_initPagination(self):
 
         # str = 'fafsf 2332rf initPagination(324)'
@@ -67,6 +70,7 @@ class Crawler(object):
         print items
         return items
 
+
     def parse_item(self,items):
         for item in items:
             content_dict = {}
@@ -84,6 +88,7 @@ class Crawler(object):
                 print item.find('li',attrs={'class': 'g_li2 cor3'}).get_text().strip()
             self.result_list.append(self.parse_item_content(item,content_dict))
             print self.result_list
+
 
 
     def parse_item_content(self,item, content_dict):
@@ -104,6 +109,17 @@ class Crawler(object):
                         u"分类号：",
                         u"优先权：",
                         u"摘要："]
+
+            pic_url = content_item.find('div',attrs={'class':'g_cont_rig'})
+            print '###########'
+            print pic_url
+            print '------'
+            for p in pic_url:
+                print p
+                print '1111'
+
+
+            print '##########'
             index = 0
             for td in tds:
                 print '--------0'
@@ -119,6 +135,9 @@ class Crawler(object):
                 index +=1
             print content_dict
             return content_dict
+
+
+
 
     def run(self,startnum="1"):
         self.do_post(startnum)
@@ -152,7 +171,7 @@ if __name__ == '__main__':
     # for i in count-1:
     #     cl.run(str(i+1))
 
-    for i in range(10):
+    for i in range(1):
         print i
         print type(i)
         cl.run(str(i+1))
